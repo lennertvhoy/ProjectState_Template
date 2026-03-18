@@ -1,0 +1,121 @@
+# PROJECT_STATE.yaml - Structured current truth
+
+metadata:
+  updated_at: 2026-03-18T19:40:00+01:00
+  updated_by: agent
+  version: "truth-first-template-v2"
+
+workflow:
+  repo_mode: bootstrap
+  bootstrap:
+    completed: false
+    completed_on: null
+    system_investigated: false
+    repo_investigated: false
+    user_intake_complete: false
+    unknowns_remaining:
+      - product not yet defined
+      - primary user not yet defined
+      - target deployment/runtime not yet defined
+      - first real milestone not yet defined
+
+verification_labels:
+  observed: verified directly in the current session
+  reported: supported by prior evidence, not re-verified
+  blocked: verification attempted but prevented
+  assumed: temporary working assumption
+  stale: previously verified but no longer fresh
+  invalid: known false or superseded
+
+current_state:
+  repository:
+    canonical_path: /var/home/ff/Documents/StateDD_Template
+    path_status: observed
+    branch: prove/ci-tooling-runtime-v2
+    head: 2922f57
+
+  operating_mode:
+    status: observed
+    mode: bootstrap
+    summary: |
+      This repository is the reusable truth-first workflow template.
+      It is currently in bootstrap mode so future projects can baseline truth
+      before transitioning to steady operating mode.
+
+  project:
+    name: PROJECT_NAME
+    type: project_template
+    lifecycle_stage: template
+    truth_summary: current_state_only
+
+  runtime:
+    status: unconfigured
+    services: []
+    public_url: null
+    notes: |
+      Add project-specific runtime details only after a real project is attached.
+
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+    standard: browser_verification_or_test_output_for_user_facing_claims
+
+  documentation:
+    status: observed
+    live_docs:
+      - AGENTS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - PROJECT_DNA.yaml
+      - NEXT_ACTIONS.md
+      - BACKLOG.md
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+
+  handoff:
+    last_session_date: 2026-03-18
+    git_head: 6775286
+    worktree_clean: true
+
+  validation:
+    status: observed
+    dry_run_fixture:
+      path: fixtures/bootstrap_dry_run
+      bootstrap_snapshot: observed
+      operating_snapshot: observed
+      hygiene_checks:
+        - "python scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap"
+        - "python scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating"
+      result: passed
+    messy_fixture:
+      path: fixtures/messy_inherited_repo/bootstrap
+      bootstrap_snapshot: observed
+      contradictory_claims:
+        - production is stable
+        - kubernetes migration is complete
+        - next.js frontend only
+        - python background worker system
+      labels_used:
+        - reported
+        - blocked
+        - assumed
+        - unknown
+      result: passed
+
+  publication:
+    status: observed
+    one_command_init:
+      script: scripts/init_template.py
+      temp_dir_dry_run: passed
+    minimal_mode:
+      removes:
+        - fixtures
+        - docs/BOOTSTRAP_QUALITY.md
+      status: observed
+    public_assets:
+      prompts: present
+      github_workflow: present
+      issue_templates: present
+      adapter_file: present
+
+active_problems: []

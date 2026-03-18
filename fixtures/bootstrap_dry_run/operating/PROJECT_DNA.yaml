@@ -1,0 +1,21 @@
+# PROJECT_DNA.yaml - Canonical architecture blueprint
+
+version: "truth-first-template-v2"
+schema_version: "1.0"
+
+product:
+  name: Sample Project Fixture
+  one_sentence: "Minimal fixture to validate operating mode."
+
+truth_rules:
+  repo_modes:
+    bootstrap:
+      purpose: discover truth and establish baseline state
+    operating:
+      purpose: steady-state human-in-the-loop delivery
+
+invariants:
+  - "STATUS.md stays short and current."
+  - "PROJECT_STATE.yaml stores structured live truth only."
+  - "NEXT_ACTIONS.md contains open work only."
+  - "WORKLOG.md is append-only."

@@ -1,0 +1,83 @@
+# PROJECT_DNA.yaml - Canonical architecture blueprint
+
+version: "truth-first-template-v2"
+schema_version: "1.0"
+
+product:
+  name: PROJECT_NAME
+  one_sentence: "Truth-first project workflow template for technical delivery."
+  description: |
+    This repository defines a reusable operating system for technical projects:
+    stable rules, structured live state, concise status, active queue, roadmap,
+    history, and evidence-led verification.
+  is:
+    - truth_first
+    - evidence_backed
+    - machine_checkable
+    - history_separated_from_state
+    - active_queue_is_short
+  is_not:
+    - product_specific
+    - runtime_status_dump
+    - append_only_status_file
+
+truth_rules:
+  contract_files:
+    agents: AGENTS.md
+    status: STATUS.md
+    project_state: PROJECT_STATE.yaml
+    project_dna: PROJECT_DNA.yaml
+    project_adapter: PROJECT_ADAPTER.yaml
+    next_actions: NEXT_ACTIONS.md
+    backlog: BACKLOG.md
+    worklog: WORKLOG.md
+    evidence_log: docs/EVIDENCE_LOG.md
+
+  hard_rules:
+    - no_fake_completeness
+    - no_history_in_live_state
+    - evidence_required_for_user_facing_claims
+    - clean_worktree_required_at_handoff
+    - active_queue_remains_short
+
+  claim_states:
+    observed: verified directly now
+    reported: supported by prior evidence
+    blocked: verification currently prevented
+    assumed: provisional working assumption
+    stale: previously verified but aged out
+    invalid: known false or superseded
+
+  repo_modes:
+    bootstrap:
+      purpose: discover truth and establish baseline state
+      exit_condition: baseline completed and mode flipped to operating
+    operating:
+      purpose: steady-state human-in-the-loop delivery
+      exit_condition: none
+
+architecture:
+  control_plane:
+    description: Human and agent workflow coordination.
+  state_plane:
+    description: Structured current truth in PROJECT_STATE.yaml.
+  evidence_plane:
+    description: Artifact-backed proof for claims and verification.
+  history_plane:
+    description: Append-only record of completed work in WORKLOG.md.
+
+invariants:
+  - "STATUS.md stays short and current."
+  - "PROJECT_STATE.yaml stores structured live truth only."
+  - "PROJECT_DNA.yaml changes slowly."
+  - "NEXT_ACTIONS.md contains open work only."
+  - "WORKLOG.md is append-only."
+
+governance:
+  evidence_standard: browser_verification_or_test_output
+  hygiene_check: scripts/check_state_docs.py
+  update_policy:
+    status: when_current_truth_changes
+    project_state: when_structured_truth_changes
+    worklog: when_work_is_completed
+    evidence_log: when_user_facing_claims_are_verified

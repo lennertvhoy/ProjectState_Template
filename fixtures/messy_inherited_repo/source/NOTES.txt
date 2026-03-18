@@ -1,0 +1,2 @@
+This repo does not contain AGENTS.md, PROJECT_STATE.yaml, PROJECT_DNA.yaml,
+NEXT_ACTIONS.md, BACKLOG.md, WORKLOG.md, or docs/EVIDENCE_LOG.md yet.

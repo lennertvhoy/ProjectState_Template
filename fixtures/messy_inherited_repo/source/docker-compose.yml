@@ -1,0 +1,14 @@
+services:
+  web:
+    image: node:22
+    command: npm run dev
+    ports:
+      - "3000:3000"
+  worker:
+    image: python:3.12
+    command: python worker.py
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_PASSWORD: example

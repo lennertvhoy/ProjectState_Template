@@ -1,0 +1,35 @@
+# PROJECT_STATE.yaml - Structured current truth
+
+metadata:
+  updated_at: 2026-03-18T18:30:00+01:00
+  updated_by: agent
+  version: "truth-first-template-v2"
+
+workflow:
+  repo_mode: operating
+  bootstrap:
+    completed: true
+    completed_on: 2026-03-18
+    system_investigated: true
+    repo_investigated: true
+    user_intake_complete: true
+    unknowns_remaining: []
+
+current_state:
+  repository:
+    canonical_path: fixtures/bootstrap_dry_run/operating
+    path_status: observed
+    branch: sample-operating
+    head: null
+  operating_mode:
+    status: observed
+    mode: operating
+  project:
+    name: Sample Project Fixture
+    type: documentation_workflow_demo
+    lifecycle_stage: operating
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+
+active_problems: []

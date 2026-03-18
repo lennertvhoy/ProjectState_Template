@@ -1,0 +1,67 @@
+# PROJECT_STATE.yaml - Structured current truth
+
+metadata:
+  updated_at: 2026-03-18T19:00:00+01:00
+  updated_by: agent
+  version: "truth-first-template-v2"
+
+workflow:
+  repo_mode: bootstrap
+  bootstrap:
+    completed: false
+    completed_on: null
+    system_investigated: true
+    repo_investigated: true
+    user_intake_complete: false
+    unknowns_remaining:
+      - product identity is unclear
+      - primary runtime is unclear
+      - deployment target is unclear
+      - authoritative state files are missing
+
+current_state:
+  repository:
+    canonical_path: fixtures/messy_inherited_repo/source
+    path_status: observed
+    branch: inherited-import
+    head: null
+
+  operating_mode:
+    status: observed
+    mode: bootstrap
+
+  project:
+    name: inherited_project_unknown
+    type: ambiguous_multi_stack_app
+    lifecycle_stage: bootstrap
+
+  assessment:
+    source_claims:
+      - claim: "Production is stable"
+        status: reported
+        evidence: "docs/STATUS.md"
+      - claim: "Kubernetes migration is complete"
+        status: reported
+        evidence: "docs/STATUS.md"
+      - claim: "Next.js frontend only"
+        status: reported
+        evidence: "package.json"
+      - claim: "Python background worker system"
+        status: reported
+        evidence: "docker-compose.yml"
+    bootstrap_handling:
+      - item: "State files missing"
+        status: blocked
+        reason: "No AGENTS.md / PROJECT_STATE.yaml / PROJECT_DNA.yaml in source repo"
+      - item: "Deployment target"
+        status: unknown
+        reason: "Docs conflict between Docker Compose and Kubernetes"
+      - item: "Primary stack"
+        status: assumed
+        reason: "Node frontend plus Python worker are both present, but ownership is unclear"
+
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+
+active_problems: []

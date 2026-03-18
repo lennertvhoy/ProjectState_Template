@@ -1,0 +1,11 @@
+{
+  "name": "messy-inherited-project",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "next": "^15.0.0"
+  }
+}
