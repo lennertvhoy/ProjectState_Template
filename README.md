@@ -192,15 +192,13 @@ python3 scripts/check_state_docs.py --bootstrap-gate
 
 ## Setting Up The AI CTO Agent
 
-For non-trivial work, separate planning from implementation.
-
-- use a planning chat for reconstruction, critique, prioritization, and writing
-  the next prompt
-- use the coding agent for direct implementation and verification
-- the planning chat can be ChatGPT, Claude, Gemini, or another capable model
-- the planning chat does not have direct access to the repo or state files, so
-  it only sees what the human pastes into it
-- each non-trivial loop should usually start a fresh coding-agent session
+For non-trivial work, separate planning from implementation. Use a planning
+chat to reconstruct context, critique proposals, and scope the next slice. Use
+the coding agent to implement, verify, and update repo truth. The planning chat
+can be ChatGPT, Claude, Gemini, or another capable model.
+- does not have direct access to the repo or state files unless the human
+  pastes context into it
+- fresh handoffs and a fresh coding-agent session matter
 
 ## Prompt Files
 
@@ -244,7 +242,7 @@ source, runtime identity, and evidence. Use
 ## Search Honesty
 
 Negative searches stay negative. Use `not found`, `not currently locatable`, or
-`not proven`. Do not turn a failed search into a claim that something never
+`not proven`. A failed search does not justify claiming something never
 existed.
 
 ## Workflow Diagram
