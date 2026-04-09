@@ -1,19 +1,14 @@
 # State Driven Development Template
 
-AI-assisted projects drift.
+AI-assisted software projects drift.
 
-Context decays, screenshots go stale, repo truth falls behind runtime truth, and
-important decisions disappear into chat history. This template gives humans and
-AI agents a shared source of truth in the repo: live state, a short active
-queue, evidence for claims, and clean handoffs between planning and execution.
+Context decays, repo truth falls behind runtime truth, and important decisions
+disappear into chat history. State Driven Development gives humans and coding
+agents a shared source of truth in the repo: live state, a short active queue,
+evidence for claims, and clean handoffs between planning and execution.
 
 It is for software projects that want more discipline than ad hoc prompting
 without turning the repo into process theater.
-
-This repository publishes the template itself. It keeps the workflow contract
-public and reusable, but it does not try to use its own state files as a
-running diary for every small template maintenance edit. Downstream repos
-created from it should use the full workflow directly.
 
 ## Why This Exists
 
@@ -28,6 +23,11 @@ Most AI workflow scaffolds fail in predictable ways:
 This template is built to reduce those failure modes with explicit state,
 evidence-backed claims, non-destructive adoption, and small implementation
 slices.
+
+This repository publishes the template itself. It keeps the workflow contract
+public and reusable, but it does not try to use its own state files as a
+running diary for every small template maintenance edit. Downstream repos
+created from it should use the full workflow directly.
 
 ## Good Fit
 
@@ -46,15 +46,15 @@ slices.
 
 | File or path | Purpose |
 | --- | --- |
-| `AGENTS.md` | Operating contract and repo-mode rules |
+| **`AGENTS.md`** | Operating contract and repo-mode rules |
 | `STATUS.md` | Short human snapshot of current truth |
-| `PROJECT_STATE.yaml` | Machine-checkable current truth |
+| **`PROJECT_STATE.yaml`** | Machine-checkable current truth |
 | `PROJECT_DNA.yaml` | Stable architecture and governance contract |
 | `PROJECT_ADAPTER.yaml` | Project-specific vocabulary and runtime adapter |
-| `NEXT_ACTIONS.md` | Active queue only |
+| **`NEXT_ACTIONS.md`** | Active queue only |
 | `BACKLOG.md` | Medium-term roadmap with stable backlog IDs |
 | `WORKLOG.md` | Append-only history |
-| `docs/EVIDENCE_LOG.md` | Proof ledger for user-facing claims |
+| **`docs/EVIDENCE_LOG.md`** | Proof ledger for user-facing claims |
 | `docs/ACCEPTANCE_FREEZES.md` | Accepted milestone ledger |
 | `docs/evidence/` | Default artifact root for screenshots, logs, and outputs |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
@@ -139,10 +139,7 @@ git remote -v
 
 ## Setup Paths
 
-Use `new` when you want the full scaffold in a fresh repo.
-
-Use `adopt` when you want to add the workflow to an existing codebase without
-blindly replacing its current docs and structure.
+Use `new` for a fresh scaffold and `adopt` for an existing codebase.
 
 Typical paths:
 
@@ -193,9 +190,12 @@ python3 scripts/check_state_docs.py --bootstrap-gate
 ## Setting Up The AI CTO Agent
 
 For non-trivial work, separate planning from implementation. Use a planning
-chat to reconstruct context, critique proposals, and scope the next slice. Use
-the coding agent to implement, verify, and update repo truth. The planning chat
-can be ChatGPT, Claude, Gemini, or another capable model. It does not have direct access to the repo or state files unless the human pastes context into it. Fresh handoffs and a fresh coding-agent session matter.
+chat, or AI CTO pattern, to reconstruct context, critique proposals, and scope
+the next slice. Use the coding agent to implement, verify, and update repo
+truth. The planning chat can be ChatGPT, Claude, Gemini, or another capable
+model. It does not have direct access to the repo or state files unless the
+human pastes context into it. Fresh handoffs and a fresh coding-agent session
+matter.
 
 ## Prompt Files
 
@@ -213,8 +213,8 @@ wording:
 
 Keep `STATUS.md` short, store live truth in `PROJECT_STATE.yaml`, keep
 `NEXT_ACTIONS.md` limited to active open work, link that work to stable backlog
-IDs, verify user-facing claims directly, and end each non-trivial slice with a
-handoff.
+IDs, verify user-facing claims directly, and end each non-trivial backlog slice
+with a handoff.
 
 ## Final Handoff Template
 
