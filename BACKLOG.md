@@ -1,6 +1,6 @@
 # BACKLOG - Strategic Roadmap
 
-**Product:** State Drive Development Template
+**Product:** State Driven Development Template
 **Execution Mode:** operating
 **Updated At:** 2026-04-09
 

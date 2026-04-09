@@ -39,7 +39,7 @@
 - Source/System: test
 - Action: Updated the live contract, prompt files, initializer, and validator so generated repos inherit the new naming model, explicit `new`/`adopt` flows, backlog-ID linkage, canonical handoff template, and bootstrap-gate checks
 - Shows:
-  - the README now distinguishes `StateDD_Template`, `State Drive Development Template`, and `Truth-First Project Operating System`
+  - the README and template docs now use one clear public template name
   - the initializer now supports a first-class `adopt` path with `--dry-run`, optional README linking, and optional GitHub asset installation
   - the validator now checks backlog-ID linkage and exposes a dedicated `--bootstrap-gate`
   - the prompt files now own the canonical prompt text, reducing README drift
@@ -86,6 +86,23 @@
   - the public-facing landing text is easier to read without weakening the naming contract
 - Type: docs-render-verification
 - as_of: 2026-04-09T20:20:00+02:00
+
+## EV-2026-04-09-012: Public Naming Simplified
+
+- File: README.md
+- File: AGENTS.md
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- Title: Public template naming and wording simplified
+- Source/System: test
+- Action: Replaced the public name with `State Driven Development Template` consistently and removed the extra operating-model naming layer from the public docs and generated contract
+- Shows:
+  - the README and contract now describe one public template clearly
+  - fixtures, validator rules, and generated outputs align on the simpler naming
+- Proves:
+  - downstream repos will inherit the simpler public wording instead of the previous layered naming explanation
+- Type: docs-render-verification
+- as_of: 2026-04-09T20:36:00+02:00
 
 ## EV-2026-04-09-004: Release Readiness Hardening Verified
 

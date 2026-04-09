@@ -121,7 +121,7 @@ def is_template_style_repo(root: Path) -> bool:
     readme_text = readme.read_text(encoding="utf-8") if readme.exists() else ""
     project_state_text = project_state.read_text(encoding="utf-8") if project_state.exists() else ""
 
-    if readme_text.startswith("# State Drive Development Template"):
+    if readme_text.startswith("# State Driven Development Template"):
         return True
     if "type: documentation_and_workflow_template" in project_state_text:
         return True
@@ -211,9 +211,7 @@ def check_readme(path: Path) -> list[str]:
         "fresh coding-agent session",
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
-        "StateDD_Template",
-        "State Drive Development Template",
-        "Truth-First Project Operating System",
+        "State Driven Development Template",
         "docs/evidence/",
         "existing README preserved",
         "runtime identity",

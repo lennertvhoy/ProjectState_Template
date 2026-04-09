@@ -1,14 +1,15 @@
-# State Drive Development Template Status
+# State Driven Development Template Status
 
-**Updated At:** 2026-04-09 20:12 CEST
+**Updated At:** 2026-04-09 20:44 CEST
 **Execution Mode:** operating
 **Project State:** public_release_ready
 **Public URL:** not configured
 
 ## Snapshot
 
-- This repository is the public release-ready State Drive Development Template (`StateDD_Template`) for a truth-first AI-assisted workflow.
-- `README.md` is the canonical user guide and now distinguishes the template name from the operating-model name.
+- This repository is the public release-ready State Driven Development Template, and `README.md` is the canonical user guide for setup, bootstrap, and day-to-day use.
+- This repo is maintained as the template package itself, not as a downstream product repo that should dogfood every workflow ceremony on each small edit.
+- The public naming and contract wording have been simplified so the template reads as one clear thing instead of multiple layered labels.
 - The template now supports explicit `new` and `adopt` initialization paths, backlog IDs, a canonical final handoff template, and a bootstrap-gate validator.
 - The contract now also requires runtime-identity proof for user-facing acceptance, provides an acceptance-freeze ledger/template, and constrains negative-search wording.
 - Existing repo adoption preserves the existing README by default, supports `--dry-run`, and installs GitHub assets only when requested.

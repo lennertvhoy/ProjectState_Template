@@ -1,22 +1,22 @@
-# State Drive Development Template
+# State Driven Development Template
 
 This repository is a public template for technical projects that want explicit
 live state, evidence-backed claims, a short active queue, stable backlog IDs,
 and clean handoffs.
 
-It installs the `Truth-First Project Operating System`: a lightweight workflow
-for AI-assisted delivery built around durable state files, evidence logs,
-backlog slices, and clean handoffs between the human, the CTO lane, and the
-coding lane.
-
-Naming note: `StateDD_Template` is the repository/template slug used for
-distribution. `State Drive Development Template` is the public-facing template
-name.
+It gives you a lightweight workflow for AI-assisted delivery built around
+durable state files, evidence logs, backlog slices, and clean handoffs between
+the human, the CTO lane, and the coding lane.
 
 `README.md` is the primary user guide. `AGENTS.md`, `STATUS.md`,
 `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `NEXT_ACTIONS.md`, `BACKLOG.md`,
 `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md` are the
 durable workflow contract.
+
+Important: this repository is the template package, not a downstream product
+repo. It keeps enough state to validate and publish the template, but it should
+not be read as the model for how much day-to-day ceremony a downstream repo
+needs for every small maintenance edit.
 
 ## What You Get
 
@@ -42,8 +42,9 @@ durable workflow contract.
 - `bootstrap`: use this when the repo is new, inherited, or unclear. The goal is to establish a complete truthful operating baseline before implementation mode begins.
 - `operating`: use this only after bootstrap is complete. The project runs as a backlog-slice execution loop with short queues, explicit verification, and clean handoffs.
 
-This template repository is itself maintained in `operating` mode.
-Downstream repos created from it should start in `bootstrap`.
+This template repository is maintained lightly as the published template.
+Downstream repos created from it should start in `bootstrap` and use the full
+workflow directly.
 
 ## Quick Start
 
@@ -68,7 +69,7 @@ Typical local reset flow:
 rm -rf .git
 git init
 git add .
-git commit -m "Initialize project from StateDD_Template"
+git commit -m "Initialize project from template"
 git branch -M main
 git remote add origin <your-repo-url>
 git remote -v

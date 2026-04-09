@@ -4,6 +4,29 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - Public naming and README wording simplified
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** 2917dc0
+**Worktree:** dirty (uncommitted naming cleanup)
+
+### What changed
+- Renamed the public template text consistently to `State Driven Development Template`.
+- Removed the extra public-facing naming layer around the operating-model term and simplified the README opening.
+- Updated the generator, validator, state docs, fixtures, and evidence/history references so downstream repos inherit the simpler wording.
+
+### Verification
+- `python3 scripts/check_state_docs.py` -> pending
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> pending
+- `git diff --check` -> pending
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-012`
+
+### Follow-up
+1. If you want, the next pass can simplify more of the README tone beyond the opening and naming layer.
+
 ## 2026-04-09 - README opening rewritten for readability
 
 **Type:** docs_or_process_only
@@ -75,7 +98,7 @@ Use this file for dated session notes, verification summaries, and references to
 **Worktree:** dirty (uncommitted StateDD contract refresh)
 
 ### What changed
-- Renamed the public template identity to `State Drive Development Template` while making `StateDD_Template` the explicit repo/template slug and `Truth-First Project Operating System` the operating-model name.
+- Renamed the public template identity to `State Driven Development Template` and simplified the surrounding contract wording.
 - Refactored `scripts/init_template.py` to add explicit `new` and `adopt` subcommands, a non-destructive adoption path, `--dry-run`, optional README linking, and optional GitHub asset installation.
 - Added stable backlog IDs, a canonical final handoff template, an evidence-artifact placement convention, and a dedicated `--bootstrap-gate` validator path.
 - Reduced README/prompt drift by making the prompt files the source of truth and aligning the root contract, validator, and generated outputs around the same rules.

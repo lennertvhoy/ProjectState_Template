@@ -4,14 +4,9 @@ initialized_on: 2026-03-18
 last_updated: 2026-04-09
 ---
 
-# Truth-First Project Operating System
+# State Driven Development Template Contract
 
 **Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.
-
-Name note:
-- `StateDD_Template` is the template/repo slug.
-- `State Drive Development Template` is the human-facing template name.
-- `Truth-First Project Operating System` is the operating model installed by the template.
 
 This repository supports two modes:
 - `bootstrap` for discovery and baseline creation
@@ -47,8 +42,9 @@ These rules apply in all modes:
 
 This repo currently operates in: `operating`
 
-This template repository itself has already been bootstrapped and is maintained
-in operating mode.
+This repository ships the template itself. It keeps enough state to validate the
+template and publish it responsibly, but it is not meant to dogfood the full
+downstream workflow on every maintenance edit.
 
 Downstream repos created from this template should begin in `bootstrap` mode.
 

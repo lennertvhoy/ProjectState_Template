@@ -4,7 +4,7 @@ initialized_on: null
 last_updated: 2026-03-18
 ---
 
-# Truth-First Project Operating System
+# State Driven Development Template Contract
 
 This fixture is a sample project used to validate the bootstrap flow.
 

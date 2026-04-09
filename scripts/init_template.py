@@ -18,9 +18,8 @@ from pathlib import Path
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".cache"}
 
-TEMPLATE_SLUG = "StateDD_Template"
-TEMPLATE_NAME = "State Drive Development Template"
-OPERATING_MODEL_NAME = "Truth-First Project Operating System"
+TEMPLATE_NAME = "State Driven Development Template"
+CONTRACT_TITLE = "State Driven Development Template Contract"
 
 SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
@@ -67,14 +66,9 @@ initialized_on: {today}
 last_updated: {today}
 ---
 
-# {OPERATING_MODEL_NAME}
+# {CONTRACT_TITLE}
 
 **Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.
-
-Name note:
-- `{TEMPLATE_SLUG}` is the template/repo slug used by this workflow package.
-- `{TEMPLATE_NAME}` is the human-facing template name.
-- `{OPERATING_MODEL_NAME}` is the operating model that this template installs.
 
 This repository supports two modes:
 - `bootstrap` for discovery and baseline creation
@@ -383,9 +377,9 @@ current_state:
     status: observed
     mode: bootstrap
     summary: |
-      This repository is currently in bootstrap mode under the {TEMPLATE_NAME}
-      workflow. It should not flip to operating mode until the baseline state,
-      backlog, queue, and evidence are truthfully established.
+      This repository is currently in bootstrap mode. It should not flip to
+      operating mode until the baseline state, backlog, queue, and evidence are
+      truthfully established.
 
   project:
     name: {project_name}
@@ -849,7 +843,7 @@ def render_readme_section() -> str:
     return f"""
 ## StateDD Workflow
 
-This repo now uses the `{TEMPLATE_SLUG}` / {TEMPLATE_NAME} workflow.
+This repo now uses the {TEMPLATE_NAME} workflow.
 The workflow contract lives in `AGENTS.md`, the current truth lives in
 `STATUS.md` and `PROJECT_STATE.yaml`, and the canonical handoff shape lives in
 `prompts/FINAL_HANDOFF_TEMPLATE.md`.

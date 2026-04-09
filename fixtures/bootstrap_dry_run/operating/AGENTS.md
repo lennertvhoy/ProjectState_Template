@@ -4,7 +4,7 @@ initialized_on: 2026-03-18
 last_updated: 2026-03-18
 ---
 
-# Truth-First Project Operating System
+# State Driven Development Template Contract
 
 This fixture is the post-bootstrap operating snapshot.
 

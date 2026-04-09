@@ -3,7 +3,7 @@
 version: "statedd-template-v3"
 
 project:
-  name: StateDD_Template
+  name: State Driven Development Template
   short_name: statedd-template
   description: "Adapter defaults for the published template repository. Replace these values in downstream repos."
 

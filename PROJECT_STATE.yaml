@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-09T20:12:00+02:00
+  updated_at: 2026-04-09T20:44:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -35,12 +35,14 @@ current_state:
     status: observed
     mode: operating
     summary: |
-      This repository is the published State Drive Development Template
-      (`StateDD_Template`). The template repo itself runs in operating mode.
-      Downstream repos created from it should begin in bootstrap mode.
+      This repository is the published State Driven Development Template. It
+      keeps enough state to validate and publish the template, but it is not
+      meant to demonstrate full downstream workflow ceremony on every template
+      maintenance edit. Downstream repos created from it should begin in
+      bootstrap mode and use the full workflow directly.
 
   project:
-    name: State Drive Development Template
+    name: State Driven Development Template
     type: documentation_and_workflow_template
     lifecycle_stage: operating
     truth_summary: public_release_ready
@@ -186,7 +188,7 @@ current_state:
       acceptance_freeze_template: present
       evidence_placement_guidance: present
       negative_search_wording_guidance: present
-      naming_relationship_note: present
+      public_naming_simplified: present
       workflow_diagram: present
       failure_modes: present
       single_agent_fallback: present
