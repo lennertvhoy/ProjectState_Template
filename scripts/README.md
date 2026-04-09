@@ -1,6 +1,6 @@
 # Scripts
 
-This directory holds lightweight workflow helpers for the truth-first template.
+This directory holds lightweight workflow helpers for the State-Driven Development Template.
 
 All setup and usage instructions live in the repository root `README.md`.
 
@@ -12,7 +12,7 @@ All setup and usage instructions live in the repository root `README.md`.
 ## Usage
 
 ```bash
-python scripts/check_state_docs.py
+python3 scripts/check_state_docs.py
 ```
 
 Add project-specific scripts only after a real project is attached to this template.

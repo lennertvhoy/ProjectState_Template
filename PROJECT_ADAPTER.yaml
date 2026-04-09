@@ -1,10 +1,10 @@
 # PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
-version: "truth-first-template-v2"
+version: "state-driven-development-template-v2"
 
 project:
-  name: truth-first-template
-  short_name: truth-first-template
+  name: state-driven-development-template
+  short_name: sdd-template
   description: "Adapter defaults for the published template repository. Replace these values in downstream repos."
 
 vocabulary:

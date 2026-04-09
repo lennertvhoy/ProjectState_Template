@@ -2,6 +2,11 @@
 
 Use this when initializing a new or inherited repo.
 
+Rules:
+- ask only what is needed to unblock truthful bootstrap
+- do not invent architecture or maturity
+- preserve unknowns explicitly when the user cannot prove something yet
+
 Ask only the minimum strategic questions needed:
 
 1. What is this project in one sentence?

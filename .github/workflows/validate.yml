@@ -30,5 +30,17 @@ jobs:
           tmpdir="$(mktemp -d)"
           python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/demo"
           python3 scripts/check_state_docs.py "$tmpdir/demo"
+          mkdir -p "$tmpdir/nonempty-safe"
+          printf 'keep me\n' > "$tmpdir/nonempty-safe/local-note.txt"
+          python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/nonempty-safe" --overwrite
+          python3 scripts/check_state_docs.py "$tmpdir/nonempty-safe"
+          mkdir -p "$tmpdir/nonempty-conflict"
+          printf '# Existing README\n' > "$tmpdir/nonempty-conflict/README.md"
+          if python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite; then
+            echo "expected overwrite collision to fail without --force-overwrite"
+            exit 1
+          fi
+          python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite --force-overwrite
+          python3 scripts/check_state_docs.py "$tmpdir/nonempty-conflict"
           python3 scripts/init_template.py --name "Demo Project" --minimal --target "$tmpdir/minimal"
           python3 scripts/check_state_docs.py "$tmpdir/minimal"

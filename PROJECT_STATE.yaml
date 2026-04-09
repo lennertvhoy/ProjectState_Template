@@ -1,9 +1,9 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-09T17:44:58+02:00
+  updated_at: 2026-04-09T18:10:00+02:00
   updated_by: agent
-  version: "truth-first-template-v2"
+  version: "state-driven-development-template-v2"
 
 workflow:
   repo_mode: operating
@@ -29,21 +29,22 @@ current_state:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
     branch: main
-    head: 506535e
+    head: 2015ca7
 
   operating_mode:
     status: observed
     mode: operating
     summary: |
-      This repository is the published template distribution for the truth-first
-      project operating system. The template repo itself runs in operating mode.
-      Downstream repos created from it should begin in bootstrap mode.
+      This repository is the published State-Driven Development Template for a
+      truth-first AI-assisted workflow. The template repo itself runs in
+      operating mode. Downstream repos created from it should begin in
+      bootstrap mode.
 
   project:
-    name: Truth-First Project Operating System Template
+    name: State-Driven Development Template
     type: documentation_and_workflow_template
     lifecycle_stage: operating
-    truth_summary: public_template_release
+    truth_summary: public_release_ready
 
   environment:
     status: observed
@@ -77,7 +78,6 @@ current_state:
       - scripts
       - AGENTS.md
       - BACKLOG.md
-      - DESIGN.md
       - NEXT_ACTIONS.md
       - PROJECT_ADAPTER.yaml
       - PROJECT_DNA.yaml
@@ -95,8 +95,7 @@ current_state:
     deployment_assumptions:
       - distributed as a git-hosted template repository
       - no application runtime or service deployment is bundled
-    contradictions:
-      - release-hardening pass removed the broken placeholder contact link in issue-template config
+    contradictions: []
 
   evidence:
     status: active
@@ -106,7 +105,7 @@ current_state:
   documentation:
     status: observed
     primary_user_guide: README.md
-    onboarding_quality: hardened
+    onboarding_quality: release_ready
     live_docs:
       - README.md
       - AGENTS.md
@@ -120,11 +119,14 @@ current_state:
 
   handoff:
     last_session_date: 2026-04-09
-    git_head: 506535e
+    git_head: 2015ca7
     worktree_clean: false
 
   validation:
     status: observed
+    syntax_check:
+      command: python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py
+      result: passed
     root_hygiene_check:
       command: python3 scripts/check_state_docs.py
       result: passed
@@ -148,15 +150,26 @@ current_state:
     init_script:
       script: scripts/init_template.py
       default_target_dry_run: passed
+      nonempty_safe_overwrite_dry_run: passed
+      conflicting_target_guard: passed
+      conflicting_target_force_overwrite_dry_run: passed
       minimal_target_dry_run: passed
+      git_metadata_warning: observed
 
   publication:
     status: observed
     readme_instructions_complete: true
+    release_readiness: ready_for_public_use
     onboarding_instructions:
       startup_prompts: present
       first_session_checklist: present
       git_safety_warning: present
+      overwrite_collision_guard: present
+      cto_handoff_definition: present
+      cto_context_is_human_relayed: present
+      fresh_coding_agent_session_loop: present
+      tool_agnostic_agent_examples: present
+      naming_consistency: present
       workflow_diagram: present
       failure_modes: present
       single_agent_fallback: present
@@ -164,6 +177,7 @@ current_state:
     one_command_init:
       script: scripts/init_template.py
       supports_external_target: observed
+      existing_nonempty_target_guarded: observed
     minimal_mode:
       removes:
         - fixtures
@@ -175,5 +189,21 @@ current_state:
       issue_templates: present
       pr_template: present
       adapter_file: present
+
+  workflow_contract:
+    cto_lane:
+      repo_access: user_relayed_only
+      receives:
+        - coding_agent_final_handoff
+        - pasted_state_excerpt
+        - user_feedback
+        - screenshots_or_other_artifacts
+      notes: |
+        The CTO lane is commonly a separate chatbot and should not be assumed to
+        read repo files directly.
+    coding_agent_loop:
+      non_trivial_work_uses_fresh_session: true
+      final_handoff_required: true
+      final_handoff_destination: human_then_cto_lane
 
 active_problems: []

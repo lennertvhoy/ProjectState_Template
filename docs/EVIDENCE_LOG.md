@@ -27,6 +27,76 @@
 - Prefer durable artifact paths.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-04-09-004: Release Readiness Hardening Verified
+
+- File: README.md
+- File: AGENTS.md
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- File: .github/workflows/validate.yml
+- File: .github/pull_request_template.md
+- Title: Public release guidance, overwrite safety, and validation coverage reverified end to end
+- Source/System: test
+- Action: Revalidated the root docs and fixtures, exercised normal and minimal init targets, verified safe overwrite into a non-empty target, verified collision failure without `--force-overwrite`, verified forced overwrite succeeds intentionally, and observed the git-metadata warning path directly
+- Shows:
+  - the README is the canonical public guide and now explains safe initialization paths and CTO handoff expectations
+  - the init script prevents silent replacement of conflicting files in existing non-empty targets unless `--force-overwrite` is explicitly used
+  - initialized repos inherit the fuller operating contract and still pass the hygiene checks
+  - the validator and CI cover template assets, stale-reference drift, and the higher-risk init flows
+  - the init output warns when the target still contains `.git` metadata
+- Proves:
+  - the template is materially safer for public downstream use and accidental first-push or silent-overwrite hazards are reduced
+  - the documented onboarding and release contract is backed by direct verification rather than only prose claims
+- Type: docs-render-verification
+- as_of: 2026-04-09T17:59:30+02:00
+
+## EV-2026-04-09-005: Final Public Release Candidate Verified
+
+- File: README.md
+- File: STATUS.md
+- File: PROJECT_STATE.yaml
+- File: PROJECT_DNA.yaml
+- File: PROJECT_ADAPTER.yaml
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- File: fixtures/bootstrap_dry_run/bootstrap/PROJECT_STATE.yaml
+- File: fixtures/bootstrap_dry_run/operating/PROJECT_STATE.yaml
+- File: fixtures/messy_inherited_repo/bootstrap/PROJECT_STATE.yaml
+- Title: Final renamed release candidate revalidated end to end
+- Source/System: test
+- Action: Revalidated the root docs, fixtures, and full init matrix after aligning the public template name and internal version identifiers to `State-Driven Development Template`
+- Shows:
+  - the public-facing README and live state docs now use the same release name
+  - generated repos and published fixtures no longer leak the old template slug
+  - root, fixtures, normal init, safe overwrite, collision guard, forced overwrite, minimal mode, and git warning flows all still pass after the naming pass
+- Proves:
+  - the repository is internally consistent under the new public name
+  - the renamed template remains ready for public release without regressing the hardening checks
+- Type: docs-render-verification
+- as_of: 2026-04-09T18:04:26+02:00
+
+## EV-2026-04-09-006: CTO Handoff Model Corrected And Verified
+
+- File: README.md
+- File: AGENTS.md
+- File: prompts/CTO_SESSION_PROMPT.md
+- File: prompts/CODING_AGENT_PROMPT_GUIDE.md
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- Title: Human-relayed CTO handoff loop verified in repo and generated output
+- Source/System: test
+- Action: Corrected the workflow contract so the CTO lane is explicitly modeled as a separate chat that only sees pasted context, then revalidated the root repo and a freshly initialized copy
+- Shows:
+  - the workflow diagram now routes the coding-agent final handoff back through the human rather than directly to the CTO lane
+  - the docs and prompts now state that the CTO lane does not have direct repo access unless context is pasted into the chat
+  - the docs and prompts now require fresh coding-agent sessions for non-trivial loops and a final handoff for the next CTO pass
+  - initialized copies inherit the corrected workflow contract
+- Proves:
+  - the public template no longer implies a direct CTO-to-repo or CTO-to-coding-agent link that most chatbot-based CTO lanes do not have
+  - downstream users receive a clearer and more enforceable operating model for long-running AI-assisted work
+- Type: docs-render-verification
+- as_of: 2026-04-09T18:10:00+02:00
+
 ## EV-2026-04-09-001: Public Release Hardening Verified
 
 - File: README.md

@@ -1,6 +1,6 @@
 # BACKLOG - Strategic Roadmap
 
-**Product:** Truth-First Project Operating System Template
+**Product:** State-Driven Development Template
 **Execution Mode:** operating
 **Updated At:** 2026-04-09
 

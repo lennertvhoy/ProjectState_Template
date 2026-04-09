@@ -1,11 +1,11 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "truth-first-template-v2"
+version: "state-driven-development-template-v2"
 schema_version: "1.0"
 
 product:
-  name: "Truth-First Project Operating System Template"
-  one_sentence: "Public template for truth-first technical project delivery."
+  name: "State-Driven Development Template"
+  one_sentence: "Public template for truth-first AI-assisted technical project delivery."
   description: |
     This repository defines a reusable operating system for technical projects:
     stable rules, structured live state, concise status, active queue, roadmap,

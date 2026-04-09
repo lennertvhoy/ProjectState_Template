@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize a new repo from the truth-first template."""
+"""Initialize a new repo from the State-Driven Development Template."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
+IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".cache"}
 
 MANAGED_FILES = {
     "AGENTS.md": """---
@@ -48,12 +49,20 @@ Read `BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
 - end each implementation session with a handoff and hygiene check
+- `README.md` is the primary user guide for this published template
 
 ## Current Mode
 
 This repo currently operates in: `bootstrap`
 
 ## Bootstrap Mode
+
+### When Bootstrap Mode Applies
+Use bootstrap mode when:
+- the repo is new
+- state files do not yet exist
+- project truth is unclear
+- the user explicitly asks for initialization or re-baselining
 
 ### Bootstrap Goal
 Establish a truthful operating baseline for the project and then switch the repo to operating mode.
@@ -67,6 +76,39 @@ Establish a truthful operating baseline for the project and then switch the repo
 6. Create the initial backlog and next-actions queue
 7. Update this file to operating mode
 8. Record bootstrap completion in `PROJECT_STATE.yaml` and `WORKLOG.md`
+
+### Required System Investigation
+Inspect and record, when relevant:
+- OS, distro, kernel
+- shell and terminal environment
+- package manager(s)
+- language/runtime versions
+- container/runtime tooling
+- browser/debug tooling
+- active ports and services
+- git branch, head, and worktree state
+
+### Required Repo Investigation
+Inspect and record:
+- top-level structure
+- app/service boundaries
+- main manifests and config files
+- likely entrypoints
+- test setup
+- deployment assumptions
+- contradictions between code and docs
+
+### Bootstrap Output Files
+Create or initialize:
+- `AGENTS.md`
+- `STATUS.md`
+- `PROJECT_STATE.yaml`
+- `PROJECT_DNA.yaml`
+- `PROJECT_ADAPTER.yaml`
+- `NEXT_ACTIONS.md`
+- `BACKLOG.md`
+- `WORKLOG.md`
+- `docs/EVIDENCE_LOG.md`
 
 ### Bootstrap Honesty Rules
 If something is not proven, label it as:
@@ -83,15 +125,28 @@ If something is not proven, label it as:
 ### Operating Model
 The repo runs in a human-in-the-loop workflow:
 - CEO / human provides current state, requirements, priorities, and agent handoffs
-- CTO / product-architecture lead reconstructs truth, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
-- coding agent implements one coherent step with verification and evidence
+- CTO / product-architecture lead reconstructs truth from user-relayed handoffs and pasted context, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
+- coding agent implements one coherent step with verification and evidence, then ends with a final handoff for the CTO lane
 
 The CTO role can be handled by ChatGPT, Claude, Gemini, or another separate AI chat.
 Use `prompts/CTO_SESSION_PROMPT.md` as the startup prompt for that chat.
+Assume the CTO lane does not have direct repo access unless the human pastes
+state, screenshots, or other context into that chat.
 
 Use the CTO lane for all non-trivial work. Non-trivial means any task involving
 multiple files, architecture changes, user-facing behavior, integrations,
 migrations, state-structure changes, or work likely to take more than one prompt.
+Each non-trivial loop should normally start a fresh coding-agent session.
+
+### CTO Review Standard
+Every handoff must be reviewed for:
+- contradictions
+- overclaims
+- missing proof
+- brittle logic
+- wrong sequencing
+- architectural drift
+- weak product prioritization
 
 ### Coding-Agent Standard
 Implementation prompts must:
@@ -103,6 +158,12 @@ Implementation prompts must:
 - require state and doc updates when truth changes
 - require screenshots/evidence for user-facing work
 - require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
+- require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
+
+A valid CTO handoff should define the verified current state, one coherent scope,
+required verification, and the exit condition for the implementation step. If
+important context is not preserved in repo state files, the CTO prompt must
+restate it explicitly for the next coding-agent session.
 
 ## State Files
 
@@ -114,6 +175,18 @@ Implementation prompts must:
 - `BACKLOG.md` = strategic roadmap
 - `WORKLOG.md` = append-only history
 - `docs/EVIDENCE_LOG.md` = proof ledger
+
+## Handoff Requirements
+
+Every implementation session ends with:
+- what changed
+- what was directly verified
+- what remains partial or risky
+- git head
+- clean worktree status
+- evidence references
+- next recommended action
+- handoff wording suitable for direct paste into the CTO chat
 
 ## Hygiene Rules
 
@@ -158,7 +231,7 @@ Implementation prompts must:
 metadata:
   updated_at: {stamp}
   updated_by: agent
-  version: "truth-first-template-v2"
+  version: "state-driven-development-template-v2"
 
 workflow:
   repo_mode: bootstrap
@@ -193,7 +266,7 @@ current_state:
     status: observed
     mode: bootstrap
     summary: |
-      This repository has been initialized from the truth-first template.
+      This repository has been initialized from the State-Driven Development Template.
       It remains in bootstrap mode until the real project baseline is established.
   project:
     name: {project_name}
@@ -212,6 +285,7 @@ current_state:
     standard: browser_verification_or_test_output_for_user_facing_claims
   documentation:
     status: observed
+    primary_user_guide: README.md
     live_docs:
       - README.md
       - AGENTS.md
@@ -219,7 +293,6 @@ current_state:
       - PROJECT_STATE.yaml
       - PROJECT_DNA.yaml
       - PROJECT_ADAPTER.yaml
-      - DESIGN.md
       - NEXT_ACTIONS.md
       - BACKLOG.md
       - WORKLOG.md
@@ -229,7 +302,7 @@ active_problems: []
 """,
     "PROJECT_DNA.yaml": """# PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "truth-first-template-v2"
+version: "state-driven-development-template-v2"
 schema_version: "1.0"
 
 product:
@@ -247,11 +320,24 @@ truth_rules:
     project_state: PROJECT_STATE.yaml
     project_dna: PROJECT_DNA.yaml
     project_adapter: PROJECT_ADAPTER.yaml
-    design_system: DESIGN.md
     next_actions: NEXT_ACTIONS.md
     backlog: BACKLOG.md
     worklog: WORKLOG.md
     evidence_log: docs/EVIDENCE_LOG.md
+  hard_rules:
+    - no_fake_completeness
+    - no_history_in_live_state
+    - evidence_required_for_user_facing_claims
+    - clean_worktree_required_at_handoff
+    - active_queue_remains_short
+  claim_states:
+    observed: verified directly now
+    unknown: not yet determined from available evidence
+    reported: supported by prior evidence
+    blocked: verification currently prevented
+    assumed: provisional working assumption
+    stale: previously verified but aged out
+    invalid: known false or superseded
   repo_modes:
     bootstrap:
       purpose: discover truth and establish baseline state
@@ -259,10 +345,36 @@ truth_rules:
     operating:
       purpose: steady-state human-in-the-loop delivery
       exit_condition: none
+
+architecture:
+  control_plane:
+    description: Human and agent workflow coordination.
+  state_plane:
+    description: Structured current truth in PROJECT_STATE.yaml.
+  evidence_plane:
+    description: Artifact-backed proof for claims and verification.
+  history_plane:
+    description: Append-only record of completed work in WORKLOG.md.
+
+invariants:
+  - "STATUS.md stays short and current."
+  - "PROJECT_STATE.yaml stores structured live truth only."
+  - "PROJECT_DNA.yaml changes slowly."
+  - "NEXT_ACTIONS.md contains open work only."
+  - "WORKLOG.md is append-only."
+
+governance:
+  evidence_standard: browser_verification_or_test_output
+  hygiene_check: scripts/check_state_docs.py
+  update_policy:
+    status: when_current_truth_changes
+    project_state: when_structured_truth_changes
+    worklog: when_work_is_completed
+    evidence_log: when_user_facing_claims_are_verified
 """,
     "PROJECT_ADAPTER.yaml": """# PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
-version: "truth-first-template-v2"
+version: "state-driven-development-template-v2"
 
 project:
   name: {project_name}
@@ -336,11 +448,33 @@ def write_file(path: Path, content: str) -> None:
 
 
 def ignore_template_copy(_, names: list[str]) -> set[str]:
-    ignored = {".git", ".codex", ".playwright-mcp", "__pycache__", ".cache"}
-    return {name for name in names if name in ignored}
+    return {name for name in names if name in IGNORED_TEMPLATE_NAMES}
 
 
-def copy_template_tree(template_root: Path, target: Path, *, overwrite: bool) -> None:
+def should_ignore_path(path: Path) -> bool:
+    return any(part in IGNORED_TEMPLATE_NAMES for part in path.parts)
+
+
+def find_conflicting_template_paths(template_root: Path, target: Path) -> list[Path]:
+    conflicts: list[Path] = []
+    for source_path in template_root.rglob("*"):
+        if source_path.is_dir():
+            continue
+        relpath = source_path.relative_to(template_root)
+        if should_ignore_path(relpath):
+            continue
+        if (target / relpath).exists():
+            conflicts.append(relpath)
+    return sorted(conflicts)
+
+
+def copy_template_tree(
+    template_root: Path,
+    target: Path,
+    *,
+    overwrite: bool,
+    force_overwrite: bool,
+) -> None:
     if target != template_root:
         try:
             target.relative_to(template_root)
@@ -354,6 +488,18 @@ def copy_template_tree(template_root: Path, target: Path, *, overwrite: bool) ->
             "Target exists and is not empty. Re-run with --overwrite or choose an empty directory."
         )
 
+    if target.exists() and any(target.iterdir()) and target != template_root and overwrite and not force_overwrite:
+        conflicts = find_conflicting_template_paths(template_root, target)
+        if conflicts:
+            preview = ", ".join(str(path) for path in conflicts[:8])
+            if len(conflicts) > 8:
+                preview += ", ..."
+            raise SystemExit(
+                "Target contains files that would be overwritten by the template: "
+                f"{preview}. Review/back up those files first, then re-run with "
+                "--force-overwrite only if replacing them is intentional."
+            )
+
     if target != template_root:
         shutil.copytree(
             template_root,
@@ -364,12 +510,24 @@ def copy_template_tree(template_root: Path, target: Path, *, overwrite: bool) ->
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Initialize a truth-first template repo")
+    parser = argparse.ArgumentParser(description="Initialize a State-Driven Development Template repo")
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
     parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples")
-    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing files")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow initialization into an existing non-empty target when no template-path collisions are present",
+    )
+    parser.add_argument(
+        "--force-overwrite",
+        action="store_true",
+        help="Allow template files to replace conflicting files in an existing non-empty target",
+    )
     args = parser.parse_args()
+
+    if args.force_overwrite and not args.overwrite:
+        raise SystemExit("--force-overwrite requires --overwrite.")
 
     target = Path(args.target).resolve()
     now = dt.datetime.now(dt.timezone.utc).astimezone()
@@ -385,7 +543,12 @@ def main() -> int:
         "human_timestamp": human_timestamp,
     }
 
-    copy_template_tree(TEMPLATE_ROOT, target, overwrite=args.overwrite)
+    copy_template_tree(
+        TEMPLATE_ROOT,
+        target,
+        overwrite=args.overwrite,
+        force_overwrite=args.force_overwrite,
+    )
 
     for relpath, template in MANAGED_FILES.items():
         write_file(target / relpath, template.format(**values))
@@ -394,9 +557,11 @@ def main() -> int:
         shutil.rmtree(target / "fixtures", ignore_errors=True)
         (target / "docs" / "BOOTSTRAP_QUALITY.md").unlink(missing_ok=True)
 
-    print("Initialized truth-first template repo")
+    print("Initialized State-Driven Development Template repo")
     print(f"Target: {target}")
     print("Mode: bootstrap")
+    if (target / ".git").exists():
+        print("Warning: target contains git metadata. Verify git remote -v before first push.")
     print("Important: if this repo came from a direct clone/copy, remove .git and create your own remote before pushing.")
     print("Next:")
     print("1. Read README.md")

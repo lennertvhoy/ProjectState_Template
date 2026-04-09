@@ -117,15 +117,23 @@ Do not invent architecture or maturity.
 ### Operating Model
 The repo now runs in a human-in-the-loop workflow:
 - CEO / human provides current state, requirements, priorities, and agent handoffs
-- CTO / product-architecture lead reconstructs truth, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
-- coding agent implements one coherent step with verification and evidence
+- CTO / product-architecture lead reconstructs truth from user-relayed handoffs and pasted context, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
+- coding agent implements one coherent step with verification and evidence, then ends with a final handoff for the CTO lane
 
 The CTO role can be handled by ChatGPT, Claude, Gemini, or another separate AI chat.
 Use `prompts/CTO_SESSION_PROMPT.md` as the startup prompt for that chat.
+Assume the CTO lane does not have direct repo access unless the human pastes
+state, screenshots, or other context into that chat.
 
 Use the CTO lane for all non-trivial work. Non-trivial means any task involving
 multiple files, architecture changes, user-facing behavior, integrations,
 migrations, state-structure changes, or work likely to take more than one prompt.
+Each non-trivial loop should normally start a fresh coding-agent session.
+
+A valid CTO handoff should define the verified current state, one coherent scope,
+required verification, and the exit condition for the implementation step. If
+important context is not preserved in repo state files, the CTO prompt must
+restate it explicitly for the next coding-agent session.
 
 ### CTO Review Standard
 Every handoff must be reviewed for:
@@ -147,6 +155,7 @@ Implementation prompts must:
 - require state and doc updates when truth changes
 - require screenshots/evidence for user-facing work
 - require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
+- require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
 
 ## State Files
 
@@ -169,6 +178,7 @@ Every implementation session ends with:
 - clean worktree status
 - evidence references
 - next recommended action
+- handoff wording suitable for direct paste into the CTO chat
 
 ## Hygiene Rules
 

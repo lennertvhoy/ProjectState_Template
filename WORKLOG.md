@@ -4,6 +4,105 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - CTO handoff loop corrected to human-relayed model
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** 2015ca7
+**Worktree:** dirty (uncommitted release candidate)
+
+### What changed
+- Corrected the workflow contract in `README.md`, `AGENTS.md`, prompt helpers, and generated template output so the CTO lane is modeled as a separate chat that only sees human-pasted context.
+- Reworked the workflow diagram and operating-loop explanation to show the actual sequence: coding agent finishes, human pastes the final handoff into the CTO chat, CTO writes the next prompt, and the next coding-agent run starts as a fresh session.
+- Tightened the validator so the README must preserve the user-relayed CTO context model and the fresh-session rule.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-cto-handoff.68219B/demo` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-cto-handoff.68219B/demo` -> PASS
+- `rg -n "direct repo access|fresh coding-agent session|final handoff|CTO lane" /tmp/state-dd-cto-handoff.68219B/demo/AGENTS.md /tmp/state-dd-cto-handoff.68219B/demo/README.md /tmp/state-dd-cto-handoff.68219B/demo/prompts/CTO_SESSION_PROMPT.md /tmp/state-dd-cto-handoff.68219B/demo/prompts/CODING_AGENT_PROMPT_GUIDE.md` -> PASS
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-006`
+
+### Follow-up
+1. Commit this workflow-contract correction so the public repo matches the intended CTO handoff model.
+
+## 2026-04-09 - Final public release naming alignment and verification
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** 2015ca7
+**Worktree:** dirty (uncommitted release candidate)
+
+### What changed
+- Renamed the public template identity to `State-Driven Development Template` across the README, root state docs, helper scripts, and generated init output.
+- Aligned internal template version identifiers and public fixtures with the new template name so generated repos and example snapshots no longer leak the old slug.
+- Re-ran the full release checks after the naming pass to confirm the repo still satisfies the public release contract.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-final.PsUNTu/demo` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-final.PsUNTu/demo` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-final.PsUNTu/nonempty-safe --overwrite` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-final.PsUNTu/nonempty-safe` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-final.PsUNTu/nonempty-conflict --overwrite` -> expected failure
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-final.PsUNTu/nonempty-conflict --overwrite --force-overwrite` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-final.PsUNTu/nonempty-conflict` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --minimal --target /tmp/state-dd-release-final.PsUNTu/minimal` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-final.PsUNTu/minimal` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-gitwarn-final.Ai8xYa/repo --overwrite` -> PASS with git warning observed
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-005`
+
+### Follow-up
+1. Commit this final release candidate state if you want the public remote updated.
+
+## 2026-04-09 - Public release readiness audit and hardening pass
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** 2015ca7
+**Worktree:** dirty (uncommitted release-readiness pass)
+
+### What changed
+- Hardened `README.md` as the canonical public guide with safe initialization paths, tool-agnostic agent setup, and a clearer CTO handoff contract.
+- Strengthened `scripts/init_template.py` so initialized repos inherit the fuller operating contract and existing non-empty targets are collision-protected unless `--force-overwrite` is used intentionally.
+- Expanded `scripts/check_state_docs.py` and `.github/workflows/validate.yml` to enforce higher-signal release invariants and exercise normal, safe-overwrite, collision, force-overwrite, and minimal init flows.
+- Tightened supporting prompt and PR-template assets so the public repo surface matches the operating contract.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-audit.RkcyMh/demo` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-audit.RkcyMh/demo` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-audit.RkcyMh/nonempty-safe --overwrite` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-audit.RkcyMh/nonempty-safe` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-audit.RkcyMh/nonempty-conflict --overwrite` -> expected failure
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-release-audit.RkcyMh/nonempty-conflict --overwrite --force-overwrite` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-audit.RkcyMh/nonempty-conflict` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --minimal --target /tmp/state-dd-release-audit.RkcyMh/minimal` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-release-audit.RkcyMh/minimal` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-gitwarn.UIbs9d/repo --overwrite` -> PASS with git warning observed
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-004`
+
+### Follow-up
+1. Commit this release-readiness hardening pass if you want the remote repo updated.
+
 ## 2026-04-09 - Onboarding hardening for idiot-proof setup
 
 **Type:** docs_or_process_only  

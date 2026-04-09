@@ -1,4 +1,4 @@
-# Truth-First Project Operating System Template
+# State-Driven Development Template
 
 This repository is a public template for technical projects that want explicit
 live state, evidence-backed claims, a short active queue, and clean handoffs.
@@ -34,7 +34,7 @@ Repos created from the template should start in `bootstrap`.
 ## Quick Start
 
 1. Create a new repo from this template, or clone/copy it locally.
-2. Initialize the copy with your project name.
+2. Initialize the copy with your project name using the safe path that matches your situation.
 3. Set up an AI CTO agent in ChatGPT, Claude, Gemini, or another chatbot using `prompts/CTO_SESSION_PROMPT.md`.
 4. Read the files in the required order.
 5. Bootstrap the real project truth.
@@ -57,7 +57,7 @@ Typical local reset flow:
 rm -rf .git
 git init
 git add .
-git commit -m "Initialize project from truth-first template"
+git commit -m "Initialize project from state-driven development template"
 git branch -M main
 git remote add origin <your-repo-url>
 ```
@@ -109,7 +109,19 @@ If you want the shortest reliable setup path, do exactly this:
 - prints the next exact steps
 
 If `--target` points at an existing non-empty directory outside the current checkout,
-pass `--overwrite` to allow the script to write into it.
+use `--overwrite` for safe non-conflicting writes and `--force-overwrite` only
+after reviewing collisions you intentionally want to replace.
+
+## Safe Initialization Paths
+
+Use the init script differently depending on what already exists:
+
+1. Copied template checkout: run `python3 scripts/init_template.py --name "Your Project Name"` in place.
+2. Fresh empty directory: run `python3 scripts/init_template.py --name "Your Project Name" --target ../your-project`.
+3. Existing non-empty directory with no conflicting template paths: run `python3 scripts/init_template.py --name "Your Project Name" --target ../your-project --overwrite`.
+4. Existing non-empty directory with conflicting files such as `README.md`, `AGENTS.md`, or `.github/workflows/validate.yml`: stop, back up or review those files first, then use `--force-overwrite` only if you intentionally want the template versions to replace them.
+
+`--overwrite` is now collision-aware. It allows writing into a non-empty target only when the directory does not already contain conflicting template-managed paths. This protects inherited repos from accidentally losing an existing `README.md`, workflow file, or state doc.
 
 ## Required Read Order
 
@@ -130,16 +142,35 @@ This workflow works best when strategy and implementation are split.
 - The AI CTO agent is a separate chat used for reconstruction, critique, prioritization, and writing the next coding-agent prompt.
 - The coding agent is the tool that edits files, runs checks, and updates state.
 - The AI CTO agent can be ChatGPT, Claude, Gemini, or another capable chatbot. It does not need repo write access.
+- The coding agent can be Codex, Codex CLI, Claude Code, Gemini CLI, or another repo-writing tool that can read files, edit files, and run verification commands.
+
+Important constraint:
+
+- The CTO lane does not have direct access to the repo or state files unless you paste them into that chat.
+- The CTO lane only sees what the human relays: handoffs, state excerpts, screenshots, feedback, and extra context.
+- For non-trivial work, each loop should normally start a fresh coding-agent session rather than relying on old chat context.
 
 Recommended setup:
 
 1. Open a separate chat in your preferred chatbot.
 2. Paste the full contents of `prompts/CTO_SESSION_PROMPT.md` as the startup prompt.
-3. Give that chat repo context by pasting `STATUS.md`, `PROJECT_STATE.yaml`, and relevant handoffs when needed.
+3. Give that chat repo context by pasting `STATUS.md`, `PROJECT_STATE.yaml`, screenshots, feedback, and the latest coding-agent handoff when needed.
 4. Use that CTO chat to decide the next move and produce the next implementation prompt.
-5. Send that scoped prompt to your coding agent.
+5. Start a fresh coding-agent session with that scoped prompt.
 
 If you start directly with a coding agent and no CTO lane exists yet, the coding agent should stop and ask you to provide one before continuing with non-trivial work.
+
+A valid CTO handoff should usually include:
+
+- the current verified truth and any explicit unknowns
+- the single coherent scope for the next implementation step
+- constraints or risks that must not be ignored
+- required verification or evidence
+- an exit condition for the handoff
+
+If the CTO lane cannot produce that level of specificity yet, the next step is usually more investigation, not implementation.
+
+The CTO prompt should also remind the coding agent to follow `AGENTS.md` and to end with one final handoff message that can be pasted back into the CTO chat.
 
 The main operating explanation stays in this README. The prompt files are support material, not the primary documentation.
 
@@ -148,8 +179,9 @@ The main operating explanation stays in this README. The prompt files are suppor
 ```mermaid
 flowchart TD
     H[Human / CEO<br/>priorities, answers, approvals, final judgment]
-    CTO[AI CTO Agent<br/>reconstruct truth, critique handoffs,<br/>choose next move, write next coding prompt]
+    CTO[AI CTO Agent<br/>reconstruct truth from pasted context,<br/>critique handoffs, write next coding prompt]
     CA[Coding Agent<br/>read files, implement one scoped step,<br/>verify directly, update state]
+    NOTE[CTO chat only sees what the human pastes]
 
     subgraph Bootstrap["Bootstrap Phase"]
         B1[Investigate host + repo reality]
@@ -160,11 +192,12 @@ flowchart TD
     end
 
     subgraph Operating["Operating Phase"]
-        O1[CTO chooses next highest-leverage step]
-        O2[Coding agent executes one coherent change]
-        O3[Verification + evidence + state updates]
-        O4[CTO reviews handoff and decides next move]
-        O1 --> O2 --> O3 --> O4 --> O1
+        O1[Human pastes latest handoff + extra context into CTO chat]
+        O2[CTO writes next scoped coding-agent prompt]
+        O3[Human starts a fresh coding-agent session]
+        O4[Coding agent executes one coherent step]
+        O5[Final handoff + verification + state updates]
+        O1 --> O2 --> O3 --> O4 --> O5 --> O1
     end
 
     subgraph Files["Core Files And Their Function"]
@@ -177,10 +210,12 @@ flowchart TD
         EV[docs/EVIDENCE_LOG.md<br/>proof for user-facing claims]
     end
 
-    H -->|requirements, context, decisions| CTO
-    CTO -->|scoped prompt| CA
-    CA -->|handoff, verification, questions| CTO
-    CTO -->|tradeoffs, blockers, recommendations| H
+    H -->|pasted handoff, screenshots,<br/>feedback, decisions| CTO
+    CTO -->|next prompt, critique,<br/>recommended next move| H
+    H -->|fresh session + scoped prompt| CA
+    CA -->|final handoff, verification,<br/>open questions| H
+    H -.-> NOTE
+    NOTE -.-> CTO
 
     H --> B1
     B4 --> O1
@@ -193,18 +228,14 @@ flowchart TD
     CA -. appends .-> WL
     CA -. records proof .-> EV
 
-    CTO -. reviews .-> ST
-    CTO -. reviews .-> PS
-    CTO -. reviews .-> PD
-    CTO -. reviews .-> NA
-    CTO -. reviews .-> WL
 ```
 
 Read the diagram like this:
 
 - bootstrap is for establishing truthful baseline context
-- operating is the repeating loop between CTO agent and coding agent
-- the human stays in the loop for priorities, corrections, and approval
+- operating is a human-relayed loop between the CTO chat and fresh coding-agent sessions
+- the human stays in the loop for priorities, corrections, approvals, and context transfer
+- the CTO chat does not automatically see the repo or state files
 - the files are the durable memory layer that keeps the agents from drifting over time
 
 ### Copy-Paste CTO Startup Prompt
@@ -217,6 +248,9 @@ You are my CTO and product-architecture lead for this project.
 You are not the coding agent.
 Your job is to reconstruct truth, review handoffs critically, protect architecture, choose the next highest-leverage move, and write the next coding-agent prompt when appropriate.
 
+You do not have direct access to the repo or state files unless I paste them here.
+Assume you only know what I paste into this chat.
+
 Operate in a truth-first way:
 - do not overclaim
 - separate verified facts from assumptions
@@ -228,6 +262,18 @@ When I paste state, handoffs, or repo details:
 2. identify what is verified, partial, risky, or missing
 3. tell me the single best next move
 4. if appropriate, write the next coding-agent prompt
+
+When you write a coding-agent prompt, include:
+- the exact scope
+- the constraints that matter
+- the files or systems that should be inspected first
+- the required verification or evidence
+- the condition for being done
+- a reminder to follow `AGENTS.md`
+- a requirement to end with one final handoff message I can paste back to you
+
+Assume each coding-agent run is a fresh session.
+Restate any context that is not safely preserved in repo state files.
 ```
 
 ### Copy-Paste Coding-Agent Startup Prompt
@@ -254,6 +300,7 @@ Treat work as non-trivial if it includes any of:
 - anything likely to require more than one implementation prompt
 
 Do not overclaim. Verify directly. Update state/docs when truth changes.
+At the end of the session, stop and provide one final handoff message I can paste to the CTO agent.
 ```
 
 ### Copy-Paste Bootstrap Kickoff Prompt
@@ -298,6 +345,7 @@ Treat work as non-trivial if any of these are true:
 - it is likely to take more than one implementation prompt
 
 Tiny isolated edits can be done without a CTO pass, but anything ambiguous should default to using the CTO lane.
+If a task starts as trivial and expands beyond that boundary, pause and route it back through the CTO lane before continuing.
 
 ## Operating Loop
 
@@ -307,10 +355,10 @@ Once bootstrap is complete:
 2. Put structured live truth in `PROJECT_STATE.yaml`.
 3. Put stable architecture assumptions in `PROJECT_DNA.yaml`.
 4. Keep only open work in `NEXT_ACTIONS.md`.
-5. Have the AI CTO agent review state, handoffs, and the next move before large implementation steps.
-6. Move completed history to `WORKLOG.md`.
-7. Back every user-facing claim with direct evidence.
-8. End implementation sessions with a handoff and hygiene check.
+5. Paste the latest coding-agent handoff and any extra context into the CTO chat.
+6. Start a fresh coding-agent session from the new CTO prompt.
+7. Move completed history to `WORKLOG.md`.
+8. Back every user-facing claim with direct evidence and end implementation sessions with a final handoff.
 
 ## Common Failure Modes
 
@@ -318,6 +366,8 @@ These are the mistakes this template is meant to prevent:
 
 - the coding agent starts editing before reading the current state files
 - the project has no CTO lane, so implementation happens without critique or sequencing
+- the CTO chat is treated as if it can read the repo directly even though it only sees pasted context
+- the same coding-agent session is stretched too long and starts relying on stale chat memory
 - `STATUS.md` becomes stale and stops matching the repo
 - `NEXT_ACTIONS.md` turns into a backlog instead of a short active queue
 - user-facing claims are made without evidence in `docs/EVIDENCE_LOG.md`
@@ -335,7 +385,7 @@ If you only have one AI tool available:
 1. Start with a strategy-only pass.
 2. Ask it to reconstruct truth, identify risk, and write the next implementation prompt.
 3. Only after that, ask it to implement the scoped step.
-4. Before ending the session, make it do a separate handoff pass and update state/evidence.
+4. Before ending the session, make it produce a separate final handoff pass and update state/evidence.
 
 This is less reliable than using a separate CTO chat, but it is still better than jumping straight into implementation.
 
@@ -348,7 +398,7 @@ Minimal example for a new repo:
 3. Tell the CTO agent: "We are starting bootstrap for Acme API. Give me the first coding-agent prompt."
 4. Give that prompt to the coding agent.
 5. The coding agent reads the state files, inspects the repo, updates `STATUS.md` and `PROJECT_STATE.yaml`, and records unknowns honestly.
-6. The CTO agent reviews the resulting handoff and decides the next best step.
+6. Paste the coding agent's final handoff into the CTO chat so it can decide the next best step.
 7. Repeat until the repo has a truthful baseline, then switch to `operating`.
 
 If the coding agent tries to skip the CTO lane for non-trivial work, that is a workflow error, not a productivity shortcut.
@@ -384,7 +434,7 @@ python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
 ```
 
 GitHub Actions runs the same validation on pushes and pull requests. The workflow
-also dry-runs the initializer in both normal and `--minimal` modes.
+also dry-runs the initializer in normal, overwrite-safe, overwrite-collision, and `--minimal` modes.
 
 ## Repo Layout
 
@@ -408,5 +458,5 @@ Before you publish a repo created from this template:
 ## Notes
 
 - This template does not ship an application runtime.
-- The design guidance for repo-authored docs lives in `DESIGN.md`.
+- Supplemental rubric material lives in `docs/BOOTSTRAP_QUALITY.md` and `docs/README.md`.
 - The project is released under the MIT license in [`LICENSE`](LICENSE).
