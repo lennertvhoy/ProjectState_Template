@@ -246,8 +246,8 @@ existed.
 
 The loop is simple: bootstrap a truthful baseline, plan the next slice,
 execute and verify it, then hand off the next clean step. The planning chat
-only sees what the human pastes into it, while repo truth and evidence stay in
-the repository.
+only sees what the human pastes into it. Repo truth and evidence stay in the
+repository until the human or coding agent includes them in a handoff.
 
 ```mermaid
 flowchart TD
@@ -279,8 +279,8 @@ flowchart TD
     H -->|priorities, feedback, pasted context| P
     H -->|starts fresh session| C
     B3 --> S
-    S -->|current truth| P
-    E -->|proof for claims| P
+    S --> F
+    E --> F
     X -.-> P
 ```
 
