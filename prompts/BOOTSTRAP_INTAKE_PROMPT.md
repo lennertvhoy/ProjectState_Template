@@ -1,6 +1,7 @@
 # Bootstrap Intake Prompt
 
 Use this when initializing a new or inherited repo.
+This is typically the first question set the coding agent asks after reading the repo and noticing it is still in `bootstrap` mode.
 
 Rules:
 - ask only what is needed to unblock truthful bootstrap

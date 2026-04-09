@@ -97,6 +97,26 @@
 - Type: docs-render-verification
 - as_of: 2026-04-09T18:10:00+02:00
 
+## EV-2026-04-09-007: Bootstrap-First Onboarding Flow Verified
+
+- File: README.md
+- File: AGENTS.md
+- File: prompts/CODING_AGENT_PROMPT_GUIDE.md
+- File: prompts/BOOTSTRAP_INTAKE_PROMPT.md
+- File: scripts/init_template.py
+- Title: Bootstrap onboarding now starts with coding-agent intake
+- Source/System: test
+- Action: Corrected the onboarding flow so the first bootstrap step is the coding agent reading the repo contract and asking the minimum strategic questions, then revalidated the root repo and a freshly initialized copy
+- Shows:
+  - quick start and first-session guidance now start with the coding agent rather than the CTO lane
+  - the read-order section is clearly framed as an agent responsibility rather than a manual user task
+  - generated template copies inherit the corrected bootstrap-first flow
+- Proves:
+  - the public onboarding docs now match the intended real-world workflow for new bootstrap repos
+  - downstream users are less likely to start with the wrong actor or skip the initial bootstrap intake
+- Type: docs-render-verification
+- as_of: 2026-04-09T18:20:03+02:00
+
 ## EV-2026-04-09-001: Public Release Hardening Verified
 
 - File: README.md

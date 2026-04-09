@@ -1,6 +1,6 @@
 # State-Driven Development Template Status
 
-**Updated At:** 2026-04-09 18:10 CEST
+**Updated At:** 2026-04-09 18:20 CEST
 **Execution Mode:** operating
 **Project State:** public_release_ready
 **Public URL:** not configured
@@ -9,7 +9,7 @@
 
 - This repository is the public release-ready State-Driven Development Template for a truth-first AI-assisted workflow.
 - `README.md` is the canonical user guide for setup, bootstrap, and daily use.
-- The README now includes safe initialization paths, tool-agnostic CTO/coding-agent setup, an explicit CTO handoff definition, and the human-relayed CTO context model.
+- The README now includes safe initialization paths, tool-agnostic CTO/coding-agent setup, an explicit CTO handoff definition, the human-relayed CTO context model, and the correct bootstrap-first coding-agent intake flow.
 - The init flow now blocks accidental overwrite of conflicting files in existing non-empty targets unless `--force-overwrite` is used intentionally.
 - The validator and CI now enforce the template asset surface, stale-reference hygiene, and normal/overwrite/collision/minimal init flows, and the template name, structured state, fixtures, and generated init outputs now align on `State-Driven Development Template`.
 - The operating loop now explicitly requires fresh coding-agent sessions for non-trivial work and final handoffs that the human pastes back into the CTO chat.

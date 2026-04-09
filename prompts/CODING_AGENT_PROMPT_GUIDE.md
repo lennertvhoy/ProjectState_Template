@@ -6,6 +6,7 @@ When delegating implementation:
 - require the agent to confirm a CTO lane exists for non-trivial work; if not, it should ask the user to create one with `prompts/CTO_SESSION_PROMPT.md`
 - define non-trivial work as multiple-file changes, architecture/workflow changes, user-facing changes, integrations/migrations/state changes, or work likely to take more than one prompt
 - assume the coding-agent session is fresh unless the repo state files preserve the needed context
+- if the repo is clearly in bootstrap mode and project intent is still undefined, require the agent to ask the minimum strategic questions before implementation
 - anchor on verified current truth
 - define one coherent scope
 - include the current verified state and explicit unknowns when they matter

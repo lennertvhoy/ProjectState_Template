@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-09T18:10:00+02:00
+  updated_at: 2026-04-09T18:20:03+02:00
   updated_by: agent
   version: "state-driven-development-template-v2"
 
@@ -168,6 +168,7 @@ current_state:
       cto_handoff_definition: present
       cto_context_is_human_relayed: present
       fresh_coding_agent_session_loop: present
+      bootstrap_starts_with_coding_agent_intake: present
       tool_agnostic_agent_examples: present
       naming_consistency: present
       workflow_diagram: present
@@ -191,6 +192,11 @@ current_state:
       adapter_file: present
 
   workflow_contract:
+    bootstrap_start:
+      first_actor: coding_agent
+      coding_agent_reads_repo_contract: true
+      coding_agent_asks_minimum_strategic_questions: true
+      cto_lane_starts_after_initial_intake: true
     cto_lane:
       repo_access: user_relayed_only
       receives:

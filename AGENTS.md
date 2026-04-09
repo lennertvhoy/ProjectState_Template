@@ -129,6 +129,9 @@ Use the CTO lane for all non-trivial work. Non-trivial means any task involving
 multiple files, architecture changes, user-facing behavior, integrations,
 migrations, state-structure changes, or work likely to take more than one prompt.
 Each non-trivial loop should normally start a fresh coding-agent session.
+During initial bootstrap, an initial coding-agent session may come first so it
+can read the repo contract, detect `bootstrap` mode, and ask the minimum
+strategic questions needed before the CTO loop fully takes over.
 
 A valid CTO handoff should define the verified current state, one coherent scope,
 required verification, and the exit condition for the implementation step. If
@@ -156,6 +159,8 @@ Implementation prompts must:
 - require screenshots/evidence for user-facing work
 - require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
 - require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
+- require the coding agent, when starting in unclear bootstrap mode, to ask the
+  minimum strategic questions needed before implementation
 
 ## State Files
 

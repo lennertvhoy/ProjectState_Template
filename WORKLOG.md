@@ -4,6 +4,32 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - Bootstrap-first onboarding flow corrected
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** 59aba64
+**Worktree:** dirty (uncommitted onboarding correction)
+
+### What changed
+- Corrected `README.md` so quick start and first-session guidance now begin with the coding agent reading the repo contract and asking the initial bootstrap questions.
+- Clarified `AGENTS.md`, prompt guides, and generated init output so the first bootstrap intake happens before the CTO loop fully takes over.
+- Renamed the read-order section so it is clearly the coding agent's required read order rather than a manual task for the human.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-bootstrapflow.kzSOKa/demo` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-bootstrapflow.kzSOKa/demo` -> PASS
+- `rg -n "Start the coding agent|detect bootstrap mode|minimum strategic questions|Agent Read Order|bootstrap handoff" /tmp/state-dd-bootstrapflow.kzSOKa/demo/README.md /tmp/state-dd-bootstrapflow.kzSOKa/demo/AGENTS.md /tmp/state-dd-bootstrapflow.kzSOKa/demo/prompts/CODING_AGENT_PROMPT_GUIDE.md /tmp/state-dd-bootstrapflow.kzSOKa/demo/prompts/BOOTSTRAP_INTAKE_PROMPT.md` -> PASS
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-007`
+
+### Follow-up
+1. Commit this onboarding-flow correction if you want the remote repo updated again.
+
 ## 2026-04-09 - CTO handoff loop corrected to human-relayed model
 
 **Type:** docs_or_process_only

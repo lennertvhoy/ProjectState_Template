@@ -35,10 +35,10 @@ Repos created from the template should start in `bootstrap`.
 
 1. Create a new repo from this template, or clone/copy it locally.
 2. Initialize the copy with your project name using the safe path that matches your situation.
-3. Set up an AI CTO agent in ChatGPT, Claude, Gemini, or another chatbot using `prompts/CTO_SESSION_PROMPT.md`.
-4. Read the files in the required order.
-5. Bootstrap the real project truth.
-6. Run the validation script before handoff or publishing changes.
+3. Start your coding agent with the coding-agent startup prompt from this README.
+4. Let the coding agent read the repo files in order, notice that the repo is in `bootstrap` mode, and ask you the minimum strategic questions needed.
+5. After that first bootstrap intake, set up the CTO lane in ChatGPT, Claude, Gemini, or another chatbot using `prompts/CTO_SESSION_PROMPT.md`.
+6. Use the coding-agent handoff plus your answers as the first CTO input, then continue the normal loop.
 
 ## Git Safety
 
@@ -91,14 +91,15 @@ If you want the shortest reliable setup path, do exactly this:
 1. Run `python3 scripts/init_template.py --name "Your Project Name"`.
 2. If this repo came from a direct clone or copy, remove `.git` and create your own git remote before pushing.
 3. Open `README.md`.
-4. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot.
-5. Paste the CTO startup prompt from the section below into that chat.
-6. Open your coding tool and paste the coding-agent startup prompt from the section below.
-7. Make sure the coding agent reads `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
-8. Ask the CTO agent for the first bootstrap prompt.
-9. Give that scoped prompt to the coding agent.
-10. After changes, run `python3 scripts/check_state_docs.py`.
-11. Do not switch to `operating` mode until bootstrap truth is actually established.
+4. Open your coding tool and paste the coding-agent startup prompt from the section below.
+5. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
+6. If the repo is in `bootstrap` mode and project intent is still unclear, let the coding agent ask you the minimum strategic questions needed before implementation.
+7. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot.
+8. Paste the CTO startup prompt from the section below into that chat.
+9. Paste the coding agent's first bootstrap handoff plus your answers into the CTO chat.
+10. Start the next coding-agent session from the CTO prompt.
+11. After changes, run `python3 scripts/check_state_docs.py`.
+12. Do not switch to `operating` mode until bootstrap truth is actually established.
 
 ## What The Init Script Does
 
@@ -123,9 +124,9 @@ Use the init script differently depending on what already exists:
 
 `--overwrite` is now collision-aware. It allows writing into a non-empty target only when the directory does not already contain conflicting template-managed paths. This protects inherited repos from accidentally losing an existing `README.md`, workflow file, or state doc.
 
-## Required Read Order
+## Agent Read Order
 
-Start every session by reading:
+The coding agent should start every repo session by reading:
 
 1. `AGENTS.md`
 2. `STATUS.md`
@@ -133,6 +134,7 @@ Start every session by reading:
 4. `PROJECT_DNA.yaml`
 5. `NEXT_ACTIONS.md`
 
+The human does not need to do this manual read-order step before the first bootstrap intake.
 Read `BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
 
 ## Setting Up The AI CTO Agent
@@ -149,6 +151,7 @@ Important constraint:
 - The CTO lane does not have direct access to the repo or state files unless you paste them into that chat.
 - The CTO lane only sees what the human relays: handoffs, state excerpts, screenshots, feedback, and extra context.
 - For non-trivial work, each loop should normally start a fresh coding-agent session rather than relying on old chat context.
+- During initial bootstrap, the coding agent should usually go first: it reads the repo contract, sees `bootstrap` mode, and asks the minimum strategic questions needed before the CTO loop fully takes over.
 
 Recommended setup:
 
@@ -290,6 +293,9 @@ Read these files first in order:
 
 Then follow the repo contract exactly.
 
+If the repo is in bootstrap mode and the project intent is still unclear, do not start implementing yet.
+First ask the user only the minimum strategic questions needed to establish what the project should become.
+
 If no CTO lane or CTO handoff exists yet and the task is non-trivial, stop and ask me to provide one before continuing.
 
 Treat work as non-trivial if it includes any of:
@@ -308,11 +314,11 @@ At the end of the session, stop and provide one final handoff message I can past
 Use this with the CTO agent when starting a new repo or inherited repo:
 
 ```text
-We are starting bootstrap for this repository.
+We already completed the first bootstrap intake with the coding agent for this repository.
 
-Help me establish truthful baseline state.
-Ask only the minimum strategic questions needed.
-Then produce the best next coding-agent prompt for the first bootstrap step.
+Use the pasted handoff and my answers to reconstruct truthful baseline state.
+If anything critical is still missing, ask only the minimum follow-up questions needed.
+Then produce the best next coding-agent prompt for the next bootstrap step.
 ```
 
 ## Bootstrap Procedure
@@ -355,7 +361,7 @@ Once bootstrap is complete:
 2. Put structured live truth in `PROJECT_STATE.yaml`.
 3. Put stable architecture assumptions in `PROJECT_DNA.yaml`.
 4. Keep only open work in `NEXT_ACTIONS.md`.
-5. Paste the latest coding-agent handoff and any extra context into the CTO chat.
+5. Paste the latest coding-agent final handoff and any extra context into the CTO chat.
 6. Start a fresh coding-agent session from the new CTO prompt.
 7. Move completed history to `WORKLOG.md`.
 8. Back every user-facing claim with direct evidence and end implementation sessions with a final handoff.
@@ -365,6 +371,8 @@ Once bootstrap is complete:
 These are the mistakes this template is meant to prevent:
 
 - the coding agent starts editing before reading the current state files
+- the user is told to manually read the repo state instead of letting the coding agent do the required read order
+- the CTO lane is started before the first bootstrap intake even though the coding agent should first read the repo and ask the minimum strategic questions
 - the project has no CTO lane, so implementation happens without critique or sequencing
 - the CTO chat is treated as if it can read the repo directly even though it only sees pasted context
 - the same coding-agent session is stretched too long and starts relying on stale chat memory
@@ -394,11 +402,11 @@ This is less reliable than using a separate CTO chat, but it is still better tha
 Minimal example for a new repo:
 
 1. Run `python3 scripts/init_template.py --name "Acme API"`.
-2. Create a CTO chat and paste the CTO startup prompt from this README.
-3. Tell the CTO agent: "We are starting bootstrap for Acme API. Give me the first coding-agent prompt."
-4. Give that prompt to the coding agent.
-5. The coding agent reads the state files, inspects the repo, updates `STATUS.md` and `PROJECT_STATE.yaml`, and records unknowns honestly.
-6. Paste the coding agent's final handoff into the CTO chat so it can decide the next best step.
+2. Start the coding agent with the coding-agent startup prompt from this README.
+3. The coding agent reads the state files, notices `bootstrap` mode, inspects the repo, and asks you only the minimum strategic questions needed.
+4. Create a CTO chat and paste the CTO startup prompt from this README.
+5. Paste the coding agent's bootstrap handoff plus your answers into the CTO chat.
+6. Give the CTO agent's next scoped prompt to a fresh coding-agent session.
 7. Repeat until the repo has a truthful baseline, then switch to `operating`.
 
 If the coding agent tries to skip the CTO lane for non-trivial work, that is a workflow error, not a productivity shortcut.

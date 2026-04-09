@@ -566,9 +566,9 @@ def main() -> int:
     print("Next:")
     print("1. Read README.md")
     print("2. Fix git ownership first if needed: remove .git, init your own repo, and verify git remote -v")
-    print("3. Create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
-    print("4. Review AGENTS.md")
-    print("5. Fill in PROJECT_ADAPTER.yaml if needed")
+    print("3. Start the coding agent with the startup prompt from README.md")
+    print("4. Let the coding agent read the repo files, detect bootstrap mode, and ask the minimum strategic questions")
+    print("5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
     print(f"6. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
     print("7. Switch repo_mode to operating when baseline truth is established")
     return 0
