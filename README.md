@@ -245,20 +245,43 @@ existed.
 ## Workflow Diagram
 
 The loop is simple: bootstrap a truthful baseline, plan the next slice,
-execute and verify it, then hand off the next clean step.
+execute and verify it, then hand off the next clean step. The planning chat
+only sees what the human pastes into it, while repo truth and evidence stay in
+the repository.
 
 ```mermaid
 flowchart TD
     H[Human]
-    CTO[Planning chat / CTO lane]
-    CA[Coding agent]
-    E[Evidence and handoff]
+    P[Planning Chat / AI CTO]
+    C[Coding Agent]
+    S[Repo Truth<br/>STATUS.md<br/>PROJECT_STATE.yaml<br/>NEXT_ACTIONS.md]
+    E[Evidence<br/>docs/EVIDENCE_LOG.md<br/>Acceptance freezes]
+    F[Final Handoff]
+    N[Next Slice]
+    X[Planning chat only sees pasted context]
 
-    B[Bootstrap baseline] --> O[Operating loop]
-    H --> CTO
-    CTO --> CA
-    CA --> E
-    E --> H
+    subgraph B[Bootstrap]
+        B1[Investigate repo and runtime]
+        B2[Separate observed facts from assumptions]
+        B3[Build truthful baseline]
+        B1 --> B2 --> B3
+    end
+
+    subgraph O[Operating]
+        P -->|scoped prompt| C
+        C -->|updates| S
+        C -->|verification| E
+        C -->|paste-ready summary| F
+        F -->|pasted back by human| P
+        F --> N
+    end
+
+    H -->|priorities, feedback, pasted context| P
+    H -->|starts fresh session| C
+    B3 --> S
+    S -->|current truth| P
+    E -->|proof for claims| P
+    X -.-> P
 ```
 
 ## Non-Trivial Work
