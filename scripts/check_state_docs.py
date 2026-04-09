@@ -27,7 +27,6 @@ RULES = {
 README_REQUIRED_SECTIONS = [
     "## Quick Start",
     "## Git Safety",
-    "## First 10 Minutes",
     "## Setup Paths",
     "## Adopt An Existing Repo",
     "## Agent Read Order",

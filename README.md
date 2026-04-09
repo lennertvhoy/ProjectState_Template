@@ -43,12 +43,15 @@ workflow directly.
 
 ## Quick Start
 
-1. Choose whether you are creating a new repo from the template or adopting an existing repo.
-2. Run the matching `scripts/init_template.py` command from the sections below.
-3. Start the coding agent and let it read the repo contract in the required order.
-4. During bootstrap, let the coding agent ask the minimum strategic questions first.
-5. Then start a separate CTO lane in ChatGPT, Claude, Gemini, or another chatbot with `prompts/CTO_SESSION_PROMPT.md`.
-6. Do not enter operating mode until the state files, active queue, evidence, and a real `BACKLOG.md`, not a placeholder, exist.
+1. Run either `python3 scripts/init_template.py new --name "Your Project"` or `python3 scripts/init_template.py adopt --name "Your Project"`.
+2. If the repo came from a direct clone or copy, remove `.git` and verify `git remote -v` before any push.
+3. Start your coding tool with `prompts/CODING_AGENT_PROMPT_GUIDE.md`.
+4. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
+5. If the repo is still in `bootstrap`, let the coding agent ask the minimum strategic questions first.
+6. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot and paste `prompts/CTO_SESSION_PROMPT.md`.
+7. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the first paste-ready coding-agent handoff.
+8. Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before accepting user-facing work or investigating a visual regression.
+9. Run `python3 scripts/check_state_docs.py` during the loop and `python3 scripts/check_state_docs.py --bootstrap-gate` before flipping to operating mode.
 
 ## Git Safety
 
@@ -69,22 +72,6 @@ git branch -M main
 git remote add origin <your-repo-url>
 git remote -v
 ```
-
-## First 10 Minutes
-
-If you want the shortest reliable setup path:
-
-1. Run either `python3 scripts/init_template.py new --name "Your Project"` or `python3 scripts/init_template.py adopt --name "Your Project"`.
-2. If the repo came from a direct clone or copy, remove `.git` and verify `git remote -v` before any push.
-3. Open `README.md`.
-4. Start your coding tool with `prompts/CODING_AGENT_PROMPT_GUIDE.md`.
-5. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
-6. If the repo is in `bootstrap` mode and intent is still unclear, let the coding agent ask only the minimum strategic questions needed.
-7. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot.
-8. Paste `prompts/CTO_SESSION_PROMPT.md` into that chat.
-9. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the first paste-ready coding-agent handoff.
-10. Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before accepting user-facing work or investigating a visual regression.
-11. Run `python3 scripts/check_state_docs.py` during the loop and `python3 scripts/check_state_docs.py --bootstrap-gate` before flipping to operating mode.
 
 ## Setup Paths
 
