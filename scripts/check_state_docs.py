@@ -19,6 +19,18 @@ RULES = {
     "BACKLOG.md": {"max_lines": 250, "max_now_items": 10},
 }
 
+README_REQUIRED_SECTIONS = [
+    "## Quick Start",
+    "## Git Safety",
+    "## First 10 Minutes",
+    "## Setting Up The AI CTO Agent",
+    "## Workflow Diagram",
+    "## Non-Trivial Work",
+    "## Common Failure Modes",
+    "## Single-Agent Fallback",
+    "## Example Flow",
+]
+
 
 def count_nonempty_lines(text: str) -> int:
     return sum(1 for line in text.splitlines() if line.strip())
@@ -82,10 +94,30 @@ def check_file(path: Path) -> list[str]:
     return issues
 
 
+def check_readme(path: Path) -> list[str]:
+    text = path.read_text()
+    issues: list[str] = []
+
+    for required in README_REQUIRED_SECTIONS:
+        if required not in text:
+            issues.append(f"Missing required README section: {required}")
+
+    if "prompts/CTO_SESSION_PROMPT.md" not in text:
+        issues.append("README must reference prompts/CTO_SESSION_PROMPT.md")
+
+    if "ChatGPT, Claude, Gemini" not in text:
+        issues.append("README must explicitly mention ChatGPT, Claude, Gemini")
+
+    if "rm -rf .git" not in text or "git remote -v" not in text:
+        issues.append("README must explain how to remove inherited git metadata and verify the remote before first push")
+
+    return issues
+
+
 def main() -> int:
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT
     print("============================================================")
-    print("STATE DOCUMENTATION HYGIENE CHECK")
+    print("DOCUMENTATION HYGIENE CHECK")
     print("============================================================")
 
     failures: list[tuple[str, list[str]]] = []
@@ -98,9 +130,24 @@ def main() -> int:
         if issues:
             failures.append((filename, issues))
 
+    readme = root / "README.md"
+    if readme.exists():
+        issues = check_readme(readme)
+        if issues:
+            failures.append(("README.md", issues))
+
     for filename in RULES:
         print(f"\n📄 {filename}")
         current = next((issues for name, issues in failures if name == filename), [])
+        if current:
+            for issue in current:
+                print(f"  ❌ {issue}")
+        else:
+            print("  ✅ All checks passed")
+
+    if readme.exists():
+        print("\n📄 README.md")
+        current = next((issues for name, issues in failures if name == "README.md"), [])
         if current:
             for issue in current:
                 print(f"  ❌ {issue}")

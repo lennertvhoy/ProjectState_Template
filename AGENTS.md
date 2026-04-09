@@ -120,6 +120,13 @@ The repo now runs in a human-in-the-loop workflow:
 - CTO / product-architecture lead reconstructs truth, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
 - coding agent implements one coherent step with verification and evidence
 
+The CTO role can be handled by ChatGPT, Claude, Gemini, or another separate AI chat.
+Use `prompts/CTO_SESSION_PROMPT.md` as the startup prompt for that chat.
+
+Use the CTO lane for all non-trivial work. Non-trivial means any task involving
+multiple files, architecture changes, user-facing behavior, integrations,
+migrations, state-structure changes, or work likely to take more than one prompt.
+
 ### CTO Review Standard
 Every handoff must be reviewed for:
 - contradictions
@@ -139,6 +146,7 @@ Implementation prompts must:
 - require direct verification
 - require state and doc updates when truth changes
 - require screenshots/evidence for user-facing work
+- require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
 
 ## State Files
 

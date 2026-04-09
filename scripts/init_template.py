@@ -86,6 +86,24 @@ The repo runs in a human-in-the-loop workflow:
 - CTO / product-architecture lead reconstructs truth, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
 - coding agent implements one coherent step with verification and evidence
 
+The CTO role can be handled by ChatGPT, Claude, Gemini, or another separate AI chat.
+Use `prompts/CTO_SESSION_PROMPT.md` as the startup prompt for that chat.
+
+Use the CTO lane for all non-trivial work. Non-trivial means any task involving
+multiple files, architecture changes, user-facing behavior, integrations,
+migrations, state-structure changes, or work likely to take more than one prompt.
+
+### Coding-Agent Standard
+Implementation prompts must:
+- require reading `AGENTS.md` first
+- anchor on current verified truth
+- define one coherent scope
+- forbid overclaiming
+- require direct verification
+- require state and doc updates when truth changes
+- require screenshots/evidence for user-facing work
+- require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
+
 ## State Files
 
 - `STATUS.md` = short human truth snapshot
@@ -379,12 +397,15 @@ def main() -> int:
     print("Initialized truth-first template repo")
     print(f"Target: {target}")
     print("Mode: bootstrap")
+    print("Important: if this repo came from a direct clone/copy, remove .git and create your own remote before pushing.")
     print("Next:")
     print("1. Read README.md")
-    print("2. Review AGENTS.md")
-    print("3. Fill in PROJECT_ADAPTER.yaml if needed")
-    print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py")
-    print("5. Switch repo_mode to operating when baseline truth is established")
+    print("2. Fix git ownership first if needed: remove .git, init your own repo, and verify git remote -v")
+    print("3. Create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
+    print("4. Review AGENTS.md")
+    print("5. Fill in PROJECT_ADAPTER.yaml if needed")
+    print(f"6. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
+    print("7. Switch repo_mode to operating when baseline truth is established")
     return 0
 
 

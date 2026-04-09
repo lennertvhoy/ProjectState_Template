@@ -45,6 +45,43 @@
 - Type: docs-render-verification
 - as_of: 2026-04-09T17:24:48+02:00
 
+## EV-2026-04-09-002: Onboarding Hardening Verified
+
+- File: README.md
+- File: scripts/check_state_docs.py
+- File: scripts/init_template.py
+- Title: Idiot-proof onboarding flow validated for root and initialized copies
+- Source/System: test
+- Action: Validated the new README onboarding sections, then dry-ran the init flow again for normal and minimal targets
+- Shows:
+  - the README contains first-session instructions and copy-paste prompts
+  - the validator now checks for the required onboarding sections
+  - initialized repos inherit the new CTO setup guidance
+  - both normal and minimal init targets still pass the documentation checks
+- Proves:
+  - the template onboarding is materially harder to misuse or start incorrectly
+- Type: docs-render-verification
+- as_of: 2026-04-09T17:42:06+02:00
+
+## EV-2026-04-09-003: Git Safety And Workflow Diagram Verified
+
+- File: README.md
+- File: scripts/check_state_docs.py
+- File: scripts/init_template.py
+- Title: Git ownership warning and workflow diagram validated
+- Source/System: test
+- Action: Revalidated the root README, then dry-ran normal and minimal init targets to confirm they inherit the git-safety warning and pass documentation checks
+- Shows:
+  - the README warns users to remove inherited `.git` metadata or create a fresh repo before first push
+  - the README includes a mermaid workflow diagram covering bootstrap, operating, the CTO/coding-agent loop, and the file memory layer
+  - the init script now prints the same git-ownership warning
+  - downstream initialized copies still pass the documentation validator
+- Proves:
+  - the public template is significantly less likely to cause accidental pushes to the template repository
+  - the workflow is now easier to understand visually for first-time users
+- Type: docs-render-verification
+- as_of: 2026-04-09T17:44:58+02:00
+
 ## EV-2026-03-18-001: Bootstrap Dry-Run Fixture Validated
 
 - File: fixtures/bootstrap_dry_run/bootstrap/STATUS.md

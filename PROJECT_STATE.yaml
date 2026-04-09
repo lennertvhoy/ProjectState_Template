@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-09T17:26:16+02:00
+  updated_at: 2026-04-09T17:44:58+02:00
   updated_by: agent
   version: "truth-first-template-v2"
 
@@ -106,6 +106,7 @@ current_state:
   documentation:
     status: observed
     primary_user_guide: README.md
+    onboarding_quality: hardened
     live_docs:
       - README.md
       - AGENTS.md
@@ -152,6 +153,14 @@ current_state:
   publication:
     status: observed
     readme_instructions_complete: true
+    onboarding_instructions:
+      startup_prompts: present
+      first_session_checklist: present
+      git_safety_warning: present
+      workflow_diagram: present
+      failure_modes: present
+      single_agent_fallback: present
+      example_flow: present
     one_command_init:
       script: scripts/init_template.py
       supports_external_target: observed

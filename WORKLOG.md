@@ -4,6 +4,59 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - Onboarding hardening for idiot-proof setup
+
+**Type:** docs_or_process_only  
+**Status:** COMPLETE  
+**Git Head:** 986b314  
+**Worktree:** dirty (uncommitted onboarding pass)
+
+### What changed
+- Expanded `README.md` with a first-session checklist, copy-paste startup prompts, a non-trivial-work definition, common failure modes, a single-agent fallback, and a concrete example flow.
+- Tightened the operating contract so coding agents must ask for a CTO lane before non-trivial work if one does not already exist.
+- Hardened the initializer and validator so downstream repos inherit the same onboarding expectations.
+
+### Verification
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-template-onboarding.dYoK7S` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-template-onboarding.dYoK7S` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --minimal --target /tmp/state-dd-template-onboarding-min.zb4SwI` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-template-onboarding-min.zb4SwI` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-002`
+
+### Follow-up
+1. Commit and push the onboarding hardening pass if you want the remote repo updated.
+
+## 2026-04-09 - Git safety and workflow diagram added
+
+**Type:** docs_or_process_only  
+**Status:** COMPLETE  
+**Git Head:** 986b314  
+**Worktree:** dirty (uncommitted onboarding pass)
+
+### What changed
+- Added a mermaid workflow diagram to `README.md` showing bootstrap, operating, the human-in-the-loop oversight, the CTO/coding-agent loop, and the role of the core files.
+- Added an explicit git-safety section warning users to remove inherited `.git` metadata or create a fresh repo before first push.
+- Extended the validator and initializer output so downstream repos inherit the same warning and onboarding expectations.
+
+### Verification
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-template-gitsafe.3BA5k0` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-template-gitsafe.3BA5k0` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --minimal --target /tmp/state-dd-template-gitsafe-min.cLKxPS` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-template-gitsafe-min.cLKxPS` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-003`
+
+### Follow-up
+1. Commit and push the git-safety and diagram pass if you want the remote repo updated.
+
 ## 2026-04-09 - Public release hardening and README consolidation
 
 **Type:** docs_or_process_only  
