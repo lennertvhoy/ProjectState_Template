@@ -1,13 +1,15 @@
 # Bootstrap Intake Prompt
 
 Use this when initializing a new or inherited repo.
-This is typically the first question set the coding agent asks after reading the repo and noticing it is still in `bootstrap` mode.
+This is typically the first question set the coding agent asks after reading the
+repo and noticing it is still in `bootstrap` mode.
 
 Rules:
 - ask only what is needed to unblock truthful bootstrap
 - do not invent architecture or maturity
 - preserve unknowns explicitly when the user cannot prove something yet
 - treat bootstrap as a broader discovery and planning phase, not a quick prelude to coding
+- do not pretend placeholder backlog items are enough to leave bootstrap
 
 Ask only the minimum strategic questions needed:
 

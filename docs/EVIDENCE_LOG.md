@@ -25,7 +25,53 @@
 
 - Link evidence to the specific claim it supports.
 - Prefer durable artifact paths.
+- Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
+
+## EV-2026-04-09-009: StateDD Adoption And Bootstrap-Gate Contract Updated
+
+- File: README.md
+- File: AGENTS.md
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- File: prompts/FINAL_HANDOFF_TEMPLATE.md
+- Title: Naming cleanup, adopt flow, backlog IDs, and bootstrap gate added to the public template contract
+- Source/System: test
+- Action: Updated the live contract, prompt files, initializer, and validator so generated repos inherit the new naming model, explicit `new`/`adopt` flows, backlog-ID linkage, canonical handoff template, and bootstrap-gate checks
+- Shows:
+  - the README now distinguishes `StateDD_Template`, `State Drive Development Template`, and `Truth-First Project Operating System`
+  - the initializer now supports a first-class `adopt` path with `--dry-run`, optional README linking, and optional GitHub asset installation
+  - the validator now checks backlog-ID linkage and exposes a dedicated `--bootstrap-gate`
+  - the prompt files now own the canonical prompt text, reducing README drift
+- Proves:
+  - the remaining workflow contradictions identified in the review have been addressed in the template contract surface
+  - downstream repos can now adopt the workflow without blindly copying the full template scaffold
+- Type: docs-render-verification
+- as_of: 2026-04-09T19:20:00+02:00
+
+## EV-2026-04-09-010: Runtime Identity And Acceptance Freeze Guardrails Added
+
+- File: README.md
+- File: AGENTS.md
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- File: prompts/RUNTIME_IDENTITY_CHECKLIST.md
+- File: prompts/ACCEPTANCE_FREEZE_TEMPLATE.md
+- File: prompts/FINAL_HANDOFF_TEMPLATE.md
+- File: docs/ACCEPTANCE_FREEZES.md
+- Title: Runtime truth, acceptance truth, and wording discipline guardrails added to the template
+- Source/System: test
+- Action: Updated the contract, prompt files, initializer, and validator so downstream repos inherit runtime-identity proof requirements, acceptance freezes, and stricter negative-search wording discipline
+- Shows:
+  - user-facing acceptance now requires runtime identity proof instead of screenshots alone
+  - accepted milestones can now be frozen to repo truth, runtime truth, and evidence truth
+  - negative searches are explicitly constrained to `not found`, `not currently locatable`, or `not proven`
+  - the adopt path now installs the same runtime-identity and acceptance-freeze assets as the full template path
+- Proves:
+  - the template now directly addresses the source/runtime/acceptance drift failure mode that previously remained only implicit
+  - downstream repos receive durable guardrails for UI acceptance and runtime forensics instead of relying on ad hoc operator discipline
+- Type: docs-render-verification
+- as_of: 2026-04-09T20:12:00+02:00
 
 ## EV-2026-04-09-004: Release Readiness Hardening Verified
 

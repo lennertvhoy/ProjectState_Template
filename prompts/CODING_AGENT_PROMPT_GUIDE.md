@@ -14,11 +14,17 @@ When delegating implementation:
 - include the exit condition for the task
 - forbid overclaiming
 - require direct verification
+- require runtime identity proof before accepting or investigating user-facing behavior
 - require evidence for user-facing claims
 - require state updates when truth changes
 - require a clean worktree and handoff at the end
 - require the final handoff to be suitable for direct paste into the CTO chat
-- if the tool supports subagents or parallel workers and the task benefits, encourage using them explicitly
+- require queue work to reference stable backlog IDs when active items exist
+- point the agent at `prompts/FINAL_HANDOFF_TEMPLATE.md` when you want the canonical handoff format
+- point the agent at `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
+- point the agent at `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` when a user-facing milestone is accepted
+- require negative search results to stay negative: `not found`, `not currently locatable`, or `not proven`
+- if the tool supports subagents or parallel workers and the task clearly benefits, encourage using them explicitly; otherwise leave that out
 
 Minimum useful handoff shape:
 

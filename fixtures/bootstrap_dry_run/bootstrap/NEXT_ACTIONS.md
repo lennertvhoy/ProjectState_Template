@@ -5,10 +5,11 @@
 
 ## Active Work
 
-### P0: Confirm project scope
-### P0: Flip to operating mode
+### P0 [BL-001] Confirm project scope
+### P0 [BL-004] Flip to operating mode
 
 ## Queue Rules
 
 - Active items only.
 - Keep the queue short.
+- Every active item must reference a backlog ID like `[BL-001]`.

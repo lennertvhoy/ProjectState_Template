@@ -8,13 +8,18 @@ last_updated: 2026-04-09
 
 **Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.
 
+Name note:
+- `StateDD_Template` is the template/repo slug.
+- `State Drive Development Template` is the human-facing template name.
+- `Truth-First Project Operating System` is the operating model installed by the template.
+
 This repository supports two modes:
 - `bootstrap` for discovery and baseline creation
 - `operating` for steady-state delivery
 
 ## Read Order
 
-Start every session by reading:
+Coding agents should start every repo session by reading:
 1. `AGENTS.md`
 2. `STATUS.md`
 3. `PROJECT_STATE.yaml`
@@ -29,6 +34,8 @@ These rules apply in all modes:
 - no fake completeness
 - no unverified claims presented as fact
 - user-facing behavior requires direct verification
+- user-facing acceptance requires runtime identity proof, not screenshots alone
+- negative searches stay negative: use `not found`, `not currently locatable`, or `not proven`
 - screenshots or evidence are required for user-visible changes
 - active queue stays short
 - history belongs in `WORKLOG.md`, not live state files
@@ -41,7 +48,7 @@ These rules apply in all modes:
 This repo currently operates in: `operating`
 
 This template repository itself has already been bootstrapped and is maintained
-as an operating project.
+in operating mode.
 
 Downstream repos created from this template should begin in `bootstrap` mode.
 
@@ -101,6 +108,7 @@ Create or initialize:
 - `BACKLOG.md`
 - `WORKLOG.md`
 - `docs/EVIDENCE_LOG.md`
+- `docs/ACCEPTANCE_FREEZES.md`
 
 Bootstrap is not complete until these files are filled out enough to guide real
 implementation and `BACKLOG.md` is more than a placeholder.
@@ -164,14 +172,16 @@ Implementation prompts must:
 - define one coherent scope
 - forbid overclaiming
 - require direct verification
+- require runtime identity proof before accepting or investigating user-facing behavior
 - require state and doc updates when truth changes
 - require screenshots/evidence for user-facing work
 - require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
 - require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
-- require the coding agent, when starting in unclear bootstrap mode, to ask the
-  minimum strategic questions needed before implementation
-- require the coding agent, when the tool supports it and the task benefits, to
-  use subagents or parallel workers
+- require the coding agent, when starting in unclear bootstrap mode, to ask the minimum strategic questions needed before implementation
+
+If the tool supports subagents or parallel workers and the task clearly benefits,
+the CTO lane may encourage using them. This is optional guidance, not a baseline
+workflow requirement.
 
 ## State Files
 
@@ -180,22 +190,32 @@ Implementation prompts must:
 - `PROJECT_DNA.yaml` = stable architecture contract
 - `PROJECT_ADAPTER.yaml` = optional project-specific vocabulary/runtime adapter
 - `NEXT_ACTIONS.md` = active queue only
-- `BACKLOG.md` = strategic roadmap
+- `BACKLOG.md` = strategic roadmap with stable backlog IDs
 - `WORKLOG.md` = append-only history
 - `docs/EVIDENCE_LOG.md` = proof ledger
+- `docs/ACCEPTANCE_FREEZES.md` = accepted user-facing milestone ledger
 
 ## Handoff Requirements
 
 Every implementation session ends with:
 - what changed
 - what was directly verified
+- repo path
+- branch
 - what remains partial or risky
 - git head
+- process or container serving the verified artifact
+- port or endpoint used for verification
+- whether the running artifact was rebuilt in this slice
 - clean worktree status
 - evidence references
 - absolute file paths for evidence artifacts when available
 - next recommended action
 - handoff wording suitable for direct paste into the CTO chat
+
+Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.
+Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics.
+Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone.
 
 ## Hygiene Rules
 

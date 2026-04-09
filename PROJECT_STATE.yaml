@@ -1,9 +1,9 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-09T18:20:03+02:00
+  updated_at: 2026-04-09T20:12:00+02:00
   updated_by: agent
-  version: "state-driven-development-template-v2"
+  version: "statedd-template-v3"
 
 workflow:
   repo_mode: operating
@@ -29,22 +29,35 @@ current_state:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
     branch: main
-    head: 2015ca7
+    head: e6b4c86
 
   operating_mode:
     status: observed
     mode: operating
     summary: |
-      This repository is the published State-Driven Development Template for a
-      truth-first AI-assisted workflow. The template repo itself runs in
-      operating mode. Downstream repos created from it should begin in
-      bootstrap mode.
+      This repository is the published State Drive Development Template
+      (`StateDD_Template`). The template repo itself runs in operating mode.
+      Downstream repos created from it should begin in bootstrap mode.
 
   project:
-    name: State-Driven Development Template
+    name: State Drive Development Template
     type: documentation_and_workflow_template
     lifecycle_stage: operating
     truth_summary: public_release_ready
+
+  runtime_identity:
+    status: not_applicable_for_template_repo
+    repo_path: /home/ff/Documents/Projects/StateDD_Template
+    branch: main
+    head: e6b4c86
+    process_or_container: none
+    port_or_base_url: none
+    rebuilt_in_current_slice: not_applicable
+    duplicate_runtimes_checked: not_applicable
+    notes: |
+      The template repo itself does not run an application runtime. Downstream
+      repos should fill this section before accepting user-facing behavior or
+      investigating runtime regressions.
 
   environment:
     status: observed
@@ -90,8 +103,9 @@ current_state:
       - scripts/check_state_docs.py
     test_setup:
       - root hygiene validation with scripts/check_state_docs.py
+      - bootstrap-gate validation with scripts/check_state_docs.py --bootstrap-gate
       - fixture validation for bootstrap and operating snapshots
-      - dry-run initialization into temporary directories
+      - new/adopt dry-run initialization into temporary directories
     deployment_assumptions:
       - distributed as a git-hosted template repository
       - no application runtime or service deployment is bundled
@@ -100,6 +114,8 @@ current_state:
   evidence:
     status: active
     ledger: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+    artifact_root: docs/evidence
     standard: browser_verification_or_test_output_for_user_facing_claims
 
   documentation:
@@ -112,14 +128,16 @@ current_state:
       - STATUS.md
       - PROJECT_STATE.yaml
       - PROJECT_DNA.yaml
+      - PROJECT_ADAPTER.yaml
       - NEXT_ACTIONS.md
       - BACKLOG.md
       - WORKLOG.md
       - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
 
   handoff:
     last_session_date: 2026-04-09
-    git_head: 2015ca7
+    git_head: e6b4c86
     worktree_clean: false
 
   validation:
@@ -130,31 +148,22 @@ current_state:
     root_hygiene_check:
       command: python3 scripts/check_state_docs.py
       result: passed
-    dry_run_fixture:
-      path: fixtures/bootstrap_dry_run
-      bootstrap_snapshot: observed
-      operating_snapshot: observed
-      hygiene_checks:
-        - "python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap"
-        - "python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating"
+    bootstrap_gate_check:
+      command: python3 scripts/check_state_docs.py --bootstrap-gate
       result: passed
-    messy_fixture:
-      path: fixtures/messy_inherited_repo/bootstrap
-      bootstrap_snapshot: observed
-      contradictory_inputs:
-        - production is stable
-        - kubernetes migration is complete
-        - next.js frontend only
-        - python background worker system
+    fixture_validation:
+      command: python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap
       result: passed
     init_script:
       script: scripts/init_template.py
-      default_target_dry_run: passed
-      nonempty_safe_overwrite_dry_run: passed
-      conflicting_target_guard: passed
-      conflicting_target_force_overwrite_dry_run: passed
-      minimal_target_dry_run: passed
-      git_metadata_warning: observed
+      flows:
+        - new
+        - adopt
+        - overwrite_safe
+        - overwrite_collision
+        - minimal
+        - dry_run
+      result: passed
 
   publication:
     status: observed
@@ -165,33 +174,31 @@ current_state:
       first_session_checklist: present
       git_safety_warning: present
       overwrite_collision_guard: present
+      adoption_path: present
       cto_handoff_definition: present
       cto_context_is_human_relayed: present
       fresh_coding_agent_session_loop: present
       bootstrap_starts_with_coding_agent_intake: present
       bootstrap_completion_gate: present
       operating_mode_is_backlog_slice_driven: present
-      tool_agnostic_agent_examples: present
-      naming_consistency: present
+      final_handoff_template: present
+      runtime_identity_checklist: present
+      acceptance_freeze_template: present
+      evidence_placement_guidance: present
+      negative_search_wording_guidance: present
+      naming_relationship_note: present
       workflow_diagram: present
       failure_modes: present
       single_agent_fallback: present
       example_flow: present
     one_command_init:
       script: scripts/init_template.py
+      supports_new_subcommand: observed
+      supports_adopt_subcommand: observed
       supports_external_target: observed
       existing_nonempty_target_guarded: observed
-    minimal_mode:
-      removes:
-        - fixtures
-        - docs/BOOTSTRAP_QUALITY.md
-      status: observed
-    public_assets:
-      prompts: present
-      github_workflow: present
-      issue_templates: present
-      pr_template: present
-      adapter_file: present
+      existing_readme_preserved_on_adopt: observed
+      acceptance_freeze_log_created: observed
 
   workflow_contract:
     bootstrap_start:
@@ -203,6 +210,7 @@ current_state:
       cto_participates_in_brainstorming_and_research: true
       state_files_must_be_filled_before_operating: true
       backlog_must_be_real_before_operating: true
+      bootstrap_gate_validator_exists: true
     cto_lane:
       repo_access: user_relayed_only
       receives:
@@ -218,7 +226,11 @@ current_state:
       final_handoff_required: true
       final_handoff_destination: human_then_cto_lane
       operating_mode_targets_backlog_slices: true
-      encourages_subagents_when_supported_and_useful: true
+      subagents_optional_when_supported_and_useful: true
       final_handoff_includes_absolute_evidence_paths_when_available: true
+      next_actions_reference_backlog_ids: true
+      runtime_identity_required_for_user_facing_acceptance: true
+      acceptance_freeze_required_after_user_facing_milestone: true
+      negative_search_results_must_not_be_upgraded_to_nonexistence: true
 
 active_problems: []

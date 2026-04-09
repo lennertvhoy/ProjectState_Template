@@ -4,16 +4,16 @@
 
 ## NOW
 
-- Build the first feature slice.
-- Capture evidence for the first claim.
+- [BL-001] Build the first feature slice.
+- [BL-002] Capture evidence for the first claim.
 
 ## NEXT
 
-- Expand validation after the first slice ships.
+- [BL-003] Expand validation after the first slice ships.
 
 ## LATER
 
-- Add a richer adapter layer.
+- [BL-004] Add a richer adapter layer.
 
 ## WATCHLIST
 

@@ -1,15 +1,15 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "state-driven-development-template-v2"
+version: "statedd-template-v3"
 schema_version: "1.0"
 
 product:
-  name: "State-Driven Development Template"
+  name: "State Drive Development Template"
   one_sentence: "Public template for truth-first AI-assisted technical project delivery."
   description: |
     This repository defines a reusable operating system for technical projects:
     stable rules, structured live state, concise status, active queue, roadmap,
-    history, and evidence-led verification.
+    history, evidence-led verification, and backlog-ID-linked execution.
   is:
     - truth_first
     - evidence_backed
@@ -32,11 +32,14 @@ truth_rules:
     backlog: BACKLOG.md
     worklog: WORKLOG.md
     evidence_log: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
 
   hard_rules:
     - no_fake_completeness
     - no_history_in_live_state
     - evidence_required_for_user_facing_claims
+    - runtime_identity_required_for_user_facing_acceptance
+    - negative_search_results_do_not_prove_nonexistence
     - clean_worktree_required_at_handoff
     - active_queue_remains_short
 
@@ -72,11 +75,16 @@ invariants:
   - "PROJECT_STATE.yaml stores structured live truth only."
   - "PROJECT_DNA.yaml changes slowly."
   - "NEXT_ACTIONS.md contains open work only."
+  - "BACKLOG.md assigns stable backlog IDs."
+  - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
 
 governance:
   evidence_standard: browser_verification_or_test_output
+  evidence_artifact_root: docs/evidence
+  acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
   hygiene_check: scripts/check_state_docs.py
+  bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   update_policy:
     status: when_current_truth_changes
     project_state: when_structured_truth_changes

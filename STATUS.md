@@ -1,23 +1,23 @@
-# State-Driven Development Template Status
+# State Drive Development Template Status
 
-**Updated At:** 2026-04-09 18:20 CEST
+**Updated At:** 2026-04-09 20:12 CEST
 **Execution Mode:** operating
 **Project State:** public_release_ready
 **Public URL:** not configured
 
 ## Snapshot
 
-- This repository is the public release-ready State-Driven Development Template for a truth-first AI-assisted workflow.
-- `README.md` is the canonical user guide for setup, bootstrap, and daily use.
-- The README now includes safe initialization paths, tool-agnostic CTO/coding-agent setup, an explicit CTO handoff definition, the human-relayed CTO context model, the correct bootstrap-first coding-agent intake flow, and a stricter bootstrap completion gate.
-- The init flow now blocks accidental overwrite of conflicting files in existing non-empty targets unless `--force-overwrite` is used intentionally.
-- The validator and CI now enforce the template asset surface, stale-reference hygiene, and normal/overwrite/collision/minimal init flows, and the template name, operating loop, bootstrap gate, state files, fixtures, and generated init outputs now align on `State-Driven Development Template`.
-- New repos created from this template should initialize into `bootstrap` mode, and the root docs, fixtures, and init flow are validated with the included scripts while this repo itself ships workflow documentation and helper scripts rather than an app runtime.
+- This repository is the public release-ready State Drive Development Template (`StateDD_Template`) for a truth-first AI-assisted workflow.
+- `README.md` is the canonical user guide and now distinguishes the template name from the operating-model name.
+- The template now supports explicit `new` and `adopt` initialization paths, backlog IDs, a canonical final handoff template, and a bootstrap-gate validator.
+- The contract now also requires runtime-identity proof for user-facing acceptance, provides an acceptance-freeze ledger/template, and constrains negative-search wording.
+- Existing repo adoption preserves the existing README by default, supports `--dry-run`, and installs GitHub assets only when requested.
+- Evidence artifacts now have a default placement convention under `docs/evidence/`.
 
 ## Immediate Priorities
 
-1. Keep the README, initializer, prompts, and validator aligned as the template contract evolves.
-2. Preserve overwrite safety and CI validation as release guardrails.
+1. Keep the live contract, generated contract, prompt files, and validator aligned.
+2. Preserve adoption safety and bootstrap-gate signal as release guardrails.
 
 ## Active Blockers
 

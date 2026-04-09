@@ -17,30 +17,44 @@ jobs:
           python-version: "3.13"
 
       - name: Validate root docs
-        run: python3 scripts/check_state_docs.py
+        run: |
+          python3 scripts/check_state_docs.py
+          python3 scripts/check_state_docs.py --bootstrap-gate
 
       - name: Validate fixtures
         run: |
           python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap
           python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating
           python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
+          if python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap; then
+            echo "expected bootstrap gate to fail for placeholder bootstrap fixture"
+            exit 1
+          fi
+          python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap
 
       - name: Validate init script
         run: |
           tmpdir="$(mktemp -d)"
-          python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/demo"
+          python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/demo"
           python3 scripts/check_state_docs.py "$tmpdir/demo"
           mkdir -p "$tmpdir/nonempty-safe"
           printf 'keep me\n' > "$tmpdir/nonempty-safe/local-note.txt"
-          python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/nonempty-safe" --overwrite
+          python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-safe" --overwrite
           python3 scripts/check_state_docs.py "$tmpdir/nonempty-safe"
           mkdir -p "$tmpdir/nonempty-conflict"
           printf '# Existing README\n' > "$tmpdir/nonempty-conflict/README.md"
-          if python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite; then
+          if python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite; then
             echo "expected overwrite collision to fail without --force-overwrite"
             exit 1
           fi
-          python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite --force-overwrite
+          python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite --force-overwrite
           python3 scripts/check_state_docs.py "$tmpdir/nonempty-conflict"
-          python3 scripts/init_template.py --name "Demo Project" --minimal --target "$tmpdir/minimal"
+          python3 scripts/init_template.py new --name "Demo Project" --minimal --target "$tmpdir/minimal"
           python3 scripts/check_state_docs.py "$tmpdir/minimal"
+          cp -R fixtures/messy_inherited_repo/source "$tmpdir/adopt-source"
+          python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --dry-run
+          python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --readme-link
+          test -f "$tmpdir/adopt-source/prompts/RUNTIME_IDENTITY_CHECKLIST.md"
+          test -f "$tmpdir/adopt-source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
+          test -f "$tmpdir/adopt-source/docs/ACCEPTANCE_FREEZES.md"
+          python3 scripts/check_state_docs.py "$tmpdir/adopt-source"

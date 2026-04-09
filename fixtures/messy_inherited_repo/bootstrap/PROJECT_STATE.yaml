@@ -3,7 +3,7 @@
 metadata:
   updated_at: 2026-03-18T19:00:00+01:00
   updated_by: agent
-  version: "state-driven-development-template-v2"
+  version: "statedd-template-v3"
 
 workflow:
   repo_mode: bootstrap
@@ -14,10 +14,18 @@ workflow:
     repo_investigated: true
     user_intake_complete: false
     unknowns_remaining:
-      - product identity is unclear
-      - primary runtime is unclear
-      - deployment target is unclear
-      - authoritative state files are missing
+      - primary user still needs direct confirmation
+      - first milestone still needs direct confirmation
+      - deployment target may differ from inherited docs
+
+verification_labels:
+  observed: verified directly in the current session
+  unknown: not yet determined from currently available evidence
+  reported: supported by prior evidence, not re-verified
+  blocked: verification attempted but prevented
+  assumed: temporary working assumption
+  stale: previously verified but no longer fresh
+  invalid: known false or superseded
 
 current_state:
   repository:
@@ -29,39 +37,80 @@ current_state:
   operating_mode:
     status: observed
     mode: bootstrap
+    summary: |
+      This fixture models an existing repo adopted into bootstrap mode. It
+      should not flip to operating mode until the contradictory inherited docs,
+      runtime assumptions, queue, and evidence trail are all reconciled.
 
   project:
-    name: inherited_project_unknown
-    type: ambiguous_multi_stack_app
+    name: Inherited Project
+    type: adopted_existing_repo
     lifecycle_stage: bootstrap
+    truth_summary: bootstrap_adoption_baseline
 
-  assessment:
-    source_claims:
-      - claim: "Production is stable"
-        status: reported
-        evidence: "docs/STATUS.md"
-      - claim: "Kubernetes migration is complete"
-        status: reported
-        evidence: "docs/STATUS.md"
-      - claim: "Next.js frontend only"
-        status: reported
-        evidence: "package.json"
-      - claim: "Python background worker system"
-        status: reported
-        evidence: "docker-compose.yml"
-    bootstrap_handling:
-      - item: "State files missing"
-        status: blocked
-        reason: "No AGENTS.md / PROJECT_STATE.yaml / PROJECT_DNA.yaml in source repo"
-      - item: "Deployment target"
-        status: unknown
-        reason: "Docs conflict between Docker Compose and Kubernetes"
-      - item: "Primary stack"
-        status: assumed
-        reason: "Node frontend plus Python worker are both present, but ownership is unclear"
+  environment:
+    status: observed
+    host:
+      os: Fedora Linux 41
+      kernel: Linux 6.x
+      shell: /bin/bash
+      terminal: xterm-256color
+    package_managers:
+      - unknown
+    language_runtimes:
+      python: unknown
+    container_tooling:
+      podman: unknown
+      docker: unknown
+    browser_tooling:
+      chrome: unknown
+    ports:
+      listeners: unknown
+      notes: |
+        This fixture captures adoption output only. Runtime listeners were not
+        inspected.
+
+  repository_structure:
+    status: observed
+    top_level_entries:
+      - NOTES.txt
+      - README.md
+      - docker-compose.yml
+      - docs
+      - package.json
+    manifests:
+      - package.json
+      - docker-compose.yml
+    entrypoints:
+      - package.json:scripts.dev
+      - package.json:scripts.start
+    test_setup:
+      - unknown
+    deployment_assumptions:
+      - docker compose present
+    contradictions:
+      - docs mention kubernetes while docker compose files remain present
+      - docs claim frontend-only scope while the repo still contains multi-service runtime files
+      - stability is reported in inherited docs but not yet directly verified
 
   evidence:
     status: active
     ledger: docs/EVIDENCE_LOG.md
+    artifact_root: docs/evidence
+    standard: browser_verification_or_test_output_for_user_facing_claims
+
+  documentation:
+    status: observed
+    primary_user_guide: README.md
+    live_docs:
+      - README.md
+      - AGENTS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - PROJECT_DNA.yaml
+      - NEXT_ACTIONS.md
+      - BACKLOG.md
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
 
 active_problems: []

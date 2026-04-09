@@ -4,17 +4,17 @@
 
 ## NOW
 
-- Confirm product identity.
-- Confirm primary user.
-- Confirm first milestone.
+- [BL-001] Confirm product identity.
+- [BL-002] Confirm primary user.
+- [BL-003] Confirm first milestone.
 
 ## NEXT
 
-- Transition the fixture to operating mode.
+- [BL-004] Transition the fixture to operating mode.
 
 ## LATER
 
-- Add one real feature slice.
+- [BL-005] Add one real feature slice.
 
 ## WATCHLIST
 

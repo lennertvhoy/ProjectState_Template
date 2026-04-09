@@ -4,6 +4,92 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - Runtime-identity and acceptance-freeze guardrails added
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** e6b4c86
+**Worktree:** dirty (uncommitted runtime-identity hardening)
+
+### What changed
+- Added runtime-identity rules to the operating contract so user-facing acceptance and regression forensics must prove repo path, branch, head, runtime owner, port, and rebuild status.
+- Added reusable templates for runtime identity checks and acceptance freezes, plus an append-only `docs/ACCEPTANCE_FREEZES.md` ledger.
+- Tightened the validator and CI so the template docs, prompt assets, and adopt flow all preserve the new guardrails.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/check_state_docs.py --bootstrap-gate` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap` -> expected failure
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/demo` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/demo` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/nonempty-safe --overwrite` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/nonempty-safe` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/nonempty-conflict --overwrite` -> expected failure
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/nonempty-conflict --overwrite --force-overwrite` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/nonempty-conflict` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --minimal --target <tmp>/minimal` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/minimal` -> PASS
+- `python3 scripts/init_template.py adopt --name "Demo Adopted" --target <tmp>/adopt-source --dry-run` -> PASS
+- `python3 scripts/init_template.py adopt --name "Demo Adopted" --target <tmp>/adopt-source --readme-link` -> PASS
+- adopted repo asset checks for runtime-identity and acceptance-freeze files -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/adopt-source` -> PASS
+- `python3 scripts/check_state_docs.py --bootstrap-gate <tmp>/adopt-source` -> PASS
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-010`
+
+### Follow-up
+1. Decide whether to add app-level examples for exposing runtime identity, such as a dev footer or `/api/version`, or keep the template at the process-contract level only.
+
+## 2026-04-09 - Naming cleanup, adopt flow, and bootstrap gate added
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** e6b4c86
+**Worktree:** dirty (uncommitted StateDD contract refresh)
+
+### What changed
+- Renamed the public template identity to `State Drive Development Template` while making `StateDD_Template` the explicit repo/template slug and `Truth-First Project Operating System` the operating-model name.
+- Refactored `scripts/init_template.py` to add explicit `new` and `adopt` subcommands, a non-destructive adoption path, `--dry-run`, optional README linking, and optional GitHub asset installation.
+- Added stable backlog IDs, a canonical final handoff template, an evidence-artifact placement convention, and a dedicated `--bootstrap-gate` validator path.
+- Reduced README/prompt drift by making the prompt files the source of truth and aligning the root contract, validator, and generated outputs around the same rules.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/check_state_docs.py --bootstrap-gate` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap` -> expected failure
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/demo` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/demo` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/nonempty-safe --overwrite` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/nonempty-safe` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/nonempty-conflict --overwrite` -> expected failure
+- `python3 scripts/init_template.py new --name "Demo Project" --target <tmp>/nonempty-conflict --overwrite --force-overwrite` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/nonempty-conflict` -> PASS
+- `python3 scripts/init_template.py new --name "Demo Project" --minimal --target <tmp>/minimal` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/minimal` -> PASS
+- `python3 scripts/init_template.py adopt --name "Demo Adopted" --target <tmp>/adopt-source --dry-run` -> PASS
+- `python3 scripts/init_template.py adopt --name "Demo Adopted" --target <tmp>/adopt-source --readme-link` -> PASS
+- `python3 scripts/check_state_docs.py <tmp>/adopt-source` -> PASS
+- `python3 scripts/check_state_docs.py --bootstrap-gate <tmp>/adopt-source` -> PASS
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-009`
+
+### Follow-up
+1. Decide whether to keep expanding the adopt baseline heuristics or leave them intentionally lightweight.
+
 ## 2026-04-09 - Bootstrap gate and backlog-slice operating model expanded
 
 **Type:** docs_or_process_only

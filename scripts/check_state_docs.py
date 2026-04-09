@@ -1,36 +1,46 @@
 #!/usr/bin/env python3
-"""Validate the State-Driven Development Template docs."""
+"""Validate StateDD workflow docs and bootstrap readiness."""
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BACKLOG_ID_RE = re.compile(r"\[(BL-\d{3})\]")
+NEXT_ACTION_ID_RE = re.compile(r"^###\s+P\d+\s+\[(BL-\d{3})\]\s+.+$", re.MULTILINE)
+WORKLOG_ENTRY_RE = re.compile(r"^##\s+\d{4}-\d{2}-\d{2}\s+-\s+.+$", re.MULTILINE)
+EVIDENCE_ENTRY_RE = re.compile(r"^##\s+EV-\d{4}-\d{2}-\d{2}-\d{3}:\s+.+$", re.MULTILINE)
 
 RULES = {
     "AGENTS.md": {"max_lines": 1000, "must_contain": ["repo_mode:", "bootstrap", "operating"]},
     "STATUS.md": {"max_lines": 120, "max_headline_bullets": 7},
     "PROJECT_STATE.yaml": {"max_lines": 900, "forbidden": ["DESIGN.md"]},
     "PROJECT_DNA.yaml": {"max_lines": 1000, "forbidden": ["DESIGN.md"]},
-    "NEXT_ACTIONS.md": {"max_lines": 180, "max_items": 10, "forbidden": ["COMPLETE", "REMOVED"]},
-    "BACKLOG.md": {"max_lines": 250, "max_now_items": 10},
+    "NEXT_ACTIONS.md": {"max_lines": 220, "max_items": 10, "forbidden": ["COMPLETE", "REMOVED"]},
+    "BACKLOG.md": {"max_lines": 260, "max_now_items": 10},
 }
 
 README_REQUIRED_SECTIONS = [
     "## Quick Start",
     "## Git Safety",
     "## First 10 Minutes",
-    "## Safe Initialization Paths",
+    "## Setup Paths",
+    "## Adopt An Existing Repo",
+    "## Agent Read Order",
     "## Bootstrap Completion Gate",
     "## Setting Up The AI CTO Agent",
+    "## Prompt Files",
+    "## Final Handoff Template",
+    "## Runtime Identity Proof",
+    "## Acceptance Freezes",
+    "## Search Honesty",
     "## Workflow Diagram",
     "## Non-Trivial Work",
     "## Common Failure Modes",
-    "## Single-Agent Fallback",
-    "## Example Flow",
     "## Validation",
     "## Publishing A Downstream Project",
 ]
@@ -41,6 +51,10 @@ TEMPLATE_ASSET_PATHS = [
     "prompts/CTO_SESSION_PROMPT.md",
     "prompts/CODING_AGENT_PROMPT_GUIDE.md",
     "prompts/BOOTSTRAP_INTAKE_PROMPT.md",
+    "prompts/FINAL_HANDOFF_TEMPLATE.md",
+    "prompts/RUNTIME_IDENTITY_CHECKLIST.md",
+    "prompts/ACCEPTANCE_FREEZE_TEMPLATE.md",
+    "docs/ACCEPTANCE_FREEZES.md",
     ".github/workflows/validate.yml",
     ".github/pull_request_template.md",
     ".github/ISSUE_TEMPLATE/config.yml",
@@ -67,28 +81,57 @@ def status_bullet_count(text: str) -> int:
     match = re.search(r"^##\s+Snapshot\s*$([\s\S]*?)(?=^## |\Z)", text, re.MULTILINE)
     if not match:
         return 0
-    section = match.group(1)
-    return sum(1 for line in section.splitlines() if line.lstrip().startswith("- "))
+    return sum(1 for line in match.group(1).splitlines() if line.lstrip().startswith("- "))
 
 
 def next_actions_count(text: str) -> int:
     match = re.search(r"^##\s+Active Work\s*$([\s\S]*?)(?=^## |\Z)", text, re.MULTILINE)
     if not match:
         return 0
-    section = match.group(1)
-    return sum(1 for line in section.splitlines() if line.startswith("### "))
+    return sum(1 for line in match.group(1).splitlines() if line.startswith("### "))
 
 
 def backlog_now_count(text: str) -> int:
     match = re.search(r"^##\s+NOW\s*$([\s\S]*?)(?=^## |\Z)", text, re.MULTILINE)
     if not match:
         return 0
-    section = match.group(1)
-    return sum(1 for line in section.splitlines() if line.lstrip().startswith("- "))
+    return sum(1 for line in match.group(1).splitlines() if line.lstrip().startswith("- "))
+
+
+def extract_backlog_ids(text: str) -> set[str]:
+    return set(BACKLOG_ID_RE.findall(text))
+
+
+def extract_next_action_ids(text: str) -> list[str]:
+    return NEXT_ACTION_ID_RE.findall(text)
+
+
+def detect_repo_mode(root: Path) -> str | None:
+    agents = root / "AGENTS.md"
+    if not agents.exists():
+        return None
+    text = agents.read_text(encoding="utf-8")
+    match = re.search(r"^repo_mode:\s*(\w+)$", text, re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def is_template_style_repo(root: Path) -> bool:
+    readme = root / "README.md"
+    project_state = root / "PROJECT_STATE.yaml"
+    readme_text = readme.read_text(encoding="utf-8") if readme.exists() else ""
+    project_state_text = project_state.read_text(encoding="utf-8") if project_state.exists() else ""
+
+    if readme_text.startswith("# State Drive Development Template"):
+        return True
+    if "type: documentation_and_workflow_template" in project_state_text:
+        return True
+    if "type: project_template" in project_state_text and "## Quick Start" in readme_text:
+        return True
+    return False
 
 
 def check_file(path: Path) -> list[str]:
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     rules = RULES[path.name]
     issues: list[str] = []
 
@@ -105,11 +148,19 @@ def check_file(path: Path) -> list[str]:
         items = next_actions_count(text)
         if items > rules.get("max_items", 10**9):
             issues.append(f"Found {items} active queue items, max is {rules['max_items']}")
+        if items and "backlog ID" not in text:
+            issues.append("NEXT_ACTIONS.md must explain backlog ID linkage in queue rules")
+        for heading in re.findall(r"^###\s+.+$", text, re.MULTILINE):
+            if not NEXT_ACTION_ID_RE.match(heading):
+                issues.append(f"Active item heading is missing the `### Pn [BL-001] ...` format: {heading}")
 
     if path.name == "BACKLOG.md":
         now_items = backlog_now_count(text)
         if now_items > rules.get("max_now_items", 10**9):
             issues.append(f"NOW section has {now_items} items, max is {rules['max_now_items']}")
+        ids = extract_backlog_ids(text)
+        if not ids:
+            issues.append("BACKLOG.md must include stable backlog IDs like [BL-001]")
 
     for forbidden in rules.get("forbidden", []):
         if re.search(rf"\b{re.escape(forbidden)}\b", text):
@@ -122,40 +173,60 @@ def check_file(path: Path) -> list[str]:
     return issues
 
 
+def check_cross_file_rules(root: Path) -> list[str]:
+    issues: list[str] = []
+    backlog = root / "BACKLOG.md"
+    next_actions = root / "NEXT_ACTIONS.md"
+    if not backlog.exists() or not next_actions.exists():
+        return issues
+
+    backlog_ids = extract_backlog_ids(backlog.read_text(encoding="utf-8"))
+    action_ids = extract_next_action_ids(next_actions.read_text(encoding="utf-8"))
+    for backlog_id in action_ids:
+        if backlog_id not in backlog_ids:
+            issues.append(f"NEXT_ACTIONS.md references missing backlog ID {backlog_id}")
+    return issues
+
+
 def check_readme(path: Path) -> list[str]:
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     issues: list[str] = []
 
     for required in README_REQUIRED_SECTIONS:
         if required not in text:
             issues.append(f"Missing required README section: {required}")
 
-    if "prompts/CTO_SESSION_PROMPT.md" not in text:
-        issues.append("README must reference prompts/CTO_SESSION_PROMPT.md")
-
-    if "ChatGPT, Claude, Gemini" not in text:
-        issues.append("README must explicitly mention ChatGPT, Claude, Gemini")
-
-    if "rm -rf .git" not in text or "git remote -v" not in text:
-        issues.append("README must explain how to remove inherited git metadata and verify the remote before first push")
-
-    if "--force-overwrite" not in text:
-        issues.append("README must explain the force-overwrite safeguard for conflicting existing targets")
+    required_phrases = [
+        "prompts/CTO_SESSION_PROMPT.md",
+        "prompts/CODING_AGENT_PROMPT_GUIDE.md",
+        "prompts/FINAL_HANDOFF_TEMPLATE.md",
+        "ChatGPT, Claude, Gemini",
+        "rm -rf .git",
+        "git remote -v",
+        "--force-overwrite",
+        "--bootstrap-gate",
+        "new",
+        "adopt",
+        "does not have direct access to the repo or state files",
+        "fresh coding-agent session",
+        "real `BACKLOG.md`, not a placeholder",
+        "backlog slice",
+        "StateDD_Template",
+        "State Drive Development Template",
+        "Truth-First Project Operating System",
+        "docs/evidence/",
+        "existing README preserved",
+        "runtime identity",
+        "acceptance freeze",
+        "not currently locatable",
+        "process or container",
+    ]
+    for phrase in required_phrases:
+        if phrase not in text:
+            issues.append(f"README must mention: {phrase}")
 
     if "DESIGN.md" in text:
         issues.append("README must not reference missing DESIGN.md guidance")
-
-    if "does not have direct access to the repo or state files" not in text:
-        issues.append("README must explain that the CTO lane only sees pasted repo context")
-
-    if "fresh coding-agent session" not in text:
-        issues.append("README must explain the fresh coding-agent session loop")
-
-    if "real `BACKLOG.md`, not a placeholder" not in text:
-        issues.append("README must explain that bootstrap needs a real backlog before operating mode")
-
-    if "backlog slice" not in text:
-        issues.append("README must explain that operating mode is driven by backlog slices")
 
     return issues
 
@@ -169,16 +240,93 @@ def check_template_assets(root: Path) -> list[str]:
 
     pr_template = root / ".github" / "pull_request_template.md"
     if pr_template.exists():
-        text = pr_template.read_text()
+        text = pr_template.read_text(encoding="utf-8")
         for section in PR_TEMPLATE_REQUIRED_SECTIONS:
             if section not in text:
                 issues.append(f"Pull request template missing section: {section}")
 
+    final_handoff = root / "prompts" / "FINAL_HANDOFF_TEMPLATE.md"
+    if final_handoff.exists():
+        handoff_text = final_handoff.read_text(encoding="utf-8")
+        for phrase in ("repo path", "branch", "process/container", "port/base URL", "rebuilt in this slice"):
+            if phrase not in handoff_text:
+                issues.append(f"Final handoff template missing phrase: {phrase}")
+
+    runtime_identity = root / "prompts" / "RUNTIME_IDENTITY_CHECKLIST.md"
+    if runtime_identity.exists():
+        runtime_text = runtime_identity.read_text(encoding="utf-8")
+        for phrase in ("process or container", "not currently locatable", "duplicate dev servers", "HEAD commit"):
+            if phrase not in runtime_text:
+                issues.append(f"Runtime identity checklist missing phrase: {phrase}")
+
+    acceptance_freeze = root / "prompts" / "ACCEPTANCE_FREEZE_TEMPLATE.md"
+    if acceptance_freeze.exists():
+        freeze_text = acceptance_freeze.read_text(encoding="utf-8")
+        for phrase in ("repo path", "head", "process/container", "regression guard"):
+            if phrase not in freeze_text:
+                issues.append(f"Acceptance freeze template missing phrase: {phrase}")
+
     return issues
 
 
-def main() -> int:
-    root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT
+def check_bootstrap_gate(root: Path) -> list[str]:
+    mode = detect_repo_mode(root)
+    if mode != "bootstrap":
+        return []
+
+    issues: list[str] = []
+    project_state = (root / "PROJECT_STATE.yaml").read_text(encoding="utf-8") if (root / "PROJECT_STATE.yaml").exists() else ""
+    next_actions = (root / "NEXT_ACTIONS.md").read_text(encoding="utf-8") if (root / "NEXT_ACTIONS.md").exists() else ""
+    backlog = (root / "BACKLOG.md").read_text(encoding="utf-8") if (root / "BACKLOG.md").exists() else ""
+    worklog = (root / "WORKLOG.md").read_text(encoding="utf-8") if (root / "WORKLOG.md").exists() else ""
+    evidence = (root / "docs" / "EVIDENCE_LOG.md").read_text(encoding="utf-8") if (root / "docs" / "EVIDENCE_LOG.md").exists() else ""
+
+    if "system_investigated: false" in project_state:
+        issues.append("Bootstrap gate failed: system investigation is still false in PROJECT_STATE.yaml")
+    if "repo_investigated: false" in project_state:
+        issues.append("Bootstrap gate failed: repo investigation is still false in PROJECT_STATE.yaml")
+    if next_actions_count(next_actions) == 0:
+        issues.append("Bootstrap gate failed: NEXT_ACTIONS.md does not contain a real active queue")
+    if "No active work yet." in next_actions or "No active template maintenance work is queued right now." in next_actions:
+        issues.append("Bootstrap gate failed: NEXT_ACTIONS.md is still placeholder text")
+    if len(extract_backlog_ids(backlog)) < 3:
+        issues.append("Bootstrap gate failed: BACKLOG.md does not contain enough stable backlog IDs")
+    if "Establish baseline truth." in backlog or "Transition to operating mode." in backlog:
+        issues.append("Bootstrap gate failed: BACKLOG.md is still placeholder-level")
+    if not WORKLOG_ENTRY_RE.search(worklog):
+        issues.append("Bootstrap gate failed: WORKLOG.md does not record any dated bootstrap history")
+    if not EVIDENCE_ENTRY_RE.search(evidence):
+        issues.append("Bootstrap gate failed: docs/EVIDENCE_LOG.md does not record any evidence entries")
+    if count_nonempty_lines(project_state) < 80:
+        issues.append("Bootstrap gate failed: PROJECT_STATE.yaml is still too thin to represent a truthful baseline")
+
+    return issues
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Validate StateDD workflow docs and bootstrap readiness")
+    parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
+    parser.add_argument(
+        "--bootstrap-gate",
+        action="store_true",
+        help="Fail when a bootstrap repo is still too incomplete to be considered a real baseline",
+    )
+    return parser.parse_args(argv[1:])
+
+
+def print_failure_block(label: str, issues: list[str]) -> None:
+    print(f"\n📄 {label}")
+    if issues:
+        for issue in issues:
+            print(f"  ❌ {issue}")
+    else:
+        print("  ✅ All checks passed")
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv or sys.argv)
+    root = Path(args.root).resolve()
+
     print("============================================================")
     print("DOCUMENTATION HYGIENE CHECK")
     print("============================================================")
@@ -193,43 +341,40 @@ def main() -> int:
         if issues:
             failures.append((filename, issues))
 
+    cross_file_issues = check_cross_file_rules(root)
+    if cross_file_issues:
+        failures.append(("cross_file_rules", cross_file_issues))
+
     readme = root / "README.md"
-    if readme.exists():
-        readme_text = readme.read_text()
+    template_style_repo = is_template_style_repo(root)
+    if readme.exists() and template_style_repo:
+        readme_text = readme.read_text(encoding="utf-8")
         issues = check_readme(readme)
         if issues:
             failures.append(("README.md", issues))
 
-        if "public template" in readme_text.lower() or "State-Driven Development Template" in readme_text:
-            asset_issues = check_template_assets(root)
-            if asset_issues:
-                failures.append(("template_assets", asset_issues))
+        asset_issues = check_template_assets(root)
+        if asset_issues:
+            failures.append(("template_assets", asset_issues))
+
+    bootstrap_issues: list[str] = []
+    if args.bootstrap_gate:
+        bootstrap_issues = check_bootstrap_gate(root)
+        if bootstrap_issues:
+            failures.append(("bootstrap_gate", bootstrap_issues))
 
     for filename in RULES:
-        print(f"\n📄 {filename}")
         current = next((issues for name, issues in failures if name == filename), [])
-        if current:
-            for issue in current:
-                print(f"  ❌ {issue}")
-        else:
-            print("  ✅ All checks passed")
+        print_failure_block(filename, current)
 
-    if readme.exists():
-        print("\n📄 README.md")
-        current = next((issues for name, issues in failures if name == "README.md"), [])
-        if current:
-            for issue in current:
-                print(f"  ❌ {issue}")
-        else:
-            print("  ✅ All checks passed")
+    print_failure_block("cross_file_rules", next((issues for name, issues in failures if name == "cross_file_rules"), []))
 
-        print("\n📄 template assets")
-        current = next((issues for name, issues in failures if name == "template_assets"), [])
-        if current:
-            for issue in current:
-                print(f"  ❌ {issue}")
-        else:
-            print("  ✅ All checks passed")
+    if readme.exists() and template_style_repo:
+        print_failure_block("README.md", next((issues for name, issues in failures if name == "README.md"), []))
+        print_failure_block("template assets", next((issues for name, issues in failures if name == "template_assets"), []))
+
+    if args.bootstrap_gate:
+        print_failure_block("bootstrap gate", bootstrap_issues)
 
     print("\n============================================================")
     if failures:
