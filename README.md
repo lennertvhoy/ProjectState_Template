@@ -46,7 +46,7 @@ workflow directly.
 1. If you are creating a new repo from this template, run `python3 scripts/init_template.py new --name "Your Project"`.
 2. If you are adding the workflow to an existing codebase, run `python3 scripts/init_template.py adopt --name "Your Project"`.
 3. If the repo came from a direct clone or copy, remove `.git` and verify `git remote -v` before any push.
-4. Start your coding tool with `prompts/CODING_AGENT_PROMPT_GUIDE.md`.
+4. Start your coding tool with `prompts/CODING_AGENT_STARTUP_PROMPT.md`.
 5. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
 6. If the repo is still in `bootstrap`, let the coding agent ask the minimum strategic questions first.
 7. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot and paste `prompts/CTO_SESSION_PROMPT.md`.
@@ -208,7 +208,7 @@ agent should ask you to provide one before continuing with non-trivial work.
 The prompt files are the source of truth. The README explains the workflow; it
 does not duplicate the prompt bodies.
 
-- `prompts/CODING_AGENT_PROMPT_GUIDE.md`: startup guidance for the coding tool
+- `prompts/CODING_AGENT_STARTUP_PROMPT.md`: copy-paste startup prompt for the coding agent when no CTO-scoped prompt exists yet
 - `prompts/CTO_SESSION_PROMPT.md`: startup prompt for the CTO lane
 - `prompts/BOOTSTRAP_INTAKE_PROMPT.md`: minimum-question bootstrap intake
 - `prompts/FINAL_HANDOFF_TEMPLATE.md`: canonical end-of-session handoff shape
@@ -385,7 +385,7 @@ If you only have one AI tool available:
 Minimal new-repo example:
 
 1. Run `python3 scripts/init_template.py new --name "Acme API"`.
-2. Start the coding agent with `prompts/CODING_AGENT_PROMPT_GUIDE.md`.
+2. Start the coding agent with `prompts/CODING_AGENT_STARTUP_PROMPT.md`.
 3. Let the coding agent read the repo contract, inspect the repo, and ask the minimum bootstrap questions.
 4. Create a CTO chat and paste `prompts/CTO_SESSION_PROMPT.md`.
 5. Paste the coding agent's bootstrap handoff using `prompts/FINAL_HANDOFF_TEMPLATE.md`.

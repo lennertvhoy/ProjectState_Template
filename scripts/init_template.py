@@ -25,7 +25,7 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
-    Path("prompts/CODING_AGENT_PROMPT_GUIDE.md"),
+    Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
     Path("prompts/BOOTSTRAP_INTAKE_PROMPT.md"),
     Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
     Path("prompts/RUNTIME_IDENTITY_CHECKLIST.md"),

@@ -48,7 +48,7 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
     "prompts/CTO_SESSION_PROMPT.md",
-    "prompts/CODING_AGENT_PROMPT_GUIDE.md",
+    "prompts/CODING_AGENT_STARTUP_PROMPT.md",
     "prompts/BOOTSTRAP_INTAKE_PROMPT.md",
     "prompts/FINAL_HANDOFF_TEMPLATE.md",
     "prompts/RUNTIME_IDENTITY_CHECKLIST.md",
@@ -197,7 +197,7 @@ def check_readme(path: Path) -> list[str]:
 
     required_phrases = [
         "prompts/CTO_SESSION_PROMPT.md",
-        "prompts/CODING_AGENT_PROMPT_GUIDE.md",
+        "prompts/CODING_AGENT_STARTUP_PROMPT.md",
         "prompts/FINAL_HANDOFF_TEMPLATE.md",
         "ChatGPT, Claude, Gemini",
         "rm -rf .git",
