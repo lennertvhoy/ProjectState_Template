@@ -26,7 +26,7 @@ durable workflow contract.
 - `docs/EVIDENCE_LOG.md`: proof ledger for user-facing claims
 - `docs/ACCEPTANCE_FREEZES.md`: append-only ledger of accepted user-facing milestones
 - `docs/evidence/`: default artifact root for screenshots, logs, and saved outputs
-- `scripts/init_template.py`: `new` and `adopt` workflow installer
+- `scripts/init_template.py`: use `new` to create a repo from the template, or `adopt` to add the workflow to an existing repo
 - `scripts/check_state_docs.py`: hygiene validator plus `--bootstrap-gate`
 - `prompts/`: optional prompt helpers for bootstrap, CTO review, and handoffs
 - `fixtures/`: sample bootstrap/operating snapshots and inherited-repo edge cases
@@ -43,15 +43,16 @@ workflow directly.
 
 ## Quick Start
 
-1. Run either `python3 scripts/init_template.py new --name "Your Project"` or `python3 scripts/init_template.py adopt --name "Your Project"`.
-2. If the repo came from a direct clone or copy, remove `.git` and verify `git remote -v` before any push.
-3. Start your coding tool with `prompts/CODING_AGENT_PROMPT_GUIDE.md`.
-4. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
-5. If the repo is still in `bootstrap`, let the coding agent ask the minimum strategic questions first.
-6. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot and paste `prompts/CTO_SESSION_PROMPT.md`.
-7. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the first paste-ready coding-agent handoff.
-8. Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before accepting user-facing work or investigating a visual regression.
-9. Run `python3 scripts/check_state_docs.py` during the loop and `python3 scripts/check_state_docs.py --bootstrap-gate` before flipping to operating mode.
+1. If you are creating a new repo from this template, run `python3 scripts/init_template.py new --name "Your Project"`.
+2. If you are adding the workflow to an existing codebase, run `python3 scripts/init_template.py adopt --name "Your Project"`.
+3. If the repo came from a direct clone or copy, remove `.git` and verify `git remote -v` before any push.
+4. Start your coding tool with `prompts/CODING_AGENT_PROMPT_GUIDE.md`.
+5. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
+6. If the repo is still in `bootstrap`, let the coding agent ask the minimum strategic questions first.
+7. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot and paste `prompts/CTO_SESSION_PROMPT.md`.
+8. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the first paste-ready coding-agent handoff.
+9. Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before accepting user-facing work or investigating a visual regression.
+10. Run `python3 scripts/check_state_docs.py` during the loop and `python3 scripts/check_state_docs.py --bootstrap-gate` before flipping to operating mode.
 
 ## Git Safety
 
