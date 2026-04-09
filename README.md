@@ -195,10 +195,7 @@ python3 scripts/check_state_docs.py --bootstrap-gate
 For non-trivial work, separate planning from implementation. Use a planning
 chat to reconstruct context, critique proposals, and scope the next slice. Use
 the coding agent to implement, verify, and update repo truth. The planning chat
-can be ChatGPT, Claude, Gemini, or another capable model.
-- does not have direct access to the repo or state files unless the human
-  pastes context into it
-- fresh handoffs and a fresh coding-agent session matter
+can be ChatGPT, Claude, Gemini, or another capable model. It does not have direct access to the repo or state files unless the human pastes context into it. Fresh handoffs and a fresh coding-agent session matter.
 
 ## Prompt Files
 
@@ -246,6 +243,9 @@ Negative searches stay negative. Use `not found`, `not currently locatable`, or
 existed.
 
 ## Workflow Diagram
+
+The loop is simple: bootstrap a truthful baseline, plan the next slice,
+execute and verify it, then hand off the next clean step.
 
 ```mermaid
 flowchart TD
