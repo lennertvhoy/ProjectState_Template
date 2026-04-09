@@ -45,6 +45,9 @@ When you write a coding-agent prompt, include:
 - backlog IDs or backlog slice references when operating-mode work is involved
 - runtime identity proof before any user-facing acceptance or regression forensics
 - wording discipline that keeps negative searches as `not found`, `not currently locatable`, or `not proven`
+- a requirement to use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape
+- a requirement to use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
+- the relevant validation commands, including `python3 scripts/check_state_docs.py` and `python3 scripts/check_state_docs.py --bootstrap-gate` when bootstrap completion is in scope
 
 In operating mode, target one backlog slice or a very small set of tightly
 related backlog items.

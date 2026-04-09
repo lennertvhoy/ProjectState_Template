@@ -50,9 +50,8 @@ workflow directly.
 5. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
 6. If the repo is still in `bootstrap`, let the coding agent ask the minimum strategic questions first.
 7. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot and paste `prompts/CTO_SESSION_PROMPT.md`.
-8. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the first paste-ready coding-agent handoff.
-9. Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before accepting user-facing work or investigating a visual regression.
-10. Run `python3 scripts/check_state_docs.py` during the loop and `python3 scripts/check_state_docs.py --bootstrap-gate` before flipping to operating mode.
+8. Let the CTO lane define the next scoped coding-agent prompt and enforce the verification and handoff requirements.
+9. Before flipping to operating mode, run `python3 scripts/check_state_docs.py --bootstrap-gate`.
 
 ## Git Safety
 

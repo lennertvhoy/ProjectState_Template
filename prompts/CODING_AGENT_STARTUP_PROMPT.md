@@ -29,6 +29,7 @@ If this is an existing repo state but no CTO prompt was provided:
 - identify what appears to be the highest-leverage next step
 - do not begin non-trivial implementation yet
 - first produce a CTO-ready handoff and a draft CTO prompt with the context needed to continue safely
+- make that draft CTO prompt require `prompts/FINAL_HANDOFF_TEMPLATE.md`, `prompts/RUNTIME_IDENTITY_CHECKLIST.md`, and the relevant validation commands
 
 Treat work as non-trivial if it involves any of:
 - multiple-file changes
