@@ -13,11 +13,6 @@ the human, the CTO lane, and the coding lane.
 `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md` are the
 durable workflow contract.
 
-Important: this repository is the template package, not a downstream product
-repo. It keeps enough state to validate and publish the template, but it should
-not be read as the model for how much day-to-day ceremony a downstream repo
-needs for every small maintenance edit.
-
 ## What You Get
 
 - `AGENTS.md`: operating contract and mode rules
