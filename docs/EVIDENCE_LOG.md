@@ -27,6 +27,24 @@
 - Prefer durable artifact paths.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-04-09-001: Public Release Hardening Verified
+
+- File: README.md
+- File: scripts/init_template.py
+- File: .github/workflows/validate.yml
+- Title: Public template release flow validated end to end
+- Source/System: test
+- Action: Revalidated the root docs and fixtures, then dry-ran the initializer into temporary normal and minimal targets
+- Shows:
+  - the README now contains the setup, bootstrap, validation, and publishing instructions
+  - the initializer can create a usable target outside the current checkout
+  - minimal mode removes optional example material without breaking validation
+  - CI mirrors the same validation surface as the manual release checks
+- Proves:
+  - the template is ready for public release with the README as the primary usage guide
+- Type: docs-render-verification
+- as_of: 2026-04-09T17:24:48+02:00
+
 ## EV-2026-03-18-001: Bootstrap Dry-Run Fixture Validated
 
 - File: fixtures/bootstrap_dry_run/bootstrap/STATUS.md

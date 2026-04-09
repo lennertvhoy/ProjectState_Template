@@ -4,8 +4,8 @@ version: "truth-first-template-v2"
 schema_version: "1.0"
 
 product:
-  name: PROJECT_NAME
-  one_sentence: "Truth-first project workflow template for technical delivery."
+  name: "Truth-First Project Operating System Template"
+  one_sentence: "Public template for truth-first technical project delivery."
   description: |
     This repository defines a reusable operating system for technical projects:
     stable rules, structured live state, concise status, active queue, roadmap,
@@ -42,6 +42,7 @@ truth_rules:
 
   claim_states:
     observed: verified directly now
+    unknown: not yet determined from available evidence
     reported: supported by prior evidence
     blocked: verification currently prevented
     assumed: provisional working assumption

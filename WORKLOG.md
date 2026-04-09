@@ -4,6 +4,35 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - Public release hardening and README consolidation
+
+**Type:** docs_or_process_only  
+**Status:** COMPLETE  
+**Git Head:** 506535e  
+**Worktree:** dirty (uncommitted release pass)
+
+### What changed
+- Rewrote `README.md` into the canonical end-user guide for setup, bootstrap, validation, and downstream publishing.
+- Hardened `scripts/init_template.py` requirements by aligning the template contract and clarifying public initialization behavior.
+- Tightened public repo assets: ignored local Codex artifacts, removed the broken issue-template contact link, and expanded CI validation coverage.
+- Flipped the template repository itself into truthful `operating` mode and refreshed the root state files accordingly.
+
+### Verification
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating` -> PASS
+- `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-template-demo.t3fPVj` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-template-demo.t3fPVj` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --minimal --target /tmp/state-dd-template-minimal.9XN1rc` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-template-minimal.9XN1rc` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-001`
+
+### Follow-up
+1. Commit the release pass so the handoff can return to a clean worktree state.
+
 ## 2026-03-18 - Generalized workflow template conversion
 
 **Type:** docs_or_process_only  

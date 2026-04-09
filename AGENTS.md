@@ -1,7 +1,7 @@
 ---
-repo_mode: bootstrap
-initialized_on: null
-last_updated: 2026-03-18
+repo_mode: operating
+initialized_on: 2026-03-18
+last_updated: 2026-04-09
 ---
 
 # Truth-First Project Operating System
@@ -34,10 +34,16 @@ These rules apply in all modes:
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
 - end each implementation session with a handoff and hygiene check
+- `README.md` is the primary user guide for this published template
 
 ## Current Mode
 
-This repo currently operates in: `bootstrap`
+This repo currently operates in: `operating`
+
+This template repository itself has already been bootstrapped and is maintained
+as an operating project.
+
+Downstream repos created from this template should begin in `bootstrap` mode.
 
 ## Bootstrap Mode
 
@@ -97,6 +103,7 @@ Create or initialize:
 ### Bootstrap Honesty Rules
 If something is not proven, label it as:
 - `observed`
+- `unknown`
 - `reported`
 - `assumed`
 - `blocked`

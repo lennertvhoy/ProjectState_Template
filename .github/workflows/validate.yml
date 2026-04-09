@@ -17,4 +17,18 @@ jobs:
           python-version: "3.13"
 
       - name: Validate root docs
-        run: python scripts/check_state_docs.py
+        run: python3 scripts/check_state_docs.py
+
+      - name: Validate fixtures
+        run: |
+          python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap
+          python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating
+          python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
+
+      - name: Validate init script
+        run: |
+          tmpdir="$(mktemp -d)"
+          python3 scripts/init_template.py --name "Demo Project" --target "$tmpdir/demo"
+          python3 scripts/check_state_docs.py "$tmpdir/demo"
+          python3 scripts/init_template.py --name "Demo Project" --minimal --target "$tmpdir/minimal"
+          python3 scripts/check_state_docs.py "$tmpdir/minimal"

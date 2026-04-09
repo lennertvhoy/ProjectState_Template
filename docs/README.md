@@ -2,6 +2,8 @@
 
 This folder holds durable project documentation and evidence.
 
+The primary user guide for the template lives in the repository root `README.md`.
+
 ## Current Files
 
 - `EVIDENCE_LOG.md` - ledger of verification artifacts

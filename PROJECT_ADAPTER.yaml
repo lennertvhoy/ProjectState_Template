@@ -1,11 +1,11 @@
 # PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
-version: "truth-first-template-v1"
+version: "truth-first-template-v2"
 
 project:
-  name: PROJECT_NAME
-  short_name: PROJECT_NAME
-  description: "Optional adapter layer for project-specific vocabulary and runtime details."
+  name: truth-first-template
+  short_name: truth-first-template
+  description: "Adapter defaults for the published template repository. Replace these values in downstream repos."
 
 vocabulary:
   control_plane_name: "control plane"
@@ -16,10 +16,13 @@ runtime:
   frontend_port: null
   api_port: null
   public_url: null
-  execution_mode: bootstrap
+  execution_mode: operating
 
-integrations: []
+integrations:
+  - github_issue_templates
+  - github_pr_template
+  - github_actions_validation
 
 notes:
-  - "Populate this file when a real project is attached."
+  - "Downstream projects should replace these defaults during bootstrap."
   - "Keep PROJECT_DNA.yaml focused on invariants."

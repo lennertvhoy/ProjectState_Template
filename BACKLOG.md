@@ -1,28 +1,27 @@
 # BACKLOG - Strategic Roadmap
 
-**Product:** Truth-First Project Operating System
-**Execution Mode:** bootstrap
-**Updated At:** 2026-03-18
+**Product:** Truth-First Project Operating System Template
+**Execution Mode:** operating
+**Updated At:** 2026-04-09
 
 ## Purpose
 
-This backlog is a template for future project planning. Replace these placeholders with real roadmap items once a domain project is attached.
+This backlog tracks medium-term maintenance ideas for the public template itself.
 
 ## NOW
 
-- Define project-specific adapter values.
-- Add the first real tasks to `NEXT_ACTIONS.md`.
-- Complete bootstrap intake and flip `repo_mode` to `operating`.
+- Keep the initializer, README, and state-file contract aligned.
+- Keep CI validation matched to the public release surface.
 
 ## NEXT
 
-- Capture the first verified milestone in `PROJECT_STATE.yaml`.
-- Record evidence for the first user-facing claim.
+- Add stricter automated checks only if they improve signal without bloating the template.
+- Extend examples only when they clarify real downstream usage.
 
 ## LATER
 
-- Extend the workflow for the project's runtime, UI, or data model.
-- Add project-specific verification patterns if needed.
+- Add optional schema-based validation if the structured state grows in complexity.
+- Add release examples only if they remain truthful and lightweight.
 
 ## WATCHLIST
 

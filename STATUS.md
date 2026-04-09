@@ -1,25 +1,22 @@
 # Truth-First Workflow Status
 
-**Updated At:** 2026-03-18 18:30 CET
-**Execution Mode:** bootstrap
-**Project State:** generalized_workflow_template
+**Updated At:** 2026-04-09 17:24 CEST
+**Execution Mode:** operating
+**Project State:** public_template_release
 **Public URL:** not configured
 
 ## Snapshot
 
-- This copy is the reusable truth-first workflow scaffold.
-- It is currently in bootstrap mode, not operating mode.
-- The fixtures and public-release helpers are validated.
-- Current work should be tracked through `NEXT_ACTIONS.md`.
-- Current truth should be tracked through `PROJECT_STATE.yaml`.
-- Historical detail belongs in `WORKLOG.md`.
-- Evidence for user-facing claims belongs in `docs/EVIDENCE_LOG.md`.
+- This repository is the public template release for the truth-first workflow.
+- `README.md` is the canonical user guide for setup, bootstrap, and daily use.
+- New repos created from this template should initialize into `bootstrap` mode.
+- The root docs, fixtures, and init flow are validated with the included scripts.
+- This repo ships workflow documentation and helper scripts, not an app runtime.
 
 ## Immediate Priorities
 
-1. Attach a real project adapter when this template is reused.
-2. Populate the active queue with the first real work items.
-3. Complete bootstrap intake, then flip to operating mode.
+1. Keep the README and initializer aligned as the template contract evolves.
+2. Preserve fixtures and CI validation as release guardrails.
 
 ## Active Blockers
 

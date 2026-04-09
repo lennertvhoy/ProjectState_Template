@@ -1,14 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-03-18 18:30 CET
-**Execution Mode:** bootstrap
+**Updated At:** 2026-04-09 17:24 CEST
+**Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-No active project work is defined in this template copy.
-
-Add open items here only when a real project is attached.
+No active template maintenance work is queued right now.
 
 ## Queue Rules
 

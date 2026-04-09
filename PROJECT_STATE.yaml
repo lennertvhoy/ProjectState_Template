@@ -1,26 +1,23 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-03-18T19:40:00+01:00
+  updated_at: 2026-04-09T17:26:16+02:00
   updated_by: agent
   version: "truth-first-template-v2"
 
 workflow:
-  repo_mode: bootstrap
+  repo_mode: operating
   bootstrap:
-    completed: false
-    completed_on: null
-    system_investigated: false
-    repo_investigated: false
-    user_intake_complete: false
-    unknowns_remaining:
-      - product not yet defined
-      - primary user not yet defined
-      - target deployment/runtime not yet defined
-      - first real milestone not yet defined
+    completed: true
+    completed_on: 2026-04-09
+    system_investigated: true
+    repo_investigated: true
+    user_intake_complete: true
+    unknowns_remaining: []
 
 verification_labels:
   observed: verified directly in the current session
+  unknown: not yet determined from currently available evidence
   reported: supported by prior evidence, not re-verified
   blocked: verification attempted but prevented
   assumed: temporary working assumption
@@ -29,31 +26,77 @@ verification_labels:
 
 current_state:
   repository:
-    canonical_path: /var/home/ff/Documents/StateDD_Template
+    canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
-    branch: prove/ci-tooling-runtime-v2
-    head: 2922f57
+    branch: main
+    head: 506535e
 
   operating_mode:
     status: observed
-    mode: bootstrap
+    mode: operating
     summary: |
-      This repository is the reusable truth-first workflow template.
-      It is currently in bootstrap mode so future projects can baseline truth
-      before transitioning to steady operating mode.
+      This repository is the published template distribution for the truth-first
+      project operating system. The template repo itself runs in operating mode.
+      Downstream repos created from it should begin in bootstrap mode.
 
   project:
-    name: PROJECT_NAME
-    type: project_template
-    lifecycle_stage: template
-    truth_summary: current_state_only
+    name: Truth-First Project Operating System Template
+    type: documentation_and_workflow_template
+    lifecycle_stage: operating
+    truth_summary: public_template_release
 
-  runtime:
-    status: unconfigured
-    services: []
-    public_url: null
-    notes: |
-      Add project-specific runtime details only after a real project is attached.
+  environment:
+    status: observed
+    host:
+      os: Fedora Linux 43 (Workstation Edition)
+      kernel: Linux 6.19.10-200.fc43.x86_64
+      shell: /bin/bash
+      terminal: xterm-256color
+    package_managers:
+      - dnf
+    language_runtimes:
+      python: 3.14.3
+    container_tooling:
+      podman: present
+      docker: absent
+    browser_tooling:
+      chrome: present
+    ports:
+      listeners: blocked
+      notes: |
+        `ss -ltn` could not fully inspect listeners in the sandbox because the
+        netlink socket was not permitted.
+
+  repository_structure:
+    status: observed
+    top_level_entries:
+      - .github
+      - docs
+      - fixtures
+      - prompts
+      - scripts
+      - AGENTS.md
+      - BACKLOG.md
+      - DESIGN.md
+      - NEXT_ACTIONS.md
+      - PROJECT_ADAPTER.yaml
+      - PROJECT_DNA.yaml
+      - PROJECT_STATE.yaml
+      - README.md
+      - STATUS.md
+      - WORKLOG.md
+    entrypoints:
+      - scripts/init_template.py
+      - scripts/check_state_docs.py
+    test_setup:
+      - root hygiene validation with scripts/check_state_docs.py
+      - fixture validation for bootstrap and operating snapshots
+      - dry-run initialization into temporary directories
+    deployment_assumptions:
+      - distributed as a git-hosted template repository
+      - no application runtime or service deployment is bundled
+    contradictions:
+      - release-hardening pass removed the broken placeholder contact link in issue-template config
 
   evidence:
     status: active
@@ -62,7 +105,9 @@ current_state:
 
   documentation:
     status: observed
+    primary_user_guide: README.md
     live_docs:
+      - README.md
       - AGENTS.md
       - STATUS.md
       - PROJECT_STATE.yaml
@@ -73,40 +118,43 @@ current_state:
       - docs/EVIDENCE_LOG.md
 
   handoff:
-    last_session_date: 2026-03-18
-    git_head: 6775286
-    worktree_clean: true
+    last_session_date: 2026-04-09
+    git_head: 506535e
+    worktree_clean: false
 
   validation:
     status: observed
+    root_hygiene_check:
+      command: python3 scripts/check_state_docs.py
+      result: passed
     dry_run_fixture:
       path: fixtures/bootstrap_dry_run
       bootstrap_snapshot: observed
       operating_snapshot: observed
       hygiene_checks:
-        - "python scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap"
-        - "python scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating"
+        - "python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap"
+        - "python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating"
       result: passed
     messy_fixture:
       path: fixtures/messy_inherited_repo/bootstrap
       bootstrap_snapshot: observed
-      contradictory_claims:
+      contradictory_inputs:
         - production is stable
         - kubernetes migration is complete
         - next.js frontend only
         - python background worker system
-      labels_used:
-        - reported
-        - blocked
-        - assumed
-        - unknown
       result: passed
+    init_script:
+      script: scripts/init_template.py
+      default_target_dry_run: passed
+      minimal_target_dry_run: passed
 
   publication:
     status: observed
+    readme_instructions_complete: true
     one_command_init:
       script: scripts/init_template.py
-      temp_dir_dry_run: passed
+      supports_external_target: observed
     minimal_mode:
       removes:
         - fixtures
@@ -116,6 +164,7 @@ current_state:
       prompts: present
       github_workflow: present
       issue_templates: present
+      pr_template: present
       adapter_file: present
 
 active_problems: []
