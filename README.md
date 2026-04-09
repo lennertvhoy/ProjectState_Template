@@ -25,8 +25,8 @@ are the operating system itself.
 
 ## Workflow Modes
 
-- `bootstrap`: use this when the repo is new, inherited, or unclear. The goal is to establish truthful baseline state.
-- `operating`: use this after bootstrap is complete. The project runs steady-state with short queues, explicit verification, and clean handoffs.
+- `bootstrap`: use this when the repo is new, inherited, or unclear. The goal is to establish a complete truthful operating baseline before implementation mode begins.
+- `operating`: use this only after bootstrap is complete. The project runs as a backlog-slice execution loop with short queues, explicit verification, and clean handoffs.
 
 This template repository is itself maintained in `operating` mode.
 Repos created from the template should start in `bootstrap`.
@@ -38,7 +38,8 @@ Repos created from the template should start in `bootstrap`.
 3. Start your coding agent with the coding-agent startup prompt from this README.
 4. Let the coding agent read the repo files in order, notice that the repo is in `bootstrap` mode, and ask you the minimum strategic questions needed.
 5. After that first bootstrap intake, set up the CTO lane in ChatGPT, Claude, Gemini, or another chatbot using `prompts/CTO_SESSION_PROMPT.md`.
-6. Use the coding-agent handoff plus your answers as the first CTO input, then continue the normal loop.
+6. Use the coding-agent handoff plus your answers as the first CTO input, then let the CTO help complete bootstrap.
+7. Do not enter implementation mode until the state files and a real backlog are filled out enough to truthfully guide work.
 
 ## Git Safety
 
@@ -97,9 +98,10 @@ If you want the shortest reliable setup path, do exactly this:
 7. Create a separate CTO chat in ChatGPT, Claude, Gemini, or another chatbot.
 8. Paste the CTO startup prompt from the section below into that chat.
 9. Paste the coding agent's first bootstrap handoff plus your answers into the CTO chat.
-10. Start the next coding-agent session from the CTO prompt.
-11. After changes, run `python3 scripts/check_state_docs.py`.
-12. Do not switch to `operating` mode until bootstrap truth is actually established.
+10. Use the CTO lane to help with brainstorming, research, contradictions, architecture, and backlog shaping until bootstrap is truthfully complete.
+11. Only then start the operating loop from a CTO prompt aimed at a backlog slice.
+12. After changes, run `python3 scripts/check_state_docs.py`.
+13. Do not switch to `operating` mode until bootstrap truth is actually established.
 
 ## What The Init Script Does
 
@@ -137,6 +139,30 @@ The coding agent should start every repo session by reading:
 The human does not need to do this manual read-order step before the first bootstrap intake.
 Read `BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
 
+## Bootstrap Completion Gate
+
+Bootstrap is not complete just because the repo was inspected once.
+
+Before switching to `operating`, the repo should have:
+
+- a truthful `STATUS.md`
+- a substantially filled `PROJECT_STATE.yaml`
+- a stable enough `PROJECT_DNA.yaml` to guide implementation
+- a meaningful `PROJECT_ADAPTER.yaml` when project vocabulary or runtime details matter
+- an active `NEXT_ACTIONS.md`
+- a real `BACKLOG.md`, not a placeholder
+- enough evidence and history entries to explain what was established during bootstrap
+
+Bootstrap should also include CTO work, not just coding-agent intake:
+
+- brainstorming about what the project should become
+- research and contradiction resolution
+- architecture and delivery-shape decisions
+- backlog shaping and prioritization
+- deciding what implementation mode should attack first
+
+Do not switch to `operating` until those pieces are truthfully present.
+
 ## Setting Up The AI CTO Agent
 
 This workflow works best when strategy and implementation are split.
@@ -152,6 +178,7 @@ Important constraint:
 - The CTO lane only sees what the human relays: handoffs, state excerpts, screenshots, feedback, and extra context.
 - For non-trivial work, each loop should normally start a fresh coding-agent session rather than relying on old chat context.
 - During initial bootstrap, the coding agent should usually go first: it reads the repo contract, sees `bootstrap` mode, and asks the minimum strategic questions needed before the CTO loop fully takes over.
+- Bootstrap is a shared CTO + coding-agent phase. The CTO lane should help with brainstorming, research, contradiction resolution, architecture framing, and backlog shaping before implementation mode begins.
 
 Recommended setup:
 
@@ -174,6 +201,8 @@ A valid CTO handoff should usually include:
 If the CTO lane cannot produce that level of specificity yet, the next step is usually more investigation, not implementation.
 
 The CTO prompt should also remind the coding agent to follow `AGENTS.md` and to end with one final handoff message that can be pasted back into the CTO chat.
+For operating-mode work, the CTO prompt should usually target one backlog slice or a small set of tightly related backlog items.
+If the coding tool supports subagents and the task benefits from parallel work, the CTO should explicitly encourage using them.
 
 The main operating explanation stays in this README. The prompt files are support material, not the primary documentation.
 
@@ -187,16 +216,17 @@ flowchart TD
     NOTE[CTO chat only sees what the human pastes]
 
     subgraph Bootstrap["Bootstrap Phase"]
-        B1[Investigate host + repo reality]
-        B2[Record observed truth + unknowns]
-        B3[Create first active queue]
-        B4[Baseline truthful enough to switch modes]
-        B1 --> B2 --> B3 --> B4
+        B1[Coding agent reads repo + asks minimum strategic questions]
+        B2[CTO helps with brainstorming, research,<br/>contradictions, architecture, backlog]
+        B3[State files are truthfully filled out]
+        B4[Backlog + next actions are ready]
+        B5[Bootstrap complete enough to enter operating mode]
+        B1 --> B2 --> B3 --> B4 --> B5
     end
 
     subgraph Operating["Operating Phase"]
         O1[Human pastes latest handoff + extra context into CTO chat]
-        O2[CTO writes next scoped coding-agent prompt]
+        O2[CTO writes next backlog-slice prompt]
         O3[Human starts a fresh coding-agent session]
         O4[Coding agent executes one coherent step]
         O5[Final handoff + verification + state updates]
@@ -221,7 +251,7 @@ flowchart TD
     NOTE -.-> CTO
 
     H --> B1
-    B4 --> O1
+    B5 --> O1
 
     CA -. reads and updates .-> AG
     CA -. reads and updates .-> ST
@@ -235,7 +265,7 @@ flowchart TD
 
 Read the diagram like this:
 
-- bootstrap is for establishing truthful baseline context
+- bootstrap is a broader discovery-and-planning phase with both the coding lane and CTO lane involved
 - operating is a human-relayed loop between the CTO chat and fresh coding-agent sessions
 - the human stays in the loop for priorities, corrections, approvals, and context transfer
 - the CTO chat does not automatically see the repo or state files
@@ -266,6 +296,13 @@ When I paste state, handoffs, or repo details:
 3. tell me the single best next move
 4. if appropriate, write the next coding-agent prompt
 
+During bootstrap, help with:
+- brainstorming what the project should become
+- research and contradiction resolution
+- architecture framing
+- backlog design and prioritization
+- deciding when the repo is complete enough to enter operating mode
+
 When you write a coding-agent prompt, include:
 - the exact scope
 - the constraints that matter
@@ -274,6 +311,9 @@ When you write a coding-agent prompt, include:
 - the condition for being done
 - a reminder to follow `AGENTS.md`
 - a requirement to end with one final handoff message I can paste back to you
+
+In operating mode, aim prompts at one backlog slice or a very small set of tightly related backlog items.
+If the coding tool supports subagents and the task would benefit, encourage using them explicitly.
 
 Assume each coding-agent run is a fresh session.
 Restate any context that is not safely preserved in repo state files.
@@ -306,6 +346,8 @@ Treat work as non-trivial if it includes any of:
 - anything likely to require more than one implementation prompt
 
 Do not overclaim. Verify directly. Update state/docs when truth changes.
+In operating mode, assume the task should usually be a backlog slice unless the prompt explicitly says otherwise.
+If your coding tool supports subagents and the task can be parallelized safely, use them when that is clearly beneficial.
 At the end of the session, stop and provide one final handoff message I can paste to the CTO agent.
 ```
 
@@ -317,7 +359,9 @@ Use this with the CTO agent when starting a new repo or inherited repo:
 We already completed the first bootstrap intake with the coding agent for this repository.
 
 Use the pasted handoff and my answers to reconstruct truthful baseline state.
+Help me complete bootstrap, not rush into implementation.
 If anything critical is still missing, ask only the minimum follow-up questions needed.
+Help with brainstorming, research, contradictions, architecture, and backlog shaping as needed.
 Then produce the best next coding-agent prompt for the next bootstrap step.
 ```
 
@@ -328,11 +372,12 @@ When a new project starts, do this in order:
 1. Investigate the host system and runtime.
 2. Investigate the repo structure and actual implementation reality.
 3. Ask only the minimum strategic questions needed.
-4. Update the state files with observed truth and explicit unknowns.
-5. Create the first short active queue in `NEXT_ACTIONS.md`.
-6. Record evidence for any user-facing claims in `docs/EVIDENCE_LOG.md`.
-7. Flip `repo_mode` to `operating` when baseline truth is actually established.
-8. Append the outcome to `WORKLOG.md`.
+4. Use the CTO lane to help with brainstorming, research, contradictions, architecture, and backlog shaping.
+5. Update the state files with observed truth and explicit unknowns.
+6. Prepare a real `BACKLOG.md` and the first short active queue in `NEXT_ACTIONS.md`.
+7. Record evidence for any user-facing claims in `docs/EVIDENCE_LOG.md`.
+8. Flip `repo_mode` to `operating` only when the baseline and backlog are actually established.
+9. Append the outcome to `WORKLOG.md`.
 
 If something is not proven, label it honestly as `observed`, `unknown`, `reported`,
 `assumed`, `blocked`, `stale`, or `invalid`.
@@ -361,10 +406,11 @@ Once bootstrap is complete:
 2. Put structured live truth in `PROJECT_STATE.yaml`.
 3. Put stable architecture assumptions in `PROJECT_DNA.yaml`.
 4. Keep only open work in `NEXT_ACTIONS.md`.
-5. Paste the latest coding-agent final handoff and any extra context into the CTO chat.
-6. Start a fresh coding-agent session from the new CTO prompt.
-7. Move completed history to `WORKLOG.md`.
-8. Back every user-facing claim with direct evidence and end implementation sessions with a final handoff.
+5. Let the CTO lane choose the next backlog slice or small related group of backlog items.
+6. Paste the latest coding-agent final handoff and any extra context into the CTO chat.
+7. Start a fresh coding-agent session from the new CTO prompt.
+8. Move completed history to `WORKLOG.md`.
+9. Back every user-facing claim with direct evidence and end implementation sessions with a final handoff that includes usable evidence paths.
 
 ## Common Failure Modes
 
@@ -373,6 +419,8 @@ These are the mistakes this template is meant to prevent:
 - the coding agent starts editing before reading the current state files
 - the user is told to manually read the repo state instead of letting the coding agent do the required read order
 - the CTO lane is started before the first bootstrap intake even though the coding agent should first read the repo and ask the minimum strategic questions
+- bootstrap is treated as a quick formality instead of a real discovery-and-planning phase
+- the repo switches to `operating` before the state files and backlog are truthfully ready
 - the project has no CTO lane, so implementation happens without critique or sequencing
 - the CTO chat is treated as if it can read the repo directly even though it only sees pasted context
 - the same coding-agent session is stretched too long and starts relying on stale chat memory
@@ -391,9 +439,9 @@ Using both a CTO lane and a coding lane is the preferred setup.
 If you only have one AI tool available:
 
 1. Start with a strategy-only pass.
-2. Ask it to reconstruct truth, identify risk, and write the next implementation prompt.
-3. Only after that, ask it to implement the scoped step.
-4. Before ending the session, make it produce a separate final handoff pass and update state/evidence.
+2. Ask it to reconstruct truth, identify risk, and help finish bootstrap before implementation mode.
+3. Only after that, ask it to implement the scoped backlog slice.
+4. Before ending the session, make it produce a separate final handoff pass with evidence paths and update state/evidence.
 
 This is less reliable than using a separate CTO chat, but it is still better than jumping straight into implementation.
 
@@ -406,8 +454,9 @@ Minimal example for a new repo:
 3. The coding agent reads the state files, notices `bootstrap` mode, inspects the repo, and asks you only the minimum strategic questions needed.
 4. Create a CTO chat and paste the CTO startup prompt from this README.
 5. Paste the coding agent's bootstrap handoff plus your answers into the CTO chat.
-6. Give the CTO agent's next scoped prompt to a fresh coding-agent session.
-7. Repeat until the repo has a truthful baseline, then switch to `operating`.
+6. Use the CTO lane to help complete research, architecture framing, and the first real backlog.
+7. Give the CTO agent's next scoped prompt to a fresh coding-agent session.
+8. Repeat until the repo has a truthful baseline and a ready backlog, then switch to `operating`.
 
 If the coding agent tries to skip the CTO lane for non-trivial work, that is a workflow error, not a productivity shortcut.
 

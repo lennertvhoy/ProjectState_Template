@@ -117,6 +117,29 @@
 - Type: docs-render-verification
 - as_of: 2026-04-09T18:20:03+02:00
 
+## EV-2026-04-09-008: Expanded Bootstrap Gate And Operating Model Verified
+
+- File: README.md
+- File: AGENTS.md
+- File: prompts/CTO_SESSION_PROMPT.md
+- File: prompts/CODING_AGENT_PROMPT_GUIDE.md
+- File: prompts/BOOTSTRAP_INTAKE_PROMPT.md
+- File: scripts/init_template.py
+- File: scripts/check_state_docs.py
+- Title: Bootstrap now requires filled state and a real backlog before operating mode
+- Source/System: test
+- Action: Expanded the workflow contract so bootstrap is a joint CTO + coding-agent planning phase and operating mode is backlog-slice driven, then revalidated the root repo and a fresh initialized copy
+- Shows:
+  - the README now includes a bootstrap completion gate and explains that `BACKLOG.md` must be real before switching modes
+  - the docs and prompts now describe CTO participation in brainstorming, research, architecture framing, and backlog shaping during bootstrap
+  - operating-mode prompts now target backlog slices and encourage subagents when supported and useful
+  - handoff expectations now mention absolute evidence paths when available
+- Proves:
+  - the public template now more accurately models a fuller pre-implementation bootstrap phase
+  - downstream repos inherit a clearer and more enforceable contract for moving from discovery into implementation
+- Type: docs-render-verification
+- as_of: 2026-04-09T18:20:03+02:00
+
 ## EV-2026-04-09-001: Public Release Hardening Verified
 
 - File: README.md

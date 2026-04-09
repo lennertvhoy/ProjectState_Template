@@ -55,17 +55,19 @@ Use bootstrap mode when:
 - the user explicitly asks for initialization or re-baselining
 
 ### Bootstrap Goal
-Establish a truthful operating baseline for the project and then switch the repo to operating mode.
+Establish a truthful operating baseline for the project, including filled state
+files and a real backlog, and only then switch the repo to operating mode.
 
 ### Bootstrap Procedure
 1. Investigate the host system and runtime
 2. Investigate the repo structure and implementation reality
 3. Ask the user only the minimum strategic questions needed
-4. Generate initial state and governance files
-5. Mark unknowns honestly
-6. Create the initial backlog and next-actions queue
-7. Update this file to operating mode
-8. Record bootstrap completion in `PROJECT_STATE.yaml` and `WORKLOG.md`
+4. Use the CTO lane for brainstorming, research, contradiction resolution, architecture framing, and backlog shaping
+5. Generate and fill the state and governance files truthfully
+6. Mark unknowns honestly
+7. Create the initial backlog and next-actions queue
+8. Update this file to operating mode only when bootstrap is complete
+9. Record bootstrap completion in `PROJECT_STATE.yaml` and `WORKLOG.md`
 
 ### Required System Investigation
 Inspect and record, when relevant:
@@ -100,6 +102,9 @@ Create or initialize:
 - `WORKLOG.md`
 - `docs/EVIDENCE_LOG.md`
 
+Bootstrap is not complete until these files are filled out enough to guide real
+implementation and `BACKLOG.md` is more than a placeholder.
+
 ### Bootstrap Honesty Rules
 If something is not proven, label it as:
 - `observed`
@@ -132,11 +137,15 @@ Each non-trivial loop should normally start a fresh coding-agent session.
 During initial bootstrap, an initial coding-agent session may come first so it
 can read the repo contract, detect `bootstrap` mode, and ask the minimum
 strategic questions needed before the CTO loop fully takes over.
+Bootstrap should remain a joint CTO + coding-agent phase until the repo truth,
+architecture, backlog, and active queue are ready for implementation mode.
 
 A valid CTO handoff should define the verified current state, one coherent scope,
 required verification, and the exit condition for the implementation step. If
 important context is not preserved in repo state files, the CTO prompt must
 restate it explicitly for the next coding-agent session.
+In operating mode, the scope should usually be a backlog slice or a very small
+set of tightly related backlog items.
 
 ### CTO Review Standard
 Every handoff must be reviewed for:
@@ -161,6 +170,8 @@ Implementation prompts must:
 - require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
 - require the coding agent, when starting in unclear bootstrap mode, to ask the
   minimum strategic questions needed before implementation
+- require the coding agent, when the tool supports it and the task benefits, to
+  use subagents or parallel workers
 
 ## State Files
 
@@ -182,6 +193,7 @@ Every implementation session ends with:
 - git head
 - clean worktree status
 - evidence references
+- absolute file paths for evidence artifacts when available
 - next recommended action
 - handoff wording suitable for direct paste into the CTO chat
 

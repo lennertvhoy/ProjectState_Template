@@ -24,6 +24,7 @@ README_REQUIRED_SECTIONS = [
     "## Git Safety",
     "## First 10 Minutes",
     "## Safe Initialization Paths",
+    "## Bootstrap Completion Gate",
     "## Setting Up The AI CTO Agent",
     "## Workflow Diagram",
     "## Non-Trivial Work",
@@ -149,6 +150,12 @@ def check_readme(path: Path) -> list[str]:
 
     if "fresh coding-agent session" not in text:
         issues.append("README must explain the fresh coding-agent session loop")
+
+    if "real `BACKLOG.md`, not a placeholder" not in text:
+        issues.append("README must explain that bootstrap needs a real backlog before operating mode")
+
+    if "backlog slice" not in text:
+        issues.append("README must explain that operating mode is driven by backlog slices")
 
     return issues
 

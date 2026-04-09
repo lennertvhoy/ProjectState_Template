@@ -110,6 +110,9 @@ Create or initialize:
 - `WORKLOG.md`
 - `docs/EVIDENCE_LOG.md`
 
+Bootstrap is not complete until these files are filled out enough to guide real
+implementation and `BACKLOG.md` is more than a placeholder.
+
 ### Bootstrap Honesty Rules
 If something is not proven, label it as:
 - `observed`
@@ -137,6 +140,8 @@ Use the CTO lane for all non-trivial work. Non-trivial means any task involving
 multiple files, architecture changes, user-facing behavior, integrations,
 migrations, state-structure changes, or work likely to take more than one prompt.
 Each non-trivial loop should normally start a fresh coding-agent session.
+Bootstrap should remain a joint CTO + coding-agent phase until the repo truth,
+architecture, backlog, and active queue are ready for implementation mode.
 
 ### CTO Review Standard
 Every handoff must be reviewed for:
@@ -159,11 +164,15 @@ Implementation prompts must:
 - require screenshots/evidence for user-facing work
 - require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
 - require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
+- require the coding agent, when the tool supports it and the task benefits, to
+  use subagents or parallel workers
 
 A valid CTO handoff should define the verified current state, one coherent scope,
 required verification, and the exit condition for the implementation step. If
 important context is not preserved in repo state files, the CTO prompt must
 restate it explicitly for the next coding-agent session.
+In operating mode, the scope should usually be a backlog slice or a very small
+set of tightly related backlog items.
 
 ## State Files
 
@@ -185,6 +194,7 @@ Every implementation session ends with:
 - git head
 - clean worktree status
 - evidence references
+- absolute file paths for evidence artifacts when available
 - next recommended action
 - handoff wording suitable for direct paste into the CTO chat
 
@@ -569,8 +579,9 @@ def main() -> int:
     print("3. Start the coding agent with the startup prompt from README.md")
     print("4. Let the coding agent read the repo files, detect bootstrap mode, and ask the minimum strategic questions")
     print("5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
-    print(f"6. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
-    print("7. Switch repo_mode to operating when baseline truth is established")
+    print("6. Use bootstrap to fill the state files and prepare a real backlog before operating mode")
+    print(f"7. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
+    print("8. Switch repo_mode to operating only when baseline truth and backlog are established")
     return 0
 
 

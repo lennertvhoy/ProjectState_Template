@@ -169,6 +169,8 @@ current_state:
       cto_context_is_human_relayed: present
       fresh_coding_agent_session_loop: present
       bootstrap_starts_with_coding_agent_intake: present
+      bootstrap_completion_gate: present
+      operating_mode_is_backlog_slice_driven: present
       tool_agnostic_agent_examples: present
       naming_consistency: present
       workflow_diagram: present
@@ -197,6 +199,10 @@ current_state:
       coding_agent_reads_repo_contract: true
       coding_agent_asks_minimum_strategic_questions: true
       cto_lane_starts_after_initial_intake: true
+    bootstrap_completion:
+      cto_participates_in_brainstorming_and_research: true
+      state_files_must_be_filled_before_operating: true
+      backlog_must_be_real_before_operating: true
     cto_lane:
       repo_access: user_relayed_only
       receives:
@@ -211,5 +217,8 @@ current_state:
       non_trivial_work_uses_fresh_session: true
       final_handoff_required: true
       final_handoff_destination: human_then_cto_lane
+      operating_mode_targets_backlog_slices: true
+      encourages_subagents_when_supported_and_useful: true
+      final_handoff_includes_absolute_evidence_paths_when_available: true
 
 active_problems: []

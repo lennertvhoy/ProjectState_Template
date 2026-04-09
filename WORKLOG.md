@@ -4,6 +4,32 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - Bootstrap gate and backlog-slice operating model expanded
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** 59aba64
+**Worktree:** dirty (uncommitted workflow-contract expansion)
+
+### What changed
+- Expanded `README.md` so bootstrap is now explicitly a broader CTO + coding-agent discovery and planning phase that must fill out the state files and produce a real backlog before `operating` mode begins.
+- Clarified that operating mode should usually execute one backlog slice or a very small group of tightly related backlog items from a fresh coding-agent session.
+- Updated `AGENTS.md`, prompt helpers, validator rules, and generated init output so downstream repos inherit the same stronger bootstrap gate, subagent encouragement, and evidence-path handoff expectations.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` -> PASS
+- `python3 scripts/check_state_docs.py` -> PASS
+- `python3 scripts/init_template.py --name "Demo Project" --target /tmp/state-dd-bootstrap-expanded-verify.NU1B7e/demo` -> PASS
+- `python3 scripts/check_state_docs.py /tmp/state-dd-bootstrap-expanded-verify.NU1B7e/demo` -> PASS
+- `rg -n 'Bootstrap Completion Gate|real \`BACKLOG.md\`, not a placeholder|backlog slice|subagents|absolute file paths' /tmp/state-dd-bootstrap-expanded-verify.NU1B7e/demo/README.md /tmp/state-dd-bootstrap-expanded-verify.NU1B7e/demo/AGENTS.md /tmp/state-dd-bootstrap-expanded-verify.NU1B7e/demo/prompts/CTO_SESSION_PROMPT.md /tmp/state-dd-bootstrap-expanded-verify.NU1B7e/demo/prompts/CODING_AGENT_PROMPT_GUIDE.md` -> PASS
+- `git diff --check` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-008`
+
+### Follow-up
+1. Commit this workflow-contract expansion if you want the remote repo updated again.
+
 ## 2026-04-09 - Bootstrap-first onboarding flow corrected
 
 **Type:** docs_or_process_only

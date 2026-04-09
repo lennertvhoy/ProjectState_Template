@@ -7,6 +7,7 @@ Rules:
 - ask only what is needed to unblock truthful bootstrap
 - do not invent architecture or maturity
 - preserve unknowns explicitly when the user cannot prove something yet
+- treat bootstrap as a broader discovery and planning phase, not a quick prelude to coding
 
 Ask only the minimum strategic questions needed:
 
