@@ -4,13 +4,13 @@ AI-assisted projects drift.
 
 Context decays, screenshots go stale, repo truth falls behind runtime truth, and
 important decisions disappear into chat history. This template gives humans and
-AI agents a shared operating context in the repo: live state, a short active
+AI agents a shared source of truth in the repo: live state, a short active
 queue, evidence for claims, and clean handoffs between planning and execution.
 
 It is for software projects that want more discipline than ad hoc prompting
 without turning the repo into process theater.
 
-This repository ships the template itself. It keeps the workflow contract
+This repository publishes the template itself. It keeps the workflow contract
 public and reusable, but it does not try to use its own state files as a
 running diary for every small template maintenance edit. Downstream repos
 created from it should use the full workflow directly.
@@ -63,23 +63,19 @@ slices.
 
 ## How It Works
 
-The workflow has two modes:
-
-- `bootstrap`: investigate the repo, separate observed facts from assumptions,
-  resolve contradictions, and build a truthful baseline
-- `operating`: execute one backlog slice at a time with direct verification,
-  evidence, and a final handoff
-
-The planning chat and the coding agent are intentionally separated for
-non-trivial work. The planning side reconstructs context and chooses the next
-slice. The coding side implements, verifies, and updates repo truth.
+1. `bootstrap`: establish a truthful baseline by separating observed facts from
+   assumptions.
+2. plan: choose one small next slice.
+3. execute: implement and verify directly.
+4. record: update state and evidence when truth changes.
+5. handoff: leave the next session a clear starting point.
 
 ## What Makes This Different
 
-- `runtime identity proof`: before accepting user-facing behavior, prove which
-  repo, branch, commit, process, and endpoint were actually under test
-- `acceptance freezes`: accepted user-facing milestones are frozen to source,
-  runtime, and evidence so later work has a clean reference point
+- prove which runtime was actually under test before accepting behavior
+  (`runtime identity proof`)
+- freeze accepted milestones to source, runtime, and evidence
+  (`acceptance freeze`)
 - `negative-search honesty`: a failed search stays `not found` or
   `not proven`; it does not become `never existed`
 - `bootstrap vs operating`: discovery is a real phase, not a formality
@@ -178,15 +174,9 @@ python3 scripts/init_template.py adopt --name "Your Project" --install-github-as
 
 ## Agent Read Order
 
-The coding agent should start every repo session by reading:
-
-1. `AGENTS.md`
-2. `STATUS.md`
-3. `PROJECT_STATE.yaml`
-4. `PROJECT_DNA.yaml`
-5. `NEXT_ACTIONS.md`
-
-Read `BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
+Every fresh coding-agent session should start with `AGENTS.md`, `STATUS.md`,
+`PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`. Read
+`BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
 
 ## Bootstrap Completion Gate
 
@@ -226,37 +216,23 @@ wording:
 
 ## Core Workflow
 
-1. Build a truthful bootstrap baseline.
-2. Keep `STATUS.md` short and current.
-3. Store structured live truth in `PROJECT_STATE.yaml`.
-4. Keep `NEXT_ACTIONS.md` limited to active open work.
-5. Reference stable backlog IDs from `BACKLOG.md`.
-6. Use the planning chat to choose the next small slice.
-7. Let the coding agent implement one coherent step.
-8. Verify directly and record evidence for user-facing claims.
-9. End with a final handoff suitable for the next planning pass.
+Keep `STATUS.md` short, store live truth in `PROJECT_STATE.yaml`, keep
+`NEXT_ACTIONS.md` limited to active open work, link that work to stable backlog
+IDs, verify user-facing claims directly, and end each non-trivial slice with a
+handoff.
 
 ## Final Handoff Template
 
-Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when the coding agent ends a session.
-The handoff should capture what changed, what was verified, repo path, branch,
-git head, process or container, endpoint, rebuild status, evidence refs, and
-the next recommended backlog slice.
+Use `prompts/FINAL_HANDOFF_TEMPLATE.md`. The handoff should capture what
+changed, what was verified, repo path, branch, git head, process or container,
+endpoint, rebuild status, evidence refs, and the next recommended backlog
+slice.
 
 ## Runtime Identity Proof
 
-Before accepting user-facing behavior, prove runtime identity first:
-
-- repo path
-- branch
-- HEAD commit
-- process or container serving the artifact
-- port, base URL, or endpoint under test
-- whether the artifact was rebuilt or restarted in this slice
-- whether duplicate runtimes or stale build outputs were checked
-
-This prevents mismatch between screenshot truth, repo truth, and runtime
-identity.
+Before accepting user-facing behavior, first prove which repo, branch, HEAD
+commit, process or container, and endpoint were actually under test, plus
+whether the artifact was rebuilt and whether duplicate runtimes were checked.
 
 ## Acceptance Freezes
 
@@ -291,9 +267,8 @@ flowchart TD
 
 Treat work as non-trivial when it changes multiple files, changes workflow or
 state structure, affects user-facing behavior, or is likely to take more than
-one prompt. In operating mode, that work should normally be scoped as one
-coherent backlog slice and run through the planning chat plus a fresh
-coding-agent session.
+one prompt. In operating mode, scope that work as one backlog slice and run it
+through the planning chat plus a fresh coding-agent session.
 
 ## Common Failure Modes
 
@@ -302,7 +277,6 @@ coding-agent session.
 - the planning chat is treated as if it can read the repo directly
 - user-facing claims are made without evidence
 - screenshots are accepted before runtime identity is proven
-- `NEXT_ACTIONS.md` grows beyond a short active queue
 - a failed search is upgraded to a false certainty
 
 ## Publishing A Downstream Project
