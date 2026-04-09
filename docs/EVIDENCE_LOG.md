@@ -73,6 +73,20 @@
 - Type: docs-render-verification
 - as_of: 2026-04-09T20:12:00+02:00
 
+## EV-2026-04-09-011: README Opening Copy Cleaned Up
+
+- File: README.md
+- Title: Public README opening rewritten for readability
+- Source/System: test
+- Action: Rewrote the first paragraphs so the template introduction reads naturally before introducing the slug/name distinction
+- Shows:
+  - the README now explains what the template is before explaining how it is named
+  - the required naming relationship remains explicit without leading with internal vocabulary
+- Proves:
+  - the public-facing landing text is easier to read without weakening the naming contract
+- Type: docs-render-verification
+- as_of: 2026-04-09T20:20:00+02:00
+
 ## EV-2026-04-09-004: Release Readiness Hardening Verified
 
 - File: README.md

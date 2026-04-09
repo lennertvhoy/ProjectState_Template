@@ -1,12 +1,17 @@
 # State Drive Development Template
 
-`StateDD_Template` is the repo/template slug. `State Drive Development Template`
-is the human-facing template name. `Truth-First Project Operating System` is
-the operating model installed by the template.
-
 This repository is a public template for technical projects that want explicit
 live state, evidence-backed claims, a short active queue, stable backlog IDs,
 and clean handoffs.
+
+It installs the `Truth-First Project Operating System`: a lightweight workflow
+for AI-assisted delivery built around durable state files, evidence logs,
+backlog slices, and clean handoffs between the human, the CTO lane, and the
+coding lane.
+
+Naming note: `StateDD_Template` is the repository/template slug used for
+distribution. `State Drive Development Template` is the public-facing template
+name.
 
 `README.md` is the primary user guide. `AGENTS.md`, `STATUS.md`,
 `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `NEXT_ACTIONS.md`, `BACKLOG.md`,

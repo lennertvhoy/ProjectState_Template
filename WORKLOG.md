@@ -4,6 +4,26 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-09 - README opening rewritten for readability
+
+**Type:** docs_or_process_only
+**Status:** COMPLETE
+**Git Head:** a708a6e
+**Worktree:** dirty (uncommitted README copy cleanup)
+
+### What changed
+- Rewrote the opening of `README.md` so the public-facing introduction explains the template before introducing the slug/name distinction.
+- Kept the required naming relationship intact while making the first screen more readable for public users.
+
+### Verification
+- `python3 scripts/check_state_docs.py` -> PASS
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-04-09-011`
+
+### Follow-up
+1. If you want, we can do a second readability pass on the rest of the README rather than only the opening.
+
 ## 2026-04-09 - Runtime-identity and acceptance-freeze guardrails added
 
 **Type:** docs_or_process_only
