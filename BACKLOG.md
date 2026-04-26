@@ -1,32 +1,29 @@
 # BACKLOG - Strategic Roadmap
 
-**Product:** State Driven Development Template
-**Execution Mode:** operating
-**Updated At:** 2026-04-09
+**Product:** Your Project
+**Execution Mode:** bootstrap
+**Updated At:** 2026-04-26
 
 ## Purpose
 
-This backlog tracks medium-term maintenance ideas for the public template itself.
-Reference these stable IDs from `NEXT_ACTIONS.md` whenever active queue items exist.
+This backlog tracks medium-term work using stable backlog IDs.
+Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-001] Keep the initializer, generated contract, README, prompt files, and validator aligned.
-- [BL-002] Preserve adoption safety and bootstrap-gate enforcement without bloating the template.
+- [BL-001] Establish the project identity, primary user, and first milestone.
+- [BL-002] Capture the initial runtime, deployment, and constraint baseline in the state files.
 
 ## NEXT
 
-- [BL-003] Add stricter automated checks only when they improve signal without creating noisy false positives.
-- [BL-004] Extend examples only when they clarify real downstream usage.
+- [BL-003] Prepare the first active queue and bootstrap evidence trail.
 
 ## LATER
 
-- [BL-005] Add schema-based validation only if the structured state grows materially in complexity.
-- [BL-006] Add release examples only if they remain truthful and lightweight.
+- [BL-004] Enter operating mode only after the baseline is truthful and the backlog is real.
 
 ## WATCHLIST
 
 - Queue bloat.
-- Missing evidence references.
-- Live-state/history drift.
-- Unclear adapter boundaries.
+- Unverified claims.
+- Premature operating-mode transition.

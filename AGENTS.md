@@ -1,7 +1,7 @@
 ---
-repo_mode: operating
-initialized_on: 2026-03-18
-last_updated: 2026-04-09
+repo_mode: bootstrap
+initialized_on: 2026-04-26
+last_updated: 2026-04-26
 ---
 
 # State Driven Development Template Contract
@@ -36,17 +36,11 @@ These rules apply in all modes:
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
 - end each implementation session with a handoff and hygiene check
-- `README.md` is the primary user guide for this published template
+- `README.md` is the primary user guide for the project
 
 ## Current Mode
 
-This repo currently operates in: `operating`
-
-This repository ships the template itself. It keeps enough state to validate the
-template and publish it responsibly, but it is not meant to dogfood the full
-downstream workflow on every maintenance edit.
-
-Downstream repos created from this template should begin in `bootstrap` mode.
+This repo currently operates in: `bootstrap`
 
 ## Bootstrap Mode
 

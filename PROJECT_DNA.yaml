@@ -4,12 +4,11 @@ version: "statedd-template-v3"
 schema_version: "1.0"
 
 product:
-  name: "State Driven Development Template"
-  one_sentence: "Public template for truth-first AI-assisted technical project delivery."
+  name: "Your Project"
+  one_sentence: "Project using the State Driven Development Template workflow."
   description: |
-    This repository defines a reusable operating system for technical projects:
-    stable rules, structured live state, concise status, active queue, roadmap,
-    history, evidence-led verification, and backlog-ID-linked execution.
+    This repository uses explicit state, a short active queue, durable history,
+    and evidence-led verification for AI-assisted technical delivery.
   is:
     - truth_first
     - evidence_backed
@@ -17,9 +16,9 @@ product:
     - history_separated_from_state
     - active_queue_is_short
   is_not:
-    - product_specific
     - runtime_status_dump
     - append_only_status_file
+    - proof_by_chat_only
 
 truth_rules:
   contract_files:

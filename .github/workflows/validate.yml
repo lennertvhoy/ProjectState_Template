@@ -4,22 +4,33 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.13"
+
+      - name: Compile Python scripts
+        run: |
+          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/test_init_template.py
 
       - name: Validate root docs
         run: |
           python3 scripts/check_state_docs.py
-          python3 scripts/check_state_docs.py --bootstrap-gate
+          if python3 scripts/check_state_docs.py --bootstrap-gate; then
+            echo "expected root template state to remain bootstrap-initial"
+            exit 1
+          fi
 
       - name: Validate fixtures
         run: |
@@ -34,6 +45,7 @@ jobs:
 
       - name: Validate init script
         run: |
+          python3 scripts/test_init_template.py
           tmpdir="$(mktemp -d)"
           python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/demo"
           python3 scripts/check_state_docs.py "$tmpdir/demo"
@@ -58,3 +70,4 @@ jobs:
           test -f "$tmpdir/adopt-source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
           test -f "$tmpdir/adopt-source/docs/ACCEPTANCE_FREEZES.md"
           python3 scripts/check_state_docs.py "$tmpdir/adopt-source"
+          python3 scripts/check_state_docs.py --bootstrap-gate "$tmpdir/adopt-source"

@@ -14,6 +14,8 @@ BACKLOG_ID_RE = re.compile(r"\[(BL-\d{3})\]")
 NEXT_ACTION_ID_RE = re.compile(r"^###\s+P\d+\s+\[(BL-\d{3})\]\s+.+$", re.MULTILINE)
 WORKLOG_ENTRY_RE = re.compile(r"^##\s+\d{4}-\d{2}-\d{2}\s+-\s+.+$", re.MULTILINE)
 EVIDENCE_ENTRY_RE = re.compile(r"^##\s+EV-\d{4}-\d{2}-\d{2}-\d{3}:\s+.+$", re.MULTILINE)
+PINNED_ACTION_RE = re.compile(r"uses:\s+actions/[^@\s]+@([0-9a-f]{40})")
+MUTABLE_ACTION_RE = re.compile(r"uses:\s+actions/[^@\s]+@([^\s#]+)")
 
 RULES = {
     "AGENTS.md": {"max_lines": 1000, "must_contain": ["repo_mode:", "bootstrap", "operating"]},
@@ -47,6 +49,7 @@ README_REQUIRED_SECTIONS = [
 TEMPLATE_ASSET_PATHS = [
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
+    "scripts/test_init_template.py",
     "prompts/CTO_SESSION_PROMPT.md",
     "prompts/CODING_AGENT_STARTUP_PROMPT.md",
     "prompts/BOOTSTRAP_INTAKE_PROMPT.md",
@@ -212,6 +215,7 @@ def check_readme(path: Path) -> list[str]:
         "backlog slice",
         "State Driven Development Template",
         "docs/evidence/",
+        "scripts/test_init_template.py",
         "existing README preserved",
         "runtime identity",
         "acceptance freeze",
@@ -262,6 +266,17 @@ def check_template_assets(root: Path) -> list[str]:
         for phrase in ("repo path", "head", "process/container", "regression guard"):
             if phrase not in freeze_text:
                 issues.append(f"Acceptance freeze template missing phrase: {phrase}")
+
+    workflow = root / ".github" / "workflows" / "validate.yml"
+    if workflow.exists():
+        workflow_text = workflow.read_text(encoding="utf-8")
+        for ref in MUTABLE_ACTION_RE.findall(workflow_text):
+            if not re.fullmatch(r"[0-9a-f]{40}", ref):
+                issues.append(f"GitHub Action reference must be pinned to a full SHA, found: {ref}")
+        if not PINNED_ACTION_RE.search(workflow_text):
+            issues.append("GitHub workflow must pin action references to full SHAs")
+        if "scripts/test_init_template.py" not in workflow_text:
+            issues.append("GitHub workflow must run scripts/test_init_template.py")
 
     return issues
 

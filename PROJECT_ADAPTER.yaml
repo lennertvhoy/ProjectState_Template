@@ -3,29 +3,25 @@
 version: "statedd-template-v3"
 
 project:
-  name: State Driven Development Template
-  short_name: statedd-template
-  description: "Adapter defaults for the published template repository. Replace these values in downstream repos."
+  name: Your Project
+  short_name: your-project
+  description: "Optional adapter layer for project-specific vocabulary and runtime details."
 
 vocabulary:
   control_plane_name: "control plane"
   state_plane_name: "state plane"
   evidence_plane_name: "evidence plane"
-  backlog_unit_name: "backlog slice"
   runtime_identity_name: "runtime identity"
 
 runtime:
   frontend_port: null
   api_port: null
   public_url: null
-  execution_mode: operating
+  execution_mode: bootstrap
   runtime_identity_surface: null
 
-integrations:
-  - github_issue_templates
-  - github_pr_template
-  - github_actions_validation
+integrations: []
 
 notes:
-  - "Downstream projects should replace these defaults during bootstrap."
+  - "Populate this file when a real project is attached."
   - "Keep PROJECT_DNA.yaml focused on invariants."

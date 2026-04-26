@@ -21,9 +21,26 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
 
+TEMPLATE_COPY_ROOT_FILES = {
+    Path(".gitignore"),
+    Path("AGENTS.md"),
+    Path("BACKLOG.md"),
+    Path("LICENSE"),
+    Path("NEXT_ACTIONS.md"),
+    Path("PROJECT_ADAPTER.yaml"),
+    Path("PROJECT_DNA.yaml"),
+    Path("PROJECT_STATE.yaml"),
+    Path("README.md"),
+    Path("STATUS.md"),
+    Path("WORKLOG.md"),
+}
+
+TEMPLATE_COPY_DIR_NAMES = {".github", "docs", "fixtures", "prompts", "scripts"}
+
 SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
+    Path("scripts/test_init_template.py"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
     Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
     Path("prompts/BOOTSTRAP_INTAKE_PROMPT.md"),
@@ -98,7 +115,7 @@ These rules apply in all modes:
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
 - end each implementation session with a handoff and hygiene check
-- `README.md` is the primary user guide for this published template
+- `README.md` is the primary user guide for the project
 
 ## Current Mode
 
@@ -488,17 +505,17 @@ product:
     - append_only_status_file
 
 truth_rules:
-    contract_files:
-      agents: AGENTS.md
-      status: STATUS.md
-      project_state: PROJECT_STATE.yaml
-      project_dna: PROJECT_DNA.yaml
-      project_adapter: PROJECT_ADAPTER.yaml
-      next_actions: NEXT_ACTIONS.md
-      backlog: BACKLOG.md
-      worklog: WORKLOG.md
-      evidence_log: docs/EVIDENCE_LOG.md
-      acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+  contract_files:
+    agents: AGENTS.md
+    status: STATUS.md
+    project_state: PROJECT_STATE.yaml
+    project_dna: PROJECT_DNA.yaml
+    project_adapter: PROJECT_ADAPTER.yaml
+    next_actions: NEXT_ACTIONS.md
+    backlog: BACKLOG.md
+    worklog: WORKLOG.md
+    evidence_log: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
 
   hard_rules:
     - no_fake_completeness
@@ -857,17 +874,73 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def write_file(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def path_exists_for_write(path: Path) -> bool:
+    return path.exists() or path.is_symlink()
+
+
+def normalize_managed_relpath(relpath: str | Path) -> Path:
+    path = Path(relpath)
+    if path.is_absolute() or not path.parts:
+        raise SystemExit(f"Unsafe managed path: {relpath}")
+    if any(part in {"", ".", ".."} for part in path.parts):
+        raise SystemExit(f"Unsafe managed path: {relpath}")
+    return path
+
+
+def reject_symlink_components(root: Path, relpath: Path) -> None:
+    current = root
+    if current.is_symlink():
+        raise SystemExit(f"Refusing to write through symlinked target root: {current}")
+
+    for part in relpath.parts:
+        current = current / part
+        if current.is_symlink():
+            raise SystemExit(f"Refusing to write through symlink inside target: {current}")
+
+
+def prepare_destination(root: Path, relpath: str | Path) -> Path:
+    normalized = normalize_managed_relpath(relpath)
+    reject_symlink_components(root, normalized)
+    destination = root / normalized
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    reject_symlink_components(root, normalized)
+    return destination
+
+
+def ensure_directory(root: Path, relpath: Path) -> None:
+    normalized = normalize_managed_relpath(relpath)
+    reject_symlink_components(root, normalized)
+    directory = root / normalized
+    directory.mkdir(parents=True, exist_ok=True)
+    reject_symlink_components(root, normalized)
+
+
+def write_file(root: Path, relpath: str | Path, content: str) -> None:
+    path = prepare_destination(root, relpath)
+    if path.is_dir():
+        raise SystemExit(f"Refusing to replace directory with file: {relpath}")
     path.write_text(content, encoding="utf-8")
 
 
-def ignore_template_copy(_, names: list[str]) -> set[str]:
-    return {name for name in names if name in IGNORED_TEMPLATE_NAMES}
+def copy_file(source: Path, target: Path, relpath: Path) -> None:
+    normalized = normalize_managed_relpath(relpath)
+    source_path = source / normalized
+    if source_path.is_symlink():
+        raise SystemExit(f"Refusing to copy symlinked template source: {normalized}")
+    destination = prepare_destination(target, normalized)
+    shutil.copy2(source_path, destination)
 
 
 def should_ignore_path(path: Path) -> bool:
     return any(part in IGNORED_TEMPLATE_NAMES for part in path.parts)
+
+
+def should_copy_template_path(relpath: Path) -> bool:
+    if should_ignore_path(relpath):
+        return False
+    if relpath in TEMPLATE_COPY_ROOT_FILES:
+        return True
+    return bool(relpath.parts) and relpath.parts[0] in TEMPLATE_COPY_DIR_NAMES
 
 
 def run_git(args: list[str], cwd: Path) -> str | None:
@@ -910,7 +983,7 @@ def scan_repo(target: Path) -> RepoScan:
 
     entrypoints: list[str] = []
     package_json = target / "package.json"
-    if package_json.exists():
+    if package_json.exists() and not package_json.is_symlink():
         try:
             data = json.loads(read_text(package_json))
         except json.JSONDecodeError:
@@ -962,7 +1035,7 @@ def scan_repo(target: Path) -> RepoScan:
     doc_text = []
     for candidate in ("README.md", "NOTES.txt", "docs/STATUS.md", "docs/ARCHITECTURE.md"):
         path = target / candidate
-        if path.exists():
+        if path.exists() and not path.is_symlink():
             doc_text.append(read_text(path).lower())
     docs = "\n".join(doc_text)
 
@@ -1000,9 +1073,9 @@ def find_conflicting_template_paths(template_root: Path, target: Path) -> list[P
         if source_path.is_dir():
             continue
         relpath = source_path.relative_to(template_root)
-        if should_ignore_path(relpath):
+        if not should_copy_template_path(relpath):
             continue
-        if (target / relpath).exists():
+        if path_exists_for_write(target / relpath):
             conflicts.append(relpath)
     return sorted(conflicts)
 
@@ -1015,6 +1088,9 @@ def copy_template_tree(
     force_overwrite: bool,
     dry_run: bool,
 ) -> None:
+    if target.exists() and not target.is_dir():
+        raise SystemExit("Target exists and is not a directory.")
+
     if target != template_root:
         try:
             target.relative_to(template_root)
@@ -1041,12 +1117,17 @@ def copy_template_tree(
             )
 
     if target != template_root and not dry_run:
-        shutil.copytree(
-            template_root,
-            target,
-            dirs_exist_ok=True,
-            ignore=ignore_template_copy,
-        )
+        target.mkdir(parents=True, exist_ok=True)
+        for source_path in sorted(template_root.rglob("*")):
+            relpath = source_path.relative_to(template_root)
+            if not should_copy_template_path(relpath):
+                continue
+            if source_path.is_symlink():
+                raise SystemExit(f"Refusing to copy symlinked template source: {relpath}")
+            if source_path.is_dir():
+                ensure_directory(target, relpath)
+            elif source_path.is_file():
+                copy_file(template_root, target, relpath)
 
 
 def plan_asset_actions(
@@ -1060,7 +1141,7 @@ def plan_asset_actions(
     conflicts: list[str] = []
     for relpath in relpaths:
         dest = target / relpath
-        if dest.exists():
+        if path_exists_for_write(dest):
             if overwrite and force_overwrite:
                 actions.append(f"overwrite {relpath}")
             else:
@@ -1098,10 +1179,7 @@ def copy_assets(
         return
 
     for relpath in relpaths:
-        source = TEMPLATE_ROOT / relpath
-        dest = target / relpath
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, dest)
+        copy_file(TEMPLATE_ROOT, target, relpath)
 
 
 def apply_managed_files(
@@ -1115,9 +1193,9 @@ def apply_managed_files(
     conflicts = []
     for relpath in managed_files:
         path = target / relpath
-        if path.exists() and not overwrite:
+        if path_exists_for_write(path) and not overwrite:
             conflicts.append(relpath)
-        if path.exists() and overwrite and not force_overwrite and relpath in {
+        if path_exists_for_write(path) and overwrite and not force_overwrite and relpath in {
             "AGENTS.md",
             "STATUS.md",
             "PROJECT_STATE.yaml",
@@ -1146,11 +1224,12 @@ def apply_managed_files(
         return
 
     for relpath, content in managed_files.items():
-        write_file(target / relpath, content)
+        write_file(target, relpath, content)
 
 
 def maybe_append_readme_link(target: Path, *, dry_run: bool) -> None:
     readme = target / "README.md"
+    validate_readme_link_target(target)
     if not readme.exists():
         return
     section = render_readme_section().strip()
@@ -1161,7 +1240,13 @@ def maybe_append_readme_link(target: Path, *, dry_run: bool) -> None:
         print("Planned README action:")
         print("  - append StateDD workflow section to README.md")
         return
-    write_file(readme, text.rstrip() + "\n\n" + section + "\n")
+    write_file(target, "README.md", text.rstrip() + "\n\n" + section + "\n")
+
+
+def validate_readme_link_target(target: Path) -> None:
+    readme = target / "README.md"
+    if readme.is_symlink():
+        raise SystemExit("Refusing to append workflow section to symlinked README.md.")
 
 
 def minimal_cleanup(target: Path, *, dry_run: bool) -> None:
@@ -1181,12 +1266,14 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         head=None,
         top_level_entries=[
             ".github",
+            ".gitignore",
             "docs",
             "fixtures",
             "prompts",
             "scripts",
             "AGENTS.md",
             "BACKLOG.md",
+            "LICENSE",
             "NEXT_ACTIONS.md",
             "PROJECT_ADAPTER.yaml",
             "PROJECT_DNA.yaml",
@@ -1195,9 +1282,9 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "STATUS.md",
             "WORKLOG.md",
         ],
-        manifests=["README.md", "scripts/init_template.py", "scripts/check_state_docs.py"],
-        entrypoints=["scripts/init_template.py", "scripts/check_state_docs.py"],
-        test_setup=["scripts/check_state_docs.py"],
+        manifests=["README.md", "scripts/init_template.py", "scripts/check_state_docs.py", "scripts/test_init_template.py"],
+        entrypoints=["scripts/init_template.py", "scripts/check_state_docs.py", "scripts/test_init_template.py"],
+        test_setup=["scripts/check_state_docs.py", "scripts/test_init_template.py"],
         deployment_assumptions=["distributed as a git-hosted workflow template"],
         contradictions=["project-specific contradictions not yet investigated"],
         project_summary="bootstrap_initializing",
@@ -1354,7 +1441,7 @@ def build_legacy_parser() -> argparse.ArgumentParser:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    if len(argv) > 1 and argv[1] in {"new", "adopt"}:
+    if len(argv) == 1 or argv[1] in {"-h", "--help", "new", "adopt"}:
         return build_subcommand_parser().parse_args(argv[1:])
     namespace = build_legacy_parser().parse_args(argv[1:])
     namespace.command = "new"
@@ -1419,6 +1506,8 @@ def main(argv: list[str] | None = None) -> int:
     support_paths = list(SUPPORT_ASSET_PATHS)
     if args.install_github_assets:
         support_paths.extend(GITHUB_ASSET_PATHS)
+    if args.readme_link:
+        validate_readme_link_target(target)
 
     copy_assets(
         support_paths,

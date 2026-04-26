@@ -59,6 +59,7 @@ created from it should use the full workflow directly.
 | `docs/evidence/` | Default artifact root for screenshots, logs, and outputs |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
+| `scripts/test_init_template.py` | Regression-check initializer safety |
 | `prompts/` | Startup prompts, handoff template, runtime checklist, freeze template |
 
 ## How It Works
@@ -316,6 +317,7 @@ Run the hygiene check before handoff, review, or release:
 
 ```bash
 python3 scripts/check_state_docs.py
+python3 scripts/test_init_template.py
 ```
 
 You can also validate initialized fixtures or another repo copy:
