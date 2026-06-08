@@ -333,4 +333,4 @@ python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
 - This template does not ship an application runtime.
 - The prompt files are the source of truth for reusable prompt wording.
 - Deeper reference docs live in `docs/BOOTSTRAP_QUALITY.md` and `docs/README.md`.
-- The project is released under the MIT license in [`LICENSE`](LICENSE).
+- The project is released under the PolyForm Noncommercial License 1.0.0 in [`LICENSE`](LICENSE). Commercial use requires a separate paid license.
