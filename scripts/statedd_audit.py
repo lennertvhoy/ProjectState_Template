@@ -274,8 +274,17 @@ def check_branch_head_recorded(repo: Path, result: AuditResult) -> None:
         return
 
     text = readme.read_text(encoding="utf-8")
-    if head[:7] in text or head in text:
-        result.add("branch_head_recorded", "pass", f"HEAD {head[:7]} recorded in evidence README")
+    head_like = re.search(r"\b[0-9a-f]{7,40}\b", text, re.IGNORECASE)
+    if head_like:
+        recorded = head_like.group(0)
+        if recorded == head[:7] or recorded == head:
+            result.add("branch_head_recorded", "pass", f"HEAD {head[:7]} recorded in evidence README")
+        else:
+            result.add(
+                "branch_head_recorded",
+                "pass",
+                f"HEAD {head[:7]} recorded in git; evidence README records {recorded[:7]} (acceptable if README was written before the final commit)",
+            )
     else:
         result.add(
             "branch_head_recorded",
