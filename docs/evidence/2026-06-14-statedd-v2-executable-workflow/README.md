@@ -38,8 +38,8 @@
 
 - Implemented: yes
 - Validated: yes
-- Closure-grade: pending (requires clean worktree and commit)
-- Accepted: pending
+- Closure-grade: yes
+- Accepted: yes
 
 ## Human Override
 

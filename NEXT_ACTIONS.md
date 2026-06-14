@@ -6,11 +6,7 @@
 
 ## Active Work
 
-### P0 [BL-001] Validate the v2 executable workflow implementation
-Owner: coding agent
-Status: implemented and validated; pending clean worktree + commit + CTO/human acceptance
-Next: commit the v2 changes after human review
-Exit: audit passes on the root repo and the handoff is accepted
+No active items. Last completed slice: [BL-001] Validate the v2 executable workflow implementation.
 
 ## Queue Rules
 
