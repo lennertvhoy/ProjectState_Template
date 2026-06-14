@@ -60,11 +60,15 @@ created from it should use the full workflow directly.
 | `docs/ACCEPTANCE_FREEZES.md` | Accepted milestone ledger |
 | `docs/evidence/` | Default artifact root for screenshots, logs, and outputs |
 | `docs/GETTING_STARTED_5_MIN.md` | Fast beginner path for first setup and first agent session |
+| `docs/WORKFLOW_FOR_BEGINNERS.md` | Beginner-friendly diagram, prompt map, and quality checklist |
+| `docs/adr/` | Architecture decision records |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
+| `scripts/statedd_audit.py` | Machine-checkable closure audit |
+| `scripts/statedd_doctor.py` | Fast StateDD health summary |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
-| `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template |
+| `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template, slice contract, evidence README, schema ownership, subagent review, CTO review checklist |
 
 ## How It Works
 
@@ -226,14 +230,19 @@ from current primary sources or marked as `reported`, `assumed`, or
 The prompt files are the reusable source of truth for startup and handoff
 wording:
 
-- `prompts/CODING_AGENT_STARTUP_PROMPT.md`
-- `prompts/OPENCODE_STARTUP_PROMPT.md`
-- `prompts/CTO_SESSION_PROMPT.md`
-- `prompts/BOOTSTRAP_INTAKE_PROMPT.md`
-- `prompts/TOOL_MODEL_ROUTING_GUIDE.md`
-- `prompts/FINAL_HANDOFF_TEMPLATE.md`
-- `prompts/RUNTIME_IDENTITY_CHECKLIST.md`
-- `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md`
+- `prompts/CODING_AGENT_STARTUP_PROMPT.md` — what a coding agent reads first
+- `prompts/OPENCODE_STARTUP_PROMPT.md` — OpenCode-specific startup wording
+- `prompts/CTO_SESSION_PROMPT.md` — how the CTO lane starts and reviews handoffs
+- `prompts/BOOTSTRAP_INTAKE_PROMPT.md` — how to bootstrap a new project
+- `prompts/TOOL_MODEL_ROUTING_GUIDE.md` — how to choose tools, models, and settings
+- `prompts/FINAL_HANDOFF_TEMPLATE.md` — shape of the final handoff to the CTO lane
+- `prompts/RUNTIME_IDENTITY_CHECKLIST.md` — verify which runtime is being tested
+- `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` — freeze a user-facing milestone
+- `prompts/SLICE_CONTRACT_TEMPLATE.md` — define scope, non-goals, and acceptance before coding
+- `prompts/EVIDENCE_README_TEMPLATE.md` — claim ledger for every evidence folder
+- `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` — canonical schema, examples, tests, and migration policy
+- `prompts/SUBAGENT_REVIEW_TEMPLATE.md` — strict output format for subagent reviews
+- `prompts/CTO_REVIEW_CHECKLIST.md` — repeatable CTO review after every handoff
 
 ## Core Workflow
 
@@ -342,6 +351,62 @@ Before publishing a repo created from this template:
 4. Re-run `python3 scripts/check_state_docs.py`.
 5. Keep evidence and acceptance freeze artifacts durable and discoverable.
 
+## Executable Audit And State Doctor
+
+StateDD v2 makes the workflow executable, not just descriptive.
+
+```bash
+python3 scripts/statedd_audit.py        # machine-checkable closure audit
+python3 scripts/statedd_doctor.py       # fast health summary
+```
+
+`statedd_audit.py` checks required state files, evidence hygiene, git worktree
+cleanliness, branch/HEAD recording, user-facing evidence, schema ownership, and
+test/build/lint recording. Use `--strict` to fail on warnings.
+
+`statedd_doctor.py` prints a one-glance summary of HEAD, worktree, evidence,
+state-doc freshness, test/browser proof, open blockers, next slice, and closure
+grade.
+
+## Slice Contracts And Claim Ledgers
+
+Before coding, write a slice contract using
+`prompts/SLICE_CONTRACT_TEMPLATE.md`. It defines the scope, non-goals,
+acceptance criteria, and escalation triggers so the agent does not wander into
+adjacent work.
+
+Every evidence folder should contain a `README.md` claim ledger based on
+`prompts/EVIDENCE_README_TEMPLATE.md`. Each claim is tied to concrete proof.
+
+## Schema Ownership
+
+`prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` enforces the rule:
+**No schema may exist only in prose.** Every packet schema needs a canonical
+machine-readable schema, generated example JSON, generated external prompt
+snippet, validation tests, an exact-shape sample, a `schemaVersion` field, and a
+migration policy.
+
+## ADRs
+
+Long-lived architecture decisions belong in `docs/adr/` rather than `STATUS.md`.
+Use `docs/adr/0000-adr-template.md` as the starting point.
+
+## CTO Review Checklist
+
+After every coding-agent handoff, the CTO lane answers the checklist in
+`prompts/CTO_REVIEW_CHECKLIST.md`: closure verdict, missing proof,
+contradictions, repo hygiene, product value, and next best slice.
+
+## Human Override Rule
+
+StateDD rules are strong defaults, not a prison. The human product owner may
+explicitly override a workflow step, but the agent must record the override as
+`Human override used: yes` and mark the result honestly. The agent cannot ignore
+you, but it also cannot pretend an overridden shortcut is clean closure. See
+`AGENTS.md`.
+
+Remember: implemented ≠ validated ≠ closure-grade ≠ accepted.
+
 ## Validation
 
 Run the hygiene check before handoff, review, or release:
@@ -350,6 +415,8 @@ Run the hygiene check before handoff, review, or release:
 python3 scripts/check_state_docs.py
 python3 scripts/test_init_template.py
 python3 scripts/statedd_handoff.py
+python3 scripts/statedd_doctor.py
+python3 scripts/statedd_audit.py
 ```
 
 You can also validate initialized fixtures or another repo copy:

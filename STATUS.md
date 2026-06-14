@@ -1,4 +1,4 @@
-# Your Project Status
+# StateDD Template Status
 
 **Updated At:** 2026-06-14
 **Execution Mode:** bootstrap
@@ -8,22 +8,21 @@
 ## Snapshot
 
 - Repo initialized in bootstrap mode.
+- v2 executable workflow assets added: audit, doctor, slice contract, claim ledger, schema ownership, ADRs, CTO checklist, subagent output template, human override rule.
+- Existing initializer, validator, handoff helper, and prompts updated to ship v2.
 - Project-specific truth still needs to be established.
 - Unknowns remain explicit until proven.
-- Current work should be tracked through `NEXT_ACTIONS.md`.
-- Evidence for user-facing claims belongs in `docs/EVIDENCE_LOG.md`.
-- Prompt/tooling guidance now includes dynamic routing, OpenCode startup, a 5-minute guide, and a read-only handoff snapshot helper.
-- License policy now allows commercial/profit use while reserving teaching/training rights.
 
 ## Immediate Priorities
 
-1. Capture the real project truth.
-2. Fill in the first active queue.
+1. Commit the v2 changes after human review (worktree currently dirty).
+2. Capture the real project identity and first milestone.
 3. Transition to operating mode once baseline truth exists.
 
 ## Active Blockers
 
 - None yet.
+- Note: `statedd_audit.py` intentionally fails on the template root until the worktree is committed.
 
 ## Notes
 

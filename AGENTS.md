@@ -1,7 +1,7 @@
 ---
 repo_mode: bootstrap
 initialized_on: 2026-04-26
-last_updated: 2026-04-26
+last_updated: 2026-06-14
 ---
 
 # State Driven Development Template Contract
@@ -37,6 +37,47 @@ These rules apply in all modes:
 - structured state must remain machine-checkable
 - end each implementation session with a handoff and hygiene check
 - `README.md` is the primary user guide for the project
+- implemented ≠ validated ≠ closure-grade ≠ accepted
+
+## Human Override Rule — Strong Defaults, Not a Prison
+
+StateDD rules are mandatory defaults, but the human product owner may explicitly
+override a workflow step. The agent must respect a clear human override unless
+the requested action is destructive, illegal, unsafe, unrecoverable, or would
+corrupt project truth.
+
+Acceptable override examples:
+- Skip browser proof for a docs-only or urgent internal change.
+- Use a temporary workaround when the user explicitly accepts the tradeoff.
+- Proceed without updating every state file if the change is exploratory.
+- Defer a full audit when the user asks for fast partial progress.
+- Exceed the normal evidence file limit only if the user explicitly requests a larger diagnostic bundle.
+
+Overrides that still require refusal or escalation:
+- Deleting important data without backup.
+- Falsifying evidence, tests, screenshots, or handoff claims.
+- Claiming closure-grade status without proof.
+- Hiding failing tests.
+- Silently changing canonical schemas or product truth.
+- Making irreversible architecture changes without recording the decision.
+
+Override protocol:
+1. If the user clearly insists, do not keep blocking on the normal rule.
+2. State the tradeoff briefly.
+3. Proceed with the user's requested override.
+4. Record the override in the evidence README and final handoff.
+5. Mark the result honestly as `partial`, `override-approved`, or `not closure-grade` when appropriate.
+
+Required handoff wording when an override was used:
+`Human override used: yes`
+Then include:
+- which rule was overridden;
+- who requested it;
+- why it was accepted;
+- what risk remains;
+- whether the slice is still closure-grade.
+
+The rules are hard against agent sloppiness, but soft against explicit human direction.
 
 ## Current Mode
 
@@ -180,7 +221,9 @@ Implementation prompts must:
 
 If the tool supports subagents or parallel workers and the task clearly benefits,
 the CTO lane may encourage using them. This is optional guidance, not a baseline
-workflow requirement.
+workflow requirement. When subagents are used, require each subagent to return
+only the format defined in `prompts/SUBAGENT_REVIEW_TEMPLATE.md`. The lead agent
+owns synthesis; subagents do not rewrite the contract.
 
 ## State Files
 
@@ -193,6 +236,15 @@ workflow requirement.
 - `WORKLOG.md` = append-only history
 - `docs/EVIDENCE_LOG.md` = proof ledger
 - `docs/ACCEPTANCE_FREEZES.md` = accepted user-facing milestone ledger
+- `docs/adr/` = architecture decision records for long-lived reasoning
+
+## Executable Workflow Tools
+
+- `scripts/check_state_docs.py` = documentation hygiene and bootstrap gate
+- `scripts/test_init_template.py` = initializer regression tests
+- `scripts/statedd_handoff.py` = read-only handoff snapshot
+- `scripts/statedd_audit.py` = machine-checkable closure audit
+- `scripts/statedd_doctor.py` = fast health summary
 
 ## Handoff Requirements
 

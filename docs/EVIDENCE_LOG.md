@@ -92,3 +92,28 @@
 - Type: docs-render-verification
 - as_of: 2026-06-14T13:00:00+02:00
 - Notes: This is a custom license draft, not legal advice or lawyer-reviewed text.
+
+## EV-2026-06-14-004: StateDD v2 executable workflow implemented
+
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_audit.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_doctor.py
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/SLICE_CONTRACT_TEMPLATE.md
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/EVIDENCE_README_TEMPLATE.md
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/SUBAGENT_REVIEW_TEMPLATE.md
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/CTO_REVIEW_CHECKLIST.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+- Title: StateDD v2 executable workflow assets added and validated
+- Source/System: test
+- Action: Added audit, doctor, slice contract, claim ledger, schema ownership, subagent output, CTO checklist, ADR template, human override rule, and wired them into init/validation
+- Shows:
+  - `python3 scripts/check_state_docs.py` passed
+  - `python3 scripts/test_init_template.py` passed, including v2 asset tests
+  - `python3 scripts/statedd_doctor.py` produced the expected health summary
+  - `python3 scripts/statedd_audit.py` passed on a freshly generated demo repo
+- Proves:
+  - the template now ships executable audit/doctor commands and v2 prompt assets
+  - the initializer and validator recognize and propagate the new assets
+- Type: docs-render-verification
+- as_of: 2026-06-14T13:40:01+00:00
+- Notes: Template repo remains in bootstrap mode. The SkillSignal-specific canonical schema/export/import loop is deferred to a downstream slice.

@@ -46,9 +46,13 @@ Always:
 - treat remembered or user-supplied model capability, pricing, context-window, and availability claims as `reported` until verified from current primary sources when they affect routing
 - include any CTO-selected tool/model/settings in the implementation prompt or final handoff
 - use `prompts/TOOL_MODEL_ROUTING_GUIDE.md` when drafting a CTO prompt that should choose between tools, models, reasoning settings, context strategies, or budget modes
+- use `prompts/SLICE_CONTRACT_TEMPLATE.md` before starting implementation
+- use `prompts/EVIDENCE_README_TEMPLATE.md` for the claim ledger in every evidence folder
 - use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
 - use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone
 - use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape
+- run `python3 scripts/statedd_audit.py` before claiming closure-grade and `python3 scripts/statedd_doctor.py` for a quick health snapshot
+- respect explicit human overrides per `AGENTS.md`, but record them honestly as `partial`, `override-approved`, or `not closure-grade`
 
 If a CTO lane already exists and the user only forgot to paste the latest CTO prompt:
 - do not guess the missing scope

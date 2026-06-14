@@ -3,7 +3,7 @@
 metadata:
   updated_at: 2026-06-14
   updated_by: agent
-  version: "statedd-template-v3"
+  version: "statedd-template-v4"
 
 workflow:
   repo_mode: bootstrap
@@ -144,8 +144,37 @@ current_state:
       getting_started_5_min:
         status: observed
         path: docs/GETTING_STARTED_5_MIN.md
+      workflow_for_beginners:
+        status: observed
+        path: docs/WORKFLOW_FOR_BEGINNERS.md
       handoff_snapshot:
         status: observed
         path: scripts/statedd_handoff.py
+      audit_command:
+        status: observed
+        path: scripts/statedd_audit.py
+        summary: Machine-checkable StateDD closure audit.
+      doctor_command:
+        status: observed
+        path: scripts/statedd_doctor.py
+        summary: Fast human-readable StateDD health summary.
+      slice_contract_template:
+        status: observed
+        path: prompts/SLICE_CONTRACT_TEMPLATE.md
+      evidence_readme_template:
+        status: observed
+        path: prompts/EVIDENCE_README_TEMPLATE.md
+      schema_ownership_template:
+        status: observed
+        path: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
+      subagent_review_template:
+        status: observed
+        path: prompts/SUBAGENT_REVIEW_TEMPLATE.md
+      cto_review_checklist:
+        status: observed
+        path: prompts/CTO_REVIEW_CHECKLIST.md
+      adr_template:
+        status: observed
+        path: docs/adr/0000-adr-template.md
 
 active_problems: []

@@ -22,11 +22,12 @@ jobs:
 
       - name: Compile Python scripts
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/test_init_template.py
+          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/test_init_template.py
 
       - name: Validate root docs
         run: |
           python3 scripts/check_state_docs.py
+          python3 scripts/statedd_doctor.py
           if python3 scripts/check_state_docs.py --bootstrap-gate; then
             echo "expected root template state to remain bootstrap-initial"
             exit 1
@@ -49,6 +50,8 @@ jobs:
           tmpdir="$(mktemp -d)"
           python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/demo"
           python3 scripts/check_state_docs.py "$tmpdir/demo"
+          python3 scripts/statedd_doctor.py "$tmpdir/demo"
+          python3 scripts/statedd_audit.py "$tmpdir/demo"
           mkdir -p "$tmpdir/nonempty-safe"
           printf 'keep me\n' > "$tmpdir/nonempty-safe/local-note.txt"
           python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-safe" --overwrite

@@ -3,6 +3,9 @@
 Use this when you want the shortest safe path from an empty or inherited repo
 to a StateDD-guided coding-agent session.
 
+For a beginner-friendly diagram and prompt map, see
+`docs/WORKFLOW_FOR_BEGINNERS.md`.
+
 ## 1. Pick The Setup Path
 
 For a new project:
@@ -91,6 +94,13 @@ For normal hygiene:
 ```bash
 python3 scripts/check_state_docs.py
 python3 scripts/test_init_template.py
+python3 scripts/statedd_doctor.py
+```
+
+Before claiming closure-grade:
+
+```bash
+python3 scripts/statedd_audit.py
 ```
 
 Before leaving bootstrap:

@@ -44,6 +44,12 @@ README_REQUIRED_SECTIONS = [
     "## Non-Trivial Work",
     "## Common Failure Modes",
     "## Validation",
+    "## Executable Audit And State Doctor",
+    "## Slice Contracts And Claim Ledgers",
+    "## Schema Ownership",
+    "## ADRs",
+    "## CTO Review Checklist",
+    "## Human Override Rule",
     "## Publishing A Downstream Project",
 ]
 
@@ -51,6 +57,8 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
     "scripts/statedd_handoff.py",
+    "scripts/statedd_audit.py",
+    "scripts/statedd_doctor.py",
     "scripts/test_init_template.py",
     "LICENSE",
     "LICENSE_FAQ.md",
@@ -62,8 +70,16 @@ TEMPLATE_ASSET_PATHS = [
     "prompts/FINAL_HANDOFF_TEMPLATE.md",
     "prompts/RUNTIME_IDENTITY_CHECKLIST.md",
     "prompts/ACCEPTANCE_FREEZE_TEMPLATE.md",
+    "prompts/SLICE_CONTRACT_TEMPLATE.md",
+    "prompts/EVIDENCE_README_TEMPLATE.md",
+    "prompts/SCHEMA_OWNERSHIP_TEMPLATE.md",
+    "prompts/SUBAGENT_REVIEW_TEMPLATE.md",
+    "prompts/CTO_REVIEW_CHECKLIST.md",
     "docs/GETTING_STARTED_5_MIN.md",
     "docs/ACCEPTANCE_FREEZES.md",
+    "docs/WORKFLOW_FOR_BEGINNERS.md",
+    "docs/adr/README.md",
+    "docs/adr/0000-adr-template.md",
     ".github/workflows/validate.yml",
     ".github/pull_request_template.md",
     ".github/ISSUE_TEMPLATE/config.yml",
@@ -236,6 +252,13 @@ def check_readme(path: Path) -> list[str]:
         "acceptance freeze",
         "not currently locatable",
         "process or container",
+        "statedd_audit.py",
+        "statedd_doctor.py",
+        "slice contract",
+        "claim ledger",
+        "schema ownership",
+        "Human override used: yes",
+        "implemented ≠ validated ≠ closure-grade ≠ accepted",
     ]
     for phrase in required_phrases:
         if phrase not in text:
@@ -336,6 +359,41 @@ def check_template_assets(root: Path) -> list[str]:
         for phrase in ("repo path", "head", "process/container", "regression guard"):
             if phrase not in freeze_text:
                 issues.append(f"Acceptance freeze template missing phrase: {phrase}")
+
+    slice_contract = root / "prompts" / "SLICE_CONTRACT_TEMPLATE.md"
+    if slice_contract.exists():
+        slice_text = slice_contract.read_text(encoding="utf-8")
+        for phrase in ("non_goals", "acceptance_criteria", "Human override used: yes"):
+            if phrase not in slice_text:
+                issues.append(f"Slice contract template missing phrase: {phrase}")
+
+    evidence_readme = root / "prompts" / "EVIDENCE_README_TEMPLATE.md"
+    if evidence_readme.exists():
+        evidence_text = evidence_readme.read_text(encoding="utf-8")
+        for phrase in ("Claims", "Verification Log", "Closure State"):
+            if phrase not in evidence_text:
+                issues.append(f"Evidence README template missing phrase: {phrase}")
+
+    schema_ownership = root / "prompts" / "SCHEMA_OWNERSHIP_TEMPLATE.md"
+    if schema_ownership.exists():
+        schema_text = schema_ownership.read_text(encoding="utf-8")
+        for phrase in ("No schema may exist only in prose", "schemaVersion", "MIGRATION"):
+            if phrase not in schema_text:
+                issues.append(f"Schema ownership template missing phrase: {phrase}")
+
+    subagent_review = root / "prompts" / "SUBAGENT_REVIEW_TEMPLATE.md"
+    if subagent_review.exists():
+        subagent_text = subagent_review.read_text(encoding="utf-8")
+        for phrase in ("Verdict:", "Findings:", "Required fixes:", "Confidence:"):
+            if phrase not in subagent_text:
+                issues.append(f"Subagent review template missing phrase: {phrase}")
+
+    cto_review = root / "prompts" / "CTO_REVIEW_CHECKLIST.md"
+    if cto_review.exists():
+        cto_text = cto_review.read_text(encoding="utf-8")
+        for phrase in ("Closure verdict:", "Missing proof:", "Contradictions:", "Next best slice:"):
+            if phrase not in cto_text:
+                issues.append(f"CTO review checklist missing phrase: {phrase}")
 
     workflow = root / ".github" / "workflows" / "validate.yml"
     if workflow.exists():

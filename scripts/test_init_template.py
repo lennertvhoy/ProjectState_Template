@@ -167,11 +167,35 @@ def assert_usability_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing usability assets: {missing}")
 
 
+def assert_v2_assets_exist(root: Path) -> None:
+    required = [
+        root / "scripts" / "statedd_audit.py",
+        root / "scripts" / "statedd_doctor.py",
+        root / "prompts" / "SLICE_CONTRACT_TEMPLATE.md",
+        root / "prompts" / "EVIDENCE_README_TEMPLATE.md",
+        root / "prompts" / "SCHEMA_OWNERSHIP_TEMPLATE.md",
+        root / "prompts" / "SUBAGENT_REVIEW_TEMPLATE.md",
+        root / "prompts" / "CTO_REVIEW_CHECKLIST.md",
+        root / "docs" / "adr" / "README.md",
+        root / "docs" / "adr" / "0000-adr-template.md",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing v2 executable workflow assets: {missing}")
+
+
 def test_new_includes_usability_assets() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Usability Demo", "--target", str(target)], expect_success=True)
         assert_usability_assets_exist(target)
+
+
+def test_new_includes_v2_executable_workflow_assets() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "v2 Demo", "--target", str(target)], expect_success=True)
+        assert_v2_assets_exist(target)
 
 
 def test_new_includes_license_faq() -> None:
@@ -212,6 +236,15 @@ def test_adopt_installs_usability_assets() -> None:
         assert_usability_assets_exist(repo)
 
 
+def test_adopt_installs_v2_executable_workflow_assets() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+        run_init(["adopt", "--name", "v2 Adopted", "--target", str(repo)], expect_success=True)
+        assert_v2_assets_exist(repo)
+
+
 def test_handoff_snapshot_runs() -> None:
     completed = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "statedd_handoff.py"), "--no-include-listeners"],
@@ -229,6 +262,24 @@ def test_handoff_snapshot_runs() -> None:
         raise AssertionError(f"Handoff helper output is missing required fields:\n{completed.stdout}")
 
 
+def test_doctor_runs() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "statedd_doctor.py")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AssertionError(
+            f"Expected doctor helper success, got {completed.returncode}\n"
+            f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+        )
+    for phrase in ("StateDD Health", "Closure grade:", "Current HEAD:"):
+        if phrase not in completed.stdout:
+            raise AssertionError(f"Doctor helper output missing phrase: {phrase}")
+
+
 def main() -> int:
     tests = [
         test_adopt_rejects_symlinked_managed_directory,
@@ -239,10 +290,13 @@ def main() -> int:
         test_new_copies_curated_template_surface_only,
         test_new_includes_tool_model_routing_guide,
         test_new_includes_usability_assets,
+        test_new_includes_v2_executable_workflow_assets,
         test_new_includes_license_faq,
         test_adopt_installs_tool_model_routing_guide,
         test_adopt_installs_usability_assets,
+        test_adopt_installs_v2_executable_workflow_assets,
         test_handoff_snapshot_runs,
+        test_doctor_runs,
     ]
     for test in tests:
         test()

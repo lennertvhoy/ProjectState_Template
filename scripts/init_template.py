@@ -42,6 +42,8 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("scripts/statedd_handoff.py"),
+    Path("scripts/statedd_audit.py"),
+    Path("scripts/statedd_doctor.py"),
     Path("scripts/test_init_template.py"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
     Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
@@ -51,8 +53,16 @@ SUPPORT_ASSET_PATHS = [
     Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
     Path("prompts/RUNTIME_IDENTITY_CHECKLIST.md"),
     Path("prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"),
+    Path("prompts/SLICE_CONTRACT_TEMPLATE.md"),
+    Path("prompts/EVIDENCE_README_TEMPLATE.md"),
+    Path("prompts/SCHEMA_OWNERSHIP_TEMPLATE.md"),
+    Path("prompts/SUBAGENT_REVIEW_TEMPLATE.md"),
+    Path("prompts/CTO_REVIEW_CHECKLIST.md"),
     Path("docs/GETTING_STARTED_5_MIN.md"),
     Path("docs/BOOTSTRAP_QUALITY.md"),
+    Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
+    Path("docs/adr/README.md"),
+    Path("docs/adr/0000-adr-template.md"),
 ]
 
 GITHUB_ASSET_PATHS = [
@@ -375,7 +385,7 @@ def render_project_state(
 metadata:
   updated_at: {stamp}
   updated_by: agent
-  version: "statedd-template-v3"
+  version: "statedd-template-v4"
 
 workflow:
   repo_mode: bootstrap
@@ -521,7 +531,7 @@ active_problems: []
 def render_project_dna(project_name: str) -> str:
     return f"""# PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "statedd-template-v3"
+version: "statedd-template-v4"
 schema_version: "1.0"
 
 product:
@@ -606,6 +616,7 @@ governance:
   evidence_standard: browser_verification_or_test_output
   evidence_artifact_root: docs/evidence
   acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
+  adr_root: docs/adr
   license: LICENSE
   license_faq: LICENSE_FAQ.md
   getting_started_guide: docs/GETTING_STARTED_5_MIN.md
@@ -613,18 +624,37 @@ governance:
   handoff_snapshot_helper: scripts/statedd_handoff.py
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
+  closure_audit: scripts/statedd_audit.py
+  health_summary: scripts/statedd_doctor.py
+  slice_contract_template: prompts/SLICE_CONTRACT_TEMPLATE.md
+  evidence_readme_template: prompts/EVIDENCE_README_TEMPLATE.md
+  schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
+  subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
+  cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
   update_policy:
     status: when_current_truth_changes
     project_state: when_structured_truth_changes
     worklog: when_work_is_completed
     evidence_log: when_user_facing_claims_are_verified
+
+invariants:
+  - "STATUS.md stays short and current."
+  - "PROJECT_STATE.yaml stores structured live truth only."
+  - "PROJECT_DNA.yaml changes slowly."
+  - "NEXT_ACTIONS.md contains open work only."
+  - "BACKLOG.md assigns stable backlog IDs."
+  - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
+  - "WORKLOG.md is append-only."
+  - "Implemented, validated, closure-grade, and accepted are four distinct states."
+  - "Human overrides are recorded, but they do not turn partial work into closure-grade work."
+  - "No schema may exist only in prose."
 """
 
 
 def render_project_adapter(project_name: str) -> str:
     return f"""# PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
-version: "statedd-template-v3"
+version: "statedd-template-v4"
 
 project:
   name: {project_name}
@@ -1396,6 +1426,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         "docs/EVIDENCE_LOG.md": render_evidence_log(today, "new"),
         "docs/ACCEPTANCE_FREEZES.md": render_acceptance_freezes(),
         "docs/evidence/.gitkeep": "",
+        "docs/adr/.gitkeep": "",
     }
 
 
@@ -1438,6 +1469,7 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
         "docs/EVIDENCE_LOG.md": render_evidence_log(today, "adopt"),
         "docs/ACCEPTANCE_FREEZES.md": render_acceptance_freezes(),
         "docs/evidence/.gitkeep": "",
+        "docs/adr/.gitkeep": "",
     }
 
 
@@ -1563,7 +1595,9 @@ def main(argv: list[str] | None = None) -> int:
         print("5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
         print("6. Use bootstrap to fill the state files and prepare a real backlog before operating mode")
         print(f"7. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
-        print(f"8. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
+        print(f"8. Run {Path(sys.executable).name} scripts/statedd_audit.py before claiming closure-grade")
+        print(f"9. Run {Path(sys.executable).name} scripts/statedd_doctor.py for a quick health snapshot")
+        print(f"10. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
         return 0
 
     if not target.exists() or not target.is_dir():
@@ -1614,7 +1648,9 @@ def main(argv: list[str] | None = None) -> int:
     print("4. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with the repo contract")
     print("5. Use prompts/FINAL_HANDOFF_TEMPLATE.md or scripts/statedd_handoff.py for the first CTO handoff")
     print(f"6. Run {Path(sys.executable).name} scripts/check_state_docs.py after edits")
-    print(f"7. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
+    print(f"7. Run {Path(sys.executable).name} scripts/statedd_audit.py before claiming closure-grade")
+    print(f"8. Run {Path(sys.executable).name} scripts/statedd_doctor.py for a quick health snapshot")
+    print(f"9. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
     return 0
 
 

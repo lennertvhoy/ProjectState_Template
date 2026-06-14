@@ -101,6 +101,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=True,
         help="Include active TCP listener scan when `ss` or `lsof` is available",
     )
+    parser.add_argument(
+        "--run-audit",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Run scripts/statedd_audit.py and include its output",
+    )
     parser.add_argument("--max-output-lines", type=int, default=80, help="Max lines to print per test command")
     return parser.parse_args(argv[1:])
 
@@ -165,6 +171,19 @@ def main(argv: list[str] | None = None) -> int:
         if failed:
             print()
             print("At least one verification command failed.")
+
+    if args.run_audit:
+        print()
+        print("## StateDD Audit")
+        print()
+        audit_script = repo / "scripts" / "statedd_audit.py"
+        if audit_script.exists():
+            code, output, _ = run_command([sys.executable, str(audit_script)], repo)
+            print(f"- audit exit code: {code}")
+            for line in trim_lines(output, args.max_output_lines):
+                print(f"  {line}")
+        else:
+            print("- scripts/statedd_audit.py not found")
 
     print()
     print("## Handoff Reminder")

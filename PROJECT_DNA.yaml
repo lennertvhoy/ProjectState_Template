@@ -1,6 +1,6 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "statedd-template-v3"
+version: "statedd-template-v4"
 schema_version: "1.0"
 
 product:
@@ -79,11 +79,15 @@ invariants:
   - "BACKLOG.md assigns stable backlog IDs."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
+  - "Implemented, validated, closure-grade, and accepted are four distinct states."
+  - "Human overrides are recorded, but they do not turn partial work into closure-grade work."
+  - "No schema may exist only in prose."
 
 governance:
   evidence_standard: browser_verification_or_test_output
   evidence_artifact_root: docs/evidence
   acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
+  adr_root: docs/adr
   license: LICENSE
   license_faq: LICENSE_FAQ.md
   getting_started_guide: docs/GETTING_STARTED_5_MIN.md
@@ -91,6 +95,13 @@ governance:
   handoff_snapshot_helper: scripts/statedd_handoff.py
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
+  closure_audit: scripts/statedd_audit.py
+  health_summary: scripts/statedd_doctor.py
+  slice_contract_template: prompts/SLICE_CONTRACT_TEMPLATE.md
+  evidence_readme_template: prompts/EVIDENCE_README_TEMPLATE.md
+  schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
+  subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
+  cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
   update_policy:
     status: when_current_truth_changes
     project_state: when_structured_truth_changes

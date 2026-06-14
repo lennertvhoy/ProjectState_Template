@@ -1,12 +1,16 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26
+**Updated At:** 2026-06-14
 **Execution Mode:** bootstrap
 **Max Items:** 10
 
 ## Active Work
 
-No active work yet.
+### P0 [BL-001] Validate the v2 executable workflow implementation
+Owner: coding agent
+Status: implemented and validated; pending clean worktree + commit + CTO/human acceptance
+Next: commit the v2 changes after human review
+Exit: audit passes on the root repo and the handoff is accepted
 
 ## Queue Rules
 

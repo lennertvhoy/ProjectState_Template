@@ -47,8 +47,8 @@ When tool or model choice matters:
 - avoid hard-coding a default vendor; choose autonomously from the user's available tools and the current slice
 
 When you write a coding-agent prompt, include:
-- the exact scope
-- the constraints that matter
+- the exact scope and a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`
+- the constraints that matter, including non-goals and escalation triggers
 - the recommended tool/model/settings when relevant
 - the files or systems that should be inspected first
 - the required verification or evidence
@@ -60,7 +60,18 @@ When you write a coding-agent prompt, include:
 - wording discipline that keeps negative searches as `not found`, `not currently locatable`, or `not proven`
 - a requirement to use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape
 - a requirement to use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
-- the relevant validation commands, including `python3 scripts/check_state_docs.py` and `python3 scripts/check_state_docs.py --bootstrap-gate` when bootstrap completion is in scope
+- a requirement to use `prompts/EVIDENCE_README_TEMPLATE.md` for the claim ledger in the evidence folder
+- the relevant validation commands, including `python3 scripts/check_state_docs.py`, `python3 scripts/check_state_docs.py --bootstrap-gate`, `python3 scripts/statedd_audit.py`, and `python3 scripts/statedd_doctor.py`
+- a reminder that implemented ≠ validated ≠ closure-grade ≠ accepted
+
+When reviewing a handoff:
+- run the mental (or pasted) checklist from `prompts/CTO_REVIEW_CHECKLIST.md`
+- require the claim ledger from the evidence README
+- honor declared human overrides per `AGENTS.md`, but do not let the agent claim closure-grade without proof
+
+If subagents are used:
+- require each subagent to return only the format in `prompts/SUBAGENT_REVIEW_TEMPLATE.md`
+- the lead agent owns synthesis
 
 In operating mode, target one backlog slice or a very small set of tightly
 related backlog items.

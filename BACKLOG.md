@@ -2,7 +2,7 @@
 
 **Product:** Your Project
 **Execution Mode:** bootstrap
-**Updated At:** 2026-04-26
+**Updated At:** 2026-06-14
 
 ## Purpose
 
@@ -21,6 +21,9 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 ## LATER
 
 - [BL-004] Enter operating mode only after the baseline is truthful and the backlog is real.
+- [BL-005] Add a real canonical schema/export/import example project that generates ChatGPT prompts from the same schema the app validates.
+- [BL-006] Add automated screenshot / browser-evidence capture helpers that prove runtime identity.
+- [BL-007] Publish repository description, topics, and release notes once the template surface is stable.
 
 ## WATCHLIST
 
