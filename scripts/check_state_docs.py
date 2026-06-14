@@ -34,6 +34,7 @@ README_REQUIRED_SECTIONS = [
     "## Agent Read Order",
     "## Bootstrap Completion Gate",
     "## Setting Up The AI CTO Agent",
+    "## Tool And Model Routing",
     "## Prompt Files",
     "## Final Handoff Template",
     "## Runtime Identity Proof",
@@ -49,13 +50,19 @@ README_REQUIRED_SECTIONS = [
 TEMPLATE_ASSET_PATHS = [
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
+    "scripts/statedd_handoff.py",
     "scripts/test_init_template.py",
+    "LICENSE",
+    "LICENSE_FAQ.md",
     "prompts/CTO_SESSION_PROMPT.md",
     "prompts/CODING_AGENT_STARTUP_PROMPT.md",
+    "prompts/OPENCODE_STARTUP_PROMPT.md",
     "prompts/BOOTSTRAP_INTAKE_PROMPT.md",
+    "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
     "prompts/FINAL_HANDOFF_TEMPLATE.md",
     "prompts/RUNTIME_IDENTITY_CHECKLIST.md",
     "prompts/ACCEPTANCE_FREEZE_TEMPLATE.md",
+    "docs/GETTING_STARTED_5_MIN.md",
     "docs/ACCEPTANCE_FREEZES.md",
     ".github/workflows/validate.yml",
     ".github/pull_request_template.md",
@@ -201,8 +208,16 @@ def check_readme(path: Path) -> list[str]:
     required_phrases = [
         "prompts/CTO_SESSION_PROMPT.md",
         "prompts/CODING_AGENT_STARTUP_PROMPT.md",
+        "prompts/OPENCODE_STARTUP_PROMPT.md",
+        "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
         "prompts/FINAL_HANDOFF_TEMPLATE.md",
+        "docs/GETTING_STARTED_5_MIN.md",
+        "scripts/statedd_handoff.py",
+        "LICENSE_FAQ.md",
+        "teaching/training rights are reserved",
         "ChatGPT, Claude, Gemini",
+        "Tool And Model Routing",
+        "model capabilities, pricing, context windows, or tool support",
         "rm -rf .git",
         "git remote -v",
         "--force-overwrite",
@@ -252,6 +267,61 @@ def check_template_assets(root: Path) -> list[str]:
         for phrase in ("repo path", "branch", "process/container", "port/base URL", "rebuilt in this slice"):
             if phrase not in handoff_text:
                 issues.append(f"Final handoff template missing phrase: {phrase}")
+
+    cto_prompt = root / "prompts" / "CTO_SESSION_PROMPT.md"
+    if cto_prompt.exists():
+        cto_text = cto_prompt.read_text(encoding="utf-8")
+        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven"):
+            if phrase not in cto_text:
+                issues.append(f"CTO session prompt missing phrase: {phrase}")
+
+    routing_guide = root / "prompts" / "TOOL_MODEL_ROUTING_GUIDE.md"
+    if routing_guide.exists():
+        routing_text = routing_guide.read_text(encoding="utf-8")
+        for phrase in ("Recommended route", "Paste-ready prompt", "not proven", "pricing"):
+            if phrase not in routing_text:
+                issues.append(f"Tool/model routing guide missing phrase: {phrase}")
+
+    opencode_prompt = root / "prompts" / "OPENCODE_STARTUP_PROMPT.md"
+    if opencode_prompt.exists():
+        opencode_text = opencode_prompt.read_text(encoding="utf-8")
+        for phrase in ("OpenCode", "AGENTS.md", "statedd_handoff.py", "not proven"):
+            if phrase not in opencode_text:
+                issues.append(f"OpenCode startup prompt missing phrase: {phrase}")
+
+    getting_started = root / "docs" / "GETTING_STARTED_5_MIN.md"
+    if getting_started.exists():
+        getting_started_text = getting_started.read_text(encoding="utf-8")
+        for phrase in ("5 Minutes", "OPENCODE_STARTUP_PROMPT.md", "check_state_docs.py --bootstrap-gate"):
+            if phrase not in getting_started_text:
+                issues.append(f"5-minute getting started guide missing phrase: {phrase}")
+
+    handoff_helper = root / "scripts" / "statedd_handoff.py"
+    if handoff_helper.exists():
+        handoff_helper_text = handoff_helper.read_text(encoding="utf-8")
+        for phrase in ("StateDD Handoff Snapshot", "repo path", "not proven", "--test-command"):
+            if phrase not in handoff_helper_text:
+                issues.append(f"Handoff helper missing phrase: {phrase}")
+
+    license_file = root / "LICENSE"
+    if license_file.exists():
+        license_text = license_file.read_text(encoding="utf-8")
+        for phrase in (
+            "Teaching Rights Reserved",
+            "commercial or profit-making purposes",
+            "does not grant permission to use the Software",
+            "ordinary explanations",
+            "incidental to permitted use",
+        ):
+            if phrase not in license_text:
+                issues.append(f"LICENSE missing phrase: {phrase}")
+
+    license_faq = root / "LICENSE_FAQ.md"
+    if license_faq.exists():
+        license_faq_text = license_faq.read_text(encoding="utf-8")
+        for phrase in ("commercial or client projects", "Can I teach this workflow?", "No, not without prior written permission"):
+            if phrase not in license_faq_text:
+                issues.append(f"License FAQ missing phrase: {phrase}")
 
     runtime_identity = root / "prompts" / "RUNTIME_IDENTITY_CHECKLIST.md"
     if runtime_identity.exists():

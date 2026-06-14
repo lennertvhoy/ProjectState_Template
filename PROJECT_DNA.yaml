@@ -68,6 +68,8 @@ architecture:
     description: Artifact-backed proof for claims and verification.
   history_plane:
     description: Append-only record of completed work in WORKLOG.md.
+  routing_plane:
+    description: Dynamic CTO-lane selection of tools, models, settings, context strategy, and prompt shape.
 
 invariants:
   - "STATUS.md stays short and current."
@@ -82,6 +84,11 @@ governance:
   evidence_standard: browser_verification_or_test_output
   evidence_artifact_root: docs/evidence
   acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
+  license: LICENSE
+  license_faq: LICENSE_FAQ.md
+  getting_started_guide: docs/GETTING_STARTED_5_MIN.md
+  tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
+  handoff_snapshot_helper: scripts/statedd_handoff.py
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   update_policy:

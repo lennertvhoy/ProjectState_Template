@@ -145,6 +145,14 @@ restate it explicitly for the next coding-agent session.
 In operating mode, the scope should usually be a backlog slice or a very small
 set of tightly related backlog items.
 
+When tool or model choice affects quality, cost, speed, context fit, or
+verification risk, the CTO lane should recommend a concrete route using
+`prompts/TOOL_MODEL_ROUTING_GUIDE.md`. The recommendation should be based on
+the user's available tools and the current slice, not a hard-coded vendor
+preference. Specific model capability, pricing, context-window, and
+availability claims must be verified from current primary sources or marked as
+`reported`, `assumed`, or `not proven`.
+
 ### CTO Review Standard
 Every handoff must be reviewed for:
 - contradictions
@@ -160,6 +168,7 @@ Implementation prompts must:
 - require reading `AGENTS.md` first
 - anchor on current verified truth
 - define one coherent scope
+- include the recommended tool/model/settings when the CTO lane selected a route
 - forbid overclaiming
 - require direct verification
 - require runtime identity proof before accepting or investigating user-facing behavior

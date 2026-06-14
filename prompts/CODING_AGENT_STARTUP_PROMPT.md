@@ -29,7 +29,7 @@ If this is an existing repo state but no CTO prompt was provided:
 - identify what appears to be the highest-leverage next step
 - do not begin non-trivial implementation yet
 - first produce a CTO-ready handoff and a draft CTO prompt with the context needed to continue safely
-- make that draft CTO prompt require `prompts/FINAL_HANDOFF_TEMPLATE.md`, `prompts/RUNTIME_IDENTITY_CHECKLIST.md`, and the relevant validation commands
+- make that draft CTO prompt require `prompts/TOOL_MODEL_ROUTING_GUIDE.md` when tool/model choice matters, `prompts/FINAL_HANDOFF_TEMPLATE.md`, `prompts/RUNTIME_IDENTITY_CHECKLIST.md`, and the relevant validation commands
 
 Treat work as non-trivial if it involves any of:
 - multiple-file changes
@@ -43,6 +43,9 @@ Always:
 - forbid overclaiming
 - keep negative searches negative: use `not found`, `not currently locatable`, or `not proven`
 - require runtime identity proof before accepting or investigating user-facing behavior
+- treat remembered or user-supplied model capability, pricing, context-window, and availability claims as `reported` until verified from current primary sources when they affect routing
+- include any CTO-selected tool/model/settings in the implementation prompt or final handoff
+- use `prompts/TOOL_MODEL_ROUTING_GUIDE.md` when drafting a CTO prompt that should choose between tools, models, reasoning settings, context strategies, or budget modes
 - use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
 - use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone
 - use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape

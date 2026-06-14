@@ -142,6 +142,93 @@ def test_new_copies_curated_template_surface_only() -> None:
         sentinel.unlink(missing_ok=True)
 
 
+def test_new_includes_tool_model_routing_guide() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Routing Demo", "--target", str(target)], expect_success=True)
+
+        guide = target / "prompts" / "TOOL_MODEL_ROUTING_GUIDE.md"
+        if not guide.exists():
+            raise AssertionError("New repo did not include prompts/TOOL_MODEL_ROUTING_GUIDE.md")
+
+        agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+        if "prompts/TOOL_MODEL_ROUTING_GUIDE.md" not in agents:
+            raise AssertionError("Generated AGENTS.md does not reference the routing guide")
+
+
+def assert_usability_assets_exist(root: Path) -> None:
+    required = [
+        root / "docs" / "GETTING_STARTED_5_MIN.md",
+        root / "prompts" / "OPENCODE_STARTUP_PROMPT.md",
+        root / "scripts" / "statedd_handoff.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing usability assets: {missing}")
+
+
+def test_new_includes_usability_assets() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Usability Demo", "--target", str(target)], expect_success=True)
+        assert_usability_assets_exist(target)
+
+
+def test_new_includes_license_faq() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "License Demo", "--target", str(target)], expect_success=True)
+        faq = target / "LICENSE_FAQ.md"
+        if not faq.exists():
+            raise AssertionError("New repo did not include LICENSE_FAQ.md")
+        license_text = (target / "LICENSE").read_text(encoding="utf-8")
+        if "Teaching Rights Reserved" not in license_text:
+            raise AssertionError("Generated LICENSE does not reserve teaching rights")
+
+
+def test_adopt_installs_tool_model_routing_guide() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+
+        run_init(["adopt", "--name", "Routing Demo", "--target", str(repo)], expect_success=True)
+
+        guide = repo / "prompts" / "TOOL_MODEL_ROUTING_GUIDE.md"
+        if not guide.exists():
+            raise AssertionError("Adopted repo did not install prompts/TOOL_MODEL_ROUTING_GUIDE.md")
+
+        readme = (repo / "README.md").read_text(encoding="utf-8")
+        if readme != "# Existing Project\n":
+            raise AssertionError("Adoption unexpectedly modified README.md without --readme-link")
+
+
+def test_adopt_installs_usability_assets() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+        run_init(["adopt", "--name", "Usability Demo", "--target", str(repo)], expect_success=True)
+        assert_usability_assets_exist(repo)
+
+
+def test_handoff_snapshot_runs() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "statedd_handoff.py"), "--no-include-listeners"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AssertionError(
+            f"Expected handoff helper success, got {completed.returncode}\n"
+            f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+        )
+    if "StateDD Handoff Snapshot" not in completed.stdout or "repo path:" not in completed.stdout:
+        raise AssertionError(f"Handoff helper output is missing required fields:\n{completed.stdout}")
+
+
 def main() -> int:
     tests = [
         test_adopt_rejects_symlinked_managed_directory,
@@ -150,6 +237,12 @@ def main() -> int:
         test_top_level_help_shows_subcommands,
         test_legacy_new_invocation_still_works,
         test_new_copies_curated_template_surface_only,
+        test_new_includes_tool_model_routing_guide,
+        test_new_includes_usability_assets,
+        test_new_includes_license_faq,
+        test_adopt_installs_tool_model_routing_guide,
+        test_adopt_installs_usability_assets,
+        test_handoff_snapshot_runs,
     ]
     for test in tests:
         test()

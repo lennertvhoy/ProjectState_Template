@@ -26,6 +26,7 @@ TEMPLATE_COPY_ROOT_FILES = {
     Path("AGENTS.md"),
     Path("BACKLOG.md"),
     Path("LICENSE"),
+    Path("LICENSE_FAQ.md"),
     Path("NEXT_ACTIONS.md"),
     Path("PROJECT_ADAPTER.yaml"),
     Path("PROJECT_DNA.yaml"),
@@ -40,13 +41,17 @@ TEMPLATE_COPY_DIR_NAMES = {".github", "docs", "fixtures", "prompts", "scripts"}
 SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
+    Path("scripts/statedd_handoff.py"),
     Path("scripts/test_init_template.py"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
     Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
+    Path("prompts/OPENCODE_STARTUP_PROMPT.md"),
     Path("prompts/BOOTSTRAP_INTAKE_PROMPT.md"),
+    Path("prompts/TOOL_MODEL_ROUTING_GUIDE.md"),
     Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
     Path("prompts/RUNTIME_IDENTITY_CHECKLIST.md"),
     Path("prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"),
+    Path("docs/GETTING_STARTED_5_MIN.md"),
     Path("docs/BOOTSTRAP_QUALITY.md"),
 ]
 
@@ -224,6 +229,14 @@ restate it explicitly for the next coding-agent session.
 In operating mode, the scope should usually be a backlog slice or a very small
 set of tightly related backlog items.
 
+When tool or model choice affects quality, cost, speed, context fit, or
+verification risk, the CTO lane should recommend a concrete route using
+`prompts/TOOL_MODEL_ROUTING_GUIDE.md`. The recommendation should be based on
+the user's available tools and the current slice, not a hard-coded vendor
+preference. Specific model capability, pricing, context-window, and
+availability claims must be verified from current primary sources or marked as
+`reported`, `assumed`, or `not proven`.
+
 ### CTO Review Standard
 Every handoff must be reviewed for:
 - contradictions
@@ -239,6 +252,7 @@ Implementation prompts must:
 - require reading `AGENTS.md` first
 - anchor on current verified truth
 - define one coherent scope
+- include the recommended tool/model/settings when the CTO lane selected a route
 - forbid overclaiming
 - require direct verification
 - require runtime identity proof before accepting or investigating user-facing behavior
@@ -473,8 +487,32 @@ current_state:
       - NEXT_ACTIONS.md
       - BACKLOG.md
       - WORKLOG.md
+      - LICENSE
+      - LICENSE_FAQ.md
+      - docs/GETTING_STARTED_5_MIN.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
+      - prompts/OPENCODE_STARTUP_PROMPT.md
+      - prompts/TOOL_MODEL_ROUTING_GUIDE.md
+      - scripts/statedd_handoff.py
+    prompt_assets:
+      cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
+      coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
+      opencode_startup_prompt: prompts/OPENCODE_STARTUP_PROMPT.md
+      tool_model_routing_guide:
+        status: observed
+        path: prompts/TOOL_MODEL_ROUTING_GUIDE.md
+        summary: |
+          Guides the CTO lane to recommend tools, models, settings, context
+          strategy, and tailored prompts based on current user access, task
+          risk, budget, and verified provider facts.
+    workflow_helpers:
+      getting_started_5_min:
+        status: observed
+        path: docs/GETTING_STARTED_5_MIN.md
+      handoff_snapshot:
+        status: observed
+        path: scripts/statedd_handoff.py
 
 active_problems: []
 """
@@ -552,6 +590,8 @@ architecture:
     description: Artifact-backed proof for claims and verification.
   history_plane:
     description: Append-only record of completed work in WORKLOG.md.
+  routing_plane:
+    description: Dynamic CTO-lane selection of tools, models, settings, context strategy, and prompt shape.
 
 invariants:
   - "STATUS.md stays short and current."
@@ -566,6 +606,11 @@ governance:
   evidence_standard: browser_verification_or_test_output
   evidence_artifact_root: docs/evidence
   acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
+  license: LICENSE
+  license_faq: LICENSE_FAQ.md
+  getting_started_guide: docs/GETTING_STARTED_5_MIN.md
+  tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
+  handoff_snapshot_helper: scripts/statedd_handoff.py
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   update_policy:
@@ -600,6 +645,16 @@ runtime:
   runtime_identity_surface: null
 
 integrations: []
+
+ai_execution_preferences:
+  available_tools: []
+  planning_models: []
+  coding_models: []
+  review_models: []
+  default_routing_priority: quality_then_cost
+  notes:
+    - "Fill this only with user-confirmed or currently verified access."
+    - "Keep provider capability and pricing claims out of this file unless freshly verified."
 
 notes:
   - "Populate this file when a real project is attached."
@@ -1282,8 +1337,20 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "STATUS.md",
             "WORKLOG.md",
         ],
-        manifests=["README.md", "scripts/init_template.py", "scripts/check_state_docs.py", "scripts/test_init_template.py"],
-        entrypoints=["scripts/init_template.py", "scripts/check_state_docs.py", "scripts/test_init_template.py"],
+        manifests=[
+            "README.md",
+            "docs/GETTING_STARTED_5_MIN.md",
+            "scripts/init_template.py",
+            "scripts/check_state_docs.py",
+            "scripts/statedd_handoff.py",
+            "scripts/test_init_template.py",
+        ],
+        entrypoints=[
+            "scripts/init_template.py",
+            "scripts/check_state_docs.py",
+            "scripts/statedd_handoff.py",
+            "scripts/test_init_template.py",
+        ],
         test_setup=["scripts/check_state_docs.py", "scripts/test_init_template.py"],
         deployment_assumptions=["distributed as a git-hosted workflow template"],
         contradictions=["project-specific contradictions not yet investigated"],
@@ -1489,9 +1556,9 @@ def main(argv: list[str] | None = None) -> int:
         if (target / ".git").exists():
             print("Warning: target contains git metadata. Verify git remote -v before first push.")
         print("Next:")
-        print("1. Read README.md")
+        print("1. Read docs/GETTING_STARTED_5_MIN.md, then README.md when you need the full guide")
         print("2. Fix git ownership first if needed: remove .git, init your own repo, and verify git remote -v")
-        print("3. Start the coding agent with the startup prompt from README.md")
+        print("3. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with prompts/CODING_AGENT_STARTUP_PROMPT.md")
         print("4. Let the coding agent read the repo files, detect bootstrap mode, and ask the minimum strategic questions")
         print("5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
         print("6. Use bootstrap to fill the state files and prepare a real backlog before operating mode")
@@ -1541,11 +1608,13 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("GitHub assets: skipped")
     print("Next:")
-    print("1. Review PROJECT_STATE.yaml, BACKLOG.md, and NEXT_ACTIONS.md against the real repo")
-    print("2. Resolve contradictions before treating inherited claims as current truth")
-    print("3. Start the coding agent with the repo contract and use prompts/FINAL_HANDOFF_TEMPLATE.md for the first CTO handoff")
-    print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py after edits")
-    print(f"5. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
+    print("1. Read docs/GETTING_STARTED_5_MIN.md")
+    print("2. Review PROJECT_STATE.yaml, BACKLOG.md, and NEXT_ACTIONS.md against the real repo")
+    print("3. Resolve contradictions before treating inherited claims as current truth")
+    print("4. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with the repo contract")
+    print("5. Use prompts/FINAL_HANDOFF_TEMPLATE.md or scripts/statedd_handoff.py for the first CTO handoff")
+    print(f"6. Run {Path(sys.executable).name} scripts/check_state_docs.py after edits")
+    print(f"7. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
     return 0
 
 

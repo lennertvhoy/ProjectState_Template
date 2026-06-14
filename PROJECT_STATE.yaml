@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26
-  updated_by: template
+  updated_at: 2026-06-14
+  updated_by: agent
   version: "statedd-template-v3"
 
 workflow:
@@ -30,11 +30,11 @@ verification_labels:
 
 current_state:
   repository:
-    canonical_path: unknown
-    path_status: unknown
-    branch: null
-    head: null
-    worktree_status: unknown
+    canonical_path: /home/ff/Documents/Projects/StateDD_Template
+    path_status: observed
+    branch: main
+    head: c76dad7b747ea05b49f8f6239c6ec8e0974e0ab4
+    worktree_status: dirty
 
   operating_mode:
     status: observed
@@ -121,7 +121,31 @@ current_state:
       - NEXT_ACTIONS.md
       - BACKLOG.md
       - WORKLOG.md
+      - LICENSE
+      - LICENSE_FAQ.md
+      - docs/GETTING_STARTED_5_MIN.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
+      - prompts/OPENCODE_STARTUP_PROMPT.md
+      - prompts/TOOL_MODEL_ROUTING_GUIDE.md
+      - scripts/statedd_handoff.py
+    prompt_assets:
+      cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
+      coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
+      opencode_startup_prompt: prompts/OPENCODE_STARTUP_PROMPT.md
+      tool_model_routing_guide:
+        status: observed
+        path: prompts/TOOL_MODEL_ROUTING_GUIDE.md
+        summary: |
+          Guides the CTO lane to recommend tools, models, settings, context
+          strategy, and tailored prompts based on current user access, task
+          risk, budget, and verified provider facts.
+    workflow_helpers:
+      getting_started_5_min:
+        status: observed
+        path: docs/GETTING_STARTED_5_MIN.md
+      handoff_snapshot:
+        status: observed
+        path: scripts/statedd_handoff.py
 
 active_problems: []

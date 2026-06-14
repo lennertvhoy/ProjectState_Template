@@ -22,6 +22,16 @@ runtime:
 
 integrations: []
 
+ai_execution_preferences:
+  available_tools: []
+  planning_models: []
+  coding_models: []
+  review_models: []
+  default_routing_priority: quality_then_cost
+  notes:
+    - "Fill this only with user-confirmed or currently verified access."
+    - "Keep provider capability and pricing claims out of this file unless freshly verified."
+
 notes:
   - "Populate this file when a real project is attached."
   - "Keep PROJECT_DNA.yaml focused on invariants."

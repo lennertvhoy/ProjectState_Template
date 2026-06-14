@@ -1,6 +1,6 @@
 # Your Project Status
 
-**Updated At:** 2026-04-26
+**Updated At:** 2026-06-14
 **Execution Mode:** bootstrap
 **Project State:** bootstrap_initializing
 **Public URL:** not configured
@@ -12,6 +12,8 @@
 - Unknowns remain explicit until proven.
 - Current work should be tracked through `NEXT_ACTIONS.md`.
 - Evidence for user-facing claims belongs in `docs/EVIDENCE_LOG.md`.
+- Prompt/tooling guidance now includes dynamic routing, OpenCode startup, a 5-minute guide, and a read-only handoff snapshot helper.
+- License policy now allows commercial/profit use while reserving teaching/training rights.
 
 ## Immediate Priorities
 

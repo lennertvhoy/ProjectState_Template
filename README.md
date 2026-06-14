@@ -54,13 +54,17 @@ created from it should use the full workflow directly.
 | **`NEXT_ACTIONS.md`** | Active queue only |
 | `BACKLOG.md` | Medium-term roadmap with stable backlog IDs |
 | `WORKLOG.md` | Append-only history |
+| `LICENSE` | Custom free-use license with teaching rights reserved |
+| `LICENSE_FAQ.md` | Plain-language license guide |
 | **`docs/EVIDENCE_LOG.md`** | Proof ledger for user-facing claims |
 | `docs/ACCEPTANCE_FREEZES.md` | Accepted milestone ledger |
 | `docs/evidence/` | Default artifact root for screenshots, logs, and outputs |
+| `docs/GETTING_STARTED_5_MIN.md` | Fast beginner path for first setup and first agent session |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
+| `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
-| `prompts/` | Startup prompts, handoff template, runtime checklist, freeze template |
+| `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template |
 
 ## How It Works
 
@@ -86,6 +90,8 @@ created from it should use the full workflow directly.
 
 ## Quick Start
 
+For the shortest beginner path, use `docs/GETTING_STARTED_5_MIN.md`.
+
 ### New Repo
 
 ```bash
@@ -110,7 +116,8 @@ python3 scripts/init_template.py adopt --name "Your Project"
 
 1. If you cloned this template directly, remove `.git` and verify your new
    remote before any push.
-2. Start the coding tool with `prompts/CODING_AGENT_STARTUP_PROMPT.md`.
+2. Start OpenCode with `prompts/OPENCODE_STARTUP_PROMPT.md`, or another coding
+   tool with `prompts/CODING_AGENT_STARTUP_PROMPT.md`.
 3. Let the coding agent read `AGENTS.md`, `STATUS.md`, `PROJECT_STATE.yaml`,
    `PROJECT_DNA.yaml`, and `NEXT_ACTIONS.md`.
 4. For non-trivial work, create a separate planning chat and paste
@@ -198,14 +205,32 @@ model. It does not have direct access to the repo or state files unless the
 human pastes context into it. Fresh handoffs and a fresh coding-agent session
 matter.
 
+## Tool And Model Routing
+
+The CTO lane should recommend tools, models, settings, and prompt shape when
+that choice materially affects quality, cost, speed, context fit, or
+verification risk. Use `prompts/TOOL_MODEL_ROUTING_GUIDE.md` for this.
+
+Routing is dynamic. The CTO should ask what the user can actually access, weigh
+task risk against budget and context needs, and output a concrete setup such as
+planner/reviewer model, coding-agent model, reasoning effort or thinking mode,
+enabled tools, context strategy, fallback route, and paste-ready prompt.
+
+Do not treat model catalogs as stable template truth. Specific claims about
+model capabilities, pricing, context windows, or tool support should be verified
+from current primary sources or marked as `reported`, `assumed`, or
+`not proven`.
+
 ## Prompt Files
 
 The prompt files are the reusable source of truth for startup and handoff
 wording:
 
 - `prompts/CODING_AGENT_STARTUP_PROMPT.md`
+- `prompts/OPENCODE_STARTUP_PROMPT.md`
 - `prompts/CTO_SESSION_PROMPT.md`
 - `prompts/BOOTSTRAP_INTAKE_PROMPT.md`
+- `prompts/TOOL_MODEL_ROUTING_GUIDE.md`
 - `prompts/FINAL_HANDOFF_TEMPLATE.md`
 - `prompts/RUNTIME_IDENTITY_CHECKLIST.md`
 - `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md`
@@ -223,6 +248,10 @@ Use `prompts/FINAL_HANDOFF_TEMPLATE.md`. The handoff should capture what
 changed, what was verified, repo path, branch, git head, process or container,
 endpoint, rebuild status, evidence refs, and the next recommended backlog
 slice.
+
+Use `python3 scripts/statedd_handoff.py` near the end of a slice to print a
+local handoff snapshot. The helper is read-only and marks runtime facts as
+`not proven` unless they are directly captured.
 
 ## Runtime Identity Proof
 
@@ -297,6 +326,8 @@ through the planning chat plus a fresh coding-agent session.
 - the coding agent edits before reading the current state files
 - bootstrap is treated as a formality instead of real discovery
 - the planning chat is treated as if it can read the repo directly
+- model/vendor preferences are hard-coded without checking available tools,
+  task risk, cost limits, or current provider facts
 - user-facing claims are made without evidence
 - screenshots are accepted before runtime identity is proven
 - a failed search is upgraded to a false certainty
@@ -318,6 +349,7 @@ Run the hygiene check before handoff, review, or release:
 ```bash
 python3 scripts/check_state_docs.py
 python3 scripts/test_init_template.py
+python3 scripts/statedd_handoff.py
 ```
 
 You can also validate initialized fixtures or another repo copy:
@@ -331,6 +363,7 @@ python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
 ## Notes
 
 - This template does not ship an application runtime.
+- Start with `docs/GETTING_STARTED_5_MIN.md` if the full README feels heavy.
 - The prompt files are the source of truth for reusable prompt wording.
 - Deeper reference docs live in `docs/BOOTSTRAP_QUALITY.md` and `docs/README.md`.
-- The project is released under the PolyForm Noncommercial License 1.0.0 in [`LICENSE`](LICENSE). Commercial use requires a separate paid license.
+- The project is released under a custom license in [`LICENSE`](LICENSE). You may use, modify, distribute, and profit from the Software, but teaching/training rights are reserved. See [`LICENSE_FAQ.md`](LICENSE_FAQ.md).

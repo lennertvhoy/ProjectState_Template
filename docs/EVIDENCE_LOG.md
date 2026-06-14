@@ -27,3 +27,68 @@
 - Prefer durable artifact paths.
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
+
+## EV-2026-06-14-001: Tool/model routing template integration verified
+
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/TOOL_MODEL_ROUTING_GUIDE.md
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/CTO_SESSION_PROMPT.md
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/init_template.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_init_template.py
+- Title: Dynamic CTO-lane tool/model routing guide integrated into template prompts and initializer
+- Source/System: test
+- Action: Ran `python3 scripts/check_state_docs.py` and `python3 scripts/test_init_template.py`
+- Shows:
+  - documentation hygiene check passed
+  - initializer regression tests passed, including new/adopt routing-guide coverage
+  - bootstrap gate still fails for pre-existing incomplete bootstrap baseline conditions
+- Proves:
+  - the template recognizes the routing guide as a required prompt asset
+  - generated and adopted repos include the routing guide
+- Type: docs-render-verification
+- as_of: 2026-06-14T00:00:00+02:00
+- Notes: No external model/provider facts were verified or encoded; routing guide requires current primary-source verification when concrete model claims affect a decision.
+
+## EV-2026-06-14-002: Beginner onboarding and handoff helper integration verified
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/GETTING_STARTED_5_MIN.md
+- File: /home/ff/Documents/Projects/StateDD_Template/prompts/OPENCODE_STARTUP_PROMPT.md
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_handoff.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_init_template.py
+- Title: Beginner onboarding, OpenCode startup, and read-only handoff snapshot helper integrated
+- Source/System: test
+- Action: Ran Python syntax checks, documentation hygiene check, initializer regression tests, handoff helper with validation output, and bootstrap gate
+- Shows:
+  - `python3 -m py_compile scripts/statedd_handoff.py scripts/init_template.py scripts/check_state_docs.py scripts/test_init_template.py` passed
+  - `python3 scripts/check_state_docs.py` passed
+  - `python3 scripts/test_init_template.py` passed
+  - `python3 scripts/statedd_handoff.py --no-include-listeners --test-command "python3 scripts/check_state_docs.py"` printed repo identity and validation output
+  - `python3 scripts/check_state_docs.py --bootstrap-gate` still fails for incomplete bootstrap baseline conditions
+- Proves:
+  - new and adopted repos include the beginner/OpenCode/handoff assets
+  - the handoff helper runs without mutating repo state
+  - the repo has not falsely claimed bootstrap completion
+- Type: docs-render-verification
+- as_of: 2026-06-14T12:57:04+02:00
+- Notes: GitHub metadata/release changes, large example projects, license FAQ, and automated screenshot/evidence capture were not implemented in this slice.
+
+## EV-2026-06-14-003: Teaching-rights-reserved license policy integrated
+
+- File: /home/ff/Documents/Projects/StateDD_Template/LICENSE
+- File: /home/ff/Documents/Projects/StateDD_Template/LICENSE_FAQ.md
+- File: /home/ff/Documents/Projects/StateDD_Template/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/check_state_docs.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_init_template.py
+- Title: Custom license updated to allow free/commercial use while reserving teaching and training rights
+- Source/System: test
+- Action: Updated license wording, README note, template copy surface, validator checks, and initializer regression tests
+- Shows:
+  - `python3 scripts/check_state_docs.py` passed
+  - `python3 scripts/test_init_template.py` passed
+  - new repos include `LICENSE_FAQ.md`
+  - validator checks for commercial/profit permission and teaching-rights reservation
+  - `python3 scripts/check_state_docs.py --bootstrap-gate` still fails for incomplete bootstrap baseline conditions
+- Proves:
+  - the template license surface matches the requested policy at the documentation and initializer level
+- Type: docs-render-verification
+- as_of: 2026-06-14T13:00:00+02:00
+- Notes: This is a custom license draft, not legal advice or lawyer-reviewed text.
