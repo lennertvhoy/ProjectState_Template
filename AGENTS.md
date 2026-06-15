@@ -1,9 +1,9 @@
 ---
-repo_mode: bootstrap
+repo_mode: "bootstrap"
 initialized_on: 2026-04-26
-last_updated: 2026-06-14
+last_updated: "2026-06-14"
+project: "StateDD_Template"
 ---
-
 # State Driven Development Template Contract
 
 **Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.

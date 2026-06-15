@@ -20,6 +20,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## LATER
 
+- [BL-WB-001] Use Kimi WebBridge to browser-verify any user-facing change in the real browser when available.
 - [BL-004] Enter operating mode only after the baseline is truthful and the backlog is real.
 - [BL-005] Add a real canonical schema/export/import example project that generates ChatGPT prompts from the same schema the app validates.
 - [BL-006] Add automated screenshot / browser-evidence capture helpers that prove runtime identity.
