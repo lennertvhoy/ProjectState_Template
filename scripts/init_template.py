@@ -20,11 +20,13 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
+TEMPLATE_VERSION = "statedd-template-v4"
 
 TEMPLATE_COPY_ROOT_FILES = {
     Path(".gitignore"),
     Path("AGENTS.md"),
     Path("BACKLOG.md"),
+    Path("CHANGELOG.md"),
     Path("LICENSE"),
     Path("LICENSE_FAQ.md"),
     Path("NEXT_ACTIONS.md"),
@@ -33,14 +35,17 @@ TEMPLATE_COPY_ROOT_FILES = {
     Path("PROJECT_STATE.yaml"),
     Path("README.md"),
     Path("STATUS.md"),
+    Path("VERSION"),
     Path("WORKLOG.md"),
 }
 
 TEMPLATE_COPY_DIR_NAMES = {".github", "docs", "fixtures", "prompts", "scripts"}
 
 SUPPORT_ASSET_PATHS = [
+    Path("VERSION"),
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
+    Path("scripts/statedd_version_check.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
@@ -60,6 +65,7 @@ SUPPORT_ASSET_PATHS = [
     Path("prompts/CTO_REVIEW_CHECKLIST.md"),
     Path("docs/GETTING_STARTED_5_MIN.md"),
     Path("docs/BOOTSTRAP_QUALITY.md"),
+    Path("docs/UPGRADING.md"),
     Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
     Path("docs/adr/README.md"),
     Path("docs/adr/0000-adr-template.md"),
@@ -94,6 +100,7 @@ class RepoScan:
 def render_agents_template(today: str, mode: str) -> str:
     return f"""---
 repo_mode: {mode}
+statedd_version: "{TEMPLATE_VERSION}"
 initialized_on: {today}
 last_updated: {today}
 ---
@@ -385,7 +392,7 @@ def render_project_state(
 metadata:
   updated_at: {stamp}
   updated_by: agent
-  version: "statedd-template-v4"
+  version: "{TEMPLATE_VERSION}"
 
 workflow:
   repo_mode: bootstrap
@@ -531,7 +538,7 @@ active_problems: []
 def render_project_dna(project_name: str) -> str:
     return f"""# PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "statedd-template-v4"
+version: "{TEMPLATE_VERSION}"
 schema_version: "1.0"
 
 product:
@@ -654,7 +661,7 @@ invariants:
 def render_project_adapter(project_name: str) -> str:
     return f"""# PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
-version: "statedd-template-v4"
+version: "{TEMPLATE_VERSION}"
 
 project:
   name: {project_name}
@@ -1372,12 +1379,14 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "docs/GETTING_STARTED_5_MIN.md",
             "scripts/init_template.py",
             "scripts/check_state_docs.py",
+            "scripts/statedd_version_check.py",
             "scripts/statedd_handoff.py",
             "scripts/test_init_template.py",
         ],
         entrypoints=[
             "scripts/init_template.py",
             "scripts/check_state_docs.py",
+            "scripts/statedd_version_check.py",
             "scripts/statedd_handoff.py",
             "scripts/test_init_template.py",
         ],

@@ -4,8 +4,8 @@ version: "statedd-template-v4"
 schema_version: "1.0"
 
 product:
-  name: "Your Project"
-  one_sentence: "Project using the State Driven Development Template workflow."
+  name: "StateDD_Template"
+  one_sentence: "Reusable State Driven Development workflow template for AI-assisted projects."
   description: |
     This repository uses explicit state, a short active queue, durable history,
     and evidence-led verification for AI-assisted technical delivery.
@@ -24,6 +24,7 @@ truth_rules:
   contract_files:
     agents: AGENTS.md
     status: STATUS.md
+    version: VERSION
     project_state: PROJECT_STATE.yaml
     project_dna: PROJECT_DNA.yaml
     project_adapter: PROJECT_ADAPTER.yaml
@@ -77,6 +78,7 @@ invariants:
   - "PROJECT_DNA.yaml changes slowly."
   - "NEXT_ACTIONS.md contains open work only."
   - "BACKLOG.md assigns stable backlog IDs."
+  - "VERSION is the canonical StateDD spec-version source."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
   - "Implemented, validated, closure-grade, and accepted are four distinct states."
@@ -92,6 +94,7 @@ governance:
   license_faq: LICENSE_FAQ.md
   getting_started_guide: docs/GETTING_STARTED_5_MIN.md
   tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
+  version_check: scripts/statedd_version_check.py
   handoff_snapshot_helper: scripts/statedd_handoff.py
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate

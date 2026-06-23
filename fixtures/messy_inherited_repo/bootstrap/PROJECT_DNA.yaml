@@ -1,6 +1,6 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "state-driven-development-template-v2"
+version: "statedd-template-v4"
 schema_version: "1.0"
 
 product:

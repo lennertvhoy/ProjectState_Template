@@ -2,6 +2,40 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - StateDD version source normalized
+
+**Type:** template_version_governance
+**Status:** COMPLETE
+**Git Head:** d5ae473c2e4c129978fe5a56b30dae4c044e7f09
+**Worktree:** clean before work; dirty after local edits pending handoff
+
+### What changed
+- Added `VERSION` as the canonical StateDD spec-version source.
+- Added `CHANGELOG.md`, `docs/UPGRADING.md`, and `scripts/statedd_version_check.py`.
+- Wired the version check into `scripts/check_state_docs.py`, `scripts/test_init_template.py`, `.github/workflows/validate.yml`, and `scripts/init_template.py`.
+- Normalized root `PROJECT_ADAPTER.yaml` from the stale adapter version to `statedd-template-v4`.
+- Aligned fixture `AGENTS.md`, `PROJECT_STATE.yaml`, and `PROJECT_DNA.yaml` version identifiers to `statedd-template-v4`.
+- Added CTO-review backlog slices for versioning, runtime proof, schema validation, template-maintenance split, and evidence/redaction hardening.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `BACKLOG.md`, and `NEXT_ACTIONS.md` to reflect current template-maintenance truth.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/test_init_template.py` passed.
+- `python3 scripts/statedd_version_check.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- Fixture hygiene checks passed for `fixtures/bootstrap_dry_run/bootstrap`, `fixtures/bootstrap_dry_run/operating`, and `fixtures/messy_inherited_repo/bootstrap`.
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap` failed as expected for the intentionally thin dry-run fixture.
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` still fails because root bootstrap system/repo investigation remains incomplete.
+
+### Evidence
+- `docs/evidence/2026-06-23-statedd-version-source/README.md`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-001`
+
+### Notes
+- GitHub release publishing was not performed from this local session.
+- [BL-011] is the next recommended slice because root template-maintenance truth is still mixed with generated downstream-project truth.
+
 ## 2026-06-14 - Dynamic CTO tool/model routing added
 
 **Type:** template_prompt_governance

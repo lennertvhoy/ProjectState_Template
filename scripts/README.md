@@ -7,6 +7,7 @@ All setup and usage instructions live in the repository root `README.md`.
 ## Canonical Scripts
 
 - `init_template.py` - initializes a new repo or adopts the workflow into an existing repo
+- `statedd_version_check.py` - verifies that StateDD version-bearing files match `VERSION`
 - `check_state_docs.py` - validates the live-state documentation boundaries
 - `statedd_handoff.py` - prints a read-only handoff snapshot from local repo state
 - `statedd_audit.py` - machine-checkable closure audit (StateDD v2)
@@ -17,6 +18,7 @@ All setup and usage instructions live in the repository root `README.md`.
 
 ```bash
 python3 scripts/init_template.py --help
+python3 scripts/statedd_version_check.py
 python3 scripts/check_state_docs.py
 python3 scripts/statedd_handoff.py
 python3 scripts/statedd_doctor.py

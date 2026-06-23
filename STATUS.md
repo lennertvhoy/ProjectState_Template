@@ -1,23 +1,23 @@
 # StateDD Template Status
 
-**Updated At:** 2026-06-14
+**Updated At:** 2026-06-23
 **Execution Mode:** bootstrap
-**Project State:** bootstrap_initializing
+**Project State:** bootstrap_template_maintenance
 **Public URL:** not configured
 
 ## Snapshot
 
-- Repo initialized in bootstrap mode.
-- v2 executable workflow assets added, validated, and committed.
-- `statedd_audit.py` and `statedd_doctor.py` pass on the root repo.
-- All hygiene checks, initializer tests, and generated-repo smoke tests pass.
-- Project-specific truth still needs to be established.
-- Unknowns remain explicit until proven.
+- Repo remains in bootstrap mode while the template-maintenance baseline is clarified.
+- Canonical StateDD spec version is `statedd-template-v4` from `VERSION`.
+- Version alignment is now checked by `scripts/statedd_version_check.py`.
+- Root `PROJECT_ADAPTER.yaml` has been normalized from the stale adapter version to v4.
+- Runtime proof, schema validation, and template/downstream state split remain open roadmap work.
 
 ## Immediate Priorities
 
-1. Capture the real project identity and first milestone.
-2. Transition to operating mode once baseline truth exists.
+1. Resolve the template-maintenance mode split.
+2. Add runtime identity proof artifacts.
+3. Add schema-backed validation for state and evidence files.
 
 ## Active Blockers
 

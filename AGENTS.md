@@ -1,7 +1,8 @@
 ---
 repo_mode: "bootstrap"
+statedd_version: "statedd-template-v4"
 initialized_on: 2026-04-26
-last_updated: "2026-06-14"
+last_updated: 2026-06-23
 project: "StateDD_Template"
 ---
 # State Driven Development Template Contract

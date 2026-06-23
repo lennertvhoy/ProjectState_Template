@@ -1,5 +1,6 @@
 ---
 repo_mode: operating
+statedd_version: "statedd-template-v4"
 initialized_on: 2026-03-18
 last_updated: 2026-03-18
 ---

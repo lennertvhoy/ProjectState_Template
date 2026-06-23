@@ -3,7 +3,7 @@
 metadata:
   updated_at: 2026-03-18T19:00:00+01:00
   updated_by: agent
-  version: "statedd-template-v3"
+  version: "statedd-template-v4"
 
 workflow:
   repo_mode: bootstrap

@@ -1,12 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-06-14
+**Updated At:** 2026-06-23
 **Execution Mode:** bootstrap
 **Max Items:** 10
 
 ## Active Work
 
-No active items. Last completed slice: [BL-001] Validate the v2 executable workflow implementation.
+### P0 [BL-011] Resolve template-maintenance mode split
+Owner: CTO lane + coding agent
+Next: decide whether to add `repo_mode: template-maintenance` or physically split generated skeleton files from root maintenance state
+Exit: root repo no longer reads as a half-bootstrapped downstream project, generated repos still start in bootstrap, and README explains the distinction
 
 ## Queue Rules
 

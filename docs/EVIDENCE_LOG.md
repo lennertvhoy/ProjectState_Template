@@ -28,6 +28,29 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-001: StateDD version source normalized
+
+- File: /home/ff/Documents/Projects/StateDD_Template/VERSION
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_version_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/UPGRADING.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-statedd-version-source/README.md
+- Title: Canonical StateDD version source and alignment check added
+- Source/System: test
+- Action: Added version source, changelog, upgrade guidance, alignment script, validator wiring, initializer coverage, and CI command coverage
+- Shows:
+  - `python3 scripts/statedd_version_check.py` passed
+  - `python3 scripts/check_state_docs.py` passed
+  - `python3 scripts/test_init_template.py` passed, including generated and adopted version-asset checks
+  - fixture hygiene checks passed after fixture spec identifiers were aligned
+  - the intentionally thin bootstrap dry-run fixture still fails its bootstrap gate as expected
+  - root `PROJECT_ADAPTER.yaml` now matches `statedd-template-v4`
+- Proves:
+  - current version-bearing files agree on the canonical StateDD spec version
+  - generated and adopted repos receive version assets and can run the alignment check
+- Type: docs-render-verification
+- as_of: 2026-06-23T00:00:00+02:00
+- Notes: GitHub release publishing and template/downstream state split remain separate backlog work.
+
 ## EV-2026-06-14-001: Tool/model routing template integration verified
 
 - File: /home/ff/Documents/Projects/StateDD_Template/prompts/TOOL_MODEL_ROUTING_GUIDE.md

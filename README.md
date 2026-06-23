@@ -2,6 +2,8 @@
 
 A lightweight, executable workflow for AI-assisted software projects.
 
+Current StateDD spec version: `statedd-template-v4`
+
 StateDD keeps humans in control while giving coding agents a shared source of
 truth inside the repo: live state, a short active queue, evidence-backed claims,
 and clean handoffs between planning and implementation.
@@ -63,6 +65,7 @@ created from it should use the full workflow directly.
 | `docs/adr/` | Architecture decision records |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
+| `scripts/statedd_version_check.py` | Verify StateDD spec-version alignment |
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
 | `scripts/statedd_audit.py` | Machine-checkable closure audit |
 | `scripts/statedd_doctor.py` | Fast StateDD health summary |
@@ -185,6 +188,15 @@ Run the gate before flipping modes:
 
 ```bash
 python3 scripts/check_state_docs.py --bootstrap-gate
+```
+
+## Versioning
+
+`VERSION` is the canonical StateDD spec-version source. Version-bearing state,
+docs, and generator files must agree with it before handoff or release.
+
+```bash
+python3 scripts/statedd_version_check.py
 ```
 
 ## Setting Up The AI CTO Agent
@@ -373,6 +385,7 @@ Run the hygiene check before handoff, review, or release:
 
 ```bash
 python3 scripts/check_state_docs.py
+python3 scripts/statedd_version_check.py
 python3 scripts/test_init_template.py
 python3 scripts/statedd_handoff.py
 python3 scripts/statedd_doctor.py

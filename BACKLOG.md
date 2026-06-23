@@ -1,8 +1,8 @@
 # BACKLOG - Strategic Roadmap
 
-**Product:** Your Project
+**Product:** StateDD_Template
 **Execution Mode:** bootstrap
-**Updated At:** 2026-06-14
+**Updated At:** 2026-06-23
 
 ## Purpose
 
@@ -11,23 +11,25 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-001] Establish the project identity, primary user, and first milestone.
-- [BL-002] Capture the initial runtime, deployment, and constraint baseline in the state files.
+- [BL-008] Normalize StateDD versioning and release metadata.
+- [BL-011] Split template-maintenance state from downstream-project state.
 
 ## NEXT
 
-- [BL-003] Prepare the first active queue and bootstrap evidence trail.
+- [BL-009] Add runtime identity proof artifact generation and strict audit enforcement.
+- [BL-010] Add schema-backed validation for StateDD state, evidence, and handoff files.
+- [BL-012] Add evidence pack manifests and a redaction gate.
 
 ## LATER
 
 - [BL-WB-001] Use Kimi WebBridge to browser-verify any user-facing change in the real browser when available.
-- [BL-004] Enter operating mode only after the baseline is truthful and the backlog is real.
 - [BL-005] Add a real canonical schema/export/import example project that generates ChatGPT prompts from the same schema the app validates.
-- [BL-006] Add automated screenshot / browser-evidence capture helpers that prove runtime identity.
 - [BL-007] Publish repository description, topics, and release notes once the template surface is stable.
+- [BL-013] Add non-destructive downstream upgrade tooling.
+- [BL-014] Add adoption profiles and an interactive bootstrap wizard.
 
 ## WATCHLIST
 
 - Queue bloat.
 - Unverified claims.
-- Premature operating-mode transition.
+- Confusion between template-maintenance truth and generated downstream truth.

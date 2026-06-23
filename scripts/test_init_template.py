@@ -167,6 +167,17 @@ def assert_usability_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing usability assets: {missing}")
 
 
+def assert_version_assets_exist(root: Path) -> None:
+    required = [
+        root / "VERSION",
+        root / "docs" / "UPGRADING.md",
+        root / "scripts" / "statedd_version_check.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing version assets: {missing}")
+
+
 def assert_v2_assets_exist(root: Path) -> None:
     required = [
         root / "scripts" / "statedd_audit.py",
@@ -189,6 +200,24 @@ def test_new_includes_usability_assets() -> None:
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Usability Demo", "--target", str(target)], expect_success=True)
         assert_usability_assets_exist(target)
+
+
+def test_new_includes_version_assets_and_passes_version_check() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Version Demo", "--target", str(target)], expect_success=True)
+        assert_version_assets_exist(target)
+        completed = subprocess.run(
+            [sys.executable, str(target / "scripts" / "statedd_version_check.py"), str(target)],
+            cwd=target,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise AssertionError(
+                f"Generated repo version check failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+            )
 
 
 def test_new_includes_v2_executable_workflow_assets() -> None:
@@ -234,6 +263,26 @@ def test_adopt_installs_usability_assets() -> None:
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
         run_init(["adopt", "--name", "Usability Demo", "--target", str(repo)], expect_success=True)
         assert_usability_assets_exist(repo)
+
+
+def test_adopt_installs_version_assets_and_passes_version_check() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+        run_init(["adopt", "--name", "Version Demo", "--target", str(repo)], expect_success=True)
+        assert_version_assets_exist(repo)
+        completed = subprocess.run(
+            [sys.executable, str(repo / "scripts" / "statedd_version_check.py"), str(repo)],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise AssertionError(
+                f"Adopted repo version check failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+            )
 
 
 def test_adopt_installs_v2_executable_workflow_assets() -> None:
@@ -290,10 +339,12 @@ def main() -> int:
         test_new_copies_curated_template_surface_only,
         test_new_includes_tool_model_routing_guide,
         test_new_includes_usability_assets,
+        test_new_includes_version_assets_and_passes_version_check,
         test_new_includes_v2_executable_workflow_assets,
         test_new_includes_license_faq,
         test_adopt_installs_tool_model_routing_guide,
         test_adopt_installs_usability_assets,
+        test_adopt_installs_version_assets_and_passes_version_check,
         test_adopt_installs_v2_executable_workflow_assets,
         test_handoff_snapshot_runs,
         test_doctor_runs,

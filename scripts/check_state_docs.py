@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -54,8 +55,11 @@ README_REQUIRED_SECTIONS = [
 ]
 
 TEMPLATE_ASSET_PATHS = [
+    "VERSION",
+    "CHANGELOG.md",
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
+    "scripts/statedd_version_check.py",
     "scripts/statedd_handoff.py",
     "scripts/statedd_audit.py",
     "scripts/statedd_doctor.py",
@@ -76,6 +80,7 @@ TEMPLATE_ASSET_PATHS = [
     "prompts/SUBAGENT_REVIEW_TEMPLATE.md",
     "prompts/CTO_REVIEW_CHECKLIST.md",
     "docs/GETTING_STARTED_5_MIN.md",
+    "docs/UPGRADING.md",
     "docs/ACCEPTANCE_FREEZES.md",
     "docs/WORKFLOW_FOR_BEGINNERS.md",
     "docs/adr/README.md",
@@ -136,7 +141,7 @@ def detect_repo_mode(root: Path) -> str | None:
     if not agents.exists():
         return None
     text = agents.read_text(encoding="utf-8")
-    match = re.search(r"^repo_mode:\s*(\w+)$", text, re.MULTILINE)
+    match = re.search(r'^repo_mode:\s*"?([\w-]+)"?\s*$', text, re.MULTILINE)
     return match.group(1) if match else None
 
 
@@ -245,6 +250,8 @@ def check_readme(path: Path) -> list[str]:
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
         "State Driven Development Template",
+        "statedd-template-v4",
+        "scripts/statedd_version_check.py",
         "docs/evidence/",
         "scripts/test_init_template.py",
         "existing README preserved",
@@ -268,6 +275,27 @@ def check_readme(path: Path) -> list[str]:
         issues.append("README must not reference missing DESIGN.md guidance")
 
     return issues
+
+
+def check_version_alignment(root: Path) -> list[str]:
+    script = root / "scripts" / "statedd_version_check.py"
+    if not script.exists():
+        return []
+
+    completed = subprocess.run(
+        [sys.executable, str(script), str(root)],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode == 0:
+        return []
+
+    output = "\n".join(part for part in (completed.stdout.strip(), completed.stderr.strip()) if part)
+    if not output:
+        output = f"version check exited with {completed.returncode}"
+    return output.splitlines()
 
 
 def check_template_assets(root: Path) -> list[str]:
@@ -485,6 +513,10 @@ def main(argv: list[str] | None = None) -> int:
     if cross_file_issues:
         failures.append(("cross_file_rules", cross_file_issues))
 
+    version_issues = check_version_alignment(root)
+    if version_issues:
+        failures.append(("version_alignment", version_issues))
+
     readme = root / "README.md"
     template_style_repo = is_template_style_repo(root)
     if readme.exists() and template_style_repo:
@@ -508,6 +540,7 @@ def main(argv: list[str] | None = None) -> int:
         print_failure_block(filename, current)
 
     print_failure_block("cross_file_rules", next((issues for name, issues in failures if name == "cross_file_rules"), []))
+    print_failure_block("version alignment", next((issues for name, issues in failures if name == "version_alignment"), []))
 
     if readme.exists() and template_style_repo:
         print_failure_block("README.md", next((issues for name, issues in failures if name == "README.md"), []))

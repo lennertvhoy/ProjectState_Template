@@ -1,5 +1,6 @@
 ---
 repo_mode: bootstrap
+statedd_version: "statedd-template-v4"
 initialized_on: null
 last_updated: 2026-03-18
 ---

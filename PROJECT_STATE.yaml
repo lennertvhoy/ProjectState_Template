@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-14
+  updated_at: 2026-06-23
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -14,10 +14,10 @@ workflow:
     repo_investigated: false
     user_intake_complete: false
     unknowns_remaining:
-      - product not yet defined
-      - primary user not yet defined
-      - target deployment/runtime not yet defined
-      - first real milestone not yet defined
+      - template-maintenance mode split not yet implemented
+      - runtime identity proof artifact not yet implemented
+      - schema-backed state validation not yet implemented
+      - downstream upgrade automation not yet implemented
 
 verification_labels:
   observed: verified directly in the current session
@@ -33,7 +33,7 @@ current_state:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
     branch: main
-    head: c76dad7b747ea05b49f8f6239c6ec8e0974e0ab4
+    head: d5ae473c2e4c129978fe5a56b30dae4c044e7f09
     worktree_status: dirty
 
   operating_mode:
@@ -45,10 +45,10 @@ current_state:
       evidence baseline have been established.
 
   project:
-    name: Your Project
-    type: unknown
+    name: StateDD_Template
+    type: documentation_and_workflow_template
     lifecycle_stage: bootstrap
-    truth_summary: bootstrap_initializing
+    truth_summary: template_maintenance_bootstrap
 
   runtime_identity:
     status: unknown
@@ -115,6 +115,8 @@ current_state:
       - README.md
       - AGENTS.md
       - STATUS.md
+      - VERSION
+      - CHANGELOG.md
       - PROJECT_STATE.yaml
       - PROJECT_DNA.yaml
       - PROJECT_ADAPTER.yaml
@@ -124,10 +126,12 @@ current_state:
       - LICENSE
       - LICENSE_FAQ.md
       - docs/GETTING_STARTED_5_MIN.md
+      - docs/UPGRADING.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
       - prompts/OPENCODE_STARTUP_PROMPT.md
       - prompts/TOOL_MODEL_ROUTING_GUIDE.md
+      - scripts/statedd_version_check.py
       - scripts/statedd_handoff.py
     prompt_assets:
       cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
@@ -154,6 +158,10 @@ current_state:
         status: observed
         path: scripts/statedd_audit.py
         summary: Machine-checkable StateDD closure audit.
+      version_check:
+        status: observed
+        path: scripts/statedd_version_check.py
+        summary: Fails when current version-bearing files disagree with VERSION.
       doctor_command:
         status: observed
         path: scripts/statedd_doctor.py
