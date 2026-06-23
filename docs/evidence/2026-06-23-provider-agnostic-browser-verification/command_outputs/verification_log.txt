@@ -1,1 +1,411 @@
-Provider-agnostic browser verification slice verification log.
+=== Verification run for BL-BROWSER-001 ===
+Date: 2026-06-23T17:25:25+02:00
+Branch: feature/provider-agnostic-browser-verification
+HEAD: 0bf5d48498d7353473c23d058401e710d34058ee
+
+=== py_compile ===
+py_compile: exit 0
+
+=== statedd_version_check ===
+StateDD Version Check
+Root: /home/ff/Documents/Projects/StateDD_Template/.worktrees/feature-provider-agnostic-browser-verification
+Expected: statedd-template-v4
+Result: pass
+
+=== statedd_validate_schema ===
+============================================================
+STATEDD SCHEMA VALIDATION
+============================================================
+  PASS PROJECT_STATE.yaml
+  PASS PROJECT_DNA.yaml
+  PASS PROJECT_ADAPTER.yaml
+  PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+  PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+  PASS docs/evidence/2026-06-23-release-readiness-polish/README.md
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+  PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+  PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+  PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+  PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+PASSED: All StateDD schema checks passed
+
+=== check_state_docs ===
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ✅ All checks passed
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+============================================================
+PASSED: All state documentation checks passed
+
+=== check_state_docs --bootstrap-gate ===
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ✅ All checks passed
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+📄 bootstrap gate
+  ✅ All checks passed
+
+============================================================
+PASSED: All state documentation checks passed
+
+=== test_runtime_proof ===
+PASS test_localhost_attempts_process_detection
+PASS test_loopback_attempts_process_detection
+PASS test_remote_url_skips_local_port_detection
+PASS test_remote_url_can_be_explicitly_treated_as_local
+
+=== test_schema_validation ===
+PASS test_root_schema_validation_passes
+PASS test_invalid_project_state_fails_with_actionable_message
+PASS test_invalid_evidence_readme_fails_contract
+PASS test_runtime_not_applicable_fixture_passes
+PASS test_runtime_required_unreachable_fixture_fails
+PASS test_generated_new_repo_includes_schema_validation_assets_and_passes
+PASS test_adopted_repo_includes_schema_validation_assets_and_passes
+
+=== test_evidence_pack ===
+PASS test_init_creates_manifest
+PASS test_init_detects_runtime_identity
+PASS test_valid_manifest_passes_check
+PASS test_missing_artifact_fails
+PASS test_hash_mismatch_fails
+PASS test_claim_without_evidence_fails
+PASS test_unchecked_redaction_fails_strict
+PASS test_checked_with_limits_passes_strict
+PASS test_binary_artifact_without_manual_review_fails_strict
+PASS test_hash_command_updates_hashes
+PASS test_scan_flags_possible_secret
+PASS test_empty_claims_and_artifacts_fails_strict
+PASS test_skeleton_status_allows_empty_claims_and_artifacts
+PASS test_strict_requires_known_limits_when_manual_review_required
+
+=== test_upgrade ===
+PASS test_dry_run_on_current_repo_refuses_template_root
+PASS test_dry_run_on_generated_repo_is_no_op_or_safe
+PASS test_dry_run_on_older_fixture_reports_missing_assets
+PASS test_apply_adds_safe_missing_assets
+PASS test_apply_preserves_readme_and_project_truth
+PASS test_conflict_fixture_refuses_unsafe_overwrite
+PASS test_force_managed_replaces_outdated_safe_asset
+PASS test_force_managed_never_overwrites_truth_files
+PASS test_report_writes_json
+
+=== test_adoption_profiles ===
+PASS test_new_profile_minimal
+PASS test_new_profile_solo
+PASS test_new_profile_team
+PASS test_new_profile_regulated
+PASS test_legacy_minimal_flag_maps_to_profile
+PASS test_adopt_with_profile_preserves_readme
+PASS test_wizard_answers_generates_files
+PASS test_wizard_dry_run_writes_nothing
+
+=== test_init_template ===
+PASS test_adopt_rejects_symlinked_managed_directory
+PASS test_new_rejects_symlinked_existing_directory
+PASS test_readme_link_rejects_symlinked_readme_before_writes
+PASS test_top_level_help_shows_subcommands
+PASS test_legacy_new_invocation_still_works
+PASS test_new_copies_curated_template_surface_only
+PASS test_new_includes_tool_model_routing_guide
+PASS test_new_includes_usability_assets
+PASS test_new_includes_version_assets_and_passes_version_check
+PASS test_new_includes_runtime_proof_asset
+PASS test_new_includes_schema_validation_assets_and_passes_schema_validation
+PASS test_new_repo_still_fails_bootstrap_gate_until_investigated
+PASS test_new_includes_v2_executable_workflow_assets
+PASS test_new_includes_license_faq
+PASS test_adopt_installs_tool_model_routing_guide
+PASS test_adopt_installs_usability_assets
+PASS test_adopt_installs_version_assets_and_passes_version_check
+PASS test_adopt_installs_runtime_proof_asset
+PASS test_adopt_installs_schema_validation_assets_and_passes_schema_validation
+PASS test_adopt_installs_v2_executable_workflow_assets
+PASS test_template_root_uses_template_maintenance_mode
+PASS test_template_root_bootstrap_gate_passes
+PASS test_handoff_snapshot_runs
+PASS test_doctor_runs
+
+=== test_browser_verification ===
+
+=== statedd_audit ===
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-06-23-provider-agnostic-browser-verification
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 5 files
+
+worktree_clean
+  ❌ Worktree is dirty (3 changed file(s)); closure-grade requires clean worktree
+
+branch_head_recorded
+  ✅ HEAD 0bf5d48 recorded in git; evidence README records eb0cd88 (acceptable if README was written before the final commit)
+  ✅ Branch 'feature/provider-agnostic-browser-verification' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ Schema change 'schemas/browser_verification.schema.json' has examples and validation tests nearby (heuristic check)
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked_with_limits
+
+browser_verification
+  ✅ browser_verification.json schema: statedd.browser_verification.v1
+  ✅ Browser verification provider: not_applicable
+  ⚠️ provider.kind=not_applicable but user-facing changes or browser evidence indicate verification is required
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 35 pass, 1 warn, 1 fail, 0 override
+AUDIT RESULT: FAIL — closure-grade not met
+
+=== statedd_audit --strict ===
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-06-23-provider-agnostic-browser-verification
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 5 files
+
+worktree_clean
+  ❌ Worktree is dirty (3 changed file(s)); closure-grade requires clean worktree
+
+branch_head_recorded
+  ✅ HEAD 0bf5d48 recorded in git; evidence README records eb0cd88 (acceptable if README was written before the final commit)
+  ✅ Branch 'feature/provider-agnostic-browser-verification' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ Schema change 'schemas/browser_verification.schema.json' has examples and validation tests nearby (heuristic check)
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked_with_limits
+
+browser_verification
+  ✅ browser_verification.json schema: statedd.browser_verification.v1
+  ✅ Browser verification provider: not_applicable
+  ❌ provider.kind=not_applicable but user-facing changes or browser evidence indicate verification is required
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 35 pass, 0 warn, 2 fail, 0 override
+AUDIT RESULT: FAIL — closure-grade not met
+
+=== statedd_doctor ===
+StateDD Health
+
+Current HEAD: 0bf5d48498d7353473c23d058401e710d34058ee
+Branch: feature/provider-agnostic-browser-verification
+Repo role: template_repository
+StateDD mode: template-maintenance
+Worktree: dirty
+Latest evidence: docs/evidence/2026-06-23-provider-agnostic-browser-verification
+State docs updated: yes
+Tests recorded: yes
+Browser proof: yes (browser artifact)
+Browser verification: not applicable
+Browser verification note: Kimi WebBridge preferred when available; fall back to Playwright/agent-native/existing-e2e/manual/custom
+Runtime identity: not required
+Schema validation: pass
+Upgrade capability: available
+Evidence manifest: invalid (Manifest check failed:)
+Open blockers: 1
+Next recommended slice: P1 [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted
+Closure grade: fail
+
+=== statedd_evidence_pack check --strict ===
+Manifest check failed:
+  - Hash mismatch for command_outputs/verification_log.txt: expected 15b15286c737385c..., got 924713e3539ed47c...
+
+=== statedd_browser_verify check --strict ===
+Browser verification check passed.
+
+=== git diff --check ===
+git diff --check: exit 0

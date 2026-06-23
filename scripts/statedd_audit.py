@@ -59,6 +59,7 @@ SCHEMA_PATTERNS = [
 EVIDENCE_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 EVIDENCE_BROWSER_EXTENSIONS = {".html", ".har", ".json"}
 RUNTIME_IDENTITY_FILE = "runtime_identity.json"
+BROWSER_VERIFICATION_FILE = "browser_verification.json"
 RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
 EVIDENCE_MANIFEST_FILE = "manifest.json"
 EVIDENCE_MANIFEST_SCHEMA = "statedd.evidence_manifest.v1"
@@ -430,7 +431,12 @@ def check_user_facing_evidence(repo: Path, result: AuditResult, strict: bool) ->
 
     files = evidence_files(folder)
     has_image = any(p.suffix.lower() in EVIDENCE_IMAGE_EXTENSIONS for p in files)
-    has_browser = any(p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS and p.name != RUNTIME_IDENTITY_FILE for p in files)
+    has_browser = any(
+        p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS
+        and p.name != RUNTIME_IDENTITY_FILE
+        and p.name != BROWSER_VERIFICATION_FILE
+        for p in files
+    )
     if has_image or has_browser:
         result.add(
             "user_facing_evidence",
@@ -462,6 +468,7 @@ def evidence_has_visual_or_browser_artifact(folder: Path) -> bool:
             p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS
             and p.name != RUNTIME_IDENTITY_FILE
             and p.name != EVIDENCE_MANIFEST_FILE
+            and p.name != BROWSER_VERIFICATION_FILE
         )
         for p in files
     )
@@ -790,9 +797,6 @@ def browser_verification_required(repo: Path) -> tuple[bool, str]:
         return True, "user-facing file changes detected"
     if visual_or_browser_evidence:
         return True, "visual or browser artifacts present in evidence folder"
-    readme = folder / "README.md"
-    if readme.exists() and "browser" in readme.read_text(encoding="utf-8").lower():
-        return True, "evidence README mentions browser verification"
     return False, "no user-facing changes or browser evidence"
 
 

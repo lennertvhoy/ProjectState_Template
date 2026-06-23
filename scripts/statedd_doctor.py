@@ -156,7 +156,12 @@ def browser_proof(repo: Path) -> str:
         return f"unreadable ({exc})"
     if any(p.suffix.lower() in image_exts for p in files):
         return "yes (image)"
-    if any(p.suffix.lower() in browser_exts and p.name != RUNTIME_IDENTITY_FILE for p in files):
+    if any(
+        p.suffix.lower() in browser_exts
+        and p.name != RUNTIME_IDENTITY_FILE
+        and p.name != BROWSER_VERIFICATION_FILE
+        for p in files
+    ):
         return "yes (browser artifact)"
     return "no screenshot/browser artifacts"
 
