@@ -87,6 +87,26 @@ python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/YYYY-MM-DD
 python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/YYYY-MM-DD-slice
 ```
 
+## Browser verification
+
+StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider.
+
+```bash
+# Initialize a provider-agnostic browser verification record
+python3 scripts/statedd_browser_verify.py init docs/evidence/YYYY-MM-DD-slice
+
+# Validate browser verification evidence (strict mode requires explicit limits for manual providers)
+python3 scripts/statedd_browser_verify.py check docs/evidence/YYYY-MM-DD-slice --strict
+
+# Record sha256 hashes for browser artifacts
+python3 scripts/statedd_browser_verify.py hash docs/evidence/YYYY-MM-DD-slice
+
+# Summarize provider, checks, artifacts, and known limits
+python3 scripts/statedd_browser_verify.py summarize docs/evidence/YYYY-MM-DD-slice
+```
+
+Kimi WebBridge is a preferred provider when available, not a required dependency. Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling are accepted when evidence is durable and honestly scoped.
+
 ## Handoff helper
 
 ```bash

@@ -11,7 +11,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-WB-001] Use Kimi WebBridge to browser-verify any user-facing change in the real browser when available.
+- [BL-BROWSER-001] Add provider-agnostic browser verification for user-facing changes.
 
 ## NEXT
 

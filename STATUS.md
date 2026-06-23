@@ -11,14 +11,14 @@
 - BL-007 public usability polish is closure-grade: README top half is beginner-friendly, `docs/QUICK_COMMANDS.md` exists, `docs/ADOPTION_PROFILES.md` has a clear chooser with `solo` as default, `docs/GETTING_STARTED_5_MIN.md` is beginner-first, and release notes are release-candidate ready pending human publish permission.
 - Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, and the bootstrap wizard remain template capabilities.
 - A canonical schema/prompt loop example is available at `schemas/examples/schema_prompt_loop/`.
-- BL-WB-001 WebBridge browser verification is the next active backlog item.
+- BL-BROWSER-001 provider-agnostic browser verification is the next active backlog item: StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider; Kimi WebBridge is preferred when available, but Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling are accepted when evidence is durable and honestly scoped.
 - All capabilities are tested, documented, and wired into hygiene/audit/CI without external dependencies.
 - Worktree is clean and the latest evidence folder is `docs/evidence/2026-06-23-release-readiness-polish`.
 
 ## Immediate Priorities
 
 1. Review and accept or condition BL-007.
-2. Use Kimi WebBridge to browser-verify user-facing changes when available.
+2. Implement the provider-agnostic browser verification contract so any available browser automation provider can produce acceptable evidence.
 
 ## Active Blockers
 

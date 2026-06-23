@@ -306,6 +306,8 @@ Before accepting user-facing behavior, first prove which repo, branch, HEAD comm
 
 Use `python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url http://localhost:<port>` to write `runtime_identity.json` for runtime slices. For docs/scripts-only slices, use `python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>`.
 
+StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider. Kimi WebBridge is a preferred provider when available, not a required dependency. Acceptable providers include Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots with explicit limits, or custom project tooling, as long as the evidence is durable and linked to runtime identity.
+
 ## Acceptance Freezes
 
 After a user-facing milestone is accepted, create an acceptance freeze tied to source, runtime identity, and evidence. Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` and store durable artifacts under `docs/evidence/`.

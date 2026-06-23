@@ -16,7 +16,7 @@ workflow:
     downstream_default_mode: bootstrap
     unknowns_remaining:
       - GitHub release for statedd-template-v4 not yet published (release notes are release-candidate ready; human permission required)
-      - browser automation via Kimi WebBridge not yet implemented
+      - provider-agnostic browser verification contract not yet implemented
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:

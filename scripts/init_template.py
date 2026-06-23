@@ -201,6 +201,9 @@ These rules apply in all modes:
 - no unverified claims presented as fact
 - user-facing behavior requires direct verification
 - user-facing acceptance requires runtime identity proof, not screenshots alone
+- StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider
+- Kimi WebBridge is a preferred provider when available, not a required dependency
+- fallback providers may include Playwright, agent-native browser tools, existing E2E tests, manual browser verification, or custom project tooling
 - negative searches stay negative: use `not found`, `not currently locatable`, or `not proven`
 - screenshots or evidence are required for user-visible changes
 - active queue stays short

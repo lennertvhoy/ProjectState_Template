@@ -103,6 +103,40 @@ and must be protected from quiet regression.
   - Redaction scanning is pattern-based and cannot prove absence of secrets.
   - Browser/runtime UI verification remains deferred to BL-WB-001.
 
+## AF-2026-06-23-004: BL-007 public usability and release-readiness polish accepted
+
+- Milestone: BL-007 public usability and release-readiness polish
+- Scope: Simplified README top half, added `docs/QUICK_COMMANDS.md`, improved `docs/ADOPTION_PROFILES.md` chooser with explicit `solo` default, polished `docs/GETTING_STARTED_5_MIN.md`, and finalized `docs/RELEASE_NOTES_statedd-template-v4.md` as release-candidate ready.
+- Closure-grade: yes
+- Accepted: yes
+- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- branch: main
+- head: 947a8964085b8377017d6681e20fa24d266dcab9
+- process_or_container: not applicable; docs/scripts-only template-maintenance slice
+- port_or_base_url: not applicable
+- routes: not applicable
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: not applicable
+- runtime_identity_artifact: docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+- evidence_pack_manifest: docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+- evidence_refs:
+  - EV-2026-06-23-008
+- human_override:
+  used: no
+- accepted_capabilities:
+  - README opens with a 60-second "Start here" path and a "Start Simple" section
+  - `docs/QUICK_COMMANDS.md` provides a copy-paste command cheat sheet
+  - `docs/ADOPTION_PROFILES.md` recommends `--profile solo` by default
+  - `docs/GETTING_STARTED_5_MIN.md` can be followed without reading the full README first
+  - `docs/RELEASE_NOTES_statedd-template-v4.md` is release-candidate ready and requires explicit human permission to publish
+- regression_guard:
+  - README must keep a beginner-friendly top half.
+  - Quick commands, adoption profiles, and the 5-minute guide must remain discoverable and accurate.
+  - Release notes must keep the human-permission gate for GitHub release publishing.
+- known_limits:
+  - GitHub release publishing for statedd-template-v4 is not done; requires explicit human permission.
+  - Provider-agnostic browser verification remains future work (BL-BROWSER-001). Kimi WebBridge may be used when available, but StateDD does not require a specific browser automation provider.
+
 ## AF-2026-06-23-003: BL-005 canonical schema/prompt example accepted
 
 - Milestone: BL-005 canonical schema/export/import example project

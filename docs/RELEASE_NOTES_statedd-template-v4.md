@@ -77,7 +77,7 @@ For all common commands, see `docs/QUICK_COMMANDS.md`.
 - The upgrade helper copies safe managed assets but does not semantic-merge
 customized workflow files.
 - The redaction scanner is pattern-based and cannot prove absence of secrets.
-- Browser/runtime UI verification remains future work (BL-WB-001).
+- Provider-agnostic browser verification remains future work. Kimi WebBridge may be used when available, but StateDD does not require a specific browser automation provider.
 
 ## License
 

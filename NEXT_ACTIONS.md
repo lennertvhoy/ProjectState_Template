@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P1 [BL-WB-001] Use Kimi WebBridge to browser-verify user-facing changes
+### P1 [BL-BROWSER-001] Add provider-agnostic browser verification for user-facing changes
 Owner: human product owner + coding agent
-Next: implement browser-automation integration only after BL-007 is accepted and a GitHub release is explicitly permitted or deferred
-Exit: user-facing changes can be verified in the real browser with runtime identity proof; no external-badge dependencies are introduced
+Next: implement the browser verification contract (schema, helper script, audit/doctor integration, tests) before any concrete browser-automation provider integration
+Exit: user-facing changes can be verified with durable, provider-agnostic browser evidence tied to runtime identity; no single browser automation provider is required
 
 ## Queue Rules
 
