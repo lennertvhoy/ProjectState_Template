@@ -1,4 +1,4 @@
-=== Verification log generated 2026-06-23T16:22:17+02:00 ===
+=== Verification log generated 2026-06-23T16:23:14+02:00 ===
 
 === python3 scripts/test_evidence_pack.py ===
 PASS test_init_creates_manifest
@@ -176,7 +176,7 @@ worktree_clean
   ❌ Worktree is dirty (1 changed file(s)); closure-grade requires clean worktree
 
 branch_head_recorded
-  ✅ HEAD 1876559 recorded in git; evidence README records eba0e42 (acceptable if README was written before the final commit)
+  ✅ HEAD 7d8641e recorded in git; evidence README records eba0e42 (acceptable if README was written before the final commit)
   ✅ Branch 'main' recorded in evidence README
 
 user_facing_evidence
@@ -190,7 +190,7 @@ schema_validation
   ✅ StateDD schema validation passed
 
 schema_ownership
-  ✅ Schema change 'schemas/evidence_manifest.schema.json' has examples and validation tests nearby (heuristic check)
+  ✅ No schema file changes detected
 
 tests_recorded
   ✅ Evidence README records test/build/lint results
@@ -201,19 +201,15 @@ evidence_manifest
 
 human_override
   ✅ Human override declared; verify the override is recorded with rule, requester, rationale, and remaining risk
-  ⚠️ Override declaration missing recommended marker: requested by:
-  ⚠️ Override declaration missing recommended marker: reason accepted:
-  ⚠️ Override declaration missing recommended marker: remaining risk:
-  ⚠️ Override declaration missing recommended marker: still closure-grade:
 
 ============================================================
-Summary: 33 pass, 4 warn, 1 fail, 0 override
+Summary: 33 pass, 0 warn, 1 fail, 0 override
 AUDIT RESULT: FAIL — closure-grade not met
 
 === python3 scripts/statedd_doctor.py ===
 StateDD Health
 
-Current HEAD: 187655971572ce0f8ee5ba73df5a85ed63c85866
+Current HEAD: 7d8641efa7a46c303e0c4a23bc68ce3d678d1b59
 Branch: main
 Repo role: template_repository
 StateDD mode: template-maintenance
@@ -225,10 +221,11 @@ Browser proof: yes (browser artifact)
 Runtime identity: not required
 Schema validation: pass
 Upgrade capability: available
-Evidence manifest: valid
+Evidence manifest: invalid (Manifest check failed:)
 Open blockers: 1
 Next recommended slice: P1 [BL-005] Add a real canonical schema/export/import example project
 Closure grade: fail
 
 === python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-adoption-ready-evidence-release --strict ===
-Manifest check passed.
+Manifest check failed:
+  - Hash mismatch for command_outputs/verification_log.txt: expected a682478d3a6cda73..., got 2c6c4b026106f515...
