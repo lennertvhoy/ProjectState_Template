@@ -56,3 +56,49 @@ and must be protected from quiet regression.
   - Generated and adopted downstream repositories must not inherit template-maintenance mode.
   - Runtime proof work must build on this accepted mode split rather than reintroducing root/downstream ambiguity.
 - Notes: Runtime identity proof artifact generation remains [BL-009].
+
+## AF-2026-06-23-002: BL-012/013/014 adoption-ready template release accepted
+
+- Milestone: BL-012/013/014 adoption-ready StateDD template release
+- Scope: Evidence pack manifests/redaction gate, non-destructive downstream upgrade tooling MVP, adoption profiles, and bootstrap wizard MVP are accepted as the current reusable template baseline.
+- Closure-grade: yes
+- Accepted: yes
+- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- branch: main
+- head: 9f940ddd5c00f11896df6ab5b14bfe0dfe18bf8f
+- process_or_container: not applicable; docs/scripts-only template-maintenance release
+- port_or_base_url: not applicable
+- routes: not applicable
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: not applicable
+- runtime_identity_artifact: docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+- evidence_pack_manifest: docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+- evidence_refs:
+  - EV-2026-06-23-005
+  - EV-2026-06-23-006
+- human_override:
+  used: yes
+  rule_overridden: direct implementation/push on main without a PR branch
+  requested_by: human product owner / CTO lane
+  reason_accepted: self-contained template-maintenance release; worktree kept clean; strict audit and strict evidence-pack checks passed
+  remaining_risk: direct-main commits bypass normal PR review; later changes should return to normal branch/PR discipline unless explicitly overridden
+  still_closure_grade: yes
+- accepted_capabilities:
+  - schemas/evidence_manifest.schema.json defines the evidence manifest contract
+  - scripts/statedd_evidence_pack.py supports init/check/hash/scan evidence pack workflows
+  - strict evidence-pack validation rejects empty complete manifests and insufficient manual-review records
+  - scripts/statedd_upgrade.py provides non-destructive downstream upgrade MVP behavior
+  - scripts/init_template.py supports minimal, solo, team, and regulated adoption profiles
+  - scripts/statedd_bootstrap_wizard.py provides an MVP bootstrap wizard with interactive, --answers, and --dry-run modes
+- regression_guard:
+  - Closure-grade evidence packs must not regress to empty complete manifests.
+  - Human overrides must remain explicit and scoped.
+  - Redaction scanner must stay conservative and must not claim absence of secrets is proven.
+  - Upgrade tooling must remain non-destructive by default.
+  - Generated/adopted downstream repos must preserve bootstrap truth and project-specific state.
+  - Minimal profile may omit optional deep-reference docs only where explicitly validated.
+- known_limits:
+  - Bootstrap wizard remains MVP and does not replace CTO-lane bootstrap judgment.
+  - Upgrade helper does not semantic-merge customized workflow files.
+  - Redaction scanning is pattern-based and cannot prove absence of secrets.
+  - Browser/runtime UI verification remains deferred to BL-WB-001.
