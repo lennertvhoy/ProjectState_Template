@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.browser_verification.v1",
+  "title": "StateDD browser verification",
+  "type": "object",
+  "required": ["schema", "captured_at", "provider", "runtime_identity", "checks", "artifacts", "limits"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "statedd.browser_verification.v1"
+    },
+    "captured_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "provider": {
+      "type": "object",
+      "required": ["kind", "required", "available", "selection_reason"],
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["kimi_webbridge", "playwright", "agent_native_browser", "existing_e2e", "manual_browser", "custom", "not_applicable"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "selection_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fallbacks_considered": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required when kind is custom: the custom tool name."
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required when kind is custom: the command used to capture evidence."
+        }
+      }
+    },
+    "runtime_identity": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_matches": {
+          "type": ["boolean", "null"]
+        },
+        "endpoint_matches": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "limits": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["id", "claim", "status", "evidence"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "partial", "not_run"]
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "known_limits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "kind"],
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["screenshot", "browser_log", "trace", "video", "test_output", "other"]
+        },
+        "sha256": {
+          "type": ["string", "null"]
+        },
+        "redaction_status": {
+          "type": "string",
+          "enum": ["checked", "checked_with_limits", "manual_required", "override_used", "unchecked"]
+        }
+      }
+    }
+  }
+}

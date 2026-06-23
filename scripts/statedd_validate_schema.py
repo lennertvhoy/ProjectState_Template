@@ -377,6 +377,8 @@ def root_targets(root: Path) -> list[tuple[Path, Path, bool]]:
             targets.append((artifact, schema_path(root, "runtime_identity.schema.json"), True))
         for manifest in sorted(evidence_root.glob("*/manifest.json")):
             targets.append((manifest, schema_path(root, "evidence_manifest.schema.json"), True))
+        for browser in sorted(evidence_root.glob("*/browser_verification.json")):
+            targets.append((browser, schema_path(root, "browser_verification.schema.json"), True))
     return targets
 
 

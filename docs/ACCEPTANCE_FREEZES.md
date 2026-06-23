@@ -103,6 +103,43 @@ and must be protected from quiet regression.
   - Redaction scanning is pattern-based and cannot prove absence of secrets.
   - Browser/runtime UI verification remains deferred to BL-WB-001.
 
+## AF-2026-06-23-005: BL-BROWSER-001 provider-agnostic browser verification accepted
+
+- Milestone: BL-BROWSER-001 provider-agnostic browser verification contract
+- Scope: Added `schemas/browser_verification.schema.json`, `docs/BROWSER_VERIFICATION.md`, `scripts/statedd_browser_verify.py`, `scripts/test_browser_verification.py`, fixtures, and audit/doctor/CI integration so StateDD accepts browser-verification evidence from any recognized provider.
+- Closure-grade: yes
+- Accepted: yes
+- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- branch: feature/provider-agnostic-browser-verification
+- head: eb0cd886e900c2e35ddb8123b9fd599631335f89
+- process_or_container: not applicable; docs/scripts-only template-maintenance slice
+- port_or_base_url: not applicable
+- routes: not applicable
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: not applicable
+- runtime_identity_artifact: docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+- browser_verification_artifact: docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+- evidence_pack_manifest: docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+- evidence_refs:
+  - EV-2026-06-23-009
+- human_override:
+  used: no
+- accepted_capabilities:
+  - schemas/browser_verification.schema.json defines statedd.browser_verification.v1
+  - scripts/statedd_browser_verify.py supports init/check/hash/summarize without driving browsers
+  - scripts/statedd_audit.py requires browser_verification.json for user-facing/runtime closure and accepts any recognized provider in strict mode
+  - scripts/statedd_doctor.py reports browser verification status and provider-agnostic fallback guidance
+  - scripts/statedd_validate_schema.py validates browser_verification.json in evidence folders
+  - prompts/EVIDENCE_README_TEMPLATE.md and prompts/FINAL_HANDOFF_TEMPLATE.md include browser verification fields
+- regression_guard:
+  - StateDD must remain provider-agnostic: no single browser automation provider may become a hard dependency.
+  - Kimi WebBridge may be documented as a preferred provider when available, but it must not be required.
+  - Strict audit must continue to accept valid evidence from Playwright, agent-native browser tools, existing E2E tests, manual screenshots, and custom tooling.
+  - docs/scripts-only slices must remain not applicable for browser verification.
+- known_limits:
+  - Concrete browser automation provider integration remains future work (BL-BROWSER-002).
+  - The helper script validates and records evidence but does not drive browsers.
+
 ## AF-2026-06-23-004: BL-007 public usability and release-readiness polish accepted
 
 - Milestone: BL-007 public usability and release-readiness polish

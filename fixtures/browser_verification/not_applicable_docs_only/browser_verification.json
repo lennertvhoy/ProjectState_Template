@@ -1,0 +1,19 @@
+{
+  "schema": "statedd.browser_verification.v1",
+  "captured_at": "2026-06-23T12:34:56+02:00",
+  "provider": {
+    "kind": "not_applicable",
+    "required": false,
+    "available": false,
+    "selection_reason": "Browser verification is not applicable for this docs/scripts-only slice.",
+    "fallbacks_considered": []
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json"
+  },
+  "checks": [],
+  "artifacts": [],
+  "limits": [
+    "Browser verification is not applicable for this docs/scripts-only slice."
+  ]
+}

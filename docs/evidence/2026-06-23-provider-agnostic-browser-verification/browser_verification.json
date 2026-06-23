@@ -1,0 +1,22 @@
+{
+  "artifacts": [],
+  "captured_at": "2026-06-23T17:20:37+02:00",
+  "checks": [],
+  "limits": [
+    "Browser verification is not applicable for this docs/scripts-only slice."
+  ],
+  "provider": {
+    "available": false,
+    "fallbacks_considered": [],
+    "kind": "not_applicable",
+    "required": false,
+    "selection_reason": "Browser verification is not applicable for this docs/scripts-only slice."
+  },
+  "runtime_identity": {
+    "endpoint_matches": null,
+    "head_matches": null,
+    "path": "runtime_identity.json"
+  },
+  "schema": "statedd.browser_verification.v1",
+  "slice_id": "BL-BROWSER-001"
+}

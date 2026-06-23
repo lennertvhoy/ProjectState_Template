@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-23T16:49:00+02:00
+  updated_at: 2026-06-23T17:25:00+02:00
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -16,7 +16,7 @@ workflow:
     downstream_default_mode: bootstrap
     unknowns_remaining:
       - GitHub release for statedd-template-v4 not yet published (release notes are release-candidate ready; human permission required)
-      - provider-agnostic browser verification contract not yet implemented
+      - concrete browser automation provider integration not yet implemented (BL-BROWSER-002)
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -34,12 +34,12 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-23T16:49:00+02:00
-      last_verified_branch: main
-      last_verified_head: 35e8f468123ae3f799d6952d82d026b1bd95ea52
+      captured_at: 2026-06-23T17:25:00+02:00
+      last_verified_branch: feature/provider-agnostic-browser-verification
+      last_verified_head: eb0cd886e900c2e35ddb8123b9fd599631335f89
       last_verified_worktree_status: clean
       notes: |
-        Captured after BL-007 closure commit. Worktree is clean. Use git,
+        Captured after BL-BROWSER-001 implementation. Worktree is clean. Use git,
         scripts/statedd_audit.py, scripts/statedd_doctor.py,
         scripts/statedd_handoff.py, or evidence artifacts for current branch,
         HEAD, and worktree status.
@@ -194,6 +194,7 @@ current_state:
       - LICENSE_FAQ.md
       - docs/GETTING_STARTED_5_MIN.md
       - docs/QUICK_COMMANDS.md
+      - docs/BROWSER_VERIFICATION.md
       - docs/UPGRADING.md
       - docs/ADOPTION_PROFILES.md
       - docs/RELEASE_NOTES_statedd-template-v4.md
@@ -251,6 +252,10 @@ current_state:
         status: observed
         path: scripts/statedd_evidence_pack.py
         summary: Evidence folder manifest initialization, hash verification, and redaction scanning.
+      browser_verification:
+        status: observed
+        path: scripts/statedd_browser_verify.py
+        summary: Provider-agnostic browser verification artifact validation and recording; accepts Kimi WebBridge, Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling.
       upgrade_helper:
         status: observed
         path: scripts/statedd_upgrade.py

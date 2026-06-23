@@ -1,0 +1,40 @@
+{
+  "schema": "statedd.browser_verification.v1",
+  "captured_at": "2026-06-23T12:34:56+02:00",
+  "provider": {
+    "kind": "playwright",
+    "required": false,
+    "available": true,
+    "selection_reason": "project already has Playwright tests",
+    "fallbacks_considered": [
+      "kimi_webbridge",
+      "manual_browser"
+    ]
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "head_matches": true,
+    "endpoint_matches": true
+  },
+  "checks": [
+    {
+      "id": "BV1",
+      "route": "/settings",
+      "claim": "Settings page renders after saving profile changes.",
+      "status": "passed",
+      "evidence": [
+        "screenshots/settings-after-save.png"
+      ],
+      "known_limits": []
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "screenshots/settings-after-save.png",
+      "kind": "screenshot",
+      "sha256": null,
+      "redaction_status": "manual_required"
+    }
+  ],
+  "limits": []
+}

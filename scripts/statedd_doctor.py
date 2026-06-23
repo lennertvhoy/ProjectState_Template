@@ -19,6 +19,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_IDENTITY_FILE = "runtime_identity.json"
 RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
+BROWSER_VERIFICATION_FILE = "browser_verification.json"
+BROWSER_VERIFICATION_SCHEMA = "statedd.browser_verification.v1"
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
@@ -157,6 +159,33 @@ def browser_proof(repo: Path) -> str:
     if any(p.suffix.lower() in browser_exts and p.name != RUNTIME_IDENTITY_FILE for p in files):
         return "yes (browser artifact)"
     return "no screenshot/browser artifacts"
+
+
+def browser_verification_status(repo: Path) -> str:
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        return "no evidence folder"
+    artifact = folder / BROWSER_VERIFICATION_FILE
+    if not artifact.exists():
+        return "not present"
+    try:
+        data = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return f"malformed ({exc})"
+    if not isinstance(data, dict):
+        return "malformed (top-level JSON is not an object)"
+    if data.get("schema") != BROWSER_VERIFICATION_SCHEMA:
+        return f"schema mismatch ({data.get('schema') or 'missing'})"
+    provider = data.get("provider")
+    if not isinstance(provider, dict):
+        return "malformed (missing provider object)"
+    kind = provider.get("kind", "unknown")
+    if kind == "not_applicable":
+        return "not applicable"
+    checks = data.get("checks")
+    if isinstance(checks, list) and checks:
+        return f"valid (provider={kind}, checks={len(checks)})"
+    return f"valid but no checks (provider={kind})"
 
 
 def runtime_identity_status(repo: Path) -> str:
@@ -309,6 +338,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"State docs updated: {state_docs_updated(repo)}")
     print(f"Tests recorded: {tests_recorded(repo)}")
     print(f"Browser proof: {browser_proof(repo)}")
+    print(f"Browser verification: {browser_verification_status(repo)}")
+    print("Browser verification note: Kimi WebBridge preferred when available; fall back to Playwright/agent-native/existing-e2e/manual/custom")
     print(f"Runtime identity: {runtime_identity_status(repo)}")
     print(f"Schema validation: {schema_validation_status(repo)}")
     print(f"Upgrade capability: {upgrade_status(repo)}")

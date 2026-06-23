@@ -56,6 +56,12 @@ Runtime identity artifact
 - endpoint: ...
 - process ownership: proven | not proven | not applicable
 
+Browser verification
+- provider: kimi_webbridge | playwright | agent_native_browser | existing_e2e | manual_browser | custom | not applicable
+- browser verification artifact: docs/evidence/<slice>/browser_verification.json | not applicable
+- user-facing/runtime evidence status: valid | invalid | not applicable
+- known limits:
+
 Direct verification
 - command or artifact -> result
 

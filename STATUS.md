@@ -1,6 +1,6 @@
 # StateDD Template Status
 
-**Updated At:** 2026-06-23 16:49 +02:00
+**Updated At:** 2026-06-23 17:25 +02:00
 **Execution Mode:** template-maintenance
 **Project State:** template_maintenance_active
 **Public URL:** not configured
@@ -8,17 +8,17 @@
 ## Snapshot
 
 - Repo identifies as `repo_role: template_repository` with `statedd_mode: template-maintenance` and spec version `statedd-template-v4`; generated/adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
-- BL-007 public usability polish is closure-grade: README top half is beginner-friendly, `docs/QUICK_COMMANDS.md` exists, `docs/ADOPTION_PROFILES.md` has a clear chooser with `solo` as default, `docs/GETTING_STARTED_5_MIN.md` is beginner-first, and release notes are release-candidate ready pending human publish permission.
-- Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, and the bootstrap wizard remain template capabilities.
-- A canonical schema/prompt loop example is available at `schemas/examples/schema_prompt_loop/`.
-- BL-BROWSER-001 provider-agnostic browser verification is the next active backlog item: StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider; Kimi WebBridge is preferred when available, but Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling are accepted when evidence is durable and honestly scoped.
-- All capabilities are tested, documented, and wired into hygiene/audit/CI without external dependencies.
-- Worktree is clean and the latest evidence folder is `docs/evidence/2026-06-23-release-readiness-polish`.
+- BL-007 public usability polish is accepted as AF-2026-06-23-004; release notes remain release-candidate ready and GitHub release publishing requires explicit human permission.
+- BL-BROWSER-001 provider-agnostic browser verification is closure-grade: the contract, helper script, schema, tests, fixtures, audit/doctor integration, and CI wiring are complete, and no single browser automation provider is required.
+- StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider; Kimi WebBridge is preferred when available, but Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling are accepted when evidence is durable and honestly scoped.
+- Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, the bootstrap wizard, provider-agnostic browser verification, and the canonical schema/prompt loop example remain template capabilities.
+- BL-BROWSER-002 concrete provider integration is the next active backlog item.
+- Worktree is clean and the latest evidence folder is `docs/evidence/2026-06-23-provider-agnostic-browser-verification`.
 
 ## Immediate Priorities
 
-1. Review and accept or condition BL-007.
-2. Implement the provider-agnostic browser verification contract so any available browser automation provider can produce acceptable evidence.
+1. Review and accept or condition BL-BROWSER-001.
+2. Integrate a concrete browser automation provider only when one is available and permitted, without making it a hard dependency.
 
 ## Active Blockers
 

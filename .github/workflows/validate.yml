@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile Python scripts
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/test_init_template.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/statedd_browser_verify.py scripts/test_init_template.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py scripts/test_browser_verification.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
 
       - name: Validate root docs
         run: |
@@ -65,6 +65,7 @@ jobs:
           python3 scripts/test_schema_validation.py
           python3 scripts/test_evidence_pack.py
           python3 scripts/test_upgrade.py
+          python3 scripts/test_browser_verification.py
           tmpdir="$(mktemp -d)"
           mkdir -p "$tmpdir/evidence"
           python3 scripts/statedd_evidence_pack.py init "$tmpdir/evidence" --slice-id BL-012
@@ -97,6 +98,9 @@ jobs:
           python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --readme-link
           python3 scripts/test_adoption_profiles.py
           python3 scripts/statedd_bootstrap_wizard.py --help
+          tmpdir="$(mktemp -d)"
+          python3 scripts/statedd_browser_verify.py init "$tmpdir/browser-evidence" --slice-id BL-BROWSER-001
+          python3 scripts/statedd_browser_verify.py check "$tmpdir/browser-evidence"
           tmpdir="$(mktemp -d)"
           printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$tmpdir/answers.json"
           python3 scripts/statedd_bootstrap_wizard.py --target "$tmpdir/wizard" --answers "$tmpdir/answers.json"

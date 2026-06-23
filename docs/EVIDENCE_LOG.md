@@ -28,6 +28,34 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-009: Provider-agnostic browser verification contract (BL-BROWSER-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/command_outputs/verification_log.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/browser_verification.schema.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/BROWSER_VERIFICATION.md
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_browser_verify.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_browser_verification.py
+- Title: BL-BROWSER-001 provider-agnostic browser verification contract
+- Source/System: test
+- Action: Implemented the provider-agnostic browser verification contract, helper script, schema, tests, fixtures, audit/doctor/CI integration, and governance/acceptance updates.
+- Shows:
+  - `python3 scripts/test_browser_verification.py` passes for Kimi WebBridge, Playwright, agent-native, existing E2E, custom, and manual providers
+  - `python3 scripts/test_browser_verification.py` proves no single provider is required and strict mode rejects weak proof
+  - `python3 scripts/statedd_audit.py --strict` passes with the new evidence folder
+  - `python3 scripts/statedd_browser_verify.py check docs/evidence/2026-06-23-provider-agnostic-browser-verification --strict` passes
+  - `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-provider-agnostic-browser-verification --strict` passes
+  - BL-WB-001 was renamed to BL-BROWSER-001 across governance files
+- Proves:
+  - StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider
+  - Kimi WebBridge is a preferred provider when available, not a required dependency
+- Type: docs-render-verification
+- as_of: 2026-06-23T17:25:00+02:00
+- Notes: Closure-grade and accepted. BL-BROWSER-002 concrete provider integration is next.
+
 ## EV-2026-06-23-008: Public usability and release-readiness polish (BL-007)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/README.md

@@ -46,6 +46,14 @@ real values. The claim ledger is the core of executable StateDD.
 - Process ownership proven: yes / no / not applicable
 - Known limits:
 
+## Browser Verification
+
+- Browser verification required: yes / no / not applicable
+- Browser verification artifact: `browser_verification.json` / not applicable
+- Provider used:
+- Fallbacks considered:
+- Known browser verification limits:
+
 ## Closure State
 
 - Implemented: yes / no

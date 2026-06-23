@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P1 [BL-BROWSER-001] Add provider-agnostic browser verification for user-facing changes
+### P1 [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted
 Owner: human product owner + coding agent
-Next: implement the browser verification contract (schema, helper script, audit/doctor integration, tests) before any concrete browser-automation provider integration
-Exit: user-facing changes can be verified with durable, provider-agnostic browser evidence tied to runtime identity; no single browser automation provider is required
+Next: do not add a hard dependency; add a concrete provider driver (Kimi WebBridge, Playwright, agent-native, existing E2E, or custom) only when the project/agent has one available and the human permits setup
+Exit: user-facing changes can be captured automatically into browser_verification.json artifacts while preserving provider-agnostic audit acceptance
 
 ## Queue Rules
 

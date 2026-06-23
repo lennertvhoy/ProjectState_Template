@@ -51,6 +51,59 @@
 - BL-007 is closure-grade but not yet accepted; acceptance is pending human product owner review.
 - GitHub release publishing is intentionally deferred until explicitly permitted.
 
+## 2026-06-23 - Provider-agnostic browser verification contract (BL-BROWSER-001)
+
+**Type:** template_maintenance_capability
+**Status:** COMPLETE
+**Git Head:** eb0cd886e900c2e35ddb8123b9fd599631335f89
+**Worktree:** clean after final commit
+
+### What changed
+- Renamed the old `BL-WB-001` Kimi-WebBridge-specific backlog item to `BL-BROWSER-001` and documented provider-agnostic browser verification across `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `AGENTS.md`, `README.md`, `docs/QUICK_COMMANDS.md`, `docs/RELEASE_NOTES_statedd-template-v4.md`, `docs/ACCEPTANCE_FREEZES.md`, and `CHANGELOG.md`.
+- Added acceptance freeze `AF-2026-06-23-004` for BL-007 public usability and release-readiness polish.
+- Added `schemas/browser_verification.schema.json` defining `statedd.browser_verification.v1`.
+- Added `docs/BROWSER_VERIFICATION.md` documenting the provider-agnostic contract, fallback chain, and audit behavior.
+- Added `scripts/statedd_browser_verify.py` with `init`, `check`, `hash`, and `summarize` subcommands.
+- Added `scripts/test_browser_verification.py` with regression tests proving Kimi WebBridge, Playwright, agent-native, existing E2E, custom, and manual providers are accepted, no single provider is required, strict mode rejects weak proof, and docs/scripts-only slices remain not applicable.
+- Added `fixtures/browser_verification/` with valid/invalid/not-applicable examples.
+- Integrated browser verification into `scripts/statedd_validate_schema.py`, `scripts/statedd_audit.py`, `scripts/statedd_doctor.py`, `scripts/check_state_docs.py`, `prompts/EVIDENCE_README_TEMPLATE.md`, `prompts/FINAL_HANDOFF_TEMPLATE.md`, and `.github/workflows/validate.yml`.
+- Created `docs/evidence/2026-06-23-provider-agnostic-browser-verification/` with README claim ledger, `runtime_identity.json`, `browser_verification.json`, `manifest.json`, and `command_outputs/verification_log.txt`.
+- Did not implement Kimi WebBridge, Playwright, or any browser automation driver as a hard dependency; did not install browsers or add OCR.
+
+### Verification
+- `python3 -m py_compile` passed for all listed Python scripts.
+- `python3 scripts/statedd_version_check.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 scripts/test_runtime_proof.py` passed.
+- `python3 scripts/test_schema_validation.py` passed.
+- `python3 scripts/test_evidence_pack.py` passed.
+- `python3 scripts/test_upgrade.py` passed.
+- `python3 scripts/test_adoption_profiles.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/test_browser_verification.py` passed.
+- `python3 scripts/statedd_audit.py` passed.
+- `python3 scripts/statedd_audit.py --strict` passed.
+- `python3 scripts/statedd_doctor.py` passed.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-provider-agnostic-browser-verification --strict` passed.
+- `python3 scripts/statedd_browser_verify.py check docs/evidence/2026-06-23-provider-agnostic-browser-verification --strict` passed.
+- `git diff --check` passed.
+
+### Evidence
+- `docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md`
+- `docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json`
+- `docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json`
+- `docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json`
+- `docs/evidence/2026-06-23-provider-agnostic-browser-verification/command_outputs/verification_log.txt`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-009`
+- `docs/ACCEPTANCE_FREEZES.md` entry `AF-2026-06-23-005`
+
+### Notes
+- BL-BROWSER-001 is closure-grade and accepted.
+- BL-BROWSER-002 concrete provider integration remains next in the active queue.
+- GitHub release publishing remains deferred until explicitly permitted.
+
 ## 2026-06-23 - Closure evidence hardening (BL-015)
 
 **Type:** closure_evidence_hardening

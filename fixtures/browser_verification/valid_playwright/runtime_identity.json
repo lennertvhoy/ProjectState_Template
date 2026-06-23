@@ -1,0 +1,22 @@
+{
+  "schema": "statedd.runtime_identity.v1",
+  "captured_at": "2026-06-23T12:34:56+02:00",
+  "repo": {
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "branch": "main",
+    "head": "947a8964085b8377017d6681e20fa24d266dcab9",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "required": true,
+    "kind": "web",
+    "url": "http://localhost:3000"
+  },
+  "checks": {
+    "endpoint_reachable": true,
+    "process_detected": true,
+    "duplicate_runtime_checked": true,
+    "head_recorded": true
+  },
+  "limits": []
+}

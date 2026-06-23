@@ -62,6 +62,17 @@ RUNTIME_IDENTITY_FILE = "runtime_identity.json"
 RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
 EVIDENCE_MANIFEST_FILE = "manifest.json"
 EVIDENCE_MANIFEST_SCHEMA = "statedd.evidence_manifest.v1"
+BROWSER_VERIFICATION_FILE = "browser_verification.json"
+BROWSER_VERIFICATION_SCHEMA = "statedd.browser_verification.v1"
+VALID_BROWSER_PROVIDERS = {
+    "kimi_webbridge",
+    "playwright",
+    "agent_native_browser",
+    "existing_e2e",
+    "manual_browser",
+    "custom",
+    "not_applicable",
+}
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
 
@@ -766,6 +777,172 @@ def check_evidence_manifest(repo: Path, result: AuditResult, strict: bool) -> No
             )
 
 
+def browser_verification_required(repo: Path) -> tuple[bool, str]:
+    """Return (required, reason) for browser verification in the latest evidence folder."""
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        return False, "no evidence folder"
+
+    changed = changed_files_in_slice(repo)
+    user_facing_changed = any(looks_user_facing(p) for p in changed)
+    visual_or_browser_evidence = evidence_has_visual_or_browser_artifact(folder)
+    if user_facing_changed:
+        return True, "user-facing file changes detected"
+    if visual_or_browser_evidence:
+        return True, "visual or browser artifacts present in evidence folder"
+    readme = folder / "README.md"
+    if readme.exists() and "browser" in readme.read_text(encoding="utf-8").lower():
+        return True, "evidence README mentions browser verification"
+    return False, "no user-facing changes or browser evidence"
+
+
+def load_json_object(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def check_browser_verification(repo: Path, result: AuditResult, strict: bool) -> None:
+    folder = latest_evidence_folder(repo)
+    required, reason = browser_verification_required(repo)
+
+    if folder is None:
+        if required:
+            status = "fail" if strict else "warn"
+            result.add("browser_verification", status, f"Browser verification required ({reason}) but no evidence folder exists")
+        else:
+            result.add("browser_verification", "pass", "No evidence folder; browser verification not applicable")
+        return
+
+    artifact = folder / BROWSER_VERIFICATION_FILE
+    if not artifact.exists():
+        if required:
+            status = "fail" if strict else "warn"
+            result.add(
+                "browser_verification",
+                status,
+                f"Browser verification required ({reason}) but {BROWSER_VERIFICATION_FILE} is missing",
+            )
+        else:
+            result.add("browser_verification", "pass", "Browser verification not required for this slice")
+        return
+
+    data = load_json_object(artifact)
+    if data is None:
+        status = "fail" if strict else "warn"
+        result.add("browser_verification", status, f"Malformed {BROWSER_VERIFICATION_FILE}")
+        return
+
+    schema = data.get("schema")
+    if schema != BROWSER_VERIFICATION_SCHEMA:
+        status = "fail" if strict else "warn"
+        result.add(
+            "browser_verification",
+            status,
+            f"{BROWSER_VERIFICATION_FILE} schema is {schema or 'missing'}; expected {BROWSER_VERIFICATION_SCHEMA}",
+        )
+    else:
+        result.add("browser_verification", "pass", f"{BROWSER_VERIFICATION_FILE} schema: {schema}")
+
+    provider = data.get("provider")
+    if not isinstance(provider, dict):
+        result.add("browser_verification", "fail", f"{BROWSER_VERIFICATION_FILE} missing provider object")
+        return
+
+    kind = provider.get("kind")
+    if kind not in VALID_BROWSER_PROVIDERS:
+        status = "fail" if strict else "warn"
+        result.add(
+            "browser_verification",
+            status,
+            f"Unrecognized browser verification provider.kind: {kind}",
+        )
+        return
+    result.add("browser_verification", "pass", f"Browser verification provider: {kind}")
+
+    if kind == "not_applicable":
+        if required:
+            status = "fail" if strict else "warn"
+            result.add(
+                "browser_verification",
+                status,
+                "provider.kind=not_applicable but user-facing changes or browser evidence indicate verification is required",
+            )
+        else:
+            result.add("browser_verification", "pass", "Browser verification marked not applicable")
+        return
+
+    limits = data.get("limits") if isinstance(data, dict) else []
+    if not isinstance(limits, list):
+        limits = []
+
+    if kind in ("manual_browser", "custom") and not limits:
+        status = "fail" if strict else "warn"
+        result.add(
+            "browser_verification",
+            status,
+            f"provider.kind={kind} requires explicit known limits",
+        )
+
+    if kind == "custom" and (not provider.get("tool") or not provider.get("command")):
+        status = "fail" if strict else "warn"
+        result.add(
+            "browser_verification",
+            status,
+            "provider.kind=custom requires both 'tool' and 'command'",
+        )
+
+    checks = data.get("checks") if isinstance(data, dict) else []
+    if not isinstance(checks, list):
+        result.add("browser_verification", "fail", "'checks' must be an array")
+        checks = []
+
+    artifacts = data.get("artifacts") if isinstance(data, dict) else []
+    if not isinstance(artifacts, list):
+        result.add("browser_verification", "fail", "'artifacts' must be an array")
+        artifacts = []
+    artifact_paths = {a.get("path") for a in artifacts if isinstance(a, dict)}
+
+    if strict and not checks:
+        result.add("browser_verification", "fail", "Strict audit requires at least one browser check")
+
+    for check in checks:
+        if not isinstance(check, dict):
+            continue
+        check_id = check.get("id", "unknown")
+        evidence = check.get("evidence")
+        if not isinstance(evidence, list) or not evidence:
+            result.add("browser_verification", "fail", f"Check {check_id} has no evidence artifacts")
+            continue
+        for ref in evidence:
+            ref_path = folder / ref
+            if not ref_path.exists():
+                result.add("browser_verification", "fail", f"Check {check_id} references missing artifact: {ref}")
+            if ref not in artifact_paths:
+                result.add(
+                    "browser_verification",
+                    "warn",
+                    f"Check {check_id} references artifact not listed in artifacts: {ref}",
+                )
+
+    runtime_identity = data.get("runtime_identity") if isinstance(data, dict) else {}
+    if isinstance(runtime_identity, dict):
+        runtime_path = folder / runtime_identity.get("path", RUNTIME_IDENTITY_FILE)
+        if not runtime_path.exists():
+            status = "fail" if strict else "warn"
+            result.add(
+                "browser_verification",
+                status,
+                f"Browser verification references missing {RUNTIME_IDENTITY_FILE}",
+            )
+        else:
+            result.add("browser_verification", "pass", "Browser verification linked to runtime_identity.json")
+    else:
+        result.add("browser_verification", "fail", "Missing runtime_identity link in browser_verification.json")
+
+
 def check_human_override(
     repo: Path,
     result: AuditResult,
@@ -848,6 +1025,7 @@ def main(argv: list[str] | None = None) -> int:
     check_schema_ownership(root, result, args.strict)
     check_tests_recorded(root, result, args.test_command)
     check_evidence_manifest(root, result, args.strict)
+    check_browser_verification(root, result, args.strict)
     check_human_override(root, result, Path(args.override_file) if args.override_file else None)
 
     return render_result(result, args.strict)
