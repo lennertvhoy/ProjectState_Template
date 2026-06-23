@@ -6,7 +6,7 @@
 
 **Type:** closure_evidence_hardening
 **Status:** COMPLETE
-**Git Head:** ddc190f before fix; TBD after fix
+**Git Head:** ddc190f before fix; 2a728fe after fix
 **Worktree:** clean after final commit
 
 ### What changed
