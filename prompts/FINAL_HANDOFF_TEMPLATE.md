@@ -50,6 +50,12 @@ Repo and runtime identity
 - rebuilt in this slice: yes | no
 - duplicate runtimes checked: yes | no
 
+Runtime identity artifact
+- required: yes | no
+- path: docs/evidence/<slice>/runtime_identity.json | not applicable
+- endpoint: ...
+- process ownership: proven | not proven | not applicable
+
 Direct verification
 - command or artifact -> result
 
@@ -88,6 +94,7 @@ Required fields:
 - git head
 - process or container serving the verified artifact
 - port or endpoint used for verification
+- runtime identity artifact path or explicit not applicable value
 - whether the running artifact was rebuilt in this slice
 - clean worktree status
 - evidence references

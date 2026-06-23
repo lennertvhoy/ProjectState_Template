@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-009] Add runtime identity proof artifact
+### P0 [BL-010] Add schema-backed validation for state and evidence files
 Owner: CTO lane + coding agent
-Next: design `scripts/statedd_runtime_proof.py` and the `runtime_identity.json` evidence contract without weakening existing screenshot/runtime rules
-Exit: runtime proof artifact is generated, documented, tested, and strict audit can require it for UI closure
+Next: design the smallest machine-checkable schema validation path for StateDD state and evidence files without adding a broad manifest/redaction system
+Exit: core state/evidence schemas are executable, documented, tested, and wired into hygiene/audit checks
 
 ## Queue Rules
 

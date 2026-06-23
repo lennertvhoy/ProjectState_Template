@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import ipaddress
 import json
 import os
 import subprocess
@@ -121,6 +122,39 @@ def port_from_url(url: str) -> int | None:
     if parsed.scheme == "https":
         return 443
     return None
+
+
+def host_is_local(host: str | None) -> bool:
+    if host is None:
+        return False
+    normalized = host.strip().lower().removeprefix("[").removesuffix("]")
+    if normalized in {"localhost", "0.0.0.0"}:
+        return True
+    try:
+        address = ipaddress.ip_address(normalized)
+    except ValueError:
+        return False
+    return address.is_loopback or address.is_unspecified
+
+
+def should_attempt_local_process_detection(url: str, expect_local: bool) -> bool:
+    if expect_local:
+        return True
+    return host_is_local(urlparse(url).hostname)
+
+
+def remote_process_not_applicable(url: str) -> tuple[dict[str, object], list[str], bool]:
+    host = urlparse(url).hostname or "not proven"
+    return (
+        {
+            "detected": False,
+            "host": host,
+            "reason": "remote endpoint; local process ownership is not applicable",
+            "impact": "endpoint identity was probed, but serving process ownership was not proven",
+        },
+        ["Process detection skipped because the endpoint host is not local."],
+        False,
+    )
 
 
 def socket_inodes_for_port(port: int) -> set[str]:
@@ -281,6 +315,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--expected-repo", default=str(ROOT), help="Repo path expected to own the runtime")
     parser.add_argument("--process-name", help="Optional command substring expected for the runtime process")
     parser.add_argument("--port", type=int, help="Port to inspect for process ownership")
+    parser.add_argument(
+        "--expect-local",
+        "--local-process-proof",
+        dest="expect_local",
+        action="store_true",
+        help="Attempt local process ownership detection even when the URL host is not localhost/loopback",
+    )
     parser.add_argument("--timeout", type=float, default=10.0, help="Endpoint fetch timeout in seconds")
     return parser.parse_args(argv[1:])
 
@@ -313,9 +354,12 @@ def build_not_applicable_artifact(repo: Path, reason: str) -> dict[str, object]:
 def build_url_artifact(args: argparse.Namespace, repo: Path) -> tuple[dict[str, object], int]:
     url = args.url
     assert url is not None
-    port = args.port if args.port is not None else port_from_url(url)
     probe, probe_limits = fetch_url(url, args.timeout)
-    process, process_limits, duplicate_checked = detect_process(port, repo, args.process_name)
+    if should_attempt_local_process_detection(url, args.expect_local):
+        port = args.port if args.port is not None else port_from_url(url)
+        process, process_limits, duplicate_checked = detect_process(port, repo, args.process_name)
+    else:
+        process, process_limits, duplicate_checked = remote_process_not_applicable(url)
     endpoint_reachable = probe.get("http_status") is not None and int(probe["http_status"]) < 500
     cwd_matches = None
     if isinstance(process, dict):

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import re
 import subprocess
 import sys
@@ -57,6 +58,8 @@ SCHEMA_PATTERNS = [
 
 EVIDENCE_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 EVIDENCE_BROWSER_EXTENSIONS = {".html", ".har", ".json"}
+RUNTIME_IDENTITY_FILE = "runtime_identity.json"
+RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
 
@@ -251,6 +254,13 @@ def latest_evidence_folder(root: Path) -> Path | None:
     return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
+def evidence_files(folder: Path) -> list[Path]:
+    try:
+        return [p for p in folder.rglob("*") if p.is_file()]
+    except OSError:
+        return []
+
+
 def check_evidence_folder(root: Path, result: AuditResult) -> None:
     folder = latest_evidence_folder(root)
     if folder is None:
@@ -272,7 +282,7 @@ def check_evidence_folder(root: Path, result: AuditResult) -> None:
     else:
         result.add("evidence_readme", "fail", f"Latest evidence folder lacks README.md: {folder.relative_to(root)}")
 
-    files = [p for p in folder.rglob("*") if p.is_file()]
+    files = evidence_files(folder)
     if len(files) > 20:
         result.add(
             "evidence_size",
@@ -405,9 +415,9 @@ def check_user_facing_evidence(repo: Path, result: AuditResult, strict: bool) ->
         )
         return
 
-    evidence_files = [p for p in folder.rglob("*") if p.is_file()]
-    has_image = any(p.suffix.lower() in EVIDENCE_IMAGE_EXTENSIONS for p in evidence_files)
-    has_browser = any(p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS for p in evidence_files)
+    files = evidence_files(folder)
+    has_image = any(p.suffix.lower() in EVIDENCE_IMAGE_EXTENSIONS for p in files)
+    has_browser = any(p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS and p.name != RUNTIME_IDENTITY_FILE for p in files)
     if has_image or has_browser:
         result.add(
             "user_facing_evidence",
@@ -421,6 +431,111 @@ def check_user_facing_evidence(repo: Path, result: AuditResult, strict: bool) ->
             status,
             "User-facing changes detected but evidence folder lacks screenshots or browser artifacts",
         )
+
+
+def evidence_readme_claims_runtime_identity(folder: Path) -> bool:
+    readme = folder / "README.md"
+    if not readme.exists():
+        return False
+    text = read_optional(readme).lower()
+    return any(marker in text for marker in ("runtime identity", "runtime proof", RUNTIME_IDENTITY_FILE))
+
+
+def evidence_has_visual_or_browser_artifact(folder: Path) -> bool:
+    files = evidence_files(folder)
+    return any(
+        p.suffix.lower() in EVIDENCE_IMAGE_EXTENSIONS
+        or (p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS and p.name != RUNTIME_IDENTITY_FILE)
+        for p in files
+    )
+
+
+def check_runtime_identity(repo: Path, result: AuditResult, strict: bool) -> None:
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        result.add("runtime_identity", "warn", "Cannot inspect runtime_identity.json without an evidence folder")
+        return
+
+    artifact = folder / RUNTIME_IDENTITY_FILE
+    claims_runtime = evidence_readme_claims_runtime_identity(folder)
+    user_facing_changed = any(looks_user_facing(p) for p in changed_files_in_slice(repo))
+    visual_or_browser_evidence = evidence_has_visual_or_browser_artifact(folder)
+    runtime_required = claims_runtime or user_facing_changed or visual_or_browser_evidence
+
+    if not artifact.exists():
+        if runtime_required:
+            status = "fail" if strict else "warn"
+            result.add(
+                "runtime_identity",
+                status,
+                f"Runtime proof appears required but {artifact.relative_to(repo)} is missing",
+            )
+        else:
+            result.add("runtime_identity", "pass", "No runtime_identity.json found and no runtime proof requirement detected")
+        return
+
+    try:
+        data = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        status = "fail" if strict else "warn"
+        result.add("runtime_identity", status, f"Malformed runtime_identity.json: {exc}")
+        return
+
+    schema = data.get("schema") if isinstance(data, dict) else None
+    if schema != RUNTIME_IDENTITY_SCHEMA:
+        status = "fail" if strict else "warn"
+        result.add(
+            "runtime_identity",
+            status,
+            f"runtime_identity.json schema is {schema or 'missing'}; expected {RUNTIME_IDENTITY_SCHEMA}",
+        )
+    else:
+        result.add("runtime_identity", "pass", f"runtime_identity.json schema: {schema}")
+
+    runtime = data.get("runtime") if isinstance(data, dict) else None
+    if not isinstance(runtime, dict):
+        status = "fail" if strict else "warn"
+        result.add("runtime_identity", status, "runtime_identity.json missing runtime object")
+        return
+
+    required = runtime.get("required")
+    if required is False:
+        if user_facing_changed or visual_or_browser_evidence:
+            status = "fail" if strict else "warn"
+            result.add(
+                "runtime_identity",
+                status,
+                "runtime.required=false but user-facing changes or visual/browser evidence indicate runtime proof is required",
+            )
+        else:
+            result.add("runtime_identity", "pass", "Runtime marked not required for this evidence slice")
+        return
+    if required is not True:
+        status = "fail" if strict else "warn"
+        result.add("runtime_identity", status, "runtime.required is not true or false")
+        return
+
+    checks = data.get("checks") if isinstance(data, dict) else None
+    endpoint_reachable = checks.get("endpoint_reachable") if isinstance(checks, dict) else None
+    if endpoint_reachable is True:
+        result.add("runtime_identity", "pass", "runtime.required=true and endpoint_reachable=true")
+    else:
+        status = "fail" if strict else "warn"
+        result.add(
+            "runtime_identity",
+            status,
+            f"runtime.required=true but endpoint_reachable is {endpoint_reachable if endpoint_reachable is not None else 'missing'}",
+        )
+
+    process = runtime.get("process")
+    if isinstance(process, dict) and process.get("detected") is True:
+        result.add("runtime_identity", "pass", "Process ownership recorded as detected")
+    elif isinstance(process, dict):
+        reason = process.get("reason") or "not proven"
+        result.add("runtime_identity", "pass", f"Process ownership not proven/not applicable and recorded: {reason}")
+    else:
+        status = "fail" if strict else "warn"
+        result.add("runtime_identity", status, "runtime.process is missing or malformed")
 
 
 def looks_like_schema(relpath: str) -> bool:
@@ -593,6 +708,7 @@ def main(argv: list[str] | None = None) -> int:
     check_worktree_clean(root, result)
     check_branch_head_recorded(root, result)
     check_user_facing_evidence(root, result, args.strict)
+    check_runtime_identity(root, result, args.strict)
     check_schema_ownership(root, result, args.strict)
     check_tests_recorded(root, result, args.test_command)
     check_human_override(root, result, Path(args.override_file) if args.override_file else None)

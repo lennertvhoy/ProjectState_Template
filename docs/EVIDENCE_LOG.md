@@ -28,6 +28,29 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-003: Runtime proof integrated into template contract
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_runtime_proof.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_runtime_proof.py
+- Title: Runtime identity proof hardened and wired into template output, CI, audit, and doctor
+- Source/System: test
+- Action: Fixed remote URL process ownership handling, added runtime proof tests, shipped the helper to new/adopted repos, added CI smoke coverage, and exposed runtime_identity.json in audit/doctor/templates.
+- Shows:
+  - remote URLs record local process ownership as not applicable unless `--expect-local` / `--local-process-proof` is used
+  - localhost and 127.0.0.1 URLs still attempt local process ownership detection
+  - generated and adopted repos include `scripts/statedd_runtime_proof.py`
+  - CI compiles and smoke-tests the runtime proof helper
+  - audit and doctor recognize `runtime_identity.json`
+  - root `PROJECT_STATE.yaml` stale-labels historical git snapshot data instead of presenting it as live HEAD/worktree truth
+- Proves:
+  - runtime proof is now a downstream template capability, not only a root maintenance script
+  - strict audit can enforce runtime_identity.json when runtime/user-facing evidence requires it
+- Type: docs-render-verification
+- as_of: 2026-06-23T14:57:50+02:00
+- Notes: JSON schema files, evidence manifests, redaction checks, Docker/container process ownership, browser automation, release metadata, and downstream upgrade automation were intentionally not added in this slice.
+
 ## EV-2026-06-23-002: Template-maintenance mode split verified
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/README.md

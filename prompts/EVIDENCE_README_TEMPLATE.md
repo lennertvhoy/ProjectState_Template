@@ -31,6 +31,14 @@ real values. The claim ledger is the core of executable StateDD.
 | runtime identity proof | `prompts/RUNTIME_IDENTITY_CHECKLIST.md` | yes / no |
 | schema ownership validation | `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` | yes / no / not applicable |
 
+## Runtime Identity
+
+- Runtime required: yes / no
+- Artifact: `runtime_identity.json` / not applicable
+- Endpoint:
+- Process ownership proven: yes / no / not applicable
+- Known limits:
+
 ## Closure State
 
 - Implemented: yes / no

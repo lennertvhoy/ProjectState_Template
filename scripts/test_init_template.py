@@ -178,6 +178,15 @@ def assert_version_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing version assets: {missing}")
 
 
+def assert_runtime_proof_assets_exist(root: Path) -> None:
+    required = [
+        root / "scripts" / "statedd_runtime_proof.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing runtime proof assets: {missing}")
+
+
 def assert_downstream_bootstrap_context(root: Path) -> None:
     project_state = (root / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
     agents = (root / "AGENTS.md").read_text(encoding="utf-8")
@@ -229,6 +238,13 @@ def test_new_includes_version_assets_and_passes_version_check() -> None:
                 f"Generated repo version check failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
             )
         assert_downstream_bootstrap_context(target)
+
+
+def test_new_includes_runtime_proof_asset() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Runtime Demo", "--target", str(target)], expect_success=True)
+        assert_runtime_proof_assets_exist(target)
 
 
 def test_new_repo_still_fails_bootstrap_gate_until_investigated() -> None:
@@ -314,6 +330,15 @@ def test_adopt_installs_version_assets_and_passes_version_check() -> None:
         assert_downstream_bootstrap_context(repo)
 
 
+def test_adopt_installs_runtime_proof_asset() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+        run_init(["adopt", "--name", "Runtime Demo", "--target", str(repo)], expect_success=True)
+        assert_runtime_proof_assets_exist(repo)
+
+
 def test_template_root_uses_template_maintenance_mode() -> None:
     project_state = (ROOT / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
     if "repo_role: template_repository" not in project_state:
@@ -393,12 +418,14 @@ def main() -> int:
         test_new_includes_tool_model_routing_guide,
         test_new_includes_usability_assets,
         test_new_includes_version_assets_and_passes_version_check,
+        test_new_includes_runtime_proof_asset,
         test_new_repo_still_fails_bootstrap_gate_until_investigated,
         test_new_includes_v2_executable_workflow_assets,
         test_new_includes_license_faq,
         test_adopt_installs_tool_model_routing_guide,
         test_adopt_installs_usability_assets,
         test_adopt_installs_version_assets_and_passes_version_check,
+        test_adopt_installs_runtime_proof_asset,
         test_adopt_installs_v2_executable_workflow_assets,
         test_template_root_uses_template_maintenance_mode,
         test_template_root_bootstrap_gate_passes,

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import re
 import subprocess
 import sys
@@ -16,6 +17,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+RUNTIME_IDENTITY_FILE = "runtime_identity.json"
+RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
@@ -151,9 +154,45 @@ def browser_proof(repo: Path) -> str:
         return f"unreadable ({exc})"
     if any(p.suffix.lower() in image_exts for p in files):
         return "yes (image)"
-    if any(p.suffix.lower() in browser_exts for p in files):
+    if any(p.suffix.lower() in browser_exts and p.name != RUNTIME_IDENTITY_FILE for p in files):
         return "yes (browser artifact)"
     return "no screenshot/browser artifacts"
+
+
+def runtime_identity_status(repo: Path) -> str:
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        return "no evidence folder"
+    artifact = folder / RUNTIME_IDENTITY_FILE
+    if not artifact.exists():
+        readme = folder / "README.md"
+        text = read_optional(readme).lower() if readme.exists() else ""
+        if "runtime identity" in text or "runtime proof" in text or RUNTIME_IDENTITY_FILE in text:
+            return "missing (claimed in evidence README)"
+        return "not present"
+    try:
+        data = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return f"malformed ({exc})"
+    if not isinstance(data, dict):
+        return "malformed (top-level JSON is not an object)"
+    if data.get("schema") != RUNTIME_IDENTITY_SCHEMA:
+        return f"schema mismatch ({data.get('schema') or 'missing'})"
+    runtime = data.get("runtime")
+    if not isinstance(runtime, dict):
+        return "malformed (missing runtime object)"
+    if runtime.get("required") is False:
+        return "not required"
+    checks = data.get("checks")
+    endpoint = checks.get("endpoint_reachable") if isinstance(checks, dict) else "not recorded"
+    process = runtime.get("process")
+    if isinstance(process, dict) and process.get("detected") is True:
+        process_status = "process proven"
+    elif isinstance(process, dict) and "not applicable" in str(process.get("reason", "")).lower():
+        process_status = "process not applicable"
+    else:
+        process_status = "process not proven"
+    return f"required, endpoint_reachable={endpoint}, {process_status}"
 
 
 def open_blockers(repo: Path) -> str:
@@ -231,6 +270,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"State docs updated: {state_docs_updated(repo)}")
     print(f"Tests recorded: {tests_recorded(repo)}")
     print(f"Browser proof: {browser_proof(repo)}")
+    print(f"Runtime identity: {runtime_identity_status(repo)}")
     print(f"Open blockers: {open_blockers(repo)}")
     print(f"Next recommended slice: {next_recommended_slice(repo)}")
     print(f"Closure grade: {closure_grade(repo)}")

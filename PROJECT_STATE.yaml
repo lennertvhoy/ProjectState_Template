@@ -15,7 +15,6 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - runtime identity proof artifact not yet implemented
       - schema-backed state validation not yet implemented
       - downstream upgrade automation not yet implemented
 
@@ -32,9 +31,17 @@ current_state:
   repository:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
-    branch: main
-    head: e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
-    worktree_status: dirty
+    git_snapshot:
+      status: stale
+      captured_at: 2026-06-23T00:00:00+02:00
+      last_verified_branch: main
+      last_verified_head: e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
+      last_verified_worktree_status: dirty
+      notes: |
+        This is a historical verification snapshot, not live git truth.
+        Use git, scripts/statedd_audit.py, scripts/statedd_doctor.py,
+        scripts/statedd_handoff.py, or evidence artifacts for current branch,
+        HEAD, and worktree status.
 
   operating_mode:
     status: observed
@@ -51,18 +58,18 @@ current_state:
     truth_summary: template_maintenance_active
 
   runtime_identity:
-    status: not_applicable
+    status: not_applicable_for_template_root
     repo_path: /home/ff/Documents/Projects/StateDD_Template
-    branch: null
-    head: null
+    artifact_contract: runtime_identity.json
+    helper: scripts/statedd_runtime_proof.py
     process_or_container: no application runtime
     port_or_base_url: not_applicable
     rebuilt_in_current_slice: false
     duplicate_runtimes_checked: not_applicable
     notes: |
       The template root does not ship an application runtime. Downstream
-      projects must still prove runtime identity before accepting user-facing
-      behavior.
+      projects use scripts/statedd_runtime_proof.py to record runtime identity
+      artifacts before accepting user-facing behavior.
 
   environment:
     status: observed
@@ -114,7 +121,9 @@ current_state:
       - scripts/check_state_docs.py
       - scripts/statedd_audit.py
       - scripts/statedd_doctor.py
+      - scripts/statedd_runtime_proof.py
       - scripts/test_init_template.py
+      - scripts/test_runtime_proof.py
     entrypoints:
       - scripts/init_template.py
       - scripts/check_state_docs.py
@@ -122,10 +131,13 @@ current_state:
       - scripts/statedd_doctor.py
       - scripts/statedd_handoff.py
       - scripts/statedd_version_check.py
+      - scripts/statedd_runtime_proof.py
       - scripts/test_init_template.py
+      - scripts/test_runtime_proof.py
     test_setup:
       - python3 scripts/check_state_docs.py
       - python3 scripts/test_init_template.py
+      - python3 scripts/test_runtime_proof.py
       - python3 scripts/statedd_audit.py
       - python3 scripts/statedd_doctor.py
     deployment_assumptions:
@@ -139,7 +151,7 @@ current_state:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    standard: browser_verification_or_test_output_for_user_facing_claims
+    standard: browser_or_test_output_plus_runtime_identity_for_user_facing_claims
 
   documentation:
     status: observed
@@ -166,6 +178,7 @@ current_state:
       - prompts/TOOL_MODEL_ROUTING_GUIDE.md
       - scripts/statedd_version_check.py
       - scripts/statedd_handoff.py
+      - scripts/statedd_runtime_proof.py
     prompt_assets:
       cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
       coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
@@ -187,10 +200,14 @@ current_state:
       handoff_snapshot:
         status: observed
         path: scripts/statedd_handoff.py
+      runtime_proof:
+        status: observed
+        path: scripts/statedd_runtime_proof.py
+        summary: Captures runtime_identity.json evidence artifacts and skips local process claims for remote endpoints unless explicitly overridden.
       audit_command:
         status: observed
         path: scripts/statedd_audit.py
-        summary: Machine-checkable StateDD closure audit.
+        summary: Machine-checkable StateDD closure audit, including runtime identity artifact recognition.
       version_check:
         status: observed
         path: scripts/statedd_version_check.py
@@ -198,7 +215,7 @@ current_state:
       doctor_command:
         status: observed
         path: scripts/statedd_doctor.py
-        summary: Fast human-readable StateDD health summary.
+        summary: Fast human-readable StateDD health summary, including runtime identity status.
       slice_contract_template:
         status: observed
         path: prompts/SLICE_CONTRACT_TEMPLATE.md

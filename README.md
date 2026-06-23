@@ -73,6 +73,7 @@ created from it should use the full workflow directly.
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
 | `scripts/statedd_audit.py` | Machine-checkable closure audit |
 | `scripts/statedd_doctor.py` | Fast StateDD health summary |
+| `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
 | `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template, slice contract, evidence README, schema ownership, subagent review, CTO review checklist |
 
@@ -258,6 +259,8 @@ Use `python3 scripts/statedd_handoff.py` near the end of a slice to print a loca
 
 Before accepting user-facing behavior, first prove which repo, branch, HEAD commit, process or container, and endpoint were actually under test, plus whether the artifact was rebuilt and whether duplicate runtimes were checked.
 
+Use `python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url http://localhost:<port>` to write `runtime_identity.json` for runtime slices. For docs/scripts-only slices, use `python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>`.
+
 ## Acceptance Freezes
 
 After a user-facing milestone is accepted, create an acceptance freeze tied to source, runtime identity, and evidence. Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` and store durable artifacts under `docs/evidence/`.
@@ -346,15 +349,16 @@ python3 scripts/statedd_doctor.py       # fast health summary
 python3 scripts/statedd_audit.py        # machine-checkable closure audit
 ```
 
-`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, schema ownership, and test/build/lint recording. Use `--strict` to fail on warnings.
+`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema ownership, and test/build/lint recording. Use `--strict` to fail on warnings.
 
-`statedd_doctor.py` prints a one-glance summary of HEAD, worktree, evidence, state-doc freshness, test/browser proof, open blockers, next slice, and closure grade.
+`statedd_doctor.py` prints a one-glance summary of HEAD, worktree, evidence, state-doc freshness, test/browser proof, runtime identity status, open blockers, next slice, and closure grade.
 
 Run the full gate set before handoff, review, or release:
 
 ```bash
 python3 scripts/check_state_docs.py
 python3 scripts/test_init_template.py
+python3 scripts/test_runtime_proof.py
 python3 scripts/statedd_doctor.py
 python3 scripts/statedd_audit.py
 ```

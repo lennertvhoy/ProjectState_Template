@@ -112,6 +112,8 @@ governance:
   tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
   version_check: scripts/statedd_version_check.py
   handoff_snapshot_helper: scripts/statedd_handoff.py
+  runtime_proof_helper: scripts/statedd_runtime_proof.py
+  runtime_identity_artifact: runtime_identity.json
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   closure_audit: scripts/statedd_audit.py

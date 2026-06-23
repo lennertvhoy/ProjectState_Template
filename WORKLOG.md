@@ -2,6 +2,45 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - Runtime proof hardening and integration
+
+**Type:** template_runtime_evidence
+**Status:** COMPLETE
+**Git Head:** starts at 7ba2a9e72da3860ebb42ba00c614a5a75228c2b3; final implementation commit recorded in git history and handoff
+**Worktree:** clean before work; clean after implementation commit and final hygiene rerun
+
+### What changed
+- Hardened `scripts/statedd_runtime_proof.py` so remote endpoints do not trigger local process ownership detection by default.
+- Added explicit `--expect-local` / `--local-process-proof` override for cases where the user intentionally wants local process proof for a non-local-looking URL.
+- Added `scripts/test_runtime_proof.py` covering localhost, 127.0.0.1, remote skip for default 443, and explicit override.
+- Wired `scripts/statedd_runtime_proof.py` into new and adopted repo initialization, with regression assertions in `scripts/test_init_template.py`.
+- Added CI compile coverage, runtime proof unit coverage, and a docs-only `runtime_identity.json` smoke parse.
+- Updated audit and doctor to recognize `runtime_identity.json`; strict audit can fail missing/malformed/schema-invalid runtime identity evidence and unreachable required endpoints.
+- Updated evidence and final handoff templates to name the runtime identity artifact directly.
+- Stale-labeled root `PROJECT_STATE.yaml` historical git snapshot data instead of presenting stale HEAD/worktree values as live current truth.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/test_init_template.py scripts/test_runtime_proof.py` passed.
+- `python3 scripts/test_runtime_proof.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/statedd_version_check.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m json.tool docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json` passed.
+- `python3 scripts/statedd_audit.py` passed after implementation commit.
+- `python3 scripts/statedd_audit.py --strict` passed after implementation commit.
+- `python3 scripts/statedd_doctor.py` passed after implementation commit.
+
+### Evidence
+- `docs/evidence/2026-06-23-runtime-proof-integration/README.md`
+- `docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-003`
+
+### Notes
+- JSON schema files, evidence manifests, redaction checks, Docker/container process ownership, browser automation, release metadata, and downstream upgrade automation were intentionally out of scope.
+- The template root has no application runtime, so its runtime identity artifact records `runtime.required=false`.
+- [BL-010] schema-backed validation is the next active slice.
+
 ## 2026-06-23 - Template-maintenance mode split
 
 **Type:** template_state_governance

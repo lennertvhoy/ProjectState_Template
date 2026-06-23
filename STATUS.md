@@ -11,13 +11,14 @@
 - Canonical StateDD spec version is `statedd-template-v4` from `VERSION`.
 - Version alignment is now checked by `scripts/statedd_version_check.py`.
 - Generated and adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
-- Runtime proof and schema validation remain open roadmap work.
+- Runtime proof is now a template capability through `scripts/statedd_runtime_proof.py`, `runtime_identity.json`, audit recognition, doctor status, CI smoke coverage, and init/adopt asset coverage.
+- Schema validation remains open roadmap work.
 
 ## Immediate Priorities
 
-1. Add runtime identity proof artifacts.
-2. Add schema-backed validation for state and evidence files.
-3. Add evidence manifests and redaction checks.
+1. Add schema-backed validation for state and evidence files.
+2. Add evidence manifests and redaction checks.
+3. Add non-destructive downstream upgrade tooling.
 
 ## Active Blockers
 

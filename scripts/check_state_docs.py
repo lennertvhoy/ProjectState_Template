@@ -63,7 +63,9 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/statedd_handoff.py",
     "scripts/statedd_audit.py",
     "scripts/statedd_doctor.py",
+    "scripts/statedd_runtime_proof.py",
     "scripts/test_init_template.py",
+    "scripts/test_runtime_proof.py",
     "LICENSE",
     "LICENSE_FAQ.md",
     "prompts/CTO_SESSION_PROMPT.md",
@@ -298,6 +300,7 @@ def check_readme(path: Path) -> list[str]:
         "prompts/FINAL_HANDOFF_TEMPLATE.md",
         "docs/GETTING_STARTED_5_MIN.md",
         "scripts/statedd_handoff.py",
+        "scripts/statedd_runtime_proof.py",
         "LICENSE_FAQ.md",
         "teaching/training rights are reserved",
         "ChatGPT, Claude, Gemini",
@@ -381,7 +384,7 @@ def check_template_assets(root: Path) -> list[str]:
     final_handoff = root / "prompts" / "FINAL_HANDOFF_TEMPLATE.md"
     if final_handoff.exists():
         handoff_text = final_handoff.read_text(encoding="utf-8")
-        for phrase in ("repo path", "branch", "process/container", "port/base URL", "rebuilt in this slice"):
+        for phrase in ("repo path", "branch", "process/container", "port/base URL", "rebuilt in this slice", "Runtime identity artifact"):
             if phrase not in handoff_text:
                 issues.append(f"Final handoff template missing phrase: {phrase}")
 
@@ -464,7 +467,7 @@ def check_template_assets(root: Path) -> list[str]:
     evidence_readme = root / "prompts" / "EVIDENCE_README_TEMPLATE.md"
     if evidence_readme.exists():
         evidence_text = evidence_readme.read_text(encoding="utf-8")
-        for phrase in ("Claims", "Verification Log", "Closure State"):
+        for phrase in ("Claims", "Verification Log", "Closure State", "Runtime Identity", "runtime_identity.json"):
             if phrase not in evidence_text:
                 issues.append(f"Evidence README template missing phrase: {phrase}")
 
@@ -499,6 +502,8 @@ def check_template_assets(root: Path) -> list[str]:
             issues.append("GitHub workflow must pin action references to full SHAs")
         if "scripts/test_init_template.py" not in workflow_text:
             issues.append("GitHub workflow must run scripts/test_init_template.py")
+        if "scripts/statedd_runtime_proof.py" not in workflow_text:
+            issues.append("GitHub workflow must validate scripts/statedd_runtime_proof.py")
 
     return issues
 

@@ -49,7 +49,9 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
+    Path("scripts/statedd_runtime_proof.py"),
     Path("scripts/test_init_template.py"),
+    Path("scripts/test_runtime_proof.py"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
     Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
     Path("prompts/OPENCODE_STARTUP_PROMPT.md"),
@@ -516,6 +518,7 @@ current_state:
       - prompts/OPENCODE_STARTUP_PROMPT.md
       - prompts/TOOL_MODEL_ROUTING_GUIDE.md
       - scripts/statedd_handoff.py
+      - scripts/statedd_runtime_proof.py
     prompt_assets:
       cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
       coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
@@ -534,6 +537,10 @@ current_state:
       handoff_snapshot:
         status: observed
         path: scripts/statedd_handoff.py
+      runtime_proof:
+        status: observed
+        path: scripts/statedd_runtime_proof.py
+        summary: Captures runtime_identity.json proof artifacts for evidence folders.
 
 active_problems: []
 """
@@ -636,6 +643,8 @@ governance:
   getting_started_guide: docs/GETTING_STARTED_5_MIN.md
   tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
   handoff_snapshot_helper: scripts/statedd_handoff.py
+  runtime_proof_helper: scripts/statedd_runtime_proof.py
+  runtime_identity_artifact: runtime_identity.json
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   closure_audit: scripts/statedd_audit.py
@@ -1388,16 +1397,20 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "scripts/check_state_docs.py",
             "scripts/statedd_version_check.py",
             "scripts/statedd_handoff.py",
+            "scripts/statedd_runtime_proof.py",
             "scripts/test_init_template.py",
+            "scripts/test_runtime_proof.py",
         ],
         entrypoints=[
             "scripts/init_template.py",
             "scripts/check_state_docs.py",
             "scripts/statedd_version_check.py",
             "scripts/statedd_handoff.py",
+            "scripts/statedd_runtime_proof.py",
             "scripts/test_init_template.py",
+            "scripts/test_runtime_proof.py",
         ],
-        test_setup=["scripts/check_state_docs.py", "scripts/test_init_template.py"],
+        test_setup=["scripts/check_state_docs.py", "scripts/test_init_template.py", "scripts/test_runtime_proof.py"],
         deployment_assumptions=["distributed as a git-hosted workflow template"],
         contradictions=["project-specific contradictions not yet investigated"],
         project_summary="bootstrap_initializing",

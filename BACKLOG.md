@@ -1,7 +1,7 @@
 # BACKLOG - Strategic Roadmap
 
 **Product:** StateDD_Template
-**Execution Mode:** bootstrap
+**Execution Mode:** template-maintenance
 **Updated At:** 2026-06-23
 
 ## Purpose
@@ -11,7 +11,6 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-009] Add runtime identity proof artifact generation and strict audit enforcement.
 - [BL-010] Add schema-backed validation for StateDD state, evidence, and handoff files.
 
 ## NEXT
