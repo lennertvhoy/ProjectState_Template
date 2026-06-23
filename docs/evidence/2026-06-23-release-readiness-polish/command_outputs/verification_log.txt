@@ -1,0 +1,407 @@
+=== BL-007 Verification Log ===
+Date: 2026-06-23T17:01:57+02:00
+Repo: /home/ff/Documents/Projects/StateDD_Template
+Branch: main
+HEAD: aa6362225d0f5e4f951468160b647373dc2ed250
+Worktree status: 1 uncommitted changes
+
+=== Python compilation ===
+PASS: py_compile
+
+=== Version check ===
+StateDD Version Check
+Root: /home/ff/Documents/Projects/StateDD_Template
+Expected: statedd-template-v4
+Result: pass
+
+=== Schema validation ===
+============================================================
+STATEDD SCHEMA VALIDATION
+============================================================
+  PASS PROJECT_STATE.yaml
+  PASS PROJECT_DNA.yaml
+  PASS PROJECT_ADAPTER.yaml
+  PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+  PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  PASS docs/evidence/2026-06-23-release-readiness-polish/README.md
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+  PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+  PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+  PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+  PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+PASSED: All StateDD schema checks passed
+
+=== Documentation hygiene ===
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ✅ All checks passed
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+============================================================
+PASSED: All state documentation checks passed
+
+=== Bootstrap gate ===
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ✅ All checks passed
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+📄 bootstrap gate
+  ✅ All checks passed
+
+============================================================
+PASSED: All state documentation checks passed
+
+=== Runtime proof tests ===
+PASS test_localhost_attempts_process_detection
+PASS test_loopback_attempts_process_detection
+PASS test_remote_url_skips_local_port_detection
+PASS test_remote_url_can_be_explicitly_treated_as_local
+
+=== Schema validation tests ===
+PASS test_root_schema_validation_passes
+PASS test_invalid_project_state_fails_with_actionable_message
+PASS test_invalid_evidence_readme_fails_contract
+PASS test_runtime_not_applicable_fixture_passes
+PASS test_runtime_required_unreachable_fixture_fails
+PASS test_generated_new_repo_includes_schema_validation_assets_and_passes
+PASS test_adopted_repo_includes_schema_validation_assets_and_passes
+
+=== Evidence pack tests ===
+PASS test_init_creates_manifest
+PASS test_init_detects_runtime_identity
+PASS test_valid_manifest_passes_check
+PASS test_missing_artifact_fails
+PASS test_hash_mismatch_fails
+PASS test_claim_without_evidence_fails
+PASS test_unchecked_redaction_fails_strict
+PASS test_checked_with_limits_passes_strict
+PASS test_binary_artifact_without_manual_review_fails_strict
+PASS test_hash_command_updates_hashes
+PASS test_scan_flags_possible_secret
+PASS test_empty_claims_and_artifacts_fails_strict
+PASS test_skeleton_status_allows_empty_claims_and_artifacts
+PASS test_strict_requires_known_limits_when_manual_review_required
+
+=== Upgrade tests ===
+PASS test_dry_run_on_current_repo_refuses_template_root
+PASS test_dry_run_on_generated_repo_is_no_op_or_safe
+PASS test_dry_run_on_older_fixture_reports_missing_assets
+PASS test_apply_adds_safe_missing_assets
+PASS test_apply_preserves_readme_and_project_truth
+PASS test_conflict_fixture_refuses_unsafe_overwrite
+PASS test_force_managed_replaces_outdated_safe_asset
+PASS test_force_managed_never_overwrites_truth_files
+PASS test_report_writes_json
+
+=== Adoption profile tests ===
+PASS test_new_profile_minimal
+PASS test_new_profile_solo
+PASS test_new_profile_team
+PASS test_new_profile_regulated
+PASS test_legacy_minimal_flag_maps_to_profile
+PASS test_adopt_with_profile_preserves_readme
+PASS test_wizard_answers_generates_files
+PASS test_wizard_dry_run_writes_nothing
+
+=== Init template tests ===
+PASS test_adopt_rejects_symlinked_managed_directory
+PASS test_new_rejects_symlinked_existing_directory
+PASS test_readme_link_rejects_symlinked_readme_before_writes
+PASS test_top_level_help_shows_subcommands
+PASS test_legacy_new_invocation_still_works
+PASS test_new_copies_curated_template_surface_only
+PASS test_new_includes_tool_model_routing_guide
+PASS test_new_includes_usability_assets
+PASS test_new_includes_version_assets_and_passes_version_check
+PASS test_new_includes_runtime_proof_asset
+PASS test_new_includes_schema_validation_assets_and_passes_schema_validation
+PASS test_new_repo_still_fails_bootstrap_gate_until_investigated
+PASS test_new_includes_v2_executable_workflow_assets
+PASS test_new_includes_license_faq
+PASS test_adopt_installs_tool_model_routing_guide
+PASS test_adopt_installs_usability_assets
+PASS test_adopt_installs_version_assets_and_passes_version_check
+PASS test_adopt_installs_runtime_proof_asset
+PASS test_adopt_installs_schema_validation_assets_and_passes_schema_validation
+PASS test_adopt_installs_v2_executable_workflow_assets
+PASS test_template_root_uses_template_maintenance_mode
+PASS test_template_root_bootstrap_gate_passes
+PASS test_handoff_snapshot_runs
+PASS test_doctor_runs
+
+=== Schema prompt loop example ===
+Validating feature slice example files...
+PASS: valid_slice.json
+FAIL: invalid_slice.json
+  Reason: - $: missing required property 'goal'
+Example validation complete.
+Wrote generated prompt to /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generated_prompt.md
+PASS test_valid_slice_passes
+PASS test_invalid_slice_fails
+PASS test_generated_prompt_includes_required_fields
+PASS test_generated_prompt_fixture_is_up_to_date
+PASS test_example_scripts_use_stdlib_only
+
+=== Doctor ===
+StateDD Health
+
+Current HEAD: aa6362225d0f5e4f951468160b647373dc2ed250
+Branch: main
+Repo role: template_repository
+StateDD mode: template-maintenance
+Worktree: dirty
+Latest evidence: docs/evidence/2026-06-23-release-readiness-polish
+State docs updated: yes
+Tests recorded: yes
+Browser proof: yes (browser artifact)
+Runtime identity: not required
+Schema validation: pass
+Upgrade capability: available
+Evidence manifest: invalid (Manifest check failed:)
+Open blockers: 1
+Next recommended slice: P1 [BL-WB-001] Use Kimi WebBridge to browser-verify user-facing changes
+Closure grade: fail
+
+=== Audit (normal) ===
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-06-23-release-readiness-polish
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-06-23-release-readiness-polish/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 4 files
+
+worktree_clean
+  ❌ Worktree is dirty (1 changed file(s)); closure-grade requires clean worktree
+
+branch_head_recorded
+  ✅ HEAD aa63622 recorded in git; evidence README records 15fbf9f (acceptable if README was written before the final commit)
+  ✅ Branch 'main' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ No schema file changes detected
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked_with_limits
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 33 pass, 0 warn, 1 fail, 0 override
+AUDIT RESULT: FAIL — closure-grade not met
+
+=== Audit (strict) ===
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-06-23-release-readiness-polish
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-06-23-release-readiness-polish/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 4 files
+
+worktree_clean
+  ❌ Worktree is dirty (1 changed file(s)); closure-grade requires clean worktree
+
+branch_head_recorded
+  ✅ HEAD aa63622 recorded in git; evidence README records 15fbf9f (acceptable if README was written before the final commit)
+  ✅ Branch 'main' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ No schema file changes detected
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked_with_limits
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 33 pass, 0 warn, 1 fail, 0 override
+AUDIT RESULT: FAIL — closure-grade not met
+
+=== git diff --check ===
+PASS: git diff --check
+
+=== Evidence pack strict check ===
+Manifest check failed:
+  - Hash mismatch for command_outputs/verification_log.txt: expected 6ff4a2d9414e5daa..., got bdfb1a55b8287f4d...
+
+=== End of verification log ===

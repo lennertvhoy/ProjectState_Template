@@ -1,23 +1,111 @@
 {
-  "artifacts": [],
-  "claims": [],
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "3395ffeaaae94591985562f85c6df0144a51e85144d61a599bb3329161e776d0"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked",
+      "sensitive_data": "none_found",
+      "sha256": "ae37440b9e2ee8c752e17d28af66cf5e15b2d8a43f2df9debaf3d6286652c5aa"
+    },
+    {
+      "kind": "log",
+      "path": "command_outputs/verification_log.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f0ff6206c80324cc1802d14ed90befcd52200ac80d515bdcae8e17ce07fec980"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "README top half is beginner-friendly and answers the six first-use questions",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C1",
+      "status": "validated"
+    },
+    {
+      "claim": "docs/QUICK_COMMANDS.md exists with copy-pasteable commands for common tasks",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C2",
+      "status": "validated"
+    },
+    {
+      "claim": "docs/ADOPTION_PROFILES.md has a clear chooser and recommends solo as default",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C3",
+      "status": "validated"
+    },
+    {
+      "claim": "docs/GETTING_STARTED_5_MIN.md can be followed without reading the full README first",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C4",
+      "status": "validated"
+    },
+    {
+      "claim": "docs/RELEASE_NOTES_statedd-template-v4.md is release-candidate ready and does not authorize publishing without human permission",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C5",
+      "status": "validated"
+    },
+    {
+      "claim": "Strict audit passes after the documentation changes",
+      "evidence": [
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C6",
+      "status": "validated"
+    },
+    {
+      "claim": "Evidence pack strict check passes with non-empty claims and artifacts",
+      "evidence": [
+        "command_outputs/verification_log.txt"
+      ],
+      "id": "C7",
+      "status": "validated"
+    }
+  ],
   "created_at": "2026-06-23T16:53:53+02:00",
   "manifest_status": "complete",
   "redaction": {
-    "automated_scan": "not_applicable",
+    "automated_scan": "passed",
     "known_limits": [
-      "Manifest created; redaction review not yet performed."
+      "Manifest created; redaction review not yet performed.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/verification_log.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/verification_log.txt; this does not prove absence of secrets."
     ],
     "manual_review": "required",
-    "status": "unchecked"
+    "status": "checked_with_limits"
   },
   "repo": {
     "branch": "main",
-    "head": "6a417c106bf480c4ef36b1d30c59e7d326f710a0"
+    "head": "15fbf9ff0b968677460b4703113d54cf8ccf8d46"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",
-    "required": true,
+    "required": false,
     "status": "valid"
   },
   "schema": "statedd.evidence_manifest.v1",

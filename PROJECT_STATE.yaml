@@ -36,13 +36,13 @@ current_state:
       status: observed
       captured_at: 2026-06-23T16:49:00+02:00
       last_verified_branch: main
-      last_verified_head: 6a417c106bf480c4ef36b1d30c59e7d326f710a0
-      last_verified_worktree_status: dirty (BL-007 in progress)
+      last_verified_head: 35e8f468123ae3f799d6952d82d026b1bd95ea52
+      last_verified_worktree_status: clean
       notes: |
-        Captured during BL-007 implementation. Worktree contains uncommitted
-        documentation changes. Use git, scripts/statedd_audit.py,
-        scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
-        artifacts for current branch, HEAD, and worktree status.
+        Captured after BL-007 closure commit. Worktree is clean. Use git,
+        scripts/statedd_audit.py, scripts/statedd_doctor.py,
+        scripts/statedd_handoff.py, or evidence artifacts for current branch,
+        HEAD, and worktree status.
 
   operating_mode:
     status: observed

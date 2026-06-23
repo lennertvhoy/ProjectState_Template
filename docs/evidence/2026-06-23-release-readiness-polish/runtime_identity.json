@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-06-23T16:53:48+02:00",
+  "captured_at": "2026-06-23T16:57:04+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
@@ -7,9 +7,9 @@
   "limits": [],
   "repo": {
     "branch": "main",
-    "head": "6a417c106bf480c4ef36b1d30c59e7d326f710a0",
+    "head": "35e8f468123ae3f799d6952d82d026b1bd95ea52",
     "path": "/home/ff/Documents/Projects/StateDD_Template",
-    "status_porcelain": "M README.md\n M docs/ADOPTION_PROFILES.md\n M docs/GETTING_STARTED_5_MIN.md\n M docs/RELEASE_NOTES_statedd-template-v4.md\n?? docs/QUICK_COMMANDS.md\n?? docs/evidence/2026-06-23-release-readiness-polish/\n?? docs/superpowers/",
+    "status_porcelain": "M docs/evidence/2026-06-23-release-readiness-polish/README.md",
     "worktree_clean": false
   },
   "runtime": {
