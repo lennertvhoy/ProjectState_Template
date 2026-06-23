@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "1a11084e8f54390106a42cd464c7e3f85ef80e302104282137813f1e83018867"
+      "sha256": "7148549030bebe07e92f50aeec52731534b876766c8bd625affb1fbc7799ce98"
     },
     {
       "kind": "runtime_identity",
@@ -20,13 +20,21 @@
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
       "sha256": null
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/verification_log.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "a682478d3a6cda73739acc4b6ec5a98762eb3e284c4681fbe79aab96b6919760"
     }
   ],
   "claims": [
     {
       "claim": "Evidence pack manifests and redaction gate are implemented and wired into the template",
       "evidence": [
-        "README.md"
+        "README.md",
+        "command_outputs/verification_log.txt"
       ],
       "id": "C1",
       "status": "validated"
@@ -34,7 +42,8 @@
     {
       "claim": "Non-destructive downstream upgrade tooling is implemented and documented",
       "evidence": [
-        "README.md"
+        "README.md",
+        "command_outputs/verification_log.txt"
       ],
       "id": "C2",
       "status": "validated"
@@ -42,7 +51,8 @@
     {
       "claim": "Adoption profiles minimal/solo/team/regulated are available in the initializer",
       "evidence": [
-        "README.md"
+        "README.md",
+        "command_outputs/verification_log.txt"
       ],
       "id": "C3",
       "status": "validated"
@@ -50,7 +60,8 @@
     {
       "claim": "Interactive bootstrap wizard MVP is available and wired into CI",
       "evidence": [
-        "README.md"
+        "README.md",
+        "command_outputs/verification_log.txt"
       ],
       "id": "C4",
       "status": "validated"
@@ -58,7 +69,8 @@
     {
       "claim": "The closure evidence manifest is non-empty and passes strict evidence pack checks",
       "evidence": [
-        "manifest.json"
+        "manifest.json",
+        "command_outputs/verification_log.txt"
       ],
       "id": "C5",
       "status": "validated"
@@ -73,7 +85,13 @@
       "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
       "Automated scan found no obvious patterns in manifest.json; this does not prove absence of secrets.",
       "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
-      "Automated scan found no obvious patterns in manifest.json; this does not prove absence of secrets."
+      "Automated scan found no obvious patterns in manifest.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in manifest.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/verification_log.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in manifest.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/verification_log.txt; this does not prove absence of secrets."
     ],
     "manual_review": "required",
     "status": "checked_with_limits"
