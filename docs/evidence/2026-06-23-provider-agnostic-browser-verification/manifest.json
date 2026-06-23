@@ -26,7 +26,7 @@
       "path": "command_outputs/verification_log.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "15b15286c737385c052d6c698ed1ee245919402f6f7b595eae7643399c9bbe69"
+      "sha256": "f80d0d004b09e1b61e84a46ce711b7ddaa5cdf6d3e8d98601de62804ada3790e"
     }
   ],
   "claims": [

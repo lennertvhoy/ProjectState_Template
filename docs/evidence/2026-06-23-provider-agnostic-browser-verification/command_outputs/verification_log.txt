@@ -1,7 +1,7 @@
 === Verification run for BL-BROWSER-001 ===
-Date: 2026-06-23T17:25:25+02:00
+Date: 2026-06-23T17:26:15+02:00
 Branch: feature/provider-agnostic-browser-verification
-HEAD: 0bf5d48498d7353473c23d058401e710d34058ee
+HEAD: 3b770a80eda4d22c6c253a80cc1719fd49784c34
 
 === py_compile ===
 py_compile: exit 0
@@ -262,10 +262,10 @@ evidence_size
   ✅ Evidence folder has 5 files
 
 worktree_clean
-  ❌ Worktree is dirty (3 changed file(s)); closure-grade requires clean worktree
+  ✅ Worktree is clean
 
 branch_head_recorded
-  ✅ HEAD 0bf5d48 recorded in git; evidence README records eb0cd88 (acceptable if README was written before the final commit)
+  ✅ HEAD 3b770a8 recorded in git; evidence README records eb0cd88 (acceptable if README was written before the final commit)
   ✅ Branch 'feature/provider-agnostic-browser-verification' recorded in evidence README
 
 user_facing_evidence
@@ -279,7 +279,7 @@ schema_validation
   ✅ StateDD schema validation passed
 
 schema_ownership
-  ✅ Schema change 'schemas/browser_verification.schema.json' has examples and validation tests nearby (heuristic check)
+  ✅ No schema file changes detected
 
 tests_recorded
   ✅ Evidence README records test/build/lint results
@@ -291,14 +291,14 @@ evidence_manifest
 browser_verification
   ✅ browser_verification.json schema: statedd.browser_verification.v1
   ✅ Browser verification provider: not_applicable
-  ⚠️ provider.kind=not_applicable but user-facing changes or browser evidence indicate verification is required
+  ✅ Browser verification marked not applicable
 
 human_override
   ✅ No human override declared
 
 ============================================================
-Summary: 35 pass, 1 warn, 1 fail, 0 override
-AUDIT RESULT: FAIL — closure-grade not met
+Summary: 37 pass, 0 warn, 0 fail, 0 override
+AUDIT RESULT: PASS — closure-grade
 
 === statedd_audit --strict ===
 ============================================================
@@ -340,10 +340,10 @@ evidence_size
   ✅ Evidence folder has 5 files
 
 worktree_clean
-  ❌ Worktree is dirty (3 changed file(s)); closure-grade requires clean worktree
+  ✅ Worktree is clean
 
 branch_head_recorded
-  ✅ HEAD 0bf5d48 recorded in git; evidence README records eb0cd88 (acceptable if README was written before the final commit)
+  ✅ HEAD 3b770a8 recorded in git; evidence README records eb0cd88 (acceptable if README was written before the final commit)
   ✅ Branch 'feature/provider-agnostic-browser-verification' recorded in evidence README
 
 user_facing_evidence
@@ -357,7 +357,7 @@ schema_validation
   ✅ StateDD schema validation passed
 
 schema_ownership
-  ✅ Schema change 'schemas/browser_verification.schema.json' has examples and validation tests nearby (heuristic check)
+  ✅ No schema file changes detected
 
 tests_recorded
   ✅ Evidence README records test/build/lint results
@@ -369,23 +369,23 @@ evidence_manifest
 browser_verification
   ✅ browser_verification.json schema: statedd.browser_verification.v1
   ✅ Browser verification provider: not_applicable
-  ❌ provider.kind=not_applicable but user-facing changes or browser evidence indicate verification is required
+  ✅ Browser verification marked not applicable
 
 human_override
   ✅ No human override declared
 
 ============================================================
-Summary: 35 pass, 0 warn, 2 fail, 0 override
-AUDIT RESULT: FAIL — closure-grade not met
+Summary: 37 pass, 0 warn, 0 fail, 0 override
+AUDIT RESULT: PASS — closure-grade
 
 === statedd_doctor ===
 StateDD Health
 
-Current HEAD: 0bf5d48498d7353473c23d058401e710d34058ee
+Current HEAD: 3b770a80eda4d22c6c253a80cc1719fd49784c34
 Branch: feature/provider-agnostic-browser-verification
 Repo role: template_repository
 StateDD mode: template-maintenance
-Worktree: dirty
+Worktree: clean
 Latest evidence: docs/evidence/2026-06-23-provider-agnostic-browser-verification
 State docs updated: yes
 Tests recorded: yes
@@ -398,11 +398,11 @@ Upgrade capability: available
 Evidence manifest: invalid (Manifest check failed:)
 Open blockers: 1
 Next recommended slice: P1 [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted
-Closure grade: fail
+Closure grade: pass
 
 === statedd_evidence_pack check --strict ===
 Manifest check failed:
-  - Hash mismatch for command_outputs/verification_log.txt: expected 15b15286c737385c..., got 924713e3539ed47c...
+  - Hash mismatch for command_outputs/verification_log.txt: expected 15b15286c737385c..., got 80315349d7caa65e...
 
 === statedd_browser_verify check --strict ===
 Browser verification check passed.
