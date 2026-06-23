@@ -43,7 +43,7 @@
 - Implemented: yes
 - Validated: yes
 - Closure-grade: yes
-- Accepted: no
+- Accepted: yes
 
 ## Human Override
 

@@ -34,3 +34,25 @@ and must be protected from quiet regression.
 - Do not treat screenshots alone as an acceptance freeze.
 - Tie the accepted state to repo truth, runtime truth, and evidence truth.
 - If a later report conflicts with the freeze, prove runtime identity before drawing conclusions from git history.
+
+## AF-2026-06-23-001: BL-011 template-maintenance mode split accepted
+
+- Milestone: BL-011 root/downstream mode split
+- Scope: Root template repository uses `repo_role: template_repository` and `statedd_mode: template-maintenance`; generated/adopted downstream repositories use `repo_role: downstream_project` and start in `statedd_mode: bootstrap`.
+- Closure-grade: yes
+- Accepted: yes
+- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- branch: main
+- head: 00b5bf13ced5bcc4c19a0d8001fc69fdedad983a
+- process_or_container: not applicable; docs/scripts-only template-governance slice
+- port_or_base_url: not applicable
+- routes: not applicable
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: not applicable
+- evidence_refs:
+  - EV-2026-06-23-002
+- regression_guard:
+  - Template root must remain `repo_role: template_repository` with `statedd_mode: template-maintenance`.
+  - Generated and adopted downstream repositories must not inherit template-maintenance mode.
+  - Runtime proof work must build on this accepted mode split rather than reintroducing root/downstream ambiguity.
+- Notes: Runtime identity proof artifact generation remains [BL-009].
