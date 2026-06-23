@@ -35,12 +35,14 @@
 | fixture hygiene | `python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap` | pass |
 | fixture gate | `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap` | fail expected: intentionally thin dry-run fixture |
 | fixture gate | `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap` | pass |
+| clean audit | `python3 scripts/statedd_audit.py` after commit `d79e1da` | pass |
+| clean doctor | `python3 scripts/statedd_doctor.py` after commit `d79e1da` | pass |
 
 ## Closure State
 
 - Implemented: yes
 - Validated: yes
-- Closure-grade: pending clean-worktree audit
+- Closure-grade: yes
 - Accepted: no
 
 ## Human Override

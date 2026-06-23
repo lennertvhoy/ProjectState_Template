@@ -6,8 +6,8 @@
 
 **Type:** template_state_governance
 **Status:** COMPLETE
-**Git Head:** e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
-**Worktree:** clean before work; dirty after local edits pending handoff
+**Git Head:** d79e1da53a294079f7e4cc9e7edd83b78deb89fa
+**Worktree:** clean before work; clean after implementation commit and audit
 
 ### What changed
 - Added explicit `repo_role` and `statedd_mode` semantics for template root versus downstream repositories.
@@ -26,6 +26,8 @@
 - Fixture hygiene checks passed for `fixtures/bootstrap_dry_run/bootstrap`, `fixtures/bootstrap_dry_run/operating`, and `fixtures/messy_inherited_repo/bootstrap`.
 - `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap` failed as expected for the intentionally thin dry-run fixture.
 - `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap` passed.
+- `python3 scripts/statedd_audit.py` passed on a clean worktree after commit `d79e1da`.
+- `python3 scripts/statedd_doctor.py` reported closure grade pass after commit `d79e1da`.
 
 ### Evidence
 - `docs/evidence/2026-06-23-template-maintenance-mode/README.md`

@@ -1,0 +1,14 @@
+StateDD Health
+
+Current HEAD: d79e1da53a294079f7e4cc9e7edd83b78deb89fa
+Branch: main
+Repo role: template_repository
+StateDD mode: template-maintenance
+Worktree: clean
+Latest evidence: docs/evidence/2026-06-23-template-maintenance-mode
+State docs updated: yes
+Tests recorded: yes
+Browser proof: no screenshot/browser artifacts
+Open blockers: 1
+Next recommended slice: P0 [BL-009] Add runtime identity proof artifact
+Closure grade: pass
