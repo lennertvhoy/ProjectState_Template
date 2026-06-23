@@ -104,6 +104,27 @@
 - BL-BROWSER-002 concrete provider integration remains next in the active queue.
 - GitHub release publishing remains deferred until explicitly permitted.
 
+## 2026-06-23 - Publish statedd-template-v4 release and clean up
+
+**Type:** release
+**Status:** COMPLETE
+**Git Head:** 2a9afd47b22d67704e097c93bbb2ca6d16fd08e1
+**Worktree:** clean; feature worktree and branch removed
+
+### What changed
+- Published GitHub release `v4` for `statedd-template-v4` using `docs/RELEASE_NOTES_statedd-template-v4.md`.
+- Removed the `feature/provider-agnostic-browser-verification` worktree and branch after confirming all commits are on `main`.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `CHANGELOG.md` to reflect the published release and clean state.
+
+### Verification
+- `git tag -a v4` and `git push origin v4` succeeded.
+- `gh release create v4` produced https://github.com/lennertvhoy/StateDD_Template/releases/tag/v4.
+- `git worktree remove`, `git worktree prune`, and `git branch -d feature/provider-agnostic-browser-verification` succeeded.
+- `git status --short` shows clean `main`.
+
+### Notes
+- BL-BROWSER-002 remains the only backlog item and is not a release blocker.
+
 ## 2026-06-23 - Closure evidence hardening (BL-015)
 
 **Type:** closure_evidence_hardening

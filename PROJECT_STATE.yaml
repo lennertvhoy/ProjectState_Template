@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-23T17:25:00+02:00
+  updated_at: 2026-06-23T17:50:00+02:00
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -15,7 +15,6 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - GitHub release for statedd-template-v4 not yet published (release notes are release-candidate ready; human permission required)
       - concrete browser automation provider integration not yet implemented (BL-BROWSER-002)
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
@@ -34,12 +33,13 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-23T17:25:00+02:00
-      last_verified_branch: feature/provider-agnostic-browser-verification
-      last_verified_head: eb0cd886e900c2e35ddb8123b9fd599631335f89
+      captured_at: 2026-06-23T17:50:00+02:00
+      last_verified_branch: main
+      last_verified_head: 2a9afd47b22d67704e097c93bbb2ca6d16fd08e1
       last_verified_worktree_status: clean
       notes: |
-        Captured after BL-BROWSER-001 implementation. Worktree is clean. Use git,
+        Captured after publishing statedd-template-v4 as GitHub release v4 and
+        removing the BL-BROWSER-001 feature worktree. Worktree is clean. Use git,
         scripts/statedd_audit.py, scripts/statedd_doctor.py,
         scripts/statedd_handoff.py, or evidence artifacts for current branch,
         HEAD, and worktree status.

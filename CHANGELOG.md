@@ -28,6 +28,7 @@ All notable StateDD template changes are tracked here.
 - BL-007: Finalized `docs/RELEASE_NOTES_statedd-template-v4.md` as release-candidate ready with a human-permission gate for publishing.
 - BL-BROWSER-001: Added provider-agnostic browser verification contract (`schemas/browser_verification.schema.json`, `docs/BROWSER_VERIFICATION.md`, `scripts/statedd_browser_verify.py`, `scripts/test_browser_verification.py`, fixtures, and audit/doctor/CI integration). Kimi WebBridge is a preferred provider when available, not a required dependency; Playwright, agent-native browser tools, existing E2E tests, manual screenshots, and custom tooling are accepted when evidence is durable and honestly scoped.
 - Added acceptance freeze `AF-2026-06-23-004` for BL-007 public usability and release-readiness polish.
+- Published `statedd-template-v4` as GitHub release `v4`.
 
 ## Earlier History
 
