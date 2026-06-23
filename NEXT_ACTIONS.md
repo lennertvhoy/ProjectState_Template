@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P1 [BL-007] Publish repository description, topics, and release notes
+### P1 [BL-WB-001] Use Kimi WebBridge to browser-verify user-facing changes
 Owner: human product owner + coding agent
-Next: review the draft in `docs/RELEASE_NOTES_statedd-template-v4.md`, confirm GitHub description/topics, and publish only when explicitly permitted
-Exit: release metadata is finalized and, if the human permits, a GitHub release is published; no browser automation or external-badge dependencies are introduced
+Next: implement browser-automation integration only after BL-007 is accepted and a GitHub release is explicitly permitted or deferred
+Exit: user-facing changes can be verified in the real browser with runtime identity proof; no external-badge dependencies are introduced
 
 ## Queue Rules
 

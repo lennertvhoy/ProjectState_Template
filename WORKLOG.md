@@ -2,6 +2,55 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - Public usability and release-readiness polish (BL-007)
+
+**Type:** template_maintenance_docs
+**Status:** COMPLETE
+**Git Head:** 6a417c1 before closure commit
+**Worktree:** clean after final commit
+
+### What changed
+- Rewrote the top half of `README.md` for fast comprehension: "Start here" with copy-paste commands, default `solo` profile, agent paste prompt, and "Start Simple" guidance.
+- Added `docs/QUICK_COMMANDS.md` with copy-pasteable commands for new repo, adopt, upgrade, daily checks, closure audit, evidence/runtime proof, handoff helper, and bootstrap gate.
+- Improved `docs/ADOPTION_PROFILES.md` with a decision tree and explicit "Default recommendation: `solo`".
+- Polished `docs/GETTING_STARTED_5_MIN.md` so a beginner can follow it without reading the full README first; linked to `docs/QUICK_COMMANDS.md` and `docs/ADOPTION_PROFILES.md`.
+- Finalized `docs/RELEASE_NOTES_statedd-template-v4.md` as release-candidate ready with a clear note that GitHub release publishing requires explicit human permission.
+- Created `docs/evidence/2026-06-23-release-readiness-polish/` with README claim ledger, `runtime_identity.json`, `manifest.json`, and `command_outputs/verification_log.txt`.
+- Updated `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `CHANGELOG.md`, and `docs/EVIDENCE_LOG.md`.
+- Did not implement BL-WB-001, browser automation, OCR, external dependencies, or GitHub release publishing.
+
+### Verification
+- `python3 -m py_compile` passed for all listed Python scripts.
+- `python3 scripts/statedd_version_check.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 scripts/test_runtime_proof.py` passed.
+- `python3 scripts/test_schema_validation.py` passed.
+- `python3 scripts/test_evidence_pack.py` passed.
+- `python3 scripts/test_upgrade.py` passed.
+- `python3 scripts/test_adoption_profiles.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 schemas/examples/schema_prompt_loop/validate_example.py` passed.
+- `python3 schemas/examples/schema_prompt_loop/generate_prompt.py` passed.
+- `python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py` passed.
+- `python3 scripts/statedd_audit.py` passed.
+- `python3 scripts/statedd_audit.py --strict` passed after final commit.
+- `python3 scripts/statedd_doctor.py` passed.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-release-readiness-polish --strict` passed.
+- `git diff --check` passed.
+
+### Evidence
+- `docs/evidence/2026-06-23-release-readiness-polish/README.md`
+- `docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json`
+- `docs/evidence/2026-06-23-release-readiness-polish/manifest.json`
+- `docs/evidence/2026-06-23-release-readiness-polish/command_outputs/verification_log.txt`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-008`
+
+### Notes
+- BL-007 is closure-grade but not yet accepted; acceptance is pending human product owner review.
+- GitHub release publishing is intentionally deferred until explicitly permitted.
+
 ## 2026-06-23 - Closure evidence hardening (BL-015)
 
 **Type:** closure_evidence_hardening

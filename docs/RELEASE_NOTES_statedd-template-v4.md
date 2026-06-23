@@ -1,11 +1,11 @@
 # Release Notes — StateDD Template v4
 
-**Status:** draft prep artifact  
+**Status:** release-candidate ready  
 **Version:** statedd-template-v4  
 **Date:** 2026-06-23  
 
-> This file is a draft. Do not publish a GitHub release from it until the human
-> product owner confirms the description, topics, and release assets.
+> This file is release-candidate ready. Do not publish a GitHub release from it
+> until the human product owner explicitly says: "Publish the GitHub release now."
 
 ## One-line description
 
@@ -42,7 +42,7 @@ redaction scanning.
 - **Non-destructive downstream upgrade tooling** — `statedd_upgrade.py` brings an
 existing StateDD repo forward without overwriting project truth.
 - **Adoption profiles** — initialize or adopt with `minimal`, `solo`, `team`, or
-`regulated` profiles matched to project needs.
+`regulated` profiles matched to project needs. Default recommendation is `solo`.
 - **Bootstrap wizard MVP** — interactive and `--answers` modes for the minimum
 strategic questions needed to bootstrap honestly.
 - **Schema-driven example project** — `schemas/examples/schema_prompt_loop/`
@@ -54,17 +54,22 @@ and `statedd_version_check.py` make the workflow machine-checkable.
 
 ## Quick start
 
+New project:
+
 ```bash
-python3 scripts/init_template.py new --name "Your Project"
+python3 scripts/init_template.py new --name "Your Project" --profile solo
 python3 scripts/check_state_docs.py
-python3 scripts/statedd_audit.py
 ```
 
-For existing repos:
+Existing repo:
 
 ```bash
 python3 scripts/init_template.py adopt --name "Your Project" --dry-run
+python3 scripts/init_template.py adopt --name "Your Project" --profile solo
+python3 scripts/check_state_docs.py
 ```
+
+For all common commands, see `docs/QUICK_COMMANDS.md`.
 
 ## Known limits
 

@@ -28,6 +28,34 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-008: Public usability and release-readiness polish (BL-007)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/command_outputs/verification_log.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/QUICK_COMMANDS.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/ADOPTION_PROFILES.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/GETTING_STARTED_5_MIN.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/RELEASE_NOTES_statedd-template-v4.md
+- Title: BL-007 public usability and release-readiness polish
+- Source/System: test
+- Action: Simplified README top half, added quick commands cheat sheet, improved adoption profile chooser, polished 5-minute guide, finalized release notes as release-candidate ready, and updated state/history files.
+- Shows:
+  - `python3 scripts/check_state_docs.py` passes after all doc changes
+  - `python3 scripts/statedd_audit.py --strict` passes
+  - `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-release-readiness-polish --strict` passes
+  - README opens with a 60-second "Start here" path
+  - `docs/ADOPTION_PROFILES.md` explicitly recommends `--profile solo`
+  - `docs/RELEASE_NOTES_statedd-template-v4.md` states publishing requires explicit human permission
+- Proves:
+  - StateDD is easier to choose, start, and explain than before
+  - release notes are ready for human review and permission-gated publishing
+- Type: docs-render-verification
+- as_of: 2026-06-23T16:49:00+02:00
+- Notes: Closure-grade; acceptance pending human review. BL-WB-001 remains next in queue.
+
 ## EV-2026-06-23-007: Canonical schema/prompt example project (BL-005)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md

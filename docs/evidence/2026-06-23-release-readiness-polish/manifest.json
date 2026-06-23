@@ -1,0 +1,25 @@
+{
+  "artifacts": [],
+  "claims": [],
+  "created_at": "2026-06-23T16:53:53+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "not_applicable",
+    "known_limits": [
+      "Manifest created; redaction review not yet performed."
+    ],
+    "manual_review": "required",
+    "status": "unchecked"
+  },
+  "repo": {
+    "branch": "main",
+    "head": "6a417c106bf480c4ef36b1d30c59e7d326f710a0"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": true,
+    "status": "valid"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-007"
+}

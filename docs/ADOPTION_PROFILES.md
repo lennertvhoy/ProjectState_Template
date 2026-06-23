@@ -5,6 +5,31 @@ the project's needs. They do not change the core StateDD rules; they change whic
 default assets are included and how strongly the generated docs emphasize certain
 practices.
 
+## Which profile should I choose?
+
+**Default recommendation: `solo`.**
+
+Use `minimal` if:
+
+- you want the smallest useful StateDD footprint
+- you are comfortable removing optional beginner docs and fixtures
+
+Use `solo` if:
+
+- you are one developer or one human + one coding agent
+- you are unsure which profile to choose
+- you want the full template surface without extra team-process weight
+
+Use `team` if:
+
+- multiple humans or agents will review handoffs and evidence
+- pull requests and shared review are part of your workflow
+
+Use `regulated` if:
+
+- acceptance, audit trail, runtime proof, and redaction records matter
+- you need explicit acceptance freezes and override records by default
+
 ## Available Profiles
 
 ### `minimal`

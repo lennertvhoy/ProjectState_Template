@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-23T16:34:00+02:00
+  updated_at: 2026-06-23T16:49:00+02:00
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -15,7 +15,7 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - repository description, topics, and release notes not yet published (draft ready)
+      - GitHub release for statedd-template-v4 not yet published (release notes are release-candidate ready; human permission required)
       - browser automation via Kimi WebBridge not yet implemented
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
@@ -33,16 +33,16 @@ current_state:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
     git_snapshot:
-      status: stale
-      captured_at: 2026-06-23T15:52:51+02:00
+      status: observed
+      captured_at: 2026-06-23T16:49:00+02:00
       last_verified_branch: main
-      last_verified_head: eba0e42fda6632cb0591e946311130aec5f3981e
-      last_verified_worktree_status: clean
+      last_verified_head: 6a417c106bf480c4ef36b1d30c59e7d326f710a0
+      last_verified_worktree_status: dirty (BL-007 in progress)
       notes: |
-        This is a historical verification snapshot, not live git truth.
-        Use git, scripts/statedd_audit.py, scripts/statedd_doctor.py,
-        scripts/statedd_handoff.py, or evidence artifacts for current branch,
-        HEAD, and worktree status.
+        Captured during BL-007 implementation. Worktree contains uncommitted
+        documentation changes. Use git, scripts/statedd_audit.py,
+        scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
+        artifacts for current branch, HEAD, and worktree status.
 
   operating_mode:
     status: observed
@@ -193,6 +193,7 @@ current_state:
       - LICENSE
       - LICENSE_FAQ.md
       - docs/GETTING_STARTED_5_MIN.md
+      - docs/QUICK_COMMANDS.md
       - docs/UPGRADING.md
       - docs/ADOPTION_PROFILES.md
       - docs/RELEASE_NOTES_statedd-template-v4.md

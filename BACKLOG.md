@@ -11,11 +11,16 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-007] Publish repository description, topics, and release notes once the template surface is stable.
+- [BL-WB-001] Use Kimi WebBridge to browser-verify any user-facing change in the real browser when available.
 
 ## NEXT
 
-- [BL-WB-001] Use Kimi WebBridge to browser-verify any user-facing change in the real browser when available.
+- None.
+
+## CLOSED
+
+- [BL-007] Public usability and release-readiness polish: simplified README top half, added quick commands cheat sheet, improved adoption profile chooser, polished 5-minute guide, and finalized release notes as release-candidate ready.
+- [BL-005] Add a real canonical schema/export/import example project that generates ChatGPT prompts from the same schema the app validates.
 
 ## LATER
 

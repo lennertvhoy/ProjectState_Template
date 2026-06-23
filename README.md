@@ -1,12 +1,10 @@
-# State Driven Development Template
+# StateDD Template
 
-A lightweight, executable workflow for AI-assisted software projects.
+StateDD is a repo-based workflow for AI-assisted software projects.
+
+It keeps project truth, next actions, evidence, runtime proof, and handoffs inside the repository so coding agents do not rely on stale chat context.
 
 Current StateDD spec version: `statedd-template-v4`
-
-StateDD keeps humans in control while giving coding agents a shared source of
-truth inside the repo: live state, a short active queue, evidence-backed claims,
-and clean handoffs between planning and implementation.
 
 The template repository itself uses `repo_role: template_repository` and
 `statedd_mode: template-maintenance`. Repos generated or adopted from it use
@@ -14,11 +12,53 @@ The template repository itself uses `repo_role: template_repository` and
 
 ---
 
+## Start here
+
+New project:
+
+```bash
+python3 scripts/init_template.py new --name "Your Project" --profile solo
+```
+
+Existing repo:
+
+```bash
+python3 scripts/init_template.py adopt --name "Your Project" --dry-run
+python3 scripts/init_template.py adopt --name "Your Project" --profile solo
+```
+
+Smallest footprint:
+
+```bash
+python3 scripts/init_template.py new --name "Your Project" --profile minimal
+```
+
+Then paste this into your coding agent:
+
+```text
+Read prompts/CODING_AGENT_STARTUP_PROMPT.md and follow it exactly.
+```
+
+Not sure which profile to choose? See `docs/ADOPTION_PROFILES.md`.  
+Want all commands in one place? See `docs/QUICK_COMMANDS.md`.
+
+## Start Simple
+
+You do not need to use every StateDD feature on day one.
+
+Start with:
+
+- `STATUS.md`
+- `PROJECT_STATE.yaml`
+- `NEXT_ACTIONS.md`
+- `BACKLOG.md`
+- `scripts/check_state_docs.py`
+
+Use runtime proof, evidence packs, acceptance freezes, and strict audit when the work needs stronger proof.
+
 ## Why This Exists
 
-AI-assisted projects drift. Context decays, repo truth falls behind runtime
-truth, and important decisions disappear into chat history. Most workflow
-scaffolds fail because:
+AI-assisted projects drift. Context decays, repo truth falls behind runtime truth, and important decisions disappear into chat history. Most workflow scaffolds fail because:
 
 - the chat window becomes the only source of truth
 - the repo claims things that were never verified
@@ -26,13 +66,9 @@ scaffolds fail because:
 - active work grows into a vague pile instead of a short queue
 - inherited repos are forced into a greenfield workflow that does not fit
 
-StateDD reduces those failure modes with explicit state, evidence-backed
-claims, non-destructive adoption, and small implementation slices.
+The State Driven Development Template reduces those failure modes with explicit state, evidence-backed claims, non-destructive adoption, and small implementation slices.
 
-This repository publishes the template itself. It keeps the workflow contract
-public and reusable, but it does not try to use its own state files as a
-running diary for every small template maintenance edit. Downstream repos
-created from it should use the full workflow directly.
+This repository publishes the template itself. It keeps the workflow contract public and reusable, but it does not try to use its own state files as a running diary for every small template maintenance edit. Downstream repos created from it should use the full workflow directly.
 
 ## Good Fit
 
@@ -65,6 +101,8 @@ created from it should use the full workflow directly.
 | `docs/ACCEPTANCE_FREEZES.md` | Accepted milestone ledger |
 | `docs/evidence/` | Default artifact root for screenshots, logs, and outputs |
 | `docs/GETTING_STARTED_5_MIN.md` | Fast beginner path for first setup and first agent session |
+| `docs/QUICK_COMMANDS.md` | Copy-paste command cheat sheet |
+| `docs/ADOPTION_PROFILES.md` | How to choose `minimal`, `solo`, `team`, or `regulated` |
 | `docs/WORKFLOW_FOR_BEGINNERS.md` | Beginner-friendly diagram, prompt map, and quality checklist |
 | `docs/adr/` | Architecture decision records |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
@@ -114,7 +152,7 @@ The fastest path is `docs/GETTING_STARTED_5_MIN.md`. For a visual guide with a f
 ### New Repo
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project"
+python3 scripts/init_template.py new --name "Your Project" --profile solo
 ```
 
 ### Existing Repo
@@ -128,7 +166,7 @@ python3 scripts/init_template.py adopt --name "Your Project" --dry-run
 Then run the real adoption command:
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project"
+python3 scripts/init_template.py adopt --name "Your Project" --profile solo
 ```
 
 ### First Session
@@ -165,9 +203,9 @@ Use `new` for a fresh scaffold and `adopt` for an existing codebase.
 Typical paths:
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project"
-python3 scripts/init_template.py new --name "Your Project" --target ../your-project
-python3 scripts/init_template.py new --name "Your Project" --minimal
+python3 scripts/init_template.py new --name "Your Project" --profile solo
+python3 scripts/init_template.py new --name "Your Project" --target ../your-project --profile solo
+python3 scripts/init_template.py new --name "Your Project" --profile minimal
 ```
 
 If a managed file already exists and replacement is intentional, review the collision first and only then consider `--force-overwrite`.
@@ -205,8 +243,7 @@ python3 scripts/check_state_docs.py --bootstrap-gate
 
 ## Versioning
 
-`VERSION` is the canonical StateDD spec-version source. Version-bearing state,
-docs, and generator files must agree with it before handoff or release.
+`VERSION` is the canonical StateDD spec-version source. Version-bearing state, docs, and generator files must agree with it before handoff or release.
 
 ```bash
 python3 scripts/statedd_version_check.py
@@ -402,9 +439,7 @@ python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice
 python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice --strict
 ```
 
-The redaction scanner is dependency-free and conservative. It flags obvious secret-like
-patterns but never claims that absence of findings proves absence of secrets. Binary and
-image artifacts always require explicit manual review or `checked_with_limits` status.
+The redaction scanner is dependency-free and conservative. It flags obvious secret-like patterns but never claims that absence of findings proves absence of secrets. Binary and image artifacts always require explicit manual review or `checked_with_limits` status.
 
 ## Upgrading An Existing StateDD Repo
 
@@ -417,8 +452,7 @@ python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply --force-mana
 ```
 
 Default mode is dry-run. `--apply` copies only safe missing managed assets.
-`--force-managed` may replace outdated safe template assets, but it never touches
-project-truth files such as `PROJECT_STATE.yaml`, `BACKLOG.md`, or `README.md`.
+`--force-managed` may replace outdated safe template assets, but it never touches project-truth files such as `PROJECT_STATE.yaml`, `BACKLOG.md`, or `README.md`.
 
 ## Schema-Backed Validation
 

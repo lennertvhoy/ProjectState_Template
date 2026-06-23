@@ -21,6 +21,11 @@ All notable StateDD template changes are tracked here.
 - Added `schemas/examples/schema_prompt_loop/`, a canonical schema/prompt loop example that validates data and generates deterministic prompt material from the same schema.
 - Added draft release notes and repository metadata in `docs/RELEASE_NOTES_statedd-template-v4.md`.
 - Added acceptance freeze `AF-2026-06-23-002` for the BL-012/013/014 adoption-ready template release.
+- BL-007: Simplified the README top half with a beginner-friendly "Start here" and "Start Simple" section.
+- BL-007: Added `docs/QUICK_COMMANDS.md` copy-paste command cheat sheet.
+- BL-007: Improved `docs/ADOPTION_PROFILES.md` with a decision tree and explicit default recommendation (`solo`).
+- BL-007: Polished `docs/GETTING_STARTED_5_MIN.md` so it can be followed without reading the full README first.
+- BL-007: Finalized `docs/RELEASE_NOTES_statedd-template-v4.md` as release-candidate ready with a human-permission gate for publishing.
 
 ## Earlier History
 
