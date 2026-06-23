@@ -21,6 +21,56 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
 TEMPLATE_VERSION = "statedd-template-v4"
+VALID_PROFILES = {"minimal", "solo", "team", "regulated"}
+
+
+def validate_profile(profile: str) -> str:
+    if profile not in VALID_PROFILES:
+        raise SystemExit(f"Unknown profile {profile!r}; expected one of {VALID_PROFILES}")
+    return profile
+
+
+def profile_summary(profile: str) -> str:
+    summaries = {
+        "minimal": "Smallest useful StateDD footprint; no fake completeness; keeps the bootstrap gate.",
+        "solo": "Standard single-developer workflow with evidence template, runtime proof, and schema validation.",
+        "team": "Stricter handoff/evidence/audit defaults and PR/review-friendly documentation.",
+        "regulated": "Strict audit defaults; runtime proof expected for user-facing work; evidence manifest/redaction gate expected; acceptance freeze guidance emphasized.",
+    }
+    return summaries[profile]
+
+
+def profile_agents_note(profile: str) -> str:
+    if profile == "minimal":
+        return """## Profile Note
+
+This repo was initialized with the `minimal` profile. The footprint is intentionally
+small: fixtures and optional deep-reference docs are removed, but the bootstrap gate,
+state files, and core workflow helpers remain. Do not treat minimal as an excuse to
+skip evidence or runtime proof when they are required for a claim."""
+    if profile == "team":
+        return """## Profile Note
+
+This repo was initialized with the `team` profile. Expect stricter handoff and
+evidence defaults: every non-trivial slice should have a slice contract, a claim
+ledger, and a CTO review before acceptance. Keep the active queue short and review
+friendly."""
+    if profile == "regulated":
+        return """## Profile Note
+
+This repo was initialized with the `regulated` profile. Strict audit defaults apply:
+- runtime identity proof is expected for any runtime/user-facing acceptance claim;
+- evidence folders should include a `manifest.json` with redaction status;
+- acceptance freezes should be recorded for accepted milestones;
+- human overrides must be explicit and recorded with remaining risk.
+
+Do not claim closure-grade without satisfying these defaults."""
+    return """## Profile Note
+
+This repo was initialized with the `solo` profile. Use the standard StateDD workflow:
+short active queue, evidence-backed claims, runtime proof when user-facing behavior
+is verified, and schema/hygiene checks before handoff."""
+
 
 TEMPLATE_COPY_ROOT_FILES = {
     Path(".gitignore"),
@@ -83,6 +133,7 @@ SUPPORT_ASSET_PATHS = [
     Path("docs/GETTING_STARTED_5_MIN.md"),
     Path("docs/BOOTSTRAP_QUALITY.md"),
     Path("docs/UPGRADING.md"),
+    Path("docs/ADOPTION_PROFILES.md"),
     Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
     Path("docs/adr/README.md"),
     Path("docs/adr/0000-adr-template.md"),
@@ -114,7 +165,7 @@ class RepoScan:
     project_type: str
 
 
-def render_agents_template(today: str, mode: str) -> str:
+def render_agents_template(today: str, mode: str, profile: str = "solo") -> str:
     return f"""---
 repo_role: downstream_project
 statedd_mode: {mode}
@@ -314,6 +365,8 @@ workflow requirement.
 - `docs/EVIDENCE_LOG.md` = proof ledger
 - `docs/ACCEPTANCE_FREEZES.md` = accepted user-facing milestone ledger
 
+{profile_agents_note(profile)}
+
 ## Handoff Requirements
 
 Every implementation session ends with:
@@ -346,7 +399,7 @@ Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milest
 """
 
 
-def render_status(project_name: str, human_timestamp: str, *, summary_lines: list[str], priorities: list[str]) -> str:
+def render_status(project_name: str, human_timestamp: str, *, summary_lines: list[str], priorities: list[str], profile: str = "solo") -> str:
     snapshot = "\n".join(f"- {line}" for line in summary_lines)
     priority_block = "\n".join(f"{index}. {line}" for index, line in enumerate(priorities, start=1))
     return f"""# {project_name} Status
@@ -355,6 +408,7 @@ def render_status(project_name: str, human_timestamp: str, *, summary_lines: lis
 **Execution Mode:** bootstrap
 **Project State:** bootstrap_initializing
 **Public URL:** not configured
+**Profile:** {profile}
 
 ## Snapshot
 
@@ -385,6 +439,7 @@ def render_project_state(
     system_investigated: bool,
     repo_investigated: bool,
     unknowns: list[str],
+    profile: str = "solo",
 ) -> str:
     branch = repo_scan.branch if repo_scan.branch is not None else "null"
     head = repo_scan.head if repo_scan.head is not None else "null"
@@ -455,6 +510,8 @@ current_state:
     type: {repo_scan.project_type}
     lifecycle_stage: bootstrap
     truth_summary: {repo_scan.project_summary}
+    profile: {profile}
+    profile_summary: {profile_summary(profile)}
 
   runtime_identity:
     status: unknown
@@ -689,7 +746,7 @@ invariants:
 """
 
 
-def render_project_adapter(project_name: str) -> str:
+def render_project_adapter(project_name: str, profile: str = "solo") -> str:
     return f"""# PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
 version: "{TEMPLATE_VERSION}"
@@ -698,6 +755,7 @@ project:
   name: {project_name}
   short_name: {project_name}
   description: "Optional adapter layer for project-specific vocabulary and runtime details."
+  profile: {profile}
 
 vocabulary:
   control_plane_name: "control plane"
@@ -730,7 +788,7 @@ notes:
 """
 
 
-def render_new_next_actions(human_timestamp: str) -> str:
+def render_new_next_actions(human_timestamp: str, profile: str = "solo") -> str:
     return f"""# NEXT_ACTIONS - Active Execution Queue
 
 **Updated At:** {human_timestamp}
@@ -751,7 +809,7 @@ No active work yet.
 """
 
 
-def render_adopt_next_actions(human_timestamp: str) -> str:
+def render_adopt_next_actions(human_timestamp: str, profile: str = "solo") -> str:
     return f"""# NEXT_ACTIONS - Active Execution Queue
 
 **Updated At:** {human_timestamp}
@@ -785,7 +843,7 @@ Exit: `docs/EVIDENCE_LOG.md` and `WORKLOG.md` explain what bootstrap established
 """
 
 
-def render_new_backlog(project_name: str, today: str) -> str:
+def render_new_backlog(project_name: str, today: str, profile: str = "solo") -> str:
     return f"""# BACKLOG - Strategic Roadmap
 
 **Product:** {project_name}
@@ -810,6 +868,10 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 - [BL-004] Enter operating mode only after the baseline is truthful and the backlog is real.
 
+## Profile
+
+Initialized with profile: `{profile}` — {profile_summary(profile)}
+
 ## WATCHLIST
 
 - Queue bloat.
@@ -818,7 +880,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 """
 
 
-def render_adopt_backlog(project_name: str, today: str) -> str:
+def render_adopt_backlog(project_name: str, today: str, profile: str = "solo") -> str:
     return f"""# BACKLOG - Strategic Roadmap
 
 **Product:** {project_name}
@@ -843,6 +905,10 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 ## LATER
 
 - [BL-005] Install optional GitHub workflow assets only if they match the adopted repo's needs.
+
+## Profile
+
+Adopted with profile: `{profile}` — {profile_summary(profile)}
 
 ## WATCHLIST
 
@@ -1377,12 +1443,14 @@ def minimal_cleanup(target: Path, *, dry_run: bool) -> None:
         print("Planned minimal cleanup:")
         print("  - remove fixtures/")
         print("  - remove docs/BOOTSTRAP_QUALITY.md")
+        print("  - remove docs/WORKFLOW_FOR_BEGINNERS.md")
         return
     shutil.rmtree(target / "fixtures", ignore_errors=True)
     (target / "docs" / "BOOTSTRAP_QUALITY.md").unlink(missing_ok=True)
+    (target / "docs" / "WORKFLOW_FOR_BEGINNERS.md").unlink(missing_ok=True)
 
 
-def build_managed_files_for_new(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str) -> dict[str, str]:
+def build_managed_files_for_new(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "solo") -> dict[str, str]:
     repo_scan = RepoScan(
         canonical_path=str(target),
         branch=None,
@@ -1443,7 +1511,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         project_type="project_template",
     )
     return {
-        "AGENTS.md": render_agents_template(today, "bootstrap"),
+        "AGENTS.md": render_agents_template(today, "bootstrap", profile=profile),
         "STATUS.md": render_status(
             project_name,
             human_timestamp,
@@ -1459,6 +1527,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
                 "Fill in the first active queue.",
                 "Transition to operating mode once baseline truth exists.",
             ],
+            profile=profile,
         ),
         "PROJECT_STATE.yaml": render_project_state(
             project_name,
@@ -1472,11 +1541,12 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
                 "target deployment/runtime not yet defined",
                 "first real milestone not yet defined",
             ],
+            profile=profile,
         ),
         "PROJECT_DNA.yaml": render_project_dna(project_name),
-        "PROJECT_ADAPTER.yaml": render_project_adapter(project_name),
-        "NEXT_ACTIONS.md": render_new_next_actions(human_timestamp),
-        "BACKLOG.md": render_new_backlog(project_name, today),
+        "PROJECT_ADAPTER.yaml": render_project_adapter(project_name, profile=profile),
+        "NEXT_ACTIONS.md": render_new_next_actions(human_timestamp, profile=profile),
+        "BACKLOG.md": render_new_backlog(project_name, today, profile=profile),
         "WORKLOG.md": render_worklog(today, "new"),
         "docs/EVIDENCE_LOG.md": render_evidence_log(today, "new"),
         "docs/ACCEPTANCE_FREEZES.md": render_acceptance_freezes(),
@@ -1485,10 +1555,10 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
     }
 
 
-def build_managed_files_for_adopt(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str) -> dict[str, str]:
+def build_managed_files_for_adopt(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "solo") -> dict[str, str]:
     repo_scan = scan_repo(target)
     return {
-        "AGENTS.md": render_agents_template(today, "bootstrap"),
+        "AGENTS.md": render_agents_template(today, "bootstrap", profile=profile),
         "STATUS.md": render_status(
             project_name,
             human_timestamp,
@@ -1503,6 +1573,7 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
                 "Capture the real runtime and deployment baseline.",
                 "Prepare the first CTO-ready bootstrap handoff.",
             ],
+            profile=profile,
         ),
         "PROJECT_STATE.yaml": render_project_state(
             project_name,
@@ -1515,11 +1586,12 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
                 "first milestone still needs direct confirmation",
                 "deployment target may differ from inherited docs",
             ],
+            profile=profile,
         ),
         "PROJECT_DNA.yaml": render_project_dna(project_name),
-        "PROJECT_ADAPTER.yaml": render_project_adapter(project_name),
-        "NEXT_ACTIONS.md": render_adopt_next_actions(human_timestamp),
-        "BACKLOG.md": render_adopt_backlog(project_name, today),
+        "PROJECT_ADAPTER.yaml": render_project_adapter(project_name, profile=profile),
+        "NEXT_ACTIONS.md": render_adopt_next_actions(human_timestamp, profile=profile),
+        "BACKLOG.md": render_adopt_backlog(project_name, today, profile=profile),
         "WORKLOG.md": render_worklog(today, "adopt"),
         "docs/EVIDENCE_LOG.md": render_evidence_log(today, "adopt"),
         "docs/ACCEPTANCE_FREEZES.md": render_acceptance_freezes(),
@@ -1535,7 +1607,8 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
     new_parser = subparsers.add_parser("new", help="Create a new repo from the template")
     new_parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     new_parser.add_argument("--target", default=".", help="Repo root to initialize")
-    new_parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples")
+    new_parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
+    new_parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples (legacy alias for --profile minimal)")
     new_parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     new_parser.add_argument(
         "--overwrite",
@@ -1551,6 +1624,7 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
     adopt_parser = subparsers.add_parser("adopt", help="Install the workflow into an existing repo")
     adopt_parser.add_argument("--name", required=True, help="Project name to stamp into the workflow files")
     adopt_parser.add_argument("--target", default=".", help="Existing repo root to adopt")
+    adopt_parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
     adopt_parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     adopt_parser.add_argument(
         "--readme-link",
@@ -1579,6 +1653,7 @@ def build_legacy_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Create a new repo from the StateDD workflow template")
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
+    parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
     parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples")
     parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     parser.add_argument(
@@ -1614,6 +1689,8 @@ def main(argv: list[str] | None = None) -> int:
     human_timestamp = now.strftime("%Y-%m-%d %H:%M %Z")
     target = Path(args.target).resolve()
 
+    profile = validate_profile("minimal" if getattr(args, "minimal", False) else args.profile)
+
     if args.command == "new":
         copy_template_tree(
             TEMPLATE_ROOT,
@@ -1622,7 +1699,7 @@ def main(argv: list[str] | None = None) -> int:
             force_overwrite=args.force_overwrite,
             dry_run=args.dry_run,
         )
-        managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp)
+        managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
         apply_managed_files(
             target,
             managed_files,
@@ -1630,7 +1707,7 @@ def main(argv: list[str] | None = None) -> int:
             force_overwrite=True,
             dry_run=args.dry_run,
         )
-        if args.minimal:
+        if profile == "minimal":
             minimal_cleanup(target, dry_run=args.dry_run)
 
         if args.dry_run:
@@ -1659,7 +1736,7 @@ def main(argv: list[str] | None = None) -> int:
     if not target.exists() or not target.is_dir():
         raise SystemExit("Adoption target must be an existing repo directory.")
 
-    managed_files = build_managed_files_for_adopt(args.name, target, today, stamp, human_timestamp)
+    managed_files = build_managed_files_for_adopt(args.name, target, today, stamp, human_timestamp, profile=profile)
     support_paths = list(SUPPORT_ASSET_PATHS)
     if args.install_github_assets:
         support_paths.extend(GITHUB_ASSET_PATHS)

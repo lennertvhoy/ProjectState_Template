@@ -98,6 +98,7 @@ TEMPLATE_ASSET_PATHS = [
     "prompts/CTO_REVIEW_CHECKLIST.md",
     "docs/GETTING_STARTED_5_MIN.md",
     "docs/UPGRADING.md",
+    "docs/ADOPTION_PROFILES.md",
     "docs/ACCEPTANCE_FREEZES.md",
     "docs/WORKFLOW_FOR_BEGINNERS.md",
     "docs/adr/README.md",
@@ -118,6 +119,11 @@ PR_TEMPLATE_REQUIRED_SECTIONS = [
     "## Contract checks",
     "## What remains unproven",
 ]
+
+OPTIONAL_ASSETS_FOR_MINIMAL_PROFILE = {
+    "docs/WORKFLOW_FOR_BEGINNERS.md",
+    "docs/BOOTSTRAP_QUALITY.md",
+}
 
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
@@ -451,10 +457,21 @@ def check_evidence_manifest(root: Path) -> list[str]:
     return issues
 
 
+def profile_optional_assets(root: Path) -> set[str]:
+    project_state = read_optional(root / "PROJECT_STATE.yaml")
+    profile = extract_scalar(project_state, "profile")
+    if profile == "minimal":
+        return OPTIONAL_ASSETS_FOR_MINIMAL_PROFILE
+    return set()
+
+
 def check_template_assets(root: Path) -> list[str]:
     issues: list[str] = []
+    optional_assets = profile_optional_assets(root)
 
     for relpath in TEMPLATE_ASSET_PATHS:
+        if relpath in optional_assets:
+            continue
         if not (root / relpath).exists():
             issues.append(f"Missing required template asset: {relpath}")
 

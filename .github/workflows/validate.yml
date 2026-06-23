@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile Python scripts
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/test_init_template.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py
+          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/test_init_template.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py
 
       - name: Validate root docs
         run: |
@@ -89,6 +89,13 @@ jobs:
           cp -R fixtures/messy_inherited_repo/source "$tmpdir/adopt-source"
           python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --dry-run
           python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --readme-link
+          python3 scripts/test_adoption_profiles.py
+          python3 scripts/statedd_bootstrap_wizard.py --help
+          tmpdir="$(mktemp -d)"
+          printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$tmpdir/answers.json"
+          python3 scripts/statedd_bootstrap_wizard.py --target "$tmpdir/wizard" --answers "$tmpdir/answers.json"
+          python3 scripts/check_state_docs.py "$tmpdir/wizard"
+          python3 scripts/statedd_validate_schema.py "$tmpdir/wizard"
           test -f "$tmpdir/adopt-source/scripts/statedd_runtime_proof.py"
           test -f "$tmpdir/adopt-source/prompts/RUNTIME_IDENTITY_CHECKLIST.md"
           test -f "$tmpdir/adopt-source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
