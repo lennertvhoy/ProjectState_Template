@@ -43,3 +43,6 @@ venv/
 
 # Local reports
 security_best_practices_report.md
+
+# Isolated worktrees
+.worktrees/
