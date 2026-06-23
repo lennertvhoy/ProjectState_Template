@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-012] Add evidence pack manifests and a redaction gate
+### P1 [BL-005] Add a real canonical schema/export/import example project
 Owner: CTO lane + coding agent
-Next: design the smallest evidence-pack manifest and redaction check that builds on BL-010 without widening into upgrade tooling or browser automation
-Exit: evidence pack manifests and redaction checks are executable, tested, documented, wired into hygiene/audit checks, and proven against valid and invalid evidence examples
+Next: design the smallest example project that uses the same schemas to generate prompts and validate state
+Exit: example project is checked into `schemas/examples/`, has tests, and demonstrates schema-driven prompt generation without adding external dependencies
 
 ## Queue Rules
 

@@ -1,0 +1,20 @@
+{
+  "captured_at": "2026-06-23T15:53:13+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "limits": [],
+  "repo": {
+    "branch": "main",
+    "head": "eba0e42fda6632cb0591e946311130aec5f3981e",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "status_porcelain": "?? docs/evidence/2026-06-23-adoption-ready-evidence-release/",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "reason": "docs/scripts-only slice",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1"
+}

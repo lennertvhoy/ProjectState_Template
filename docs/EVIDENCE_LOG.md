@@ -28,6 +28,27 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-005: Adoption-ready template release verified
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+- Title: BL-012/013/014 closure evidence pack manifests, upgrade tooling, adoption profiles, and bootstrap wizard
+- Source/System: test
+- Action: Implemented the three backlog items, ran the full test suite, updated state/docs/changelog, and created a closure evidence folder with a valid manifest.
+- Shows:
+  - `python3 scripts/test_evidence_pack.py` passed
+  - `python3 scripts/test_upgrade.py` passed
+  - `python3 scripts/test_adoption_profiles.py` passed
+  - `python3 scripts/statedd_audit.py --strict` passed
+  - `python3 scripts/check_state_docs.py` passed
+  - `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-adoption-ready-evidence-release --strict` passed
+- Proves:
+  - evidence pack manifests, downstream upgrade tooling, adoption profiles, and the bootstrap wizard are implemented, validated, and closure-grade
+- Type: docs-render-verification
+- as_of: 2026-06-23T15:52:51+02:00
+- Notes: Next slices are BL-005 example project, BL-007 release metadata, and BL-WB-001 browser automation.
+
 ## EV-2026-06-23-004: Schema-backed validation integrated
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/README.md

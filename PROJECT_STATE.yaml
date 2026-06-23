@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-23
+  updated_at: 2026-06-23T15:52:51+02:00
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -15,7 +15,10 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - downstream upgrade automation not yet implemented
+      - canonical schema/export/import example project not yet implemented
+      - repository description, topics, and release notes not yet published
+      - browser automation via Kimi WebBridge not yet implemented
+      - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
   observed: verified directly in the current session
@@ -32,10 +35,10 @@ current_state:
     path_status: observed
     git_snapshot:
       status: stale
-      captured_at: 2026-06-23T00:00:00+02:00
+      captured_at: 2026-06-23T15:52:51+02:00
       last_verified_branch: main
-      last_verified_head: e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
-      last_verified_worktree_status: dirty
+      last_verified_head: eba0e42fda6632cb0591e946311130aec5f3981e
+      last_verified_worktree_status: clean
       notes: |
         This is a historical verification snapshot, not live git truth.
         Use git, scripts/statedd_audit.py, scripts/statedd_doctor.py,
@@ -121,8 +124,14 @@ current_state:
       - scripts/statedd_audit.py
       - scripts/statedd_doctor.py
       - scripts/statedd_runtime_proof.py
+      - scripts/statedd_evidence_pack.py
+      - scripts/statedd_upgrade.py
+      - scripts/statedd_bootstrap_wizard.py
       - scripts/test_init_template.py
       - scripts/test_runtime_proof.py
+      - scripts/test_evidence_pack.py
+      - scripts/test_upgrade.py
+      - scripts/test_adoption_profiles.py
     entrypoints:
       - scripts/init_template.py
       - scripts/check_state_docs.py
@@ -132,9 +141,15 @@ current_state:
       - scripts/statedd_validate_schema.py
       - scripts/statedd_version_check.py
       - scripts/statedd_runtime_proof.py
+      - scripts/statedd_evidence_pack.py
+      - scripts/statedd_upgrade.py
+      - scripts/statedd_bootstrap_wizard.py
       - scripts/test_init_template.py
       - scripts/test_runtime_proof.py
       - scripts/test_schema_validation.py
+      - scripts/test_evidence_pack.py
+      - scripts/test_upgrade.py
+      - scripts/test_adoption_profiles.py
       - schemas
     test_setup:
       - python3 scripts/check_state_docs.py
@@ -142,6 +157,9 @@ current_state:
       - python3 scripts/test_init_template.py
       - python3 scripts/test_runtime_proof.py
       - python3 scripts/test_schema_validation.py
+      - python3 scripts/test_evidence_pack.py
+      - python3 scripts/test_upgrade.py
+      - python3 scripts/test_adoption_profiles.py
       - python3 scripts/statedd_audit.py
       - python3 scripts/statedd_doctor.py
     deployment_assumptions:
@@ -176,6 +194,7 @@ current_state:
       - LICENSE_FAQ.md
       - docs/GETTING_STARTED_5_MIN.md
       - docs/UPGRADING.md
+      - docs/ADOPTION_PROFILES.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
       - prompts/OPENCODE_STARTUP_PROMPT.md
@@ -225,6 +244,18 @@ current_state:
         status: observed
         path: scripts/statedd_doctor.py
         summary: Fast human-readable StateDD health summary, including runtime identity status.
+      evidence_pack:
+        status: observed
+        path: scripts/statedd_evidence_pack.py
+        summary: Evidence folder manifest initialization, hash verification, and redaction scanning.
+      upgrade_helper:
+        status: observed
+        path: scripts/statedd_upgrade.py
+        summary: Non-destructive downstream upgrade helper with dry-run-by-default semantics.
+      bootstrap_wizard:
+        status: observed
+        path: scripts/statedd_bootstrap_wizard.py
+        summary: Interactive MVP that asks minimum strategic questions and runs the initializer.
       slice_contract_template:
         status: observed
         path: prompts/SLICE_CONTRACT_TEMPLATE.md
