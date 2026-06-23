@@ -375,6 +375,8 @@ def root_targets(root: Path) -> list[tuple[Path, Path, bool]]:
             targets.append((readme, schema_path(root, "evidence_readme_contract.json"), True))
         for artifact in sorted(evidence_root.glob("*/runtime_identity.json")):
             targets.append((artifact, schema_path(root, "runtime_identity.schema.json"), True))
+        for manifest in sorted(evidence_root.glob("*/manifest.json")):
+            targets.append((manifest, schema_path(root, "evidence_manifest.schema.json"), True))
     return targets
 
 

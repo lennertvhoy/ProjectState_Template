@@ -1,0 +1,17 @@
+StateDD Health
+
+Current HEAD: 59bfeb9354e712749f6c87dd11a0c7ccf77963ae
+Branch: main
+Repo role: template_repository
+StateDD mode: template-maintenance
+Worktree: dirty
+Latest evidence: docs/evidence/2026-06-23-evidence-pack-manifests
+State docs updated: yes
+Tests recorded: yes
+Browser proof: yes (browser artifact)
+Runtime identity: not required
+Schema validation: pass
+Evidence manifest: valid
+Open blockers: 1
+Next recommended slice: P0 [BL-012] Add evidence pack manifests and a redaction gate
+Closure grade: fail

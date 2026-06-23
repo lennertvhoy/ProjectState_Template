@@ -187,6 +187,17 @@ def assert_runtime_proof_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing runtime proof assets: {missing}")
 
 
+def assert_evidence_pack_assets_exist(root: Path) -> None:
+    required = [
+        root / "schemas" / "evidence_manifest.schema.json",
+        root / "scripts" / "statedd_evidence_pack.py",
+        root / "scripts" / "test_evidence_pack.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing evidence pack assets: {missing}")
+
+
 def assert_schema_validation_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "project_state.schema.json",
@@ -194,6 +205,7 @@ def assert_schema_validation_assets_exist(root: Path) -> None:
         root / "schemas" / "project_adapter.schema.json",
         root / "schemas" / "runtime_identity.schema.json",
         root / "schemas" / "evidence_readme_contract.json",
+        root / "schemas" / "evidence_manifest.schema.json",
         root / "schemas" / "final_handoff_contract.json",
         root / "scripts" / "statedd_validate_schema.py",
         root / "scripts" / "test_schema_validation.py",
@@ -268,6 +280,7 @@ def test_new_includes_schema_validation_assets_and_passes_schema_validation() ->
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Schema Demo", "--target", str(target)], expect_success=True)
         assert_schema_validation_assets_exist(target)
+        assert_evidence_pack_assets_exist(target)
         completed = subprocess.run(
             [sys.executable, str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
             cwd=target,
@@ -380,6 +393,7 @@ def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() 
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
         run_init(["adopt", "--name", "Schema Adopted", "--target", str(repo)], expect_success=True)
         assert_schema_validation_assets_exist(repo)
+        assert_evidence_pack_assets_exist(repo)
         completed = subprocess.run(
             [sys.executable, str(repo / "scripts" / "statedd_validate_schema.py"), str(repo)],
             cwd=repo,

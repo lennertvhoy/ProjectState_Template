@@ -1,0 +1,20 @@
+{
+  "captured_at": "2026-06-23T15:40:33+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "limits": [],
+  "repo": {
+    "branch": "main",
+    "head": "59bfeb9354e712749f6c87dd11a0c7ccf77963ae",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "status_porcelain": "M .github/workflows/validate.yml\n M README.md\n M prompts/EVIDENCE_README_TEMPLATE.md\n M scripts/check_state_docs.py\n M scripts/init_template.py\n M scripts/statedd_audit.py\n M scripts/statedd_doctor.py\n M scripts/statedd_validate_schema.py\n?? schemas/evidence_manifest.schema.json\n?? scripts/statedd_evidence_pack.py\n?? scripts/test_evidence_pack.py",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "reason": "docs/scripts-only BL-012 evidence pack slice",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1"
+}

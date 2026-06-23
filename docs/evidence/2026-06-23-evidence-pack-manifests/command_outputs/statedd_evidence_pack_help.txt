@@ -1,0 +1,13 @@
+usage: statedd_evidence_pack.py [-h] {init,check,hash,scan} ...
+
+Manage StateDD evidence pack manifests
+
+positional arguments:
+  {init,check,hash,scan}
+    init                Create a manifest skeleton
+    check               Validate a manifest
+    hash                Compute sha256 for listed artifacts
+    scan                Run conservative redaction scan
+
+options:
+  -h, --help            show this help message and exit

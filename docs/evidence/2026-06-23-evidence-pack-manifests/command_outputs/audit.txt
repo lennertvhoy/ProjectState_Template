@@ -1,0 +1,76 @@
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-06-23-evidence-pack-manifests
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 8 files
+
+worktree_clean
+  ❌ Worktree is dirty (12 changed file(s)); closure-grade requires clean worktree
+
+branch_head_recorded
+  ✅ HEAD 59bfeb9 recorded in evidence README
+  ✅ Branch 'main' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ⚠️ runtime.required=false but user-facing changes or visual/browser evidence indicate runtime proof is required
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ Schema change 'schemas/evidence_readme_contract.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/final_handoff_contract.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/project_adapter.schema.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/project_dna.schema.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/project_state.schema.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/runtime_identity.schema.json' has examples and validation tests nearby (heuristic check)
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ⚠️ manifest.json redaction status is unchecked
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 36 pass, 2 warn, 1 fail, 0 override
+AUDIT RESULT: FAIL — closure-grade not met

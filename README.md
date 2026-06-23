@@ -75,8 +75,10 @@ created from it should use the full workflow directly.
 | `scripts/statedd_doctor.py` | Fast StateDD health summary |
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
+| `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
 | `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
+| `scripts/test_evidence_pack.py` | Regression-check evidence pack manifest and redaction behavior |
 | `schemas/` | Executable StateDD schemas and Markdown contracts |
 | `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template, slice contract, evidence README, schema ownership, subagent review, CTO review checklist |
 
@@ -378,6 +380,29 @@ Every evidence folder should contain a `README.md` claim ledger based on `prompt
 ## Schema Ownership
 
 `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` enforces the rule: **No schema may exist only in prose.** Every packet schema needs a canonical machine-readable schema, generated example JSON, generated external prompt snippet, validation tests, an exact-shape sample, a `schemaVersion` field, and a migration policy.
+
+## Evidence Pack Manifests And Redaction Gate
+
+Every closure-grade evidence folder can include a `manifest.json` that lists:
+
+- the backlog slice ID, branch, and HEAD the evidence belongs to
+- claims with their supporting artifact paths
+- artifacts with sha256 hashes and redaction status
+- a redaction block recording automated scan results, manual review status, and known limits
+
+Use `scripts/statedd_evidence_pack.py` to manage manifests:
+
+```bash
+python3 scripts/statedd_evidence_pack.py init docs/evidence/YYYY-MM-DD-slice --slice-id BL-012
+python3 scripts/statedd_evidence_pack.py hash docs/evidence/YYYY-MM-DD-slice
+python3 scripts/statedd_evidence_pack.py scan docs/evidence/YYYY-MM-DD-slice
+python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice
+python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice --strict
+```
+
+The redaction scanner is dependency-free and conservative. It flags obvious secret-like
+patterns but never claims that absence of findings proves absence of secrets. Binary and
+image artifacts always require explicit manual review or `checked_with_limits` status.
 
 ## Schema-Backed Validation
 

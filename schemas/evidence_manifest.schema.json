@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.evidence_manifest.v1",
+  "title": "StateDD evidence manifest",
+  "type": "object",
+  "required": ["schema", "slice_id", "created_at", "repo", "claims", "artifacts", "redaction"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "statedd.evidence_manifest.v1"
+    },
+    "slice_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "repo": {
+      "type": "object",
+      "required": ["branch", "head"],
+      "additionalProperties": true,
+      "properties": {
+        "branch": {
+          "type": ["string", "null"]
+        },
+        "head": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "runtime_identity": {
+      "type": "object",
+      "required": ["required"],
+      "additionalProperties": true,
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["valid", "not_applicable", "missing", "invalid"]
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "redaction": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": true,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["checked", "checked_with_limits", "manual_required", "override_used", "unchecked"]
+        },
+        "automated_scan": {
+          "type": "string",
+          "enum": ["passed", "findings", "not_applicable"]
+        },
+        "manual_review": {
+          "type": "string",
+          "enum": ["completed", "required", "not_applicable"]
+        },
+        "known_limits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "required": ["id", "claim", "status", "evidence"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["validated", "partial", "not_validated"]
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "known_limits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "kind", "redaction_status", "sensitive_data"],
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["command_output", "runtime_identity", "screenshot", "log", "doc", "other"]
+        },
+        "sha256": {
+          "type": ["string", "null"]
+        },
+        "redaction_status": {
+          "type": "string",
+          "enum": ["checked", "checked_with_limits", "manual_required", "override_used", "unchecked"]
+        },
+        "sensitive_data": {
+          "type": "string",
+          "enum": ["none_found", "redacted", "possible", "unknown"]
+        }
+      }
+    }
+  }
+}

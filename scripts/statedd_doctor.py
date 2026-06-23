@@ -207,6 +207,26 @@ def schema_validation_status(repo: Path) -> str:
     return f"fail ({first_line[:120]})"
 
 
+def evidence_manifest_status(repo: Path) -> str:
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        return "no evidence folder"
+    manifest = folder / "manifest.json"
+    if not manifest.exists():
+        return "not present"
+    script = repo / "scripts" / "statedd_evidence_pack.py"
+    if not script.exists():
+        return "manifest present, helper missing"
+    code, stdout, stderr = run_command(
+        [sys.executable, str(script), "check", str(folder)], repo
+    )
+    if code == 0:
+        return "valid"
+    combined = f"{stdout}\n{stderr}".strip()
+    first_line = combined.splitlines()[0] if combined else f"exit {code}"
+    return f"invalid ({first_line[:120]})"
+
+
 def open_blockers(repo: Path) -> str:
     next_actions = repo / "NEXT_ACTIONS.md"
     try:
@@ -284,6 +304,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Browser proof: {browser_proof(repo)}")
     print(f"Runtime identity: {runtime_identity_status(repo)}")
     print(f"Schema validation: {schema_validation_status(repo)}")
+    print(f"Evidence manifest: {evidence_manifest_status(repo)}")
     print(f"Open blockers: {open_blockers(repo)}")
     print(f"Next recommended slice: {next_recommended_slice(repo)}")
     print(f"Closure grade: {closure_grade(repo)}")

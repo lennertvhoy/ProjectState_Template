@@ -60,6 +60,8 @@ EVIDENCE_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 EVIDENCE_BROWSER_EXTENSIONS = {".html", ".har", ".json"}
 RUNTIME_IDENTITY_FILE = "runtime_identity.json"
 RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
+EVIDENCE_MANIFEST_FILE = "manifest.json"
+EVIDENCE_MANIFEST_SCHEMA = "statedd.evidence_manifest.v1"
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
 
@@ -652,6 +654,114 @@ def check_schema_validation(repo: Path, result: AuditResult) -> None:
     )
 
 
+def check_evidence_manifest(repo: Path, result: AuditResult, strict: bool) -> None:
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        result.add("evidence_manifest", "warn", "Cannot inspect manifest.json without an evidence folder")
+        return
+
+    manifest = folder / EVIDENCE_MANIFEST_FILE
+    if not manifest.exists():
+        if strict:
+            result.add(
+                "evidence_manifest",
+                "fail",
+                f"Strict audit requires {EVIDENCE_MANIFEST_FILE} in the latest evidence folder",
+            )
+        else:
+            result.add(
+                "evidence_manifest",
+                "pass",
+                "No manifest.json in latest evidence folder; legacy evidence accepted in normal mode",
+            )
+        return
+
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        status = "fail"
+        result.add("evidence_manifest", status, f"Malformed {EVIDENCE_MANIFEST_FILE}: {exc}")
+        return
+
+    schema = data.get("schema") if isinstance(data, dict) else None
+    if schema != EVIDENCE_MANIFEST_SCHEMA:
+        status = "fail"
+        result.add(
+            "evidence_manifest",
+            status,
+            f"manifest.json schema is {schema or 'missing'}; expected {EVIDENCE_MANIFEST_SCHEMA}",
+        )
+        return
+    result.add("evidence_manifest", "pass", f"manifest.json schema: {schema}")
+
+    redaction = data.get("redaction") if isinstance(data, dict) else None
+    if not isinstance(redaction, dict):
+        status = "fail" if strict else "warn"
+        result.add("evidence_manifest", status, "manifest.json missing redaction object")
+        return
+
+    redaction_status = redaction.get("status")
+    if redaction_status == "unchecked":
+        status = "fail" if strict else "warn"
+        result.add("evidence_manifest", status, "manifest.json redaction status is unchecked")
+    elif redaction_status in ("checked", "checked_with_limits", "override_used"):
+        result.add("evidence_manifest", "pass", f"manifest.json redaction status: {redaction_status}")
+    elif redaction_status == "manual_required":
+        status = "fail" if strict else "warn"
+        result.add("evidence_manifest", status, "manifest.json redaction requires manual review")
+    else:
+        status = "fail" if strict else "warn"
+        result.add("evidence_manifest", status, f"manifest.json has unexpected redaction status: {redaction_status}")
+
+    artifacts = data.get("artifacts") if isinstance(data, dict) else None
+    if isinstance(artifacts, list):
+        for artifact in artifacts:
+            if not isinstance(artifact, dict):
+                continue
+            ref = artifact.get("path")
+            status = artifact.get("redaction_status")
+            kind = artifact.get("kind")
+            if status in ("unchecked", "manual_required"):
+                artifact_status = "fail" if strict else "warn"
+                result.add(
+                    "evidence_manifest",
+                    artifact_status,
+                    f"Artifact {ref} has redaction_status={status}",
+                )
+            if kind in ("screenshot",) and status not in ("checked", "checked_with_limits", "override_used"):
+                artifact_status = "fail" if strict else "warn"
+                result.add(
+                    "evidence_manifest",
+                    artifact_status,
+                    f"Screenshot artifact {ref} requires explicit checked_with_limits or override",
+                )
+
+    claims = data.get("claims") if isinstance(data, dict) else None
+    if isinstance(claims, list):
+        for claim in claims:
+            if not isinstance(claim, dict):
+                continue
+            evidence = claim.get("evidence")
+            if not isinstance(evidence, list) or not evidence:
+                claim_status = "fail" if strict else "warn"
+                result.add(
+                    "evidence_manifest",
+                    claim_status,
+                    f"Claim {claim.get('id')} has no evidence artifacts",
+                )
+
+    runtime_identity = data.get("runtime_identity") if isinstance(data, dict) else None
+    if isinstance(runtime_identity, dict) and runtime_identity.get("required") is True:
+        artifact = folder / RUNTIME_IDENTITY_FILE
+        if not artifact.exists():
+            status = "fail" if strict else "warn"
+            result.add(
+                "evidence_manifest",
+                status,
+                f"manifest.json runtime_identity.required=true but {RUNTIME_IDENTITY_FILE} is missing",
+            )
+
+
 def check_human_override(
     repo: Path,
     result: AuditResult,
@@ -733,6 +843,7 @@ def main(argv: list[str] | None = None) -> int:
     check_schema_validation(root, result)
     check_schema_ownership(root, result, args.strict)
     check_tests_recorded(root, result, args.test_command)
+    check_evidence_manifest(root, result, args.strict)
     check_human_override(root, result, Path(args.override_file) if args.override_file else None)
 
     return render_result(result, args.strict)

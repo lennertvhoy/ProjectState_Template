@@ -1,0 +1,184 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2141f52c6056b692d1c4a63e030781a4b054b106b1435dd141ac6c0aaa4315d3"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked",
+      "sensitive_data": "none_found",
+      "sha256": "5936ecf86a2aff8fdee29c08152bbcaa7e5a61c3ede3962d5f3e2ae203c0aea7"
+    },
+    {
+      "kind": "doc",
+      "path": "command_outputs/evidence_manifest.schema.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2c5104ffda685d97db3bb80fbecc8eb9be51c3bfaaf471d3f67ac8607ac2c78f"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/statedd_evidence_pack_help.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "cc508d535dacb76272dd94c5c961e3ec7fac35c01e1015ab9fd71116acc93a9e"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/test_evidence_pack.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f3cde0417f36b57673b36b06a7fbe9497e5be316fb67530036310421510a5467"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/scan_secret_fixture.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "possible",
+      "sha256": "bd998381e33ea757294bd4fbd672da4a91bd21a2ea61069c01cf5d739cd898cf"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/validate_schema.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/check_state_docs.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b94ff4d9be7c33fb54ae7ea31293c2d13aab98b6f65978232b211980f847070d"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/audit.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "54a2f4210cd2e39085ece1b3b9daafc1d9f24dc7d52ff6a43f6240edab572723"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/audit_strict.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "964836c45838b2a409a89e42f556b894def486686a08f0976e18490fa189eeaa"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/doctor.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "83322e7ce3586e9ac7211473817948f96ad859c97ec700b1e75eb2c0ec0c7ff7"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/test_init_template.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e84449ee2c65c6c20e347b7bd0ff4b9deca92df2b4e4ed29c53eade0dda6d1e9"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "schemas/evidence_manifest.schema.json defines a machine-readable evidence manifest contract",
+      "evidence": [
+        "command_outputs/evidence_manifest.schema.json"
+      ],
+      "id": "C1",
+      "status": "validated"
+    },
+    {
+      "claim": "scripts/statedd_evidence_pack.py supports init, check, hash, and scan commands",
+      "evidence": [
+        "command_outputs/statedd_evidence_pack_help.txt"
+      ],
+      "id": "C2",
+      "status": "validated"
+    },
+    {
+      "claim": "scripts/test_evidence_pack.py covers valid/invalid manifest fixtures",
+      "evidence": [
+        "command_outputs/test_evidence_pack.txt"
+      ],
+      "id": "C3",
+      "status": "validated"
+    },
+    {
+      "claim": "The redaction scanner flags obvious secret-like patterns but never claims absence of secrets is proven",
+      "evidence": [
+        "command_outputs/scan_secret_fixture.txt"
+      ],
+      "id": "C4",
+      "status": "validated"
+    },
+    {
+      "claim": "Validator, hygiene, audit, and doctor recognize evidence manifests",
+      "evidence": [
+        "command_outputs/validate_schema.txt",
+        "command_outputs/check_state_docs.txt",
+        "command_outputs/audit.txt",
+        "command_outputs/audit_strict.txt",
+        "command_outputs/doctor.txt"
+      ],
+      "id": "C5",
+      "status": "validated"
+    },
+    {
+      "claim": "New evidence-pack assets are copied to generated and adopted downstream repos",
+      "evidence": [
+        "command_outputs/test_init_template.txt"
+      ],
+      "id": "C6",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-06-23T15:40:39+02:00",
+  "redaction": {
+    "automated_scan": "findings",
+    "known_limits": [
+      "Manifest created; redaction review not yet performed.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Cannot scan missing artifact: ../../schemas/evidence_manifest.schema.json",
+      "Automated scan found no obvious patterns in command_outputs/statedd_evidence_pack_help.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/test_evidence_pack.txt; this does not prove absence of secrets.",
+      "Possible API key / token pattern found in scan_secret_fixture.txt",
+      "Automated scan found no obvious patterns in command_outputs/validate_schema.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/check_state_docs.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/audit.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/audit_strict.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/doctor.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/test_init_template.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/evidence_manifest.schema.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/statedd_evidence_pack_help.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/test_evidence_pack.txt; this does not prove absence of secrets.",
+      "Possible API key / token pattern found in scan_secret_fixture.txt",
+      "Automated scan found no obvious patterns in command_outputs/validate_schema.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/check_state_docs.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/audit.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/audit_strict.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/doctor.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/test_init_template.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "required",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "main",
+    "head": "59bfeb9354e712749f6c87dd11a0c7ccf77963ae"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": true,
+    "status": "valid"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-012"
+}

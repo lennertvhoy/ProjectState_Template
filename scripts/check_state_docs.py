@@ -68,11 +68,14 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/test_init_template.py",
     "scripts/test_runtime_proof.py",
     "scripts/test_schema_validation.py",
+    "scripts/statedd_evidence_pack.py",
+    "scripts/test_evidence_pack.py",
     "schemas/project_state.schema.json",
     "schemas/project_dna.schema.json",
     "schemas/project_adapter.schema.json",
     "schemas/runtime_identity.schema.json",
     "schemas/evidence_readme_contract.json",
+    "schemas/evidence_manifest.schema.json",
     "schemas/final_handoff_contract.json",
     "schemas/examples/runtime_identity_not_required.json",
     "schemas/tests/README.md",
@@ -403,6 +406,49 @@ def check_schema_validation(root: Path) -> list[str]:
     return output.splitlines()
 
 
+def latest_evidence_folder(root: Path) -> Path | None:
+    evidence_root = root / "docs" / "evidence"
+    if not evidence_root.exists():
+        return None
+    candidates = [
+        entry
+        for entry in evidence_root.iterdir()
+        if entry.is_dir() and not entry.name.startswith(".")
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: p.stat().st_mtime)
+
+
+def check_evidence_manifest(root: Path) -> list[str]:
+    issues: list[str] = []
+    folder = latest_evidence_folder(root)
+    if folder is None:
+        return issues
+    manifest = folder / "manifest.json"
+    if not manifest.exists():
+        return issues
+    schema = root / "schemas" / "evidence_manifest.schema.json"
+    if not schema.exists():
+        issues.append("manifest.json exists but schemas/evidence_manifest.schema.json is missing")
+        return issues
+    validator = root / "scripts" / "statedd_validate_schema.py"
+    if not validator.exists():
+        issues.append("manifest.json exists but scripts/statedd_validate_schema.py is missing")
+        return issues
+    completed = subprocess.run(
+        [sys.executable, str(validator), "--file", str(manifest), "--schema", str(schema)],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        output = "\n".join(part for part in (completed.stdout.strip(), completed.stderr.strip()) if part)
+        issues.append(f"Evidence manifest validation failed: {output[:400]}")
+    return issues
+
+
 def check_template_assets(root: Path) -> list[str]:
     issues: list[str] = []
 
@@ -691,9 +737,13 @@ def main(argv: list[str] | None = None) -> int:
     print_failure_block("version alignment", next((issues for name, issues in failures if name == "version_alignment"), []))
     print_failure_block("schema validation", next((issues for name, issues in failures if name == "schema_validation"), []))
 
+    manifest_issues = check_evidence_manifest(root)
+    if manifest_issues:
+        failures.append(("evidence_manifest", manifest_issues))
     if readme.exists() and template_style_repo:
         print_failure_block("README.md", next((issues for name, issues in failures if name == "README.md"), []))
         print_failure_block("template assets", next((issues for name, issues in failures if name == "template_assets"), []))
+    print_failure_block("evidence manifest", next((issues for name, issues in failures if name == "evidence_manifest"), []))
 
     if args.bootstrap_gate:
         print_failure_block("bootstrap gate", bootstrap_issues)
