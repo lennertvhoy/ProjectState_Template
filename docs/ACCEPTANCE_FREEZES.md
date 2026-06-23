@@ -102,3 +102,39 @@ and must be protected from quiet regression.
   - Upgrade helper does not semantic-merge customized workflow files.
   - Redaction scanning is pattern-based and cannot prove absence of secrets.
   - Browser/runtime UI verification remains deferred to BL-WB-001.
+
+## AF-2026-06-23-003: BL-005 canonical schema/prompt example accepted
+
+- Milestone: BL-005 canonical schema/export/import example project
+- Scope: The `schemas/examples/schema_prompt_loop/` example demonstrates a schema-driven loop where one schema validates data and generates deterministic prompt material, with regression tests and CI coverage.
+- Closure-grade: yes
+- Accepted: yes
+- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- branch: main
+- head: 0c17d4fe46e7a6cb73396b11e562b4cc008f6bad
+- process_or_container: not applicable; docs/scripts-only template-maintenance release
+- port_or_base_url: not applicable
+- routes: not applicable
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: not applicable
+- runtime_identity_artifact: docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+- evidence_pack_manifest: docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+- evidence_refs:
+  - EV-2026-06-23-007
+- human_override:
+  used: no
+- accepted_capabilities:
+  - schemas/examples/schema_prompt_loop/feature_slice.schema.json defines a small feature slice contract
+  - schemas/examples/schema_prompt_loop/valid_slice.json passes schema validation
+  - schemas/examples/schema_prompt_loop/invalid_slice.json fails schema validation with a useful error
+  - schemas/examples/schema_prompt_loop/generate_prompt.py generates a deterministic prompt from the schema
+  - schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py guards against prompt fixture drift
+  - The example is wired into `.github/workflows/validate.yml`
+- regression_guard:
+  - The schema/prompt example must keep passing validation and tests.
+  - The generated prompt fixture must stay synchronized with the schema.
+  - The example must remain stdlib-only and must not become a runtime dependency.
+  - CI must continue to compile and run the example scripts.
+- known_limits:
+  - The example is intentionally small and educational.
+  - The generated prompt uses only schema field names and descriptions.

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-23T15:52:51+02:00
+  updated_at: 2026-06-23T16:34:00+02:00
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -15,8 +15,7 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - canonical schema/export/import example project not yet implemented
-      - repository description, topics, and release notes not yet published
+      - repository description, topics, and release notes not yet published (draft ready)
       - browser automation via Kimi WebBridge not yet implemented
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
@@ -160,6 +159,7 @@ current_state:
       - python3 scripts/test_evidence_pack.py
       - python3 scripts/test_upgrade.py
       - python3 scripts/test_adoption_profiles.py
+      - python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
       - python3 scripts/statedd_audit.py
       - python3 scripts/statedd_doctor.py
     deployment_assumptions:
@@ -195,6 +195,7 @@ current_state:
       - docs/GETTING_STARTED_5_MIN.md
       - docs/UPGRADING.md
       - docs/ADOPTION_PROFILES.md
+      - docs/RELEASE_NOTES_statedd-template-v4.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
       - prompts/OPENCODE_STARTUP_PROMPT.md
@@ -203,6 +204,7 @@ current_state:
       - scripts/statedd_handoff.py
       - scripts/statedd_validate_schema.py
       - scripts/statedd_runtime_proof.py
+      - schemas/examples/schema_prompt_loop/README.md
     prompt_assets:
       cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
       coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md

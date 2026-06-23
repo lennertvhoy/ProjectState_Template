@@ -18,6 +18,9 @@ All notable StateDD template changes are tracked here.
 - Added `scripts/statedd_bootstrap_wizard.py` MVP with interactive and `--answers` modes.
 - Added `scripts/test_adoption_profiles.py` and wired profile/wizard tests into CI.
 - Updated `scripts/check_state_docs.py` to skip optional deep-reference docs when the minimal profile is used.
+- Added `schemas/examples/schema_prompt_loop/`, a canonical schema/prompt loop example that validates data and generates deterministic prompt material from the same schema.
+- Added draft release notes and repository metadata in `docs/RELEASE_NOTES_statedd-template-v4.md`.
+- Added acceptance freeze `AF-2026-06-23-002` for the BL-012/013/014 adoption-ready template release.
 
 ## Earlier History
 

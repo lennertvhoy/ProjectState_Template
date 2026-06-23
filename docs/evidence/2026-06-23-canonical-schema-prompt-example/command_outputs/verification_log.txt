@@ -1,0 +1,95 @@
+=== BL-005 verification log ===
+
+Timestamp: 2026-06-23T16:35:34+02:00
+Branch: main
+HEAD: 0c17d4fe46e7a6cb73396b11e562b4cc008f6bad
+
+=== py_compile example scripts ===
+PASS
+
+=== validate_example.py ===
+Validating feature slice example files...
+PASS: valid_slice.json
+FAIL: invalid_slice.json
+  Reason: - $: missing required property 'goal'
+Example validation complete.
+
+=== generate_prompt.py ===
+Wrote generated prompt to /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generated_prompt.md
+
+=== test_schema_prompt_loop.py ===
+PASS test_valid_slice_passes
+PASS test_invalid_slice_fails
+PASS test_generated_prompt_includes_required_fields
+PASS test_generated_prompt_fixture_is_up_to_date
+PASS test_example_scripts_use_stdlib_only
+
+=== statedd_validate_schema.py (root) ===
+============================================================
+STATEDD SCHEMA VALIDATION
+============================================================
+  PASS PROJECT_STATE.yaml
+  PASS PROJECT_DNA.yaml
+  PASS PROJECT_ADAPTER.yaml
+  PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+  PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+  PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+  PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+  PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+  PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+PASSED: All StateDD schema checks passed
+
+=== check_state_docs.py (root) ===
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ✅ All checks passed
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+============================================================
+PASSED: All state documentation checks passed

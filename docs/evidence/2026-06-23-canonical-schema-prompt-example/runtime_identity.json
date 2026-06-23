@@ -1,0 +1,30 @@
+{
+  "schema": "statedd.runtime_identity.v1",
+  "captured_at": "2026-06-23T16:35:00+02:00",
+  "repo": {
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "branch": "main",
+    "head": "0c17d4fe46e7a6cb73396b11e562b4cc008f6bad",
+    "worktree_clean": true,
+    "status_porcelain": ""
+  },
+  "runtime": {
+    "required": false,
+    "kind": "none",
+    "url": null,
+    "process": {
+      "detected": false,
+      "reason": "not applicable; docs/scripts-only template-maintenance slice"
+    }
+  },
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true,
+    "endpoint_reachable": false,
+    "process_detected": false,
+    "duplicate_runtime_checked": false
+  },
+  "limits": [
+    "No application runtime is involved in this docs/scripts-only slice."
+  ]
+}

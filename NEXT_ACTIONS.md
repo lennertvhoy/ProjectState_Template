@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P1 [BL-005] Add a real canonical schema/export/import example project
-Owner: CTO lane + coding agent
-Next: design the smallest example project that uses the same schemas to generate prompts and validate state
-Exit: example project is checked into `schemas/examples/`, has tests, and demonstrates schema-driven prompt generation without adding external dependencies
+### P1 [BL-007] Publish repository description, topics, and release notes
+Owner: human product owner + coding agent
+Next: review the draft in `docs/RELEASE_NOTES_statedd-template-v4.md`, confirm GitHub description/topics, and publish only when explicitly permitted
+Exit: release metadata is finalized and, if the human permits, a GitHub release is published; no browser automation or external-badge dependencies are introduced
 
 ## Queue Rules
 

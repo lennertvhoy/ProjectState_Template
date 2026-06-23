@@ -28,6 +28,32 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-007: Canonical schema/prompt example project (BL-005)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/feature_slice.schema.json
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/valid_slice.json
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/invalid_slice.json
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/validate_example.py
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generate_prompt.py
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+- Title: BL-005 canonical schema/export/import example project
+- Source/System: test
+- Action: Implemented a stdlib-only schema/prompt loop example under `schemas/examples/schema_prompt_loop/`, validated it, wired it into CI, and created a closure evidence pack.
+- Shows:
+  - `python3 schemas/examples/schema_prompt_loop/validate_example.py` passes for valid_slice.json and fails for invalid_slice.json with a useful error
+  - `python3 schemas/examples/schema_prompt_loop/generate_prompt.py` produces deterministic output
+  - `python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py` passes, including the fixture-drift guard
+  - `.github/workflows/validate.yml` compiles and runs the example
+  - the example uses no external dependencies
+- Proves:
+  - StateDD ships a concrete, tested demonstration of schema-driven prompt generation
+  - the schema, examples, and generated prompt stay synchronized by test
+- Type: docs-render-verification
+- as_of: 2026-06-23T16:34:00+02:00
+- Notes: The example is intentionally small and educational. It is not a runtime dependency of StateDD.
+
 ## EV-2026-06-23-006: Closure evidence hardening (BL-015)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md

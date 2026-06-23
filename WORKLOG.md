@@ -310,6 +310,49 @@
 - Teaching, training, coaching, courses, workshops, tutorials, curricula, educational products, and educational services based on the Software or StateDD workflow are reserved rights unless prior written permission is granted.
 - This is a custom license draft and should be reviewed by a qualified lawyer before relying on it commercially.
 
+## 2026-06-23 - BL-005 canonical schema/prompt example and BL-007 release-prep draft
+
+**Type:** template_workflow_upgrade
+**Status:** COMPLETE
+**Git Head:** 0c17d4f
+**Worktree:** clean
+
+### What changed
+- Added acceptance freeze `AF-2026-06-23-002` for the BL-012/013/014 adoption-ready template release, pinning accepted HEAD to `9f940ddd5c00f11896df6ab5b14bfe0dfe18bf8f`.
+- Added `schemas/examples/schema_prompt_loop/`, a stdlib-only canonical example of StateDD's schema-driven loop.
+  - `feature_slice.schema.json` defines a small "feature slice" contract.
+  - `valid_slice.json` passes schema validation.
+  - `invalid_slice.json` fails schema validation with a useful error.
+  - `generate_prompt.py` generates a deterministic prompt/checklist from the schema.
+  - `generated_prompt.md` is a checked-in fixture; the test fails if it drifts.
+  - `validate_example.py` and `test_schema_prompt_loop.py` exercise the loop.
+- Linked the schema/prompt example from `README.md` and `docs/GETTING_STARTED_5_MIN.md`.
+- Wired the example into `.github/workflows/validate.yml` for compilation and test coverage.
+- Added draft release notes and repository metadata in `docs/RELEASE_NOTES_statedd-template-v4.md`.
+- Updated `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, and `CHANGELOG.md`.
+
+### Verification
+- `python3 -m py_compile schemas/examples/schema_prompt_loop/*.py` passed.
+- `python3 schemas/examples/schema_prompt_loop/validate_example.py` passed.
+- `python3 schemas/examples/schema_prompt_loop/generate_prompt.py` passed.
+- `python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 scripts/statedd_audit.py --strict` passed after each commit.
+- `python3 scripts/statedd_doctor.py` passed.
+
+### Evidence
+- `docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md`
+- `docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-007`
+
+### Notes
+- BL-005 is accepted and frozen as `AF-2026-06-23-003`.
+- BL-007 remains a draft; no GitHub release was published.
+- The next backlog item is `BL-WB-001` Kimi WebBridge browser verification.
+
 ## 2026-06-14 - StateDD v2 executable workflow
 
 **Type:** template_workflow_upgrade
