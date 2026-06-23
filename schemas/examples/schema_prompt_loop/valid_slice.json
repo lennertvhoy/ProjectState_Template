@@ -1,0 +1,30 @@
+{
+  "slice_id": "BL-005",
+  "title": "Canonical schema/prompt example project",
+  "goal": "Add a small but real example that demonstrates StateDD's schema-driven loop: one schema validates data and generates prompt material, so docs/prompts/examples cannot drift from the schema.",
+  "repo_role": "template_repository",
+  "statedd_mode": "template-maintenance",
+  "runtime_required": false,
+  "acceptance_criteria": [
+    "valid_slice.json passes schema validation",
+    "invalid_slice.json fails schema validation with a useful error",
+    "generate_prompt.py creates a deterministic prompt from the schema",
+    "test_schema_prompt_loop.py fails if generated_prompt.md drifts from the schema",
+    "No external dependencies are introduced"
+  ],
+  "non_goals": [
+    "Replace the full StateDD schema validator",
+    "Add a templating engine",
+    "Make the example a runtime dependency of StateDD"
+  ],
+  "evidence_required": true,
+  "verification_commands": [
+    "python3 schemas/examples/schema_prompt_loop/validate_example.py",
+    "python3 schemas/examples/schema_prompt_loop/generate_prompt.py",
+    "python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py"
+  ],
+  "known_limits": [
+    "The example is intentionally small and educational.",
+    "The generated prompt uses only schema field names and descriptions."
+  ]
+}

@@ -85,6 +85,9 @@ Use this helper near the end of a slice:
 python3 scripts/statedd_handoff.py
 ```
 
+For a concrete, tested example of a schema driving both validation and prompt
+generation, see `schemas/examples/schema_prompt_loop/`.
+
 If you want the helper to run validation and include the output:
 
 ```bash

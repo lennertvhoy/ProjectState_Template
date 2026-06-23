@@ -81,6 +81,7 @@ created from it should use the full workflow directly.
 | `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
 | `scripts/test_evidence_pack.py` | Regression-check evidence pack manifest and redaction behavior |
 | `schemas/` | Executable StateDD schemas and Markdown contracts |
+| `schemas/examples/schema_prompt_loop/` | Concrete schema-driven example: one schema validates data and generates prompt material |
 | `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template, slice contract, evidence README, schema ownership, subagent review, CTO review checklist |
 
 ## How It Works
