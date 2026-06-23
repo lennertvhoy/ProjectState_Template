@@ -15,15 +15,33 @@ Use this guide when bringing an existing StateDD repo forward without overwritin
 - Align version-bearing state files only after checking whether their project-specific fields are still true.
 - Record the upgrade in `WORKLOG.md` and link any verification in `docs/EVIDENCE_LOG.md`.
 
+## Assisted Upgrade With `statedd_upgrade.py`
+
+The template now ships `scripts/statedd_upgrade.py` for non-destructive downstream upgrades.
+
+```bash
+python3 scripts/statedd_upgrade.py /path/to/downstream/repo
+python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply
+python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply --force-managed
+```
+
+- Default mode is dry-run.
+- `--apply` copies only safe missing managed assets.
+- `--force-managed` may replace outdated safe template assets; it never overwrites project-truth files.
+- Project-truth files such as `PROJECT_STATE.yaml`, `BACKLOG.md`, `NEXT_ACTIONS.md`, `WORKLOG.md`,
+  `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`, `README.md`, and `CHANGELOG.md` are always
+  reported as manual actions.
+
 ## Manual Upgrade Checklist
 
 1. Read the source repo `VERSION`.
-2. Copy or merge reusable assets from the new template.
-3. Run `python3 scripts/statedd_version_check.py`.
-4. Run `python3 scripts/check_state_docs.py`.
-5. Run `python3 scripts/statedd_validate_schema.py`.
-6. Run `python3 scripts/test_init_template.py` if the repo keeps initializer tests.
-7. Do not claim closure-grade unless audit and evidence requirements are met.
+2. Run `python3 scripts/statedd_upgrade.py --dry-run` to see what would change.
+3. Copy or merge reusable assets from the new template.
+4. Run `python3 scripts/statedd_version_check.py`.
+5. Run `python3 scripts/check_state_docs.py`.
+6. Run `python3 scripts/statedd_validate_schema.py`.
+7. Run `python3 scripts/test_init_template.py` if the repo keeps initializer tests.
+8. Do not claim closure-grade unless audit and evidence requirements are met.
 
 ## Common Conflicts
 

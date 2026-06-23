@@ -207,6 +207,13 @@ def schema_validation_status(repo: Path) -> str:
     return f"fail ({first_line[:120]})"
 
 
+def upgrade_status(repo: Path) -> str:
+    script = repo / "scripts" / "statedd_upgrade.py"
+    if not script.exists():
+        return "missing helper"
+    return "available"
+
+
 def evidence_manifest_status(repo: Path) -> str:
     folder = latest_evidence_folder(repo)
     if folder is None:
@@ -304,6 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Browser proof: {browser_proof(repo)}")
     print(f"Runtime identity: {runtime_identity_status(repo)}")
     print(f"Schema validation: {schema_validation_status(repo)}")
+    print(f"Upgrade capability: {upgrade_status(repo)}")
     print(f"Evidence manifest: {evidence_manifest_status(repo)}")
     print(f"Open blockers: {open_blockers(repo)}")
     print(f"Next recommended slice: {next_recommended_slice(repo)}")

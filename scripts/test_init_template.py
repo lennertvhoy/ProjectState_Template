@@ -198,6 +198,16 @@ def assert_evidence_pack_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing evidence pack assets: {missing}")
 
 
+def assert_upgrade_assets_exist(root: Path) -> None:
+    required = [
+        root / "scripts" / "statedd_upgrade.py",
+        root / "scripts" / "test_upgrade.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing upgrade assets: {missing}")
+
+
 def assert_schema_validation_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "project_state.schema.json",
@@ -281,6 +291,7 @@ def test_new_includes_schema_validation_assets_and_passes_schema_validation() ->
         run_init(["new", "--name", "Schema Demo", "--target", str(target)], expect_success=True)
         assert_schema_validation_assets_exist(target)
         assert_evidence_pack_assets_exist(target)
+        assert_upgrade_assets_exist(target)
         completed = subprocess.run(
             [sys.executable, str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
             cwd=target,
@@ -394,6 +405,7 @@ def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() 
         run_init(["adopt", "--name", "Schema Adopted", "--target", str(repo)], expect_success=True)
         assert_schema_validation_assets_exist(repo)
         assert_evidence_pack_assets_exist(repo)
+        assert_upgrade_assets_exist(repo)
         completed = subprocess.run(
             [sys.executable, str(repo / "scripts" / "statedd_validate_schema.py"), str(repo)],
             cwd=repo,

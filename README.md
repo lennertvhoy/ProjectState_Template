@@ -76,6 +76,7 @@ created from it should use the full workflow directly.
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
 | `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
+| `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
 | `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
 | `scripts/test_evidence_pack.py` | Regression-check evidence pack manifest and redaction behavior |
@@ -403,6 +404,20 @@ python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice --
 The redaction scanner is dependency-free and conservative. It flags obvious secret-like
 patterns but never claims that absence of findings proves absence of secrets. Binary and
 image artifacts always require explicit manual review or `checked_with_limits` status.
+
+## Upgrading An Existing StateDD Repo
+
+Use the upgrade helper to bring a downstream repo forward without overwriting project truth:
+
+```bash
+python3 scripts/statedd_upgrade.py /path/to/downstream/repo
+python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply
+python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply --force-managed
+```
+
+Default mode is dry-run. `--apply` copies only safe missing managed assets.
+`--force-managed` may replace outdated safe template assets, but it never touches
+project-truth files such as `PROJECT_STATE.yaml`, `BACKLOG.md`, or `README.md`.
 
 ## Schema-Backed Validation
 
