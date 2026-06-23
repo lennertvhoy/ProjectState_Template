@@ -1,0 +1,27 @@
+{
+  "$schema": "statedd.markdown_contract.v1",
+  "$id": "statedd.evidence_readme_contract.v1",
+  "title": "StateDD evidence README contract",
+  "contract_type": "markdown_contract",
+  "required_headings": [
+    "## Claims",
+    "## Verification Log",
+    "## Closure State",
+    "## Human Override",
+    "## Risks / What Remains Partial"
+  ],
+  "required_markers": [
+    "**Slice:**",
+    "**Date:**",
+    "**Agent:**",
+    "**Branch:**",
+    "**HEAD:**",
+    "Claim:",
+    "Evidence:",
+    "Human override used:"
+  ],
+  "optional_markers": [
+    "## Runtime Identity",
+    "runtime_identity.json"
+  ]
+}

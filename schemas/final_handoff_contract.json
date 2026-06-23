@@ -1,0 +1,32 @@
+{
+  "$schema": "statedd.markdown_contract.v1",
+  "$id": "statedd.final_handoff_contract.v1",
+  "title": "StateDD final handoff template contract",
+  "contract_type": "markdown_contract",
+  "required_markers": [
+    "Final handoff for CTO lane",
+    "Current verified truth",
+    "Slice contract",
+    "What changed",
+    "Four-state closure",
+    "Release / update gate",
+    "Human override",
+    "Repo and runtime identity",
+    "Runtime identity artifact",
+    "Direct verification",
+    "Evidence refs",
+    "Claim ledger",
+    "What remains partial or risky",
+    "Git state",
+    "Next recommended action",
+    "Paste-ready CTO wording",
+    "repo path",
+    "branch",
+    "head",
+    "process/container",
+    "port/base URL",
+    "rebuilt in this slice",
+    "duplicate runtimes checked",
+    "worktree"
+  ]
+}

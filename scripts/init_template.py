@@ -39,7 +39,7 @@ TEMPLATE_COPY_ROOT_FILES = {
     Path("WORKLOG.md"),
 }
 
-TEMPLATE_COPY_DIR_NAMES = {".github", "docs", "fixtures", "prompts", "scripts"}
+TEMPLATE_COPY_DIR_NAMES = {".github", "docs", "fixtures", "prompts", "schemas", "scripts"}
 
 SUPPORT_ASSET_PATHS = [
     Path("VERSION"),
@@ -50,8 +50,18 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
     Path("scripts/statedd_runtime_proof.py"),
+    Path("scripts/statedd_validate_schema.py"),
     Path("scripts/test_init_template.py"),
     Path("scripts/test_runtime_proof.py"),
+    Path("scripts/test_schema_validation.py"),
+    Path("schemas/project_state.schema.json"),
+    Path("schemas/project_dna.schema.json"),
+    Path("schemas/project_adapter.schema.json"),
+    Path("schemas/runtime_identity.schema.json"),
+    Path("schemas/evidence_readme_contract.json"),
+    Path("schemas/final_handoff_contract.json"),
+    Path("schemas/examples/runtime_identity_not_required.json"),
+    Path("schemas/tests/README.md"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
     Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
     Path("prompts/OPENCODE_STARTUP_PROMPT.md"),
@@ -1378,6 +1388,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "docs",
             "fixtures",
             "prompts",
+            "schemas",
             "scripts",
             "AGENTS.md",
             "BACKLOG.md",
@@ -1398,8 +1409,10 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "scripts/statedd_version_check.py",
             "scripts/statedd_handoff.py",
             "scripts/statedd_runtime_proof.py",
+            "scripts/statedd_validate_schema.py",
             "scripts/test_init_template.py",
             "scripts/test_runtime_proof.py",
+            "scripts/test_schema_validation.py",
         ],
         entrypoints=[
             "scripts/init_template.py",
@@ -1407,10 +1420,18 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "scripts/statedd_version_check.py",
             "scripts/statedd_handoff.py",
             "scripts/statedd_runtime_proof.py",
+            "scripts/statedd_validate_schema.py",
             "scripts/test_init_template.py",
             "scripts/test_runtime_proof.py",
+            "scripts/test_schema_validation.py",
         ],
-        test_setup=["scripts/check_state_docs.py", "scripts/test_init_template.py", "scripts/test_runtime_proof.py"],
+        test_setup=[
+            "scripts/check_state_docs.py",
+            "scripts/statedd_validate_schema.py",
+            "scripts/test_init_template.py",
+            "scripts/test_runtime_proof.py",
+            "scripts/test_schema_validation.py",
+        ],
         deployment_assumptions=["distributed as a git-hosted workflow template"],
         contradictions=["project-specific contradictions not yet investigated"],
         project_summary="bootstrap_initializing",
@@ -1624,9 +1645,10 @@ def main(argv: list[str] | None = None) -> int:
         print("5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
         print("6. Use bootstrap to fill the state files and prepare a real backlog before operating mode")
         print(f"7. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
-        print(f"8. Run {Path(sys.executable).name} scripts/statedd_audit.py before claiming closure-grade")
-        print(f"9. Run {Path(sys.executable).name} scripts/statedd_doctor.py for a quick health snapshot")
-        print(f"10. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
+        print(f"8. Run {Path(sys.executable).name} scripts/statedd_validate_schema.py after state/evidence updates")
+        print(f"9. Run {Path(sys.executable).name} scripts/statedd_audit.py before claiming closure-grade")
+        print(f"10. Run {Path(sys.executable).name} scripts/statedd_doctor.py for a quick health snapshot")
+        print(f"11. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
         return 0
 
     if not target.exists() or not target.is_dir():

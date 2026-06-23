@@ -28,6 +28,30 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-004: Schema-backed validation integrated
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_validate_schema.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_schema_validation.py
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/project_state.schema.json
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/runtime_identity.schema.json
+- Title: Schema-backed validation added for StateDD state, evidence, runtime proof, and handoff contracts
+- Source/System: test
+- Action: Added executable schemas/contracts, stdlib-only validator, valid/invalid fixtures, initializer coverage, CI coverage, and hygiene/audit/doctor integration.
+- Shows:
+  - root schema validation passes
+  - invalid project state and evidence README fixtures fail with actionable messages
+  - runtime-not-applicable passes and runtime-required-unreachable fails
+  - generated and adopted repos include schema validation assets
+  - audit, doctor, hygiene checks, and CI recognize schema validation
+- Proves:
+  - BL-010 is implemented as a reusable downstream template capability
+  - the BL-012 seed is limited to evidence README contract validation, not redaction or full manifest automation
+- Type: docs-render-verification
+- as_of: 2026-06-23T15:18:34+02:00
+- Notes: Redaction scanning, full evidence-pack manifests, downstream upgrade tooling, adoption profiles, wizard UX, browser automation, example project, and release metadata were intentionally not added in this slice.
+
 ## EV-2026-06-23-003: Runtime proof integrated into template contract
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/README.md

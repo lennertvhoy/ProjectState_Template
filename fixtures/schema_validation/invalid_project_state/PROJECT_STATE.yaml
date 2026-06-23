@@ -1,0 +1,28 @@
+# PROJECT_STATE.yaml - intentionally invalid fixture
+
+metadata:
+  updated_at: 2026-06-23
+  updated_by: test
+  version: "statedd-template-v4"
+
+workflow:
+  repo_role: template_repository
+  statedd_mode: bootstrap
+  repo_mode: bootstrap
+
+current_state:
+  repository:
+    canonical_path: fixtures/schema_validation/invalid_project_state
+    path_status: observed
+  operating_mode:
+    status: observed
+    mode: bootstrap
+  project:
+    name: Invalid Fixture
+    type: schema_validation_fixture
+    lifecycle_stage: bootstrap
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+
+active_problems: []

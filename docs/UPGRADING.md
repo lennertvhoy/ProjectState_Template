@@ -21,8 +21,9 @@ Use this guide when bringing an existing StateDD repo forward without overwritin
 2. Copy or merge reusable assets from the new template.
 3. Run `python3 scripts/statedd_version_check.py`.
 4. Run `python3 scripts/check_state_docs.py`.
-5. Run `python3 scripts/test_init_template.py` if the repo keeps initializer tests.
-6. Do not claim closure-grade unless audit and evidence requirements are met.
+5. Run `python3 scripts/statedd_validate_schema.py`.
+6. Run `python3 scripts/test_init_template.py` if the repo keeps initializer tests.
+7. Do not claim closure-grade unless audit and evidence requirements are met.
 
 ## Common Conflicts
 

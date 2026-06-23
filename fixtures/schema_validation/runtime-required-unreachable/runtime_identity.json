@@ -1,0 +1,26 @@
+{
+  "schema": "statedd.runtime_identity.v1",
+  "generated_at": "2026-06-23T00:00:00+00:00",
+  "repo": {
+    "path": "/example/runtime",
+    "branch": "main",
+    "head": "abc1234",
+    "worktree_clean": true,
+    "status_porcelain": ""
+  },
+  "runtime": {
+    "required": true,
+    "kind": "web",
+    "url": "http://localhost:9999",
+    "process": {
+      "detected": false,
+      "reason": "no process found"
+    }
+  },
+  "checks": {
+    "endpoint_reachable": false,
+    "process_detected": false,
+    "duplicate_runtime_checked": true
+  },
+  "limits": ["endpoint unreachable"]
+}

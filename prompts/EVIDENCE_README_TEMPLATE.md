@@ -27,6 +27,7 @@ real values. The claim ledger is the core of executable StateDD.
 | tests | `npm test` or `pytest` | pass / fail |
 | lint | `npm run lint` | pass / fail |
 | build | `npm run build` | pass / fail |
+| schema validation | `python3 scripts/statedd_validate_schema.py` | pass / fail |
 | audit | `python3 scripts/statedd_audit.py` | pass / fail |
 | runtime identity proof | `prompts/RUNTIME_IDENTITY_CHECKLIST.md` | yes / no |
 | schema ownership validation | `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` | yes / no / not applicable |

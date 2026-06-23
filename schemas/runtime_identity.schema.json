@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.runtime_identity.v1",
+  "title": "StateDD runtime_identity.json",
+  "type": "object",
+  "required": ["schema", "repo", "runtime", "checks", "limits"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {"type": "string", "const": "statedd.runtime_identity.v1"},
+    "generated_at": {"type": "string", "minLength": 10},
+    "captured_at": {"type": "string", "minLength": 10},
+    "repo": {
+      "type": "object",
+      "required": ["path", "branch", "head", "worktree_clean"],
+      "additionalProperties": true,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "branch": {"type": ["string", "null"]},
+        "head": {"type": ["string", "null"]},
+        "worktree_clean": {"type": "boolean"},
+        "status_porcelain": {"type": "string"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["required"],
+      "additionalProperties": true,
+      "properties": {
+        "required": {"type": "boolean"},
+        "kind": {"type": "string", "minLength": 1},
+        "url": {"type": ["string", "null"]},
+        "process": {
+          "type": "object",
+          "required": ["detected"],
+          "additionalProperties": true,
+          "properties": {
+            "detected": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "endpoint_reachable": {"type": "boolean"},
+        "process_detected": {"type": "boolean"},
+        "duplicate_runtime_checked": {"type": "boolean"},
+        "head_recorded": {"type": "boolean"},
+        "runtime_not_applicable_recorded": {"type": "boolean"}
+      }
+    },
+    "limits": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "statedd_semantics": {
+    "runtime_required_requires_endpoint_reachable": true
+  }
+}

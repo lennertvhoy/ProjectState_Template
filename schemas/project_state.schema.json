@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.project_state.v1",
+  "title": "StateDD PROJECT_STATE.yaml",
+  "type": "object",
+  "required": ["metadata", "workflow", "current_state", "active_problems"],
+  "additionalProperties": true,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["updated_at", "updated_by", "version"],
+      "additionalProperties": true,
+      "properties": {
+        "updated_at": {"type": "string", "minLength": 10},
+        "updated_by": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "const": "statedd-template-v4"}
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "required": ["repo_role", "statedd_mode", "repo_mode"],
+      "additionalProperties": true,
+      "properties": {
+        "repo_role": {"type": "string", "enum": ["template_repository", "downstream_project"]},
+        "statedd_mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]},
+        "repo_mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]},
+        "bootstrap": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "completed": {"type": "boolean"},
+            "system_investigated": {"type": "boolean"},
+            "repo_investigated": {"type": "boolean"},
+            "user_intake_complete": {"type": "boolean"},
+            "unknowns_remaining": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "verification_labels": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "current_state": {
+      "type": "object",
+      "required": ["repository", "operating_mode", "project", "evidence"],
+      "additionalProperties": true,
+      "properties": {
+        "repository": {
+          "type": "object",
+          "required": ["canonical_path", "path_status"],
+          "additionalProperties": true,
+          "properties": {
+            "canonical_path": {"type": "string", "minLength": 1},
+            "path_status": {"type": "string", "enum": ["observed", "unknown", "reported", "blocked", "assumed", "stale", "invalid"]}
+          }
+        },
+        "operating_mode": {
+          "type": "object",
+          "required": ["status", "mode"],
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "enum": ["observed", "unknown", "reported", "blocked", "assumed", "stale", "invalid"]},
+            "mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]}
+          }
+        },
+        "project": {
+          "type": "object",
+          "required": ["name", "type", "lifecycle_stage"],
+          "additionalProperties": true,
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "type": {"type": "string", "minLength": 1},
+            "lifecycle_stage": {"type": "string", "minLength": 1}
+          }
+        },
+        "runtime_identity": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "minLength": 1},
+            "artifact_contract": {"type": "string", "minLength": 1},
+            "helper": {"type": "string", "minLength": 1}
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "required": ["status", "ledger"],
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "minLength": 1},
+            "ledger": {"type": "string", "minLength": 1},
+            "artifact_root": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "active_problems": {
+      "type": "array"
+    }
+  },
+  "statedd_semantics": {
+    "repo_role_mode_compatibility": true,
+    "statedd_mode_matches_repo_mode": true
+  }
+}

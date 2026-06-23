@@ -74,7 +74,10 @@ created from it should use the full workflow directly.
 | `scripts/statedd_audit.py` | Machine-checkable closure audit |
 | `scripts/statedd_doctor.py` | Fast StateDD health summary |
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
+| `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
+| `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
+| `schemas/` | Executable StateDD schemas and Markdown contracts |
 | `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template, slice contract, evidence README, schema ownership, subagent review, CTO review checklist |
 
 ## How It Works
@@ -95,6 +98,7 @@ created from it should use the full workflow directly.
 - four-state closure: implemented, validated, closure-grade, and accepted are separate states
 - `negative-search honesty`: a failed search stays `not found` or `not proven`; it does not become `never existed`
 - executable audit: `statedd_audit.py` checks the repo rather than relying on agent discipline alone
+- executable schemas: `statedd_validate_schema.py` checks state, evidence README, runtime identity, and handoff contracts
 - `bootstrap vs operating`: discovery is a real phase, not a formality
 - `adopt` path for inherited repos: bring the workflow into existing codebases without blindly overwriting them
 - short active queue: open work stays small and backlog-linked
@@ -349,7 +353,7 @@ python3 scripts/statedd_doctor.py       # fast health summary
 python3 scripts/statedd_audit.py        # machine-checkable closure audit
 ```
 
-`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema ownership, and test/build/lint recording. Use `--strict` to fail on warnings.
+`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema validation, schema ownership, and test/build/lint recording. Use `--strict` to fail on warnings.
 
 `statedd_doctor.py` prints a one-glance summary of HEAD, worktree, evidence, state-doc freshness, test/browser proof, runtime identity status, open blockers, next slice, and closure grade.
 
@@ -357,8 +361,10 @@ Run the full gate set before handoff, review, or release:
 
 ```bash
 python3 scripts/check_state_docs.py
+python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
 python3 scripts/test_runtime_proof.py
+python3 scripts/test_schema_validation.py
 python3 scripts/statedd_doctor.py
 python3 scripts/statedd_audit.py
 ```
@@ -372,6 +378,21 @@ Every evidence folder should contain a `README.md` claim ledger based on `prompt
 ## Schema Ownership
 
 `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` enforces the rule: **No schema may exist only in prose.** Every packet schema needs a canonical machine-readable schema, generated example JSON, generated external prompt snippet, validation tests, an exact-shape sample, a `schemaVersion` field, and a migration policy.
+
+## Schema-Backed Validation
+
+StateDD ships executable schemas under `schemas/` and validates them with the stdlib-only `scripts/statedd_validate_schema.py`.
+
+The default validator checks:
+
+- `PROJECT_STATE.yaml` role/mode truth, required state sections, evidence pointers, and active problem shape
+- `PROJECT_DNA.yaml` version, product contract, truth rules, and invariants
+- `PROJECT_ADAPTER.yaml` when present
+- `docs/evidence/*/README.md` against the evidence README contract
+- `docs/evidence/*/runtime_identity.json` against the runtime identity contract
+- `prompts/FINAL_HANDOFF_TEMPLATE.md` when present
+
+The evidence README contract is intentionally a minimal BL-012 seed. It checks required ledger headings and markers; it does not implement redaction scanning or full evidence-pack manifests.
 
 ## ADRs
 
@@ -394,7 +415,9 @@ Run the hygiene check before handoff, review, or release:
 ```bash
 python3 scripts/check_state_docs.py
 python3 scripts/statedd_version_check.py
+python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
+python3 scripts/test_schema_validation.py
 python3 scripts/statedd_handoff.py
 python3 scripts/statedd_doctor.py
 python3 scripts/statedd_audit.py
@@ -404,8 +427,11 @@ You can also validate initialized fixtures or another repo copy:
 
 ```bash
 python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap
+python3 scripts/statedd_validate_schema.py fixtures/bootstrap_dry_run/bootstrap
 python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating
+python3 scripts/statedd_validate_schema.py fixtures/bootstrap_dry_run/operating
 python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
+python3 scripts/statedd_validate_schema.py fixtures/messy_inherited_repo/bootstrap
 ```
 
 ## Publishing A Downstream Project

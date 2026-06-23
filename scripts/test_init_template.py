@@ -187,6 +187,22 @@ def assert_runtime_proof_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing runtime proof assets: {missing}")
 
 
+def assert_schema_validation_assets_exist(root: Path) -> None:
+    required = [
+        root / "schemas" / "project_state.schema.json",
+        root / "schemas" / "project_dna.schema.json",
+        root / "schemas" / "project_adapter.schema.json",
+        root / "schemas" / "runtime_identity.schema.json",
+        root / "schemas" / "evidence_readme_contract.json",
+        root / "schemas" / "final_handoff_contract.json",
+        root / "scripts" / "statedd_validate_schema.py",
+        root / "scripts" / "test_schema_validation.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing schema validation assets: {missing}")
+
+
 def assert_downstream_bootstrap_context(root: Path) -> None:
     project_state = (root / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
     agents = (root / "AGENTS.md").read_text(encoding="utf-8")
@@ -245,6 +261,24 @@ def test_new_includes_runtime_proof_asset() -> None:
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Runtime Demo", "--target", str(target)], expect_success=True)
         assert_runtime_proof_assets_exist(target)
+
+
+def test_new_includes_schema_validation_assets_and_passes_schema_validation() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Schema Demo", "--target", str(target)], expect_success=True)
+        assert_schema_validation_assets_exist(target)
+        completed = subprocess.run(
+            [sys.executable, str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
+            cwd=target,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise AssertionError(
+                f"Generated repo schema validation failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+            )
 
 
 def test_new_repo_still_fails_bootstrap_gate_until_investigated() -> None:
@@ -339,6 +373,26 @@ def test_adopt_installs_runtime_proof_asset() -> None:
         assert_runtime_proof_assets_exist(repo)
 
 
+def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+        run_init(["adopt", "--name", "Schema Adopted", "--target", str(repo)], expect_success=True)
+        assert_schema_validation_assets_exist(repo)
+        completed = subprocess.run(
+            [sys.executable, str(repo / "scripts" / "statedd_validate_schema.py"), str(repo)],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise AssertionError(
+                f"Adopted repo schema validation failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+            )
+
+
 def test_template_root_uses_template_maintenance_mode() -> None:
     project_state = (ROOT / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
     if "repo_role: template_repository" not in project_state:
@@ -419,6 +473,7 @@ def main() -> int:
         test_new_includes_usability_assets,
         test_new_includes_version_assets_and_passes_version_check,
         test_new_includes_runtime_proof_asset,
+        test_new_includes_schema_validation_assets_and_passes_schema_validation,
         test_new_repo_still_fails_bootstrap_gate_until_investigated,
         test_new_includes_v2_executable_workflow_assets,
         test_new_includes_license_faq,
@@ -426,6 +481,7 @@ def main() -> int:
         test_adopt_installs_usability_assets,
         test_adopt_installs_version_assets_and_passes_version_check,
         test_adopt_installs_runtime_proof_asset,
+        test_adopt_installs_schema_validation_assets_and_passes_schema_validation,
         test_adopt_installs_v2_executable_workflow_assets,
         test_template_root_uses_template_maintenance_mode,
         test_template_root_bootstrap_gate_passes,

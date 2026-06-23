@@ -2,6 +2,44 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - Schema-backed validation integrated
+
+**Type:** template_validation_hardening
+**Status:** COMPLETE
+**Git Head:** e3e555df0c058f4404ee2104c41ceef7e37cee4a before implementation commit
+**Worktree:** clean before work; dirty during implementation and evidence capture; clean required after final commit
+
+### What changed
+- Added executable schemas/contracts under `schemas/` for `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `PROJECT_ADAPTER.yaml`, `runtime_identity.json`, evidence README files, and final handoff template markers.
+- Added `scripts/statedd_validate_schema.py`, a stdlib-only validator with a StateDD YAML parser and focused JSON Schema subset.
+- Added `scripts/test_schema_validation.py` plus valid/invalid schema fixtures covering invalid project state, invalid evidence README, runtime not applicable, and runtime required but unreachable.
+- Wired schema validation into `scripts/check_state_docs.py`, `scripts/statedd_audit.py`, `scripts/statedd_doctor.py`, `.github/workflows/validate.yml`, `scripts/init_template.py`, and initializer regression tests.
+- Updated README, scripts docs, getting-started docs, upgrade docs, evidence template, state files, backlog, and active queue.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/test_init_template.py scripts/test_runtime_proof.py scripts/test_schema_validation.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/test_schema_validation.py` passed.
+- `python3 scripts/statedd_version_check.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 scripts/test_runtime_proof.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- Fixture schema validation passed for `fixtures/bootstrap_dry_run/bootstrap`, `fixtures/bootstrap_dry_run/operating`, and `fixtures/messy_inherited_repo/bootstrap`.
+- `python3 scripts/statedd_audit.py` passed after implementation commit.
+- `python3 scripts/statedd_audit.py --strict` passed after implementation commit.
+- `python3 scripts/statedd_doctor.py` passed after implementation commit.
+
+### Evidence
+- `docs/evidence/2026-06-23-schema-backed-validation/README.md`
+- `docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-004`
+
+### Notes
+- The evidence README contract is a minimal BL-012 seed only.
+- Redaction scanning, full evidence-pack manifests, downstream upgrade tooling, adoption profiles/wizard UX, browser automation, canonical example project, and release metadata were intentionally out of scope.
+- The template root has no application runtime, so its runtime identity artifact records `runtime.required=false`.
+
 ## 2026-06-23 - Runtime proof hardening and integration
 
 **Type:** template_runtime_evidence

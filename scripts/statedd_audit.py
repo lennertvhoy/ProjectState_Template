@@ -539,6 +539,10 @@ def check_runtime_identity(repo: Path, result: AuditResult, strict: bool) -> Non
 
 
 def looks_like_schema(relpath: str) -> bool:
+    if relpath.startswith("schemas/examples/") or relpath.startswith("fixtures/"):
+        return False
+    if Path(relpath).name in {"statedd_validate_schema.py", "test_schema_validation.py"}:
+        return False
     return any(pattern.search(relpath) for pattern in SCHEMA_PATTERNS)
 
 
@@ -631,6 +635,23 @@ def check_tests_recorded(
         )
 
 
+def check_schema_validation(repo: Path, result: AuditResult) -> None:
+    script = repo / "scripts" / "statedd_validate_schema.py"
+    if not script.exists():
+        result.add("schema_validation", "fail", "Missing schema validator: scripts/statedd_validate_schema.py")
+        return
+    code, stdout, stderr = run_command([sys.executable, str(script), str(repo), "--quiet"], repo)
+    if code == 0:
+        result.add("schema_validation", "pass", "StateDD schema validation passed")
+        return
+    combined = f"{stdout}\n{stderr}".strip()
+    result.add(
+        "schema_validation",
+        "fail",
+        f"StateDD schema validation failed ({code}): {combined[:600]}",
+    )
+
+
 def check_human_override(
     repo: Path,
     result: AuditResult,
@@ -709,6 +730,7 @@ def main(argv: list[str] | None = None) -> int:
     check_branch_head_recorded(root, result)
     check_user_facing_evidence(root, result, args.strict)
     check_runtime_identity(root, result, args.strict)
+    check_schema_validation(root, result)
     check_schema_ownership(root, result, args.strict)
     check_tests_recorded(root, result, args.test_command)
     check_human_override(root, result, Path(args.override_file) if args.override_file else None)

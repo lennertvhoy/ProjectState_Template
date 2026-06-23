@@ -11,11 +11,10 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-010] Add schema-backed validation for StateDD state, evidence, and handoff files.
+- [BL-012] Add evidence pack manifests and a redaction gate.
 
 ## NEXT
 
-- [BL-012] Add evidence pack manifests and a redaction gate.
 - [BL-013] Add non-destructive downstream upgrade tooling.
 - [BL-014] Add adoption profiles and an interactive bootstrap wizard.
 

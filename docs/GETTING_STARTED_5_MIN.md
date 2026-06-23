@@ -97,7 +97,9 @@ For normal hygiene:
 
 ```bash
 python3 scripts/check_state_docs.py
+python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
+python3 scripts/test_schema_validation.py
 python3 scripts/statedd_doctor.py
 ```
 

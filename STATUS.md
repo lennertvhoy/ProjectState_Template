@@ -12,13 +12,13 @@
 - Version alignment is now checked by `scripts/statedd_version_check.py`.
 - Generated and adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
 - Runtime proof is now a template capability through `scripts/statedd_runtime_proof.py`, `runtime_identity.json`, audit recognition, doctor status, CI smoke coverage, and init/adopt asset coverage.
-- Schema validation remains open roadmap work.
+- Schema-backed validation is now a template capability through `schemas/`, `scripts/statedd_validate_schema.py`, tests, CI, audit, doctor, hygiene checks, and init/adopt asset coverage.
 
 ## Immediate Priorities
 
-1. Add schema-backed validation for state and evidence files.
-2. Add evidence manifests and redaction checks.
-3. Add non-destructive downstream upgrade tooling.
+1. Add evidence manifests and redaction checks.
+2. Add non-destructive downstream upgrade tooling.
+3. Add adoption profiles and an interactive bootstrap wizard.
 
 ## Active Blockers
 

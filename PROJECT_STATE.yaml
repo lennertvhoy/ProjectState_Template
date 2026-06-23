@@ -15,7 +15,6 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - schema-backed state validation not yet implemented
       - downstream upgrade automation not yet implemented
 
 verification_labels:
@@ -130,14 +129,19 @@ current_state:
       - scripts/statedd_audit.py
       - scripts/statedd_doctor.py
       - scripts/statedd_handoff.py
+      - scripts/statedd_validate_schema.py
       - scripts/statedd_version_check.py
       - scripts/statedd_runtime_proof.py
       - scripts/test_init_template.py
       - scripts/test_runtime_proof.py
+      - scripts/test_schema_validation.py
+      - schemas
     test_setup:
       - python3 scripts/check_state_docs.py
+      - python3 scripts/statedd_validate_schema.py
       - python3 scripts/test_init_template.py
       - python3 scripts/test_runtime_proof.py
+      - python3 scripts/test_schema_validation.py
       - python3 scripts/statedd_audit.py
       - python3 scripts/statedd_doctor.py
     deployment_assumptions:
@@ -178,6 +182,7 @@ current_state:
       - prompts/TOOL_MODEL_ROUTING_GUIDE.md
       - scripts/statedd_version_check.py
       - scripts/statedd_handoff.py
+      - scripts/statedd_validate_schema.py
       - scripts/statedd_runtime_proof.py
     prompt_assets:
       cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
@@ -207,7 +212,11 @@ current_state:
       audit_command:
         status: observed
         path: scripts/statedd_audit.py
-        summary: Machine-checkable StateDD closure audit, including runtime identity artifact recognition.
+        summary: Machine-checkable StateDD closure audit, including runtime identity artifact recognition and schema validation.
+      schema_validation:
+        status: observed
+        path: scripts/statedd_validate_schema.py
+        summary: Stdlib-only schema-backed validation for StateDD state, evidence README, runtime identity, and final handoff contracts.
       version_check:
         status: observed
         path: scripts/statedd_version_check.py

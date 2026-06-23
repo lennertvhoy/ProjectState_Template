@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-010] Add schema-backed validation for state and evidence files
+### P0 [BL-012] Add evidence pack manifests and a redaction gate
 Owner: CTO lane + coding agent
-Next: design the smallest machine-checkable schema validation path for StateDD state and evidence files without adding a broad manifest/redaction system
-Exit: core state/evidence schemas are executable, documented, tested, and wired into hygiene/audit checks
+Next: design the smallest evidence-pack manifest and redaction check that builds on BL-010 without widening into upgrade tooling or browser automation
+Exit: evidence pack manifests and redaction checks are executable, tested, documented, wired into hygiene/audit checks, and proven against valid and invalid evidence examples
 
 ## Queue Rules
 

@@ -270,6 +270,7 @@ owns synthesis; subagents do not rewrite the contract.
 - `scripts/statedd_handoff.py` = read-only handoff snapshot
 - `scripts/statedd_audit.py` = machine-checkable closure audit
 - `scripts/statedd_doctor.py` = fast health summary
+- `scripts/statedd_validate_schema.py` = schema-backed state, evidence, runtime, and handoff validation
 
 ## Handoff Requirements
 

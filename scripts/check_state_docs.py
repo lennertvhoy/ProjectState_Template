@@ -64,8 +64,18 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/statedd_audit.py",
     "scripts/statedd_doctor.py",
     "scripts/statedd_runtime_proof.py",
+    "scripts/statedd_validate_schema.py",
     "scripts/test_init_template.py",
     "scripts/test_runtime_proof.py",
+    "scripts/test_schema_validation.py",
+    "schemas/project_state.schema.json",
+    "schemas/project_dna.schema.json",
+    "schemas/project_adapter.schema.json",
+    "schemas/runtime_identity.schema.json",
+    "schemas/evidence_readme_contract.json",
+    "schemas/final_handoff_contract.json",
+    "schemas/examples/runtime_identity_not_required.json",
+    "schemas/tests/README.md",
     "LICENSE",
     "LICENSE_FAQ.md",
     "prompts/CTO_SESSION_PROMPT.md",
@@ -301,6 +311,7 @@ def check_readme(path: Path) -> list[str]:
         "docs/GETTING_STARTED_5_MIN.md",
         "scripts/statedd_handoff.py",
         "scripts/statedd_runtime_proof.py",
+        "scripts/statedd_validate_schema.py",
         "LICENSE_FAQ.md",
         "teaching/training rights are reserved",
         "ChatGPT, Claude, Gemini",
@@ -364,6 +375,31 @@ def check_version_alignment(root: Path) -> list[str]:
     output = "\n".join(part for part in (completed.stdout.strip(), completed.stderr.strip()) if part)
     if not output:
         output = f"version check exited with {completed.returncode}"
+    return output.splitlines()
+
+
+def check_schema_validation(root: Path) -> list[str]:
+    script = root / "scripts" / "statedd_validate_schema.py"
+    if not script.exists():
+        fallback = ROOT / "scripts" / "statedd_validate_schema.py"
+        if fallback.exists():
+            script = fallback
+        else:
+            return ["Missing schema validator: scripts/statedd_validate_schema.py"]
+
+    completed = subprocess.run(
+        [sys.executable, str(script), str(root), "--quiet"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode == 0:
+        return []
+
+    output = "\n".join(part for part in (completed.stdout.strip(), completed.stderr.strip()) if part)
+    if not output:
+        output = f"schema validation exited with {completed.returncode}"
     return output.splitlines()
 
 
@@ -504,6 +540,10 @@ def check_template_assets(root: Path) -> list[str]:
             issues.append("GitHub workflow must run scripts/test_init_template.py")
         if "scripts/statedd_runtime_proof.py" not in workflow_text:
             issues.append("GitHub workflow must validate scripts/statedd_runtime_proof.py")
+        if "scripts/statedd_validate_schema.py" not in workflow_text:
+            issues.append("GitHub workflow must validate scripts/statedd_validate_schema.py")
+        if "scripts/test_schema_validation.py" not in workflow_text:
+            issues.append("GitHub workflow must run scripts/test_schema_validation.py")
 
     return issues
 
@@ -620,6 +660,10 @@ def main(argv: list[str] | None = None) -> int:
     if version_issues:
         failures.append(("version_alignment", version_issues))
 
+    schema_issues = check_schema_validation(root)
+    if schema_issues:
+        failures.append(("schema_validation", schema_issues))
+
     readme = root / "README.md"
     template_style_repo = is_template_style_repo(root)
     if readme.exists() and template_style_repo:
@@ -645,6 +689,7 @@ def main(argv: list[str] | None = None) -> int:
     print_failure_block("cross_file_rules", next((issues for name, issues in failures if name == "cross_file_rules"), []))
     print_failure_block("repo role/mode", next((issues for name, issues in failures if name == "repo_role_mode"), []))
     print_failure_block("version alignment", next((issues for name, issues in failures if name == "version_alignment"), []))
+    print_failure_block("schema validation", next((issues for name, issues in failures if name == "schema_validation"), []))
 
     if readme.exists() and template_style_repo:
         print_failure_block("README.md", next((issues for name, issues in failures if name == "README.md"), []))
