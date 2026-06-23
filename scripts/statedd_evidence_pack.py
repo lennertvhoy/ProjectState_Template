@@ -204,6 +204,7 @@ def command_init(evidence_dir: Path, slice_id: str | None = None, *, force: bool
     manifest: dict[str, Any] = {
         "schema": SCHEMA,
         "slice_id": slice_id or "BL-000",
+        "manifest_status": "complete",
         "created_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
         "repo": repo_block(ROOT),
         "runtime_identity": runtime_identity,
@@ -284,10 +285,18 @@ def command_check(evidence_dir: Path, *, strict: bool = False) -> int:
     if not isinstance(redaction, dict):
         redaction = {}
     redaction_status = redaction.get("status")
+    manifest_status = manifest.get("manifest_status", "complete")
 
     if strict:
+        if manifest_status not in {"skeleton", "legacy"}:
+            if not claims:
+                issues.append("Strict check failed: claims is empty (use manifest_status=skeleton/legacy if intentional)")
+            if not artifacts:
+                issues.append("Strict check failed: artifacts is empty (use manifest_status=skeleton/legacy if intentional)")
         if redaction_status == "unchecked":
             issues.append("Strict check failed: redaction status is unchecked")
+        if redaction.get("manual_review") == "required" and not redaction.get("known_limits"):
+            issues.append("Strict check failed: manual_review is required but known_limits is empty")
         for artifact in artifacts:
             if not isinstance(artifact, dict):
                 continue
@@ -326,6 +335,9 @@ def command_hash(evidence_dir: Path) -> int:
             continue
         ref = artifact.get("path")
         if not ref:
+            continue
+        if ref == MANIFEST_NAME:
+            # The manifest cannot hash itself; leave sha256 null or externally supplied.
             continue
         artifact_path = evidence_dir / ref
         if not artifact_path.exists():

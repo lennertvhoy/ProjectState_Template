@@ -422,6 +422,99 @@ def test_scan_flags_possible_secret() -> None:
             raise AssertionError("scan did not set checked_with_limits")
 
 
+def test_empty_claims_and_artifacts_fails_strict() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        evidence = Path(tmp) / "evidence"
+        evidence.mkdir()
+        (evidence / "artifact.txt").write_text("hello\n", encoding="utf-8")
+        write_manifest(
+            evidence,
+            {
+                "schema": "statedd.evidence_manifest.v1",
+                "slice_id": "BL-012",
+                "created_at": "2026-06-23T00:00:00+00:00",
+                "repo": {"branch": "main", "head": "abc1234"},
+                "runtime_identity": {"required": False},
+                "claims": [],
+                "artifacts": [],
+                "redaction": {
+                    "status": "checked_with_limits",
+                    "automated_scan": "passed",
+                    "manual_review": "required",
+                    "known_limits": ["Automated scan only."],
+                },
+            },
+        )
+        run_pack(["check", str(evidence), "--strict"], expect_success=False)
+
+
+def test_skeleton_status_allows_empty_claims_and_artifacts() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        evidence = Path(tmp) / "evidence"
+        evidence.mkdir()
+        write_manifest(
+            evidence,
+            {
+                "schema": "statedd.evidence_manifest.v1",
+                "slice_id": "BL-012",
+                "manifest_status": "skeleton",
+                "created_at": "2026-06-23T00:00:00+00:00",
+                "repo": {"branch": "main", "head": "abc1234"},
+                "runtime_identity": {"required": False},
+                "claims": [],
+                "artifacts": [],
+                "redaction": {
+                    "status": "checked_with_limits",
+                    "automated_scan": "not_applicable",
+                    "manual_review": "required",
+                    "known_limits": ["Skeleton manifest; redaction review deferred."],
+                },
+            },
+        )
+        run_pack(["check", str(evidence), "--strict"], expect_success=True)
+
+
+def test_strict_requires_known_limits_when_manual_review_required() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        evidence = Path(tmp) / "evidence"
+        evidence.mkdir()
+        (evidence / "artifact.txt").write_text("hello\n", encoding="utf-8")
+        write_manifest(
+            evidence,
+            {
+                "schema": "statedd.evidence_manifest.v1",
+                "slice_id": "BL-012",
+                "created_at": "2026-06-23T00:00:00+00:00",
+                "repo": {"branch": "main", "head": "abc1234"},
+                "runtime_identity": {"required": False},
+                "claims": [
+                    {
+                        "id": "C1",
+                        "claim": "artifact exists",
+                        "status": "validated",
+                        "evidence": ["artifact.txt"],
+                    }
+                ],
+                "artifacts": [
+                    {
+                        "path": "artifact.txt",
+                        "kind": "doc",
+                        "sha256": None,
+                        "redaction_status": "checked_with_limits",
+                        "sensitive_data": "none_found",
+                    }
+                ],
+                "redaction": {
+                    "status": "checked_with_limits",
+                    "automated_scan": "passed",
+                    "manual_review": "required",
+                    "known_limits": [],
+                },
+            },
+        )
+        run_pack(["check", str(evidence), "--strict"], expect_success=False)
+
+
 def main() -> int:
     tests = [
         test_init_creates_manifest,
@@ -435,6 +528,9 @@ def main() -> int:
         test_binary_artifact_without_manual_review_fails_strict,
         test_hash_command_updates_hashes,
         test_scan_flags_possible_secret,
+        test_empty_claims_and_artifacts_fails_strict,
+        test_skeleton_status_allows_empty_claims_and_artifacts,
+        test_strict_requires_known_limits_when_manual_review_required,
     ]
     for test in tests:
         test()

@@ -28,6 +28,28 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-006: Closure evidence hardening (BL-015)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_evidence_pack.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_evidence_pack.py
+- File: /home/ff/Documents/Projects/StateDD_Template/schemas/evidence_manifest.schema.json
+- Title: BL-015 closure evidence hardening cleanup
+- Source/System: test
+- Action: Fixed the human override flag in the closure evidence README, populated the closure manifest with non-empty claims and artifacts, added manifest_status to the schema, tightened --strict to reject empty claims/artifacts unless skeleton/legacy, and added regression tests.
+- Shows:
+  - closure evidence README now records `Human override used: yes` with scope and rationale
+  - closure manifest.json contains claims C1-C5 and artifacts with hashes/redaction status
+  - `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-adoption-ready-evidence-release --strict` passes
+  - new tests cover empty claims/artifacts strict failure, skeleton exception, and required manual_review without known_limits
+- Proves:
+  - the final BL-012/013/014 evidence pack demonstrates the claim/artifact model it introduced
+  - human override status is consistent across handoff, WORKLOG, EVIDENCE_LOG, and evidence README
+- Type: docs-render-verification
+- as_of: 2026-06-23T15:58:00+02:00
+- Notes: This is a post-closure hardening slice; no new features were added.
+
 ## EV-2026-06-23-005: Adoption-ready template release verified
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md

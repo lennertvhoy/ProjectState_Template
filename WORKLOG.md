@@ -2,6 +2,39 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - Closure evidence hardening (BL-015)
+
+**Type:** closure_evidence_hardening
+**Status:** COMPLETE
+**Git Head:** ddc190f before fix; TBD after fix
+**Worktree:** clean after final commit
+
+### What changed
+- Fixed `docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md` to record `Human override used: yes` with scope/rationale.
+- Populated `docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json` with non-empty claims C1-C5 and artifacts (README.md, runtime_identity.json, manifest.json).
+- Added `manifest_status` enum (`complete`/`skeleton`/`legacy`) to `schemas/evidence_manifest.schema.json`.
+- Tightened `scripts/statedd_evidence_pack.py --strict` to reject empty `claims`/`artifacts` unless `manifest_status` is `skeleton` or `legacy`, and to reject `manual_review: required` without `known_limits`.
+- Made `scripts/statedd_evidence_pack.py hash` skip `manifest.json` because a manifest cannot hash itself.
+- Added regression tests in `scripts/test_evidence_pack.py`.
+- Updated `docs/EVIDENCE_LOG.md` with `EV-2026-06-23-006`.
+
+### Verification
+- `python3 scripts/test_evidence_pack.py` passed.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-adoption-ready-evidence-release --strict` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/statedd_audit.py --strict` passed after final commit.
+- `python3 scripts/statedd_doctor.py` passed after final commit.
+
+### Evidence
+- `docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md`
+- `docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-006`
+
+### Notes
+- This is a post-closure hardening slice; no new features were added.
+- The human override status is now consistent across handoff, WORKLOG, EVIDENCE_LOG, and evidence README.
+
 ## 2026-06-23 - Adoption-ready template release (BL-012/013/014)
 
 **Type:** template_maintenance_release

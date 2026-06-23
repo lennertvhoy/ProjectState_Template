@@ -14,6 +14,11 @@
       "type": "string",
       "minLength": 1
     },
+    "manifest_status": {
+      "type": "string",
+      "enum": ["complete", "skeleton", "legacy"],
+      "description": "complete = normal closure-grade manifest; skeleton/legacy may have empty claims/artifacts"
+    },
     "created_at": {
       "type": "string",
       "minLength": 10
