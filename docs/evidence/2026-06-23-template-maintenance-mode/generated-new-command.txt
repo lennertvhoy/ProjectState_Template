@@ -1,0 +1,14 @@
+Initialized State Driven Development Template repo
+Target: /tmp/tmp.o3RT4xZsoI/new-demo
+Mode: bootstrap
+Next:
+1. Read docs/GETTING_STARTED_5_MIN.md, then README.md when you need the full guide
+2. Fix git ownership first if needed: remove .git, init your own repo, and verify git remote -v
+3. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with prompts/CODING_AGENT_STARTUP_PROMPT.md
+4. Let the coding agent read the repo files, detect bootstrap mode, and ask the minimum strategic questions
+5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md
+6. Use bootstrap to fill the state files and prepare a real backlog before operating mode
+7. Run python3 scripts/check_state_docs.py after bootstrap updates
+8. Run python3 scripts/statedd_audit.py before claiming closure-grade
+9. Run python3 scripts/statedd_doctor.py for a quick health snapshot
+10. Run python3 scripts/check_state_docs.py --bootstrap-gate before flipping to operating

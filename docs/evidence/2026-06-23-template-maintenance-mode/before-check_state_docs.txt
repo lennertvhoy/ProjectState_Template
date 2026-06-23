@@ -1,0 +1,12 @@
+Command: python3 scripts/check_state_docs.py --bootstrap-gate
+When: before BL-011 implementation, at HEAD e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
+Result: fail
+
+Relevant output:
+
+📄 bootstrap gate
+  ❌ Bootstrap gate failed: system investigation is still false in PROJECT_STATE.yaml
+  ❌ Bootstrap gate failed: repo investigation is still false in PROJECT_STATE.yaml
+
+This was the expected pre-slice failure: the template root was still being
+handled as a half-bootstrapped downstream project.

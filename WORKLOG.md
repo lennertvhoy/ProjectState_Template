@@ -2,6 +2,39 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - Template-maintenance mode split
+
+**Type:** template_state_governance
+**Status:** COMPLETE
+**Git Head:** e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
+**Worktree:** clean before work; dirty after local edits pending handoff
+
+### What changed
+- Added explicit `repo_role` and `statedd_mode` semantics for template root versus downstream repositories.
+- Updated root `AGENTS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `PROJECT_ADAPTER.yaml`, and `STATUS.md` so the template root is `repo_role: template_repository` and `statedd_mode: template-maintenance`.
+- Updated `scripts/init_template.py` so generated and adopted repos start as `repo_role: downstream_project` and `statedd_mode: bootstrap`.
+- Made `scripts/check_state_docs.py`, `scripts/statedd_audit.py`, and `scripts/statedd_doctor.py` mode-aware.
+- Updated initializer tests and fixtures to cover template-maintenance and downstream bootstrap behavior.
+- Updated `README.md`, `docs/GETTING_STARTED_5_MIN.md`, and `docs/UPGRADING.md` with the role/mode distinction.
+
+### Verification
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/test_init_template.py` passed.
+- `python3 scripts/statedd_version_check.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed for the root template-maintenance repo.
+- `python3 scripts/test_init_template.py` passed, including root template-maintenance and generated downstream bootstrap tests.
+- Fixture hygiene checks passed for `fixtures/bootstrap_dry_run/bootstrap`, `fixtures/bootstrap_dry_run/operating`, and `fixtures/messy_inherited_repo/bootstrap`.
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap` failed as expected for the intentionally thin dry-run fixture.
+- `python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap` passed.
+
+### Evidence
+- `docs/evidence/2026-06-23-template-maintenance-mode/README.md`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-002`
+
+### Notes
+- Runtime identity proof artifacts were not added; they remain [BL-009].
+- Schema-backed validation was not added; it remains [BL-010].
+
 ## 2026-06-23 - StateDD version source normalized
 
 **Type:** template_version_governance

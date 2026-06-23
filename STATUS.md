@@ -1,23 +1,23 @@
 # StateDD Template Status
 
 **Updated At:** 2026-06-23
-**Execution Mode:** bootstrap
-**Project State:** bootstrap_template_maintenance
+**Execution Mode:** template-maintenance
+**Project State:** template_maintenance_active
 **Public URL:** not configured
 
 ## Snapshot
 
-- Repo remains in bootstrap mode while the template-maintenance baseline is clarified.
+- Repo now identifies as `repo_role: template_repository` with `statedd_mode: template-maintenance`.
 - Canonical StateDD spec version is `statedd-template-v4` from `VERSION`.
 - Version alignment is now checked by `scripts/statedd_version_check.py`.
-- Root `PROJECT_ADAPTER.yaml` has been normalized from the stale adapter version to v4.
-- Runtime proof, schema validation, and template/downstream state split remain open roadmap work.
+- Generated and adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
+- Runtime proof and schema validation remain open roadmap work.
 
 ## Immediate Priorities
 
-1. Resolve the template-maintenance mode split.
-2. Add runtime identity proof artifacts.
-3. Add schema-backed validation for state and evidence files.
+1. Add runtime identity proof artifacts.
+2. Add schema-backed validation for state and evidence files.
+3. Add evidence manifests and redaction checks.
 
 ## Active Blockers
 

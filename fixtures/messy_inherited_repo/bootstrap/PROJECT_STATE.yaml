@@ -6,6 +6,8 @@ metadata:
   version: "statedd-template-v4"
 
 workflow:
+  repo_role: downstream_project
+  statedd_mode: bootstrap
   repo_mode: bootstrap
   bootstrap:
     completed: false

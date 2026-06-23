@@ -99,6 +99,8 @@ class RepoScan:
 
 def render_agents_template(today: str, mode: str) -> str:
     return f"""---
+repo_role: downstream_project
+statedd_mode: {mode}
 repo_mode: {mode}
 statedd_version: "{TEMPLATE_VERSION}"
 initialized_on: {today}
@@ -395,6 +397,8 @@ metadata:
   version: "{TEMPLATE_VERSION}"
 
 workflow:
+  repo_role: downstream_project
+  statedd_mode: bootstrap
   repo_mode: bootstrap
   bootstrap:
     completed: false
@@ -591,6 +595,9 @@ truth_rules:
     invalid: known false or superseded
 
   repo_modes:
+    template-maintenance:
+      purpose: maintain the StateDD template repository itself
+      exit_condition: not used by downstream projects
     bootstrap:
       purpose: discover truth and establish baseline state
       exit_condition: baseline completed and mode flipped to operating

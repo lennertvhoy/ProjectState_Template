@@ -6,15 +6,15 @@ metadata:
   version: "statedd-template-v4"
 
 workflow:
-  repo_mode: bootstrap
-  bootstrap:
-    completed: false
-    completed_on: null
-    system_investigated: false
-    repo_investigated: false
-    user_intake_complete: false
+  repo_role: template_repository
+  statedd_mode: template-maintenance
+  repo_mode: template-maintenance
+  template_maintenance:
+    status: observed
+    purpose: maintain the reusable StateDD template repository
+    downstream_default_role: downstream_project
+    downstream_default_mode: bootstrap
     unknowns_remaining:
-      - template-maintenance mode split not yet implemented
       - runtime identity proof artifact not yet implemented
       - schema-backed state validation not yet implemented
       - downstream upgrade automation not yet implemented
@@ -33,47 +33,48 @@ current_state:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
     branch: main
-    head: d5ae473c2e4c129978fe5a56b30dae4c044e7f09
+    head: e9f1c731ec9760fedfe84dfb1979ab93ee05c9fd
     worktree_status: dirty
 
   operating_mode:
     status: observed
-    mode: bootstrap
+    mode: template-maintenance
     summary: |
-      This repository starts in bootstrap mode. Do not switch to operating mode
-      until the project truth, backlog, active queue, runtime identity, and
-      evidence baseline have been established.
+      This repository maintains the reusable StateDD template. Generated and
+      adopted downstream repositories still start in bootstrap mode; the root
+      template repo tracks template-maintenance truth.
 
   project:
     name: StateDD_Template
     type: documentation_and_workflow_template
-    lifecycle_stage: bootstrap
-    truth_summary: template_maintenance_bootstrap
+    lifecycle_stage: template-maintenance
+    truth_summary: template_maintenance_active
 
   runtime_identity:
-    status: unknown
-    repo_path: unknown
+    status: not_applicable
+    repo_path: /home/ff/Documents/Projects/StateDD_Template
     branch: null
     head: null
-    process_or_container: unknown
-    port_or_base_url: unknown
-    rebuilt_in_current_slice: unknown
-    duplicate_runtimes_checked: false
+    process_or_container: no application runtime
+    port_or_base_url: not_applicable
+    rebuilt_in_current_slice: false
+    duplicate_runtimes_checked: not_applicable
     notes: |
-      Fill this section before accepting user-facing behavior or investigating
-      a visual/runtime regression.
+      The template root does not ship an application runtime. Downstream
+      projects must still prove runtime identity before accepting user-facing
+      behavior.
 
   environment:
-    status: unknown
+    status: observed
     host:
-      os: unknown
-      kernel: unknown
+      os: Linux
+      kernel: 7.0.12-201.fc44.x86_64
       shell: unknown
       terminal: unknown
     package_managers:
       - unknown
     language_runtimes:
-      python: unknown
+      python: 3.14.5
       node: unknown
     container_tooling:
       docker: unknown
@@ -87,29 +88,61 @@ current_state:
         Capture active listeners directly during bootstrap when that matters.
 
   repository_structure:
-    status: unknown
+    status: observed
     top_level_entries:
-      - unknown
+      - AGENTS.md
+      - BACKLOG.md
+      - CHANGELOG.md
+      - LICENSE
+      - LICENSE_FAQ.md
+      - NEXT_ACTIONS.md
+      - PROJECT_ADAPTER.yaml
+      - PROJECT_DNA.yaml
+      - PROJECT_STATE.yaml
+      - README.md
+      - STATUS.md
+      - VERSION
+      - WORKLOG.md
+      - docs
+      - fixtures
+      - prompts
+      - scripts
     manifests:
-      - unknown
+      - VERSION
+      - README.md
+      - scripts/init_template.py
+      - scripts/check_state_docs.py
+      - scripts/statedd_audit.py
+      - scripts/statedd_doctor.py
+      - scripts/test_init_template.py
     entrypoints:
-      - unknown
+      - scripts/init_template.py
+      - scripts/check_state_docs.py
+      - scripts/statedd_audit.py
+      - scripts/statedd_doctor.py
+      - scripts/statedd_handoff.py
+      - scripts/statedd_version_check.py
+      - scripts/test_init_template.py
     test_setup:
-      - unknown
+      - python3 scripts/check_state_docs.py
+      - python3 scripts/test_init_template.py
+      - python3 scripts/statedd_audit.py
+      - python3 scripts/statedd_doctor.py
     deployment_assumptions:
-      - deployment target not yet proven
+      - distributed as a git-hosted workflow template
+      - no application deployment target
     contradictions:
-      - project-specific contradictions not yet investigated
+      - not proven
 
   evidence:
-    status: initialized
+    status: active
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
     standard: browser_verification_or_test_output_for_user_facing_claims
 
   documentation:
-    status: initialized
+    status: observed
     primary_user_guide: README.md
     live_docs:
       - README.md

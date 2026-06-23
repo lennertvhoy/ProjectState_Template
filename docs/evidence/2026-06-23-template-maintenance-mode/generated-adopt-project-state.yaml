@@ -1,0 +1,149 @@
+# PROJECT_STATE.yaml - Structured current truth
+
+metadata:
+  updated_at: 2026-06-23T14:31:20+02:00
+  updated_by: agent
+  version: "statedd-template-v4"
+
+workflow:
+  repo_role: downstream_project
+  statedd_mode: bootstrap
+  repo_mode: bootstrap
+  bootstrap:
+    completed: false
+    completed_on: null
+    system_investigated: true
+    repo_investigated: true
+    user_intake_complete: false
+    unknowns_remaining:
+      - primary user still needs direct confirmation
+      - first milestone still needs direct confirmation
+      - deployment target may differ from inherited docs
+
+verification_labels:
+  observed: verified directly in the current session
+  unknown: not yet determined from currently available evidence
+  reported: supported by prior evidence, not re-verified
+  blocked: verification attempted but prevented
+  assumed: temporary working assumption
+  stale: previously verified but no longer fresh
+  invalid: known false or superseded
+
+current_state:
+  repository:
+    canonical_path: /tmp/tmp.o3RT4xZsoI/adopt-demo
+    path_status: observed
+    branch: null
+    head: null
+
+  operating_mode:
+    status: observed
+    mode: bootstrap
+    summary: |
+      This repository is currently in bootstrap mode. It should not flip to
+      operating mode until the baseline state, backlog, queue, and evidence are
+      truthfully established.
+
+  project:
+    name: BL011 Adopt Demo
+    type: adopted_existing_repo
+    lifecycle_stage: bootstrap
+    truth_summary: bootstrap_adoption_baseline
+
+  runtime_identity:
+    status: unknown
+    repo_path: /tmp/tmp.o3RT4xZsoI/adopt-demo
+    branch: null
+    head: null
+    process_or_container: unknown
+    port_or_base_url: unknown
+    rebuilt_in_current_slice: unknown
+    duplicate_runtimes_checked: false
+    notes: |
+      Fill this section before accepting user-facing behavior or investigating
+      a visual/runtime regression.
+
+  environment:
+    status: observed
+    host:
+      os: Linux 7.0.12-201.fc44.x86_64
+      kernel: #1 SMP PREEMPT_DYNAMIC Thu Jun 11 01:30:16 UTC 2026
+      shell: /bin/bash
+      terminal: tmux-256color
+    package_managers:
+      - unknown
+    language_runtimes:
+      python: 3.14.5
+    container_tooling:
+      podman: present
+      docker: absent
+    browser_tooling:
+      chrome: present
+    ports:
+      listeners: unknown
+      notes: |
+        Capture active listeners directly during bootstrap when that matters.
+
+  repository_structure:
+    status: observed
+    top_level_entries:
+      - README.md
+    manifests:
+      - unknown
+    entrypoints:
+      - unknown
+    test_setup:
+      - unknown
+    deployment_assumptions:
+      - deployment target not yet proven
+    contradictions:
+      - no contradictions observed yet
+
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+    artifact_root: docs/evidence
+    standard: browser_verification_or_test_output_for_user_facing_claims
+
+  documentation:
+    status: observed
+    primary_user_guide: README.md
+    live_docs:
+      - README.md
+      - AGENTS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - PROJECT_DNA.yaml
+      - PROJECT_ADAPTER.yaml
+      - NEXT_ACTIONS.md
+      - BACKLOG.md
+      - WORKLOG.md
+      - LICENSE
+      - LICENSE_FAQ.md
+      - docs/GETTING_STARTED_5_MIN.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
+      - prompts/OPENCODE_STARTUP_PROMPT.md
+      - prompts/TOOL_MODEL_ROUTING_GUIDE.md
+      - scripts/statedd_handoff.py
+    prompt_assets:
+      cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
+      coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
+      opencode_startup_prompt: prompts/OPENCODE_STARTUP_PROMPT.md
+      tool_model_routing_guide:
+        status: observed
+        path: prompts/TOOL_MODEL_ROUTING_GUIDE.md
+        summary: |
+          Guides the CTO lane to recommend tools, models, settings, context
+          strategy, and tailored prompts based on current user access, task
+          risk, budget, and verified provider facts.
+    workflow_helpers:
+      getting_started_5_min:
+        status: observed
+        path: docs/GETTING_STARTED_5_MIN.md
+      handoff_snapshot:
+        status: observed
+        path: scripts/statedd_handoff.py
+
+active_problems: []

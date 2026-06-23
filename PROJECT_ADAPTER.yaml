@@ -6,6 +6,8 @@ project:
   name: StateDD_Template
   short_name: statedd-template
   description: "Adapter layer for maintaining the reusable StateDD workflow template."
+  repo_role: template_repository
+  statedd_mode: template-maintenance
 
 vocabulary:
   control_plane_name: "control plane"
@@ -17,7 +19,7 @@ runtime:
   frontend_port: null
   api_port: null
   public_url: null
-  execution_mode: bootstrap
+  execution_mode: template-maintenance
   runtime_identity_surface: null
 
 integrations: []

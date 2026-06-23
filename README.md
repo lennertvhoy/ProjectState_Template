@@ -8,6 +8,10 @@ StateDD keeps humans in control while giving coding agents a shared source of
 truth inside the repo: live state, a short active queue, evidence-backed claims,
 and clean handoffs between planning and implementation.
 
+The template repository itself uses `repo_role: template_repository` and
+`statedd_mode: template-maintenance`. Repos generated or adopted from it use
+`repo_role: downstream_project` and start in `statedd_mode: bootstrap`.
+
 ---
 
 ## Why This Exists

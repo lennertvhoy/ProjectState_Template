@@ -1,0 +1,15 @@
+Adopted repo into the State Driven Development Template workflow
+Target: /tmp/tmp.o3RT4xZsoI/adopt-demo
+Mode: bootstrap
+README behavior: existing README preserved
+GitHub assets: skipped
+Next:
+1. Read docs/GETTING_STARTED_5_MIN.md
+2. Review PROJECT_STATE.yaml, BACKLOG.md, and NEXT_ACTIONS.md against the real repo
+3. Resolve contradictions before treating inherited claims as current truth
+4. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with the repo contract
+5. Use prompts/FINAL_HANDOFF_TEMPLATE.md or scripts/statedd_handoff.py for the first CTO handoff
+6. Run python3 scripts/check_state_docs.py after edits
+7. Run python3 scripts/statedd_audit.py before claiming closure-grade
+8. Run python3 scripts/statedd_doctor.py for a quick health snapshot
+9. Run python3 scripts/check_state_docs.py --bootstrap-gate before flipping to operating

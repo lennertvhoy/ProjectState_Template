@@ -53,12 +53,26 @@ truth_rules:
     invalid: known false or superseded
 
   repo_modes:
+    template-maintenance:
+      purpose: maintain the reusable StateDD template repository
+      exit_condition: not used by downstream projects
     bootstrap:
       purpose: discover truth and establish baseline state
       exit_condition: baseline completed and mode flipped to operating
     operating:
       purpose: steady-state human-in-the-loop delivery
       exit_condition: none
+
+  repo_roles:
+    template_repository:
+      purpose: repository that maintains and publishes StateDD itself
+      allowed_modes:
+        - template-maintenance
+    downstream_project:
+      purpose: project repository that adopts or is generated from StateDD
+      allowed_modes:
+        - bootstrap
+        - operating
 
 architecture:
   control_plane:
@@ -79,6 +93,8 @@ invariants:
   - "NEXT_ACTIONS.md contains open work only."
   - "BACKLOG.md assigns stable backlog IDs."
   - "VERSION is the canonical StateDD spec-version source."
+  - "Template root uses repo_role: template_repository and statedd_mode: template-maintenance."
+  - "Generated and adopted repos use repo_role: downstream_project and start with statedd_mode: bootstrap."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
   - "Implemented, validated, closure-grade, and accepted are four distinct states."

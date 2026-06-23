@@ -1,0 +1,4 @@
+StateDD Version Check
+Root: /home/ff/Documents/Projects/StateDD_Template
+Expected: statedd-template-v4
+Result: pass

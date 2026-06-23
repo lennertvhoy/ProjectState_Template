@@ -8,6 +8,11 @@ product:
   one_sentence: "Ambiguous inherited repo used to validate honest bootstrap under conflict."
 
 truth_rules:
+  repo_roles:
+    downstream_project:
+      allowed_modes:
+        - bootstrap
+        - operating
   repo_modes:
     bootstrap:
       purpose: discover truth and establish baseline state

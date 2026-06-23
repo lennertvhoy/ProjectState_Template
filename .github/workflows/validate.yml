@@ -29,10 +29,7 @@ jobs:
           python3 scripts/statedd_version_check.py
           python3 scripts/check_state_docs.py
           python3 scripts/statedd_doctor.py
-          if python3 scripts/check_state_docs.py --bootstrap-gate; then
-            echo "expected root template state to remain bootstrap-initial"
-            exit 1
-          fi
+          python3 scripts/check_state_docs.py --bootstrap-gate
 
       - name: Validate fixtures
         run: |

@@ -28,6 +28,27 @@
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
 
+## EV-2026-06-23-002: Template-maintenance mode split verified
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/before-check_state_docs.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/generated-new-project-state.yaml
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/generated-adopt-project-state.yaml
+- Title: Root template-maintenance state split from downstream bootstrap state
+- Source/System: test
+- Action: Added `repo_role` and `statedd_mode`, made checks mode-aware, updated generator output, docs, fixtures, and tests
+- Shows:
+  - root state declares `repo_role: template_repository` and `statedd_mode: template-maintenance`
+  - generated new/adopted repos declare `repo_role: downstream_project` and `statedd_mode: bootstrap`
+  - root `python3 scripts/check_state_docs.py --bootstrap-gate` passes after the split
+  - generated downstream bootstrap still fails the bootstrap gate until investigation is complete
+- Proves:
+  - the template root no longer presents itself as a half-bootstrapped downstream project
+  - downstream bootstrap safety gates remain intact
+- Type: docs-render-verification
+- as_of: 2026-06-23T00:00:00+02:00
+- Notes: Runtime proof, schema validation, and upgrade tooling remain separate backlog items.
+
 ## EV-2026-06-23-001: StateDD version source normalized
 
 - File: /home/ff/Documents/Projects/StateDD_Template/VERSION

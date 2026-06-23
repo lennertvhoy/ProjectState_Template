@@ -102,6 +102,9 @@ PR_TEMPLATE_REQUIRED_SECTIONS = [
     "## What remains unproven",
 ]
 
+VALID_REPO_ROLES = {"template_repository", "downstream_project"}
+VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
+
 
 def count_nonempty_lines(text: str) -> int:
     return sum(1 for line in text.splitlines() if line.strip())
@@ -136,13 +139,34 @@ def extract_next_action_ids(text: str) -> list[str]:
     return NEXT_ACTION_ID_RE.findall(text)
 
 
+def read_optional(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8") if path.exists() else ""
+    except UnicodeDecodeError:
+        return ""
+
+
+def extract_scalar(text: str, key: str) -> str | None:
+    match = re.search(rf'^\s*{re.escape(key)}:\s*"?([^"\n#]+)"?\s*$', text, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def detect_repo_context(root: Path) -> tuple[str | None, str | None]:
+    project_state = read_optional(root / "PROJECT_STATE.yaml")
+    agents = read_optional(root / "AGENTS.md")
+    role = extract_scalar(project_state, "repo_role") or extract_scalar(agents, "repo_role")
+    mode = (
+        extract_scalar(project_state, "statedd_mode")
+        or extract_scalar(agents, "statedd_mode")
+        or extract_scalar(project_state, "repo_mode")
+        or extract_scalar(agents, "repo_mode")
+    )
+    return role, mode
+
+
 def detect_repo_mode(root: Path) -> str | None:
-    agents = root / "AGENTS.md"
-    if not agents.exists():
-        return None
-    text = agents.read_text(encoding="utf-8")
-    match = re.search(r'^repo_mode:\s*"?([\w-]+)"?\s*$', text, re.MULTILINE)
-    return match.group(1) if match else None
+    _, mode = detect_repo_context(root)
+    return mode
 
 
 def is_template_style_repo(root: Path) -> bool:
@@ -218,6 +242,46 @@ def check_cross_file_rules(root: Path) -> list[str]:
     return issues
 
 
+def check_repo_role_mode(root: Path) -> list[str]:
+    issues: list[str] = []
+    role, mode = detect_repo_context(root)
+    project_state = read_optional(root / "PROJECT_STATE.yaml")
+    agents = read_optional(root / "AGENTS.md")
+
+    if role is None:
+        issues.append("Missing repo_role; expected template_repository or downstream_project")
+    elif role not in VALID_REPO_ROLES:
+        issues.append(f"Invalid repo_role: {role}")
+
+    if mode is None:
+        issues.append("Missing statedd_mode/repo_mode; expected template-maintenance, bootstrap, or operating")
+    elif mode not in VALID_STATEDD_MODES:
+        issues.append(f"Invalid statedd_mode/repo_mode: {mode}")
+
+    if role == "template_repository":
+        if mode != "template-maintenance":
+            issues.append("template_repository must use statedd_mode: template-maintenance")
+        if 'repo_role: template_repository' not in project_state:
+            issues.append("PROJECT_STATE.yaml must declare repo_role: template_repository")
+        if 'statedd_mode: template-maintenance' not in project_state:
+            issues.append("PROJECT_STATE.yaml must declare statedd_mode: template-maintenance")
+        for relpath in ("AGENTS.md", "STATUS.md", "PROJECT_STATE.yaml", "PROJECT_DNA.yaml", "PROJECT_ADAPTER.yaml"):
+            text = read_optional(root / relpath)
+            if "Your Project" in text:
+                issues.append(f"{relpath} contains downstream placeholder text in template-maintenance mode")
+
+    if role == "downstream_project":
+        if mode == "template-maintenance":
+            issues.append("downstream_project cannot use statedd_mode: template-maintenance")
+        if 'repo_role: downstream_project' not in project_state:
+            issues.append("PROJECT_STATE.yaml must declare repo_role: downstream_project")
+
+    if role and f"repo_role: {role}" not in project_state and f'repo_role: "{role}"' not in agents:
+        issues.append("repo_role must be visible in PROJECT_STATE.yaml or AGENTS.md")
+
+    return issues
+
+
 def check_readme(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     issues: list[str] = []
@@ -252,6 +316,8 @@ def check_readme(path: Path) -> list[str]:
         "State Driven Development Template",
         "statedd-template-v4",
         "scripts/statedd_version_check.py",
+        "repo_role",
+        "statedd_mode",
         "docs/evidence/",
         "scripts/test_init_template.py",
         "existing README preserved",
@@ -438,7 +504,9 @@ def check_template_assets(root: Path) -> list[str]:
 
 
 def check_bootstrap_gate(root: Path) -> list[str]:
-    mode = detect_repo_mode(root)
+    role, mode = detect_repo_context(root)
+    if role == "template_repository" or mode == "template-maintenance":
+        return check_template_maintenance_gate(root)
     if mode != "bootstrap":
         return []
 
@@ -467,6 +535,32 @@ def check_bootstrap_gate(root: Path) -> list[str]:
         issues.append("Bootstrap gate failed: docs/EVIDENCE_LOG.md does not record any evidence entries")
     if count_nonempty_lines(project_state) < 80:
         issues.append("Bootstrap gate failed: PROJECT_STATE.yaml is still too thin to represent a truthful baseline")
+
+    return issues
+
+
+def check_template_maintenance_gate(root: Path) -> list[str]:
+    issues: list[str] = []
+    project_state = read_optional(root / "PROJECT_STATE.yaml")
+    next_actions = read_optional(root / "NEXT_ACTIONS.md")
+    backlog = read_optional(root / "BACKLOG.md")
+    worklog = read_optional(root / "WORKLOG.md")
+    evidence = read_optional(root / "docs" / "EVIDENCE_LOG.md")
+
+    if "repo_role: template_repository" not in project_state:
+        issues.append("Template gate failed: PROJECT_STATE.yaml does not declare repo_role: template_repository")
+    if "statedd_mode: template-maintenance" not in project_state:
+        issues.append("Template gate failed: PROJECT_STATE.yaml does not declare statedd_mode: template-maintenance")
+    if "Your Project" in project_state:
+        issues.append("Template gate failed: PROJECT_STATE.yaml still contains downstream placeholder text")
+    if next_actions_count(next_actions) == 0:
+        issues.append("Template gate failed: NEXT_ACTIONS.md does not contain a real active queue")
+    if len(extract_backlog_ids(backlog)) < 3:
+        issues.append("Template gate failed: BACKLOG.md does not contain enough stable backlog IDs")
+    if not WORKLOG_ENTRY_RE.search(worklog):
+        issues.append("Template gate failed: WORKLOG.md does not record dated template-maintenance history")
+    if not EVIDENCE_ENTRY_RE.search(evidence):
+        issues.append("Template gate failed: docs/EVIDENCE_LOG.md does not record any evidence entries")
 
     return issues
 
@@ -513,6 +607,10 @@ def main(argv: list[str] | None = None) -> int:
     if cross_file_issues:
         failures.append(("cross_file_rules", cross_file_issues))
 
+    role_mode_issues = check_repo_role_mode(root)
+    if role_mode_issues:
+        failures.append(("repo_role_mode", role_mode_issues))
+
     version_issues = check_version_alignment(root)
     if version_issues:
         failures.append(("version_alignment", version_issues))
@@ -540,6 +638,7 @@ def main(argv: list[str] | None = None) -> int:
         print_failure_block(filename, current)
 
     print_failure_block("cross_file_rules", next((issues for name, issues in failures if name == "cross_file_rules"), []))
+    print_failure_block("repo role/mode", next((issues for name, issues in failures if name == "repo_role_mode"), []))
     print_failure_block("version alignment", next((issues for name, issues in failures if name == "version_alignment"), []))
 
     if readme.exists() and template_style_repo:

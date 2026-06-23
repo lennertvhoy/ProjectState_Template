@@ -1,4 +1,6 @@
 ---
+repo_role: downstream_project
+statedd_mode: bootstrap
 repo_mode: bootstrap
 statedd_version: "statedd-template-v4"
 initialized_on: null

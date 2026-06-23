@@ -1,4 +1,6 @@
 ---
+repo_role: downstream_project
+statedd_mode: operating
 repo_mode: operating
 statedd_version: "statedd-template-v4"
 initialized_on: 2026-03-18

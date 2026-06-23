@@ -57,6 +57,8 @@ SCHEMA_PATTERNS = [
 
 EVIDENCE_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 EVIDENCE_BROWSER_EXTENSIONS = {".html", ".har", ".json"}
+VALID_REPO_ROLES = {"template_repository", "downstream_project"}
+VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
 
 
 @dataclass
@@ -101,6 +103,31 @@ def git_value(repo: Path, args: list[str], fallback: str = "not proven") -> str:
     return stdout or fallback
 
 
+def read_optional(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8") if path.exists() else ""
+    except UnicodeDecodeError:
+        return ""
+
+
+def extract_scalar(text: str, key: str) -> str | None:
+    match = re.search(rf'^\s*{re.escape(key)}:\s*"?([^"\n#]+)"?\s*$', text, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def repo_context(root: Path) -> tuple[str | None, str | None]:
+    project_state = read_optional(root / "PROJECT_STATE.yaml")
+    agents = read_optional(root / "AGENTS.md")
+    role = extract_scalar(project_state, "repo_role") or extract_scalar(agents, "repo_role")
+    mode = (
+        extract_scalar(project_state, "statedd_mode")
+        or extract_scalar(agents, "statedd_mode")
+        or extract_scalar(project_state, "repo_mode")
+        or extract_scalar(agents, "repo_mode")
+    )
+    return role, mode
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Machine-checkable StateDD audit command",
@@ -132,6 +159,41 @@ def check_required_files(root: Path, result: AuditResult) -> None:
             result.add("required_files", "pass", f"{relpath} exists")
         else:
             result.add("required_files", "fail", f"Missing required state file: {relpath}")
+
+
+def check_repo_role_mode(root: Path, result: AuditResult) -> None:
+    role, mode = repo_context(root)
+    project_state = read_optional(root / "PROJECT_STATE.yaml")
+
+    if role not in VALID_REPO_ROLES:
+        result.add("repo_role_mode", "fail", f"Missing or invalid repo_role: {role or 'not proven'}")
+        return
+    result.add("repo_role_mode", "pass", f"repo_role: {role}")
+
+    if mode not in VALID_STATEDD_MODES:
+        result.add("repo_role_mode", "fail", f"Missing or invalid statedd_mode/repo_mode: {mode or 'not proven'}")
+        return
+    result.add("repo_role_mode", "pass", f"statedd_mode: {mode}")
+
+    if role == "template_repository":
+        if mode != "template-maintenance":
+            result.add("repo_role_mode", "fail", "template_repository must use statedd_mode: template-maintenance")
+        else:
+            result.add("repo_role_mode", "pass", "Template repository uses template-maintenance mode")
+        if "Your Project" in project_state:
+            result.add("repo_role_mode", "fail", "Template-maintenance PROJECT_STATE.yaml still contains downstream placeholders")
+        else:
+            result.add("repo_role_mode", "pass", "Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder")
+
+    if role == "downstream_project":
+        if mode == "template-maintenance":
+            result.add("repo_role_mode", "fail", "downstream_project cannot use template-maintenance mode")
+        elif mode == "bootstrap":
+            result.add("repo_role_mode", "pass", "Downstream bootstrap mode may still contain unproven investigation fields")
+        elif mode == "operating":
+            for marker in ("system_investigated: false", "repo_investigated: false", "Your Project"):
+                if marker in project_state:
+                    result.add("repo_role_mode", "fail", f"Operating downstream PROJECT_STATE.yaml contains unresolved marker: {marker}")
 
 
 def extract_updated_at(path: Path) -> dt.datetime | None:
@@ -525,6 +587,7 @@ def main(argv: list[str] | None = None) -> int:
     result = AuditResult()
 
     check_required_files(root, result)
+    check_repo_role_mode(root, result)
     check_state_files_fresh(root, result, args.strict)
     check_evidence_folder(root, result)
     check_worktree_clean(root, result)

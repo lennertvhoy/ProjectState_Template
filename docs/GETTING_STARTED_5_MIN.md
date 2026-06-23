@@ -42,6 +42,10 @@ Read prompts/CODING_AGENT_STARTUP_PROMPT.md and follow it exactly.
 
 ## 3. Let Bootstrap Stay Honest
 
+The template repo itself uses `repo_role: template_repository` and
+`statedd_mode: template-maintenance`. Repos created with `new` or `adopt` use
+`repo_role: downstream_project` and start in `statedd_mode: bootstrap`.
+
 The first agent session should read:
 
 1. `AGENTS.md`

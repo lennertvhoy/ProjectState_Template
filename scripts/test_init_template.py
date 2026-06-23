@@ -178,6 +178,16 @@ def assert_version_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing version assets: {missing}")
 
 
+def assert_downstream_bootstrap_context(root: Path) -> None:
+    project_state = (root / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
+    agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+    for text, label in ((project_state, "PROJECT_STATE.yaml"), (agents, "AGENTS.md")):
+        if "repo_role: downstream_project" not in text:
+            raise AssertionError(f"{label} does not declare repo_role: downstream_project")
+        if "statedd_mode: bootstrap" not in text:
+            raise AssertionError(f"{label} does not declare statedd_mode: bootstrap")
+
+
 def assert_v2_assets_exist(root: Path) -> None:
     required = [
         root / "scripts" / "statedd_audit.py",
@@ -218,6 +228,24 @@ def test_new_includes_version_assets_and_passes_version_check() -> None:
             raise AssertionError(
                 f"Generated repo version check failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
             )
+        assert_downstream_bootstrap_context(target)
+
+
+def test_new_repo_still_fails_bootstrap_gate_until_investigated() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Bootstrap Demo", "--target", str(target)], expect_success=True)
+        completed = subprocess.run(
+            [sys.executable, str(target / "scripts" / "check_state_docs.py"), "--bootstrap-gate", str(target)],
+            cwd=target,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode == 0:
+            raise AssertionError("Generated downstream bootstrap repo unexpectedly passed bootstrap gate")
+        if "system investigation is still false" not in completed.stdout:
+            raise AssertionError(f"Bootstrap gate did not preserve downstream investigation failure:\n{completed.stdout}")
 
 
 def test_new_includes_v2_executable_workflow_assets() -> None:
@@ -283,6 +311,31 @@ def test_adopt_installs_version_assets_and_passes_version_check() -> None:
             raise AssertionError(
                 f"Adopted repo version check failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
             )
+        assert_downstream_bootstrap_context(repo)
+
+
+def test_template_root_uses_template_maintenance_mode() -> None:
+    project_state = (ROOT / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
+    if "repo_role: template_repository" not in project_state:
+        raise AssertionError("Root PROJECT_STATE.yaml does not declare repo_role: template_repository")
+    if "statedd_mode: template-maintenance" not in project_state:
+        raise AssertionError("Root PROJECT_STATE.yaml does not declare statedd_mode: template-maintenance")
+    if "Your Project" in project_state:
+        raise AssertionError("Root PROJECT_STATE.yaml still contains downstream placeholder text")
+
+
+def test_template_root_bootstrap_gate_passes() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_state_docs.py"), "--bootstrap-gate", str(ROOT)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AssertionError(
+            f"Template-maintenance root should pass bootstrap gate\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+        )
 
 
 def test_adopt_installs_v2_executable_workflow_assets() -> None:
@@ -340,12 +393,15 @@ def main() -> int:
         test_new_includes_tool_model_routing_guide,
         test_new_includes_usability_assets,
         test_new_includes_version_assets_and_passes_version_check,
+        test_new_repo_still_fails_bootstrap_gate_until_investigated,
         test_new_includes_v2_executable_workflow_assets,
         test_new_includes_license_faq,
         test_adopt_installs_tool_model_routing_guide,
         test_adopt_installs_usability_assets,
         test_adopt_installs_version_assets_and_passes_version_check,
         test_adopt_installs_v2_executable_workflow_assets,
+        test_template_root_uses_template_maintenance_mode,
+        test_template_root_bootstrap_gate_passes,
         test_handoff_snapshot_runs,
         test_doctor_runs,
     ]

@@ -8,6 +8,11 @@ product:
   one_sentence: "Minimal fixture to validate operating mode."
 
 truth_rules:
+  repo_roles:
+    downstream_project:
+      allowed_modes:
+        - bootstrap
+        - operating
   repo_modes:
     bootstrap:
       purpose: discover truth and establish baseline state

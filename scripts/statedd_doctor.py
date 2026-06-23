@@ -39,6 +39,32 @@ def git_value(repo: Path, args: list[str], fallback: str = "not proven") -> str:
     return stdout or fallback
 
 
+def read_optional(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8") if path.exists() else ""
+    except UnicodeDecodeError:
+        return ""
+
+
+def extract_scalar(text: str, key: str) -> str | None:
+    match = re.search(rf'^\s*{re.escape(key)}:\s*"?([^"\n#]+)"?\s*$', text, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def repo_context(repo: Path) -> tuple[str, str]:
+    project_state = read_optional(repo / "PROJECT_STATE.yaml")
+    agents = read_optional(repo / "AGENTS.md")
+    role = extract_scalar(project_state, "repo_role") or extract_scalar(agents, "repo_role") or "not proven"
+    mode = (
+        extract_scalar(project_state, "statedd_mode")
+        or extract_scalar(agents, "statedd_mode")
+        or extract_scalar(project_state, "repo_mode")
+        or extract_scalar(agents, "repo_mode")
+        or "not proven"
+    )
+    return role, mode
+
+
 def latest_evidence_folder(repo: Path) -> Path | None:
     evidence_root = repo / "docs" / "evidence"
     try:
@@ -190,6 +216,7 @@ def main(argv: list[str] | None = None) -> int:
 
     head = git_head(repo)
     branch = git_branch(repo)
+    role, mode = repo_context(repo)
     folder = latest_evidence_folder(repo)
     folder_name = folder.relative_to(repo).as_posix() if folder else "none"
 
@@ -197,6 +224,8 @@ def main(argv: list[str] | None = None) -> int:
     print()
     print(f"Current HEAD: {head}")
     print(f"Branch: {branch}")
+    print(f"Repo role: {role}")
+    print(f"StateDD mode: {mode}")
     print(f"Worktree: {worktree_status(repo)}")
     print(f"Latest evidence: {folder_name}")
     print(f"State docs updated: {state_docs_updated(repo)}")
