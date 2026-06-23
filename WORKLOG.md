@@ -2,6 +2,47 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-23 - Adoption-ready template release (BL-012/013/014)
+
+**Type:** template_maintenance_release
+**Status:** COMPLETE
+**Git Head:** eba0e42 before closure commit; 9fb756b after closure commit
+**Worktree:** clean after final commit
+
+### What changed
+- Added evidence pack manifests and a redaction gate (`schemas/evidence_manifest.schema.json`, `scripts/statedd_evidence_pack.py`, `scripts/test_evidence_pack.py`).
+- Added non-destructive downstream upgrade tooling (`scripts/statedd_upgrade.py`, `scripts/test_upgrade.py`, `docs/UPGRADING.md`).
+- Added adoption profiles `minimal`, `solo`, `team`, `regulated` to `scripts/init_template.py` and `docs/ADOPTION_PROFILES.md`.
+- Added interactive bootstrap wizard MVP (`scripts/statedd_bootstrap_wizard.py`) with `--answers` and `--dry-run` modes.
+- Added `scripts/test_adoption_profiles.py` and wired profile/wizard tests into `.github/workflows/validate.yml`.
+- Updated `scripts/check_state_docs.py` to skip optional deep-reference docs for the `minimal` profile.
+- Fixed `scripts/statedd_audit.py` so `manifest.json` is not treated as a browser artifact.
+- Updated `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `CHANGELOG.md`, `docs/EVIDENCE_LOG.md`, and created `docs/evidence/2026-06-23-adoption-ready-evidence-release/`.
+- Pushed four commits to `origin/main`.
+
+### Verification
+- `python3 scripts/test_evidence_pack.py` passed.
+- `python3 scripts/test_upgrade.py` passed.
+- `python3 scripts/test_adoption_profiles.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/test_runtime_proof.py` passed.
+- `python3 scripts/test_schema_validation.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_audit.py --strict` passed after closure commit.
+- `python3 scripts/statedd_doctor.py` passed after closure commit.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-23-adoption-ready-evidence-release --strict` passed.
+
+### Evidence
+- `docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md`
+- `docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json`
+- `docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-23-005`
+
+### Notes
+- Work was executed directly on `main` per explicit human override.
+- Next recommended slices are BL-005 example project, BL-007 release metadata, and BL-WB-001 browser automation.
+
 ## 2026-06-23 - Schema-backed validation integrated
 
 **Type:** template_validation_hardening
