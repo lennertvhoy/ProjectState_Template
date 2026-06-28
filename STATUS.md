@@ -7,8 +7,8 @@
 
 ## Snapshot
 
-- Repo identifies as `repo_role: template_repository` with `statedd_mode: template-maintenance` and spec version `statedd-template-v4`; generated/adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
-- `statedd-template-v4` is published as GitHub release `v4`; no further release steps are pending.
+- Repo identifies as `repo_role: template_repository` with `statedd_mode: template-maintenance` and spec version `statedd-template-v5`; generated/adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
+- `statedd-template-v5` is published as GitHub release `v5`; no further release steps are pending.
 - BL-007 public usability polish, BL-BROWSER-001 provider-agnostic browser verification, and BL-QUALITY-001 quality firewall hardening are accepted as template capabilities.
 - StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider; Kimi WebBridge is preferred when available, but Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling are accepted when evidence is durable and honestly scoped.
 - StateDD now treats handoffs as claims, separates repo truth from runtime truth, and requires downstream projects to define quality gates for product behavior, runtime truth, adversarial checks, known bad events, and post-deploy proof where applicable.

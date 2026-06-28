@@ -4,7 +4,7 @@ StateDD is a repo-based workflow for AI-assisted software projects.
 
 It keeps project truth, next actions, evidence, runtime proof, and handoffs inside the repository so coding agents do not rely on stale chat context.
 
-Current StateDD spec version: `statedd-template-v4`
+Current StateDD spec version: `statedd-template-v5`
 
 The template repository itself uses `repo_role: template_repository` and
 `statedd_mode: template-maintenance`. Repos generated or adopted from it use

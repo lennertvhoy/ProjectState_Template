@@ -3,7 +3,7 @@
 StateDD Closure Check
 
 Validates that closure criteria are truly met before marking a slice closure-grade.
-Checks: no unproven claims, no broken links, runtime proof captured.
+Checks: no unproven claims, no broken links, runtime proof captured, REMOTE TRUTH VERIFIED.
 """
 
 import argparse
@@ -16,9 +16,10 @@ from typing import List, Tuple
 
 
 class ClosureCheck:
-    def __init__(self, root: Path, verbose: bool = False):
+    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None):
         self.root = root
         self.verbose = verbose
+        self.claimed_files = claimed_files or []
         self.failures: List[str] = []
         self.warnings: List[str] = []
 
@@ -133,10 +134,34 @@ class ClosureCheck:
         self.warnings.append("No handoff reference found in WORKLOG.md")
         return True
 
+    def check_remote_truth(self) -> bool:
+        """Verify remote GitHub state matches local claims (Truth Boundary Gate)."""
+        print("🌐 Checking remote truth (Truth Boundary Gate)...")
+        # Import and run remote truth check
+        sys.path.insert(0, str(self.root / "scripts"))
+        try:
+            from statedd_remote_truth_check import RemoteTruthCheck
+            checker = RemoteTruthCheck(self.root, self.verbose, self.claimed_files)
+            result = checker.run()
+            if result != 0:
+                self.failures.extend([f"Remote truth: {f}" for f in checker.failures])
+                self.closure_label = checker.closure_label
+                return False
+            self.closure_label = checker.closure_label
+            return True
+        except ImportError as e:
+            self.failures.append(f"Remote truth check module not found: {e}")
+            return False
+        except Exception as e:
+            self.failures.append(f"Remote truth check crashed: {e}")
+            return False
+
     def run(self) -> int:
         print("=" * 50)
         print("StateDD Closure Check")
         print("=" * 50)
+
+        self.closure_label = "NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM"
 
         checks = [
             ("Unproven Claims", self.check_no_unproven_claims),
@@ -145,6 +170,7 @@ class ClosureCheck:
             ("Evidence Bundle", self.check_evidence_bundle),
             ("Acceptance Freeze", self.check_acceptance_freeze),
             ("Handoff Complete", self.check_handoff_complete),
+            ("Remote Truth", self.check_remote_truth),
         ]
 
         all_passed = True
@@ -179,10 +205,11 @@ def main():
     parser = argparse.ArgumentParser(description="StateDD Closure Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--claimed-files", nargs="*", default=[], help="Files claimed as deliverables")
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    checker = ClosureCheck(root, args.verbose)
+    checker = ClosureCheck(root, args.verbose, args.claimed_files)
     sys.exit(checker.run())
 
 

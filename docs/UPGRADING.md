@@ -1,6 +1,6 @@
 # Upgrading StateDD
 
-Current StateDD spec version: `statedd-template-v4`
+Current StateDD spec version: `statedd-template-v5`
 
 Use this guide when bringing an existing StateDD repo forward without overwriting local project truth.
 

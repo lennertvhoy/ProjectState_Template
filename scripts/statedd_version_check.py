@@ -39,13 +39,17 @@ SCAN_ROOT_FILES = (
 
 SCAN_DIRS = ("docs", "prompts", "scripts", ".github")
 TEXT_SUFFIXES = {".md", ".py", ".yaml", ".yml", ".txt", ".json", ".toml"}
-SKIP_PARTS = {".git", "__pycache__", ".cache", ".pytest_cache"}
+SKIP_PARTS = {".git", "__pycache__", ".cache", ".pytest_cache", "statedd_version_check.py"}
 HISTORICAL_PATHS = {
     "WORKLOG.md",
     "docs/EVIDENCE_LOG.md",
+    "docs/ACCEPTANCE_FREEZES.md",
+    "docs/incidents",
+    "docs/RELEASE_NOTES_statedd-template-v4.md",
 }
 HISTORICAL_DIRS = {
     "docs/evidence",
+    "docs/incidents",
 }
 
 

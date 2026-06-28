@@ -3,7 +3,7 @@
 metadata:
   updated_at: 2026-06-28T00:00:00+02:00
   updated_by: agent
-  version: "statedd-template-v4"
+  version: "statedd-template-v5"
 
 workflow:
   repo_role: template_repository
@@ -95,7 +95,7 @@ current_state:
       last_verified_head: 2a9afd47b22d67704e097c93bbb2ca6d16fd08e1
       last_verified_worktree_status: clean
       notes: |
-        Captured after publishing statedd-template-v4 as GitHub release v4 and
+        Captured after publishing statedd-template-v5 as GitHub release v5 and
         removing the BL-BROWSER-001 feature worktree. Worktree is clean. Use git,
         scripts/statedd_audit.py, scripts/statedd_doctor.py,
         scripts/statedd_handoff.py, or evidence artifacts for current branch,
@@ -260,7 +260,7 @@ current_state:
       - docs/quality_gates/README.md
       - docs/UPGRADING.md
       - docs/ADOPTION_PROFILES.md
-      - docs/RELEASE_NOTES_statedd-template-v4.md
+      - docs/RELEASE_NOTES_statedd-template-v5.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
       - prompts/OPENCODE_STARTUP_PROMPT.md

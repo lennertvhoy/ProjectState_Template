@@ -1,6 +1,6 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "statedd-template-v4"
+version: "statedd-template-v5"
 schema_version: "1.0"
 
 product:

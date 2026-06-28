@@ -13,7 +13,7 @@
       "properties": {
         "updated_at": {"type": "string", "minLength": 10},
         "updated_by": {"type": "string", "minLength": 1},
-        "version": {"type": "string", "const": "statedd-template-v4"}
+        "version": {"type": "string", "const": "statedd-template-v5"}
       }
     },
     "workflow": {

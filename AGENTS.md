@@ -31,6 +31,29 @@ project: "StateDD_Template"
 - Implemented ≠ Validated ≠ Closure-grade ≠ Accepted
 - Handoffs are claims until verified by evidence or independent gate
 - Quality gates are executable, not prose (`scripts/statedd_quality_gate.py`)
+- **Remote Truth Gate:** No implementation may be called complete unless:
+  1. Repo identity proven with `pwd` + `git remote -v`
+  2. Branch proven with `git branch --show-current`
+  3. Changed files proven tracked with `git status --short` and `git ls-files`
+  4. Final commit SHA proven with `git rev-parse HEAD`
+  5. Remote contains that SHA with `git ls-remote origin <branch>`
+  6. GitHub-visible files match claimed deliverables
+  7. Final handoff states: `local-only` / `pushed` / `PR opened` / `merged` / `CI verified`
+  Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
+
+## Truth Boundary
+The agent must always distinguish:
+- Sandbox truth
+- Local worktree truth
+- Git index truth
+- Local commit truth
+- Remote branch truth
+- GitHub main truth
+- CI truth
+- Runtime truth
+- User-accepted truth
+
+**Invariant:** No state transition may cross a truth boundary without proof.
 
 ## Modes
 | Mode | Purpose | Repo Role |
@@ -50,7 +73,7 @@ Downstream repos **never** use `template-maintenance`.
 - **Prompts** → `prompts/` — CTO/agent startup prompts, templates
 
 ## Human Override
-Strong defaults, not a prison. Explicit human override = proceed, record tradeoff, mark `override-approved` in handoff. Refuse only if destructive, illegal, unsafe, unrecoverable, or corrupts project truth.
+Strong defaults, not a prison. Explicit human override = proceed, record tradeoff, mark `override-approved` in handoff. Decline only if destructive, illegal, unsafe, unrecoverable, or corrupts project truth.
 
 ## Hygiene Limits
 - `STATUS.md` ≤ 120 lines

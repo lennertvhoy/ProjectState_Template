@@ -1,6 +1,6 @@
 # PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
-version: "statedd-template-v4"
+version: "statedd-template-v5"
 
 project:
   name: StateDD_Template

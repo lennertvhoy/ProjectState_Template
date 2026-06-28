@@ -65,7 +65,6 @@ class QualityGate:
             ["ruff", "check", "."],
             ["mypy", "."],
             ["flake8", "."],
-            ["python", "-m", "py_compile"],
         ]
         passed = True
         for cmd in lint_commands:

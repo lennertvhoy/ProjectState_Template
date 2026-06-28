@@ -6,7 +6,7 @@
   "required": ["version", "schema_version", "product", "truth_rules", "invariants"],
   "additionalProperties": true,
   "properties": {
-    "version": {"type": "string", "const": "statedd-template-v4"},
+    "version": {"type": "string", "const": "statedd-template-v5"},
     "schema_version": {"type": "string", "minLength": 1},
     "product": {
       "type": "object",

@@ -6,7 +6,7 @@
   "required": ["version", "project", "runtime", "integrations", "ai_execution_preferences"],
   "additionalProperties": true,
   "properties": {
-    "version": {"type": "string", "const": "statedd-template-v4"},
+    "version": {"type": "string", "const": "statedd-template-v5"},
     "project": {
       "type": "object",
       "required": ["name", "short_name", "description"],
