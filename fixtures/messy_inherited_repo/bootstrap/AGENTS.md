@@ -2,7 +2,7 @@
 repo_role: downstream_project
 statedd_mode: bootstrap
 repo_mode: bootstrap
-statedd_version: "statedd-template-v4"
+statedd_version: "statedd-template-v5"
 initialized_on: null
 last_updated: 2026-03-18
 ---
