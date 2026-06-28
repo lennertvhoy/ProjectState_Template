@@ -349,7 +349,7 @@ def check_readme(path: Path) -> list[str]:
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
         "State Driven Development Template",
-        "statedd-template-v4",
+        "statedd-template-v5",
         "scripts/statedd_version_check.py",
         "repo_role",
         "statedd_mode",
