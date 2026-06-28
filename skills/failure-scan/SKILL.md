@@ -1,0 +1,47 @@
+---
+name: "failure-scan"
+description: "Run a pre-mortem failure scan for risky or non-trivial implementation work"
+when_to_use:
+  - "Before starting any non-trivial slice"
+  - "Before architecture changes"
+  - "Before migrations or upgrades"
+  - "When CTO handoff flags risk"
+required_inputs:
+  - "Slice ID or work description"
+  - "Current architecture context (from PROJECT_DNA.yaml)"
+  - "Recent incidents (from docs/incidents/)"
+step_by_step:
+  - name: "Create failure scan"
+    action: "Copy docs/failure_scans/TEMPLATE.md to docs/failure_scans/<slice-id>.md"
+    verify: "File created"
+  - name: "Identify failure modes"
+    action: "Fill template: adjacent failures, cascading risks, rollback scenarios, unknowns"
+    verify: "All template sections complete"
+  - name: "Cross-reference taxonomy"
+    action: "Map each failure mode to FAILURE_TAXONOMY.md classes"
+    verify: "Each mode has severity/class"
+  - name: "Define mitigations"
+    action: "For each mode: detection, prevention, rollback, evidence needed"
+    verify: "Mitigation column complete"
+  - name: "Record in evidence log"
+    action: "Append scan reference to docs/EVIDENCE_LOG.md"
+    verify: "EVIDENCE_LOG.md updated"
+  - name: "Update NEXT_ACTIONS"
+    action: "Add 'Review failure scan for <slice-id>' to active queue"
+    verify: "NEXT_ACTIONS.md updated"
+expected_outputs:
+  - "Completed failure scan in docs/failure_scans/<slice-id>.md"
+  - "Evidence log entry"
+  - "NEXT_ACTIONS updated"
+failure_cases:
+  - "Template missing: copy from TEMPLATE.md"
+  - "No adjacent failures found: record 'none identified'"
+  - "Unknown risks: mark as 'unknown' with mitigation 'monitor'"
+evidence_required:
+  - "Failure scan file path"
+  - "Evidence log reference"
+exit_criteria:
+  - "Scan complete per template"
+  - "All modes classified"
+  - "Mitigations defined"
+  - "Logged in evidence"
