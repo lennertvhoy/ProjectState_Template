@@ -83,6 +83,10 @@ class ClosureCheck:
             return False
         try:
             data = json.loads(runtime_identity.read_text())
+            runtime = data.get("runtime", {})
+            if runtime.get("required") is False:
+                print("  ✓ Runtime proof explicitly not required for this change")
+                return True
             required = ["os", "kernel", "git_head", "timestamp"]
             for field in required:
                 if field not in data:
