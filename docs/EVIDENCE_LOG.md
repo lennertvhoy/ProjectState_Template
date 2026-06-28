@@ -73,7 +73,7 @@
   - StateDD v5 now enforces the Efficiency Invariant: no bureaucracy without measurable value, smallest proof that crosses the truth boundary, and a bloat regression guard
 - Type: test
 - as_of: 2026-06-28T11:05:00+02:00
-- Notes: Full quality/closure gates are blocked by pre-existing template-version baseline failures (v4 vs v5 in init_template.py) unrelated to this slice. Closure-grade requires pushing this branch and matching remote truth.
+- Notes: Efficiency check passes and the branch is pushed; closure check returns closure-grade and GitHub-verified. Full quality gate remains blocked by pre-existing template-version baseline failures (v4 vs v5 in init_template.py) unrelated to this slice.
 
 ## EV-2026-06-23-009: Provider-agnostic browser verification contract (BL-BROWSER-001)
 

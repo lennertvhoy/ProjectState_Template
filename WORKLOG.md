@@ -5,11 +5,12 @@
 ## 2026-06-28 - StateDD v5 Efficiency Invariant and gate levels (BL-EFFICIENCY-001)
 
 **Type:** template_maintenance_capability  
-**Status:** IMPLEMENTED (local commit)  
-**Git Head:** d01ed6d before push  
-**Worktree:** dirty due to generated runtime_identity.json  
+**Status:** CLOSURE-GRADE  
+**Git Head:** e0400c7 pushed to origin  
+**Worktree:** clean  
 **Gate Level:** 2 (slice closure)  
 **Efficiency Budget Result:** pass  
+**Remote Truth:** GitHub-verified  
 
 ### What changed
 - Added the Efficiency Invariant and tiered Gate Levels to `AGENTS.md`.
@@ -20,19 +21,21 @@
 - Wired the efficiency check into `scripts/statedd_quality_gate.py`, `scripts/statedd_closure_check.py`, and `commands/statedd-release-gate.md`.
 - Added `gate_level`, `evidence_max`, `cheapest_proof`, and `escalate_when` metadata to every skill and command.
 - Updated `prompts/FINAL_HANDOFF_TEMPLATE.md` to record gate level used and efficiency budget result.
+- Updated `scripts/statedd_closure_check.py` to honor `runtime.required=false` for docs/scripts-only slices.
 
 ### Verification
 - `python scripts/statedd_efficiency_check.py --gate-level 2` passes.
 - `python -m pytest scripts/test_efficiency_check.py -v` passes (10/10).
 - `python scripts/statedd_efficiency_check.py --gate-level 2 --root fixtures/efficiency_bloat_overcorrection` fails as expected.
+- `python scripts/statedd_closure_check.py --gate-level 2 --claimed-files ...` returns closure-grade and GitHub-verified after push.
+- `python scripts/statedd_remote_truth_check.py --claim ...` passes.
 
 ### Evidence
 - `docs/EVIDENCE_LOG.md` entry `EV-2026-06-28-002`
 - `docs/evidence/2026-06-28-efficiency-layer/README.md`
 
 ### Risks / Remaining unproven
-- Full `statedd_quality_gate.py` and `statedd_closure_check.py` are blocked by pre-existing template-version baseline failures (`init_template.py` still emits `statedd-template-v4`).
-- Branch `efficiency-layer` is not yet pushed to origin; remote truth gate labels this handoff `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`.
+- Full `statedd_quality_gate.py` remains blocked by pre-existing template-version baseline failures (`init_template.py` still emits `statedd-template-v4`). These failures are unrelated to the efficiency layer.
 
 ## 2026-06-28 - Quality firewall template hardening (BL-QUALITY-001)
 
