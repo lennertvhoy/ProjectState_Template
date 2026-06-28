@@ -6,7 +6,7 @@
 
 **Type:** template_maintenance_capability  
 **Status:** CLOSURE-GRADE  
-**Git Head:** 2ad18d3 pushed to origin  
+**Git Head:** 672600d pushed to origin  
 **Worktree:** clean  
 **Gate Level:** 2 (slice closure)  
 **Efficiency Budget Result:** pass  
@@ -22,20 +22,24 @@
 - Added `gate_level`, `evidence_max`, `cheapest_proof`, and `escalate_when` metadata to every skill and command.
 - Updated `prompts/FINAL_HANDOFF_TEMPLATE.md` to record gate level used and efficiency budget result.
 - Updated `scripts/statedd_closure_check.py` to honor `runtime.required=false` for docs/scripts-only slices.
+- Fixed pre-existing `statedd-template-v4` drift in `fixtures/bootstrap_dry_run/*` and `fixtures/messy_inherited_repo/bootstrap` state files so schema validation passes.
+- Fixed `.github/workflows/validate.yml` so the `Validate init script` step preserves the adopt-source temp directory across browser-verify and wizard commands.
 
 ### Verification
 - `python scripts/statedd_efficiency_check.py --gate-level 2` passes.
 - `python -m pytest scripts/test_efficiency_check.py -v` passes (10/10).
 - `python scripts/statedd_efficiency_check.py --gate-level 2 --root fixtures/efficiency_bloat_overcorrection` fails as expected.
+- `python -m pytest scripts/ -q` passes (102 passed, 4 subtests passed).
+- `python scripts/statedd_quality_gate.py` passes all gates.
 - `python scripts/statedd_closure_check.py --gate-level 2 --claimed-files ...` returns closure-grade and GitHub-verified after push.
 - `python scripts/statedd_remote_truth_check.py --claim ...` passes.
+- GitHub Actions `Validate Template Docs` workflow passes on PR #2 at HEAD 672600d.
 
 ### Evidence
 - `docs/EVIDENCE_LOG.md` entry `EV-2026-06-28-002`
 - `docs/evidence/2026-06-28-efficiency-layer/README.md`
-
-### Risks / Remaining unproven
-- Full `statedd_quality_gate.py` remains blocked by pre-existing template-version baseline failures (`init_template.py` still emits `statedd-template-v4`). These failures are unrelated to the efficiency layer.
+- `docs/evidence/2026-06-28-efficiency-layer/command_outputs/full_pytest.txt`
+- `docs/evidence/2026-06-28-efficiency-layer/command_outputs/quality_gate.txt`
 
 ## 2026-06-28 - Quality firewall template hardening (BL-QUALITY-001)
 

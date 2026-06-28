@@ -4,7 +4,7 @@
 **Date:** 2026-06-28  
 **Agent:** coding-agent  
 **Branch:** efficiency-layer  
-**HEAD:** 43ac1297550cf606d87c413db65c7323cb975b29
+**HEAD:** 672600d637931f39bde454e683294eb9949c387d
 
 ## Claims
 
@@ -39,14 +39,17 @@
 | efficiency check root gate level 2 | `python scripts/statedd_efficiency_check.py --gate-level 2` | pass |
 | efficiency checker tests | `python -m pytest scripts/test_efficiency_check.py -v` | 10 passed |
 | bloat fixture regression | `python scripts/statedd_efficiency_check.py --gate-level 2 --root fixtures/efficiency_bloat_overcorrection` | fail as expected |
+| full test suite | `python -m pytest scripts/ -q` | 102 passed, 4 subtests passed |
+| full quality gate | `python scripts/statedd_quality_gate.py` | all gates passed |
 | closure check with remote truth | `python scripts/statedd_closure_check.py --gate-level 2 --claimed-files ...` | closure-grade, GitHub-verified |
 | remote truth | `python scripts/statedd_remote_truth_check.py --claim ...` | pass |
+| GitHub Actions | `Validate Template Docs` workflow on PR #2 | passed at HEAD 672600d |
 
 ## Closure State
 
 - Implemented: yes
 - Validated: yes
-- Global quality gates passed: efficiency check passes; full quality gate blocked by pre-existing v4/v5 baseline failures in `init_template.py`
+- Global quality gates passed: yes — `statedd_quality_gate.py` and GitHub Actions both pass
 - Closure-grade: yes after final commit and remote truth verification
 - Accepted: pending
 
@@ -56,5 +59,4 @@
 
 ## Risks / What Remains Partial
 
-- Full `statedd_quality_gate.py` is blocked by pre-existing template-version baseline failures (`init_template.py` still emits `statedd-template-v4`). These failures are unrelated to the efficiency layer.
 - `runtime_identity.json` was generated with `--no-runtime-required` because this slice changes docs, scripts, and templates only.
