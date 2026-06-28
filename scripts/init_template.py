@@ -20,7 +20,7 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
-TEMPLATE_VERSION = "statedd-template-v4"
+TEMPLATE_VERSION = "statedd-template-v5"
 VALID_PROFILES = {"minimal", "solo", "team", "regulated"}
 
 

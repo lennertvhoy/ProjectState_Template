@@ -28,6 +28,14 @@ Four-state closure
 - Closure-grade: yes | no  (evidence, state docs, commit, clean worktree, risks complete)
 - Accepted: pending | yes | rejected | conditionally accepted  (CTO/human reviewed)
 
+Truth Boundary Verification (mandatory)
+- Local commit → Remote branch: `git ls-remote origin <branch>` matches HEAD | FAIL
+- Local files → Tracked: `git ls-files <claimed>` all present | FAIL
+- Remote branch → GitHub main: `git ls-remote origin HEAD` accessible | FAIL
+- GitHub main → CI: pipeline passes | not run | FAIL
+- CI → User-accepted: CTO sign-off on handoff | pending
+- Closure label: local-only | pushed | PR opened | merged | CI-verified | GitHub-verified
+
 Release / update gate
 - committed in repo: yes | no
 - tests passed: yes | no
@@ -119,4 +127,6 @@ Required fields:
 - next recommended action
 - paste-ready wording for the CTO chat
 - four-state closure status (implemented, validated, closure-grade, accepted)
+- truth boundary verification results
+- explicit closure label (local-only / pushed / PR opened / merged / CI-verified / GitHub-verified)
 - human override declaration when applicable
