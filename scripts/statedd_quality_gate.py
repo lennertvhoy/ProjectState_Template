@@ -16,9 +16,10 @@ from typing import List, Tuple, Optional
 
 
 class QualityGate:
-    def __init__(self, root: Path, verbose: bool = False):
+    def __init__(self, root: Path, verbose: bool = False, gate_level: int = 1):
         self.root = root
         self.verbose = verbose
+        self.gate_level = gate_level
         self.failures: List[str] = []
         self.warnings: List[str] = []
 
@@ -139,6 +140,18 @@ class QualityGate:
             self.failures.append(f"Instruction lint errors: {out}")
             return False
 
+    def check_efficiency(self) -> bool:
+        """Run efficiency check against EFFICIENCY_BUDGET.yaml."""
+        print("⚡ Running efficiency check...")
+        code, out, err = self.run_cmd(
+            ["python", "scripts/statedd_efficiency_check.py", "--gate-level", str(self.gate_level)]
+        )
+        if code == 0:
+            print("  ✓ Efficiency check passed")
+            return True
+        self.failures.append(f"Efficiency check failed:\n{err or out}")
+        return False
+
     def run(self) -> int:
         """Run all quality checks."""
         print("=" * 50)
@@ -153,6 +166,7 @@ class QualityGate:
             ("Evidence", self.check_evidence),
             ("Acceptance Freezes", self.check_acceptance_freezes),
             ("Instruction Lint", self.check_instruction_lint),
+            ("Efficiency", self.check_efficiency),
         ]
 
         all_passed = True
@@ -187,10 +201,11 @@ def main():
     parser = argparse.ArgumentParser(description="StateDD Quality Gate")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument("--gate-level", type=int, default=1, help="Gate level being proven")
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    gate = QualityGate(root, args.verbose)
+    gate = QualityGate(root, args.verbose, args.gate_level)
     sys.exit(gate.run())
 
 

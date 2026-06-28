@@ -1,6 +1,12 @@
 ---
 name: "quality-gate"
+gate_level: 2
+evidence_max: 8
+cheapest_proof: "All gate scripts for the slice exit 0"
+escalate_when: "Release or template migration requires level 3 with CI proof"
 description: "Execute the full quality gate pipeline for a slice"
+---
+
 when_to_use:
   - "After implementation, before closure"
   - "When CTO handoff requests quality freeze"

@@ -1,5 +1,9 @@
 ---
 command: "statedd-close-slice"
+gate_level: 2
+evidence_max: 8
+cheapest_proof: "Quality gate + closure check + remote truth check all exit 0"
+escalate_when: "Release gate requires level 3 with CI proof"
 description: "Execute the close-slice skill: run quality gates, update state, freeze acceptance"
 ---
 

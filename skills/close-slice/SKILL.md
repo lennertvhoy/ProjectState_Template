@@ -1,6 +1,12 @@
 ---
 name: "close-slice"
+gate_level: 2
+evidence_max: 8
+cheapest_proof: "Quality gate + closure check + remote truth check all exit 0"
+escalate_when: "Release or template migration requires level 3 with CI proof"
 description: "Execute full slice closure: audits, commit, state updates, evidence, quality gates"
+---
+
 when_to_use:
   - "Closing an implementation slice"
   - "User-facing or operator-facing changes ready for acceptance"

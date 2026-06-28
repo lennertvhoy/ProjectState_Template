@@ -23,7 +23,7 @@ project: "StateDD_Template"
 ## Invariants (Non-Negotiable)
 - No fake completeness — unverified claims = false
 - User-facing behavior requires runtime identity proof (not screenshots alone)
-- Browser verification required for user-facing closure (Kimi WebBridge preferred; Playwright/fallback: Playwright, agent-native tools, manual)
+- Browser verification required for user-facing closure (Kimi WebBridge preferred; fallback: Playwright, agent-native tools, manual)
 - Negative searches stay negative: `not found`, `not currently locatable`, `not proven`
 - Active queue stays short (`NEXT_ACTIONS.md` only)
 - History → `WORKLOG.md` only; live state files stay machine-checkable
@@ -40,6 +40,20 @@ project: "StateDD_Template"
   6. GitHub-visible files match claimed deliverables
   7. Final handoff states: `local-only` / `pushed` / `PR opened` / `merged` / `CI verified`
   Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
+- **Efficiency Invariant:** StateDD exists to reduce agent confusion and false closure, not to create bureaucracy. Every required file, gate, command, and evidence artifact must justify its cost. Prefer the smallest proof that crosses the relevant truth boundary.
+
+## Gate Levels
+Use the cheapest gate that honestly proves the current claim.
+
+| Level | Name | When to use | Required proof |
+|-------|------|-------------|----------------|
+| 0 | Orientation | Starting or resuming | Read `AGENTS.md`, identify mode/current task; no full audit |
+| 1 | Edit Loop | Single-file or non-runtime changes | Cheap tests, relevant lint; no evidence bundle unless runtime change |
+| 2 | Slice Closure | Closing a slice | Quality gate, closure check, remote truth, evidence type check |
+| 3 | Release / Template Migration | Deployment or migration | Full probes, compatibility shims, generated fixture checks, CI proof |
+
+## Final v5 Invariant Set
+No fake closure. No truth-boundary crossing without proof. No bureaucracy without measurable value. No full gate when a cheap gate proves the claim. No evidence dump when a small proof is enough. No duplicated instruction sources. No “done” unless GitHub-visible truth matches the handoff.
 
 ## Truth Boundary
 The agent must always distinguish:
@@ -66,7 +80,9 @@ Downstream repos **never** use `template-maintenance`.
 
 ## Subsystems (Load on Demand)
 - **Skills** → `skills/<name>/SKILL.md` — executable workflows (load via `/skill-name`)
+  - close-slice, failure-scan, ingest-bad-event, quality-gate, runtime-truth
 - **Commands** → `commands/statedd-*.md` — slash-command playbooks (invoke via `/statedd-*`)
+  - statedd-close-slice, statedd-failure-scan, statedd-ingest-bad-event, statedd-quality-freeze, statedd-release-gate
 - **Gates** → `scripts/statedd_*_gate.py`, `scripts/statedd_*_check.py` — executable quality gates
 - **Docs** → `docs/` — reference (FAILURE_TAXONOMY, QUALITY_FIREWALL, INCIDENT_RESPONSE, failure_scans/, quality_gates/, adr/)
 - **Schemas** → `schemas/` — machine-checkable contracts (YAML/JSON schemas)

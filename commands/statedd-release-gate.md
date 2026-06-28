@@ -1,5 +1,9 @@
 ---
 command: "statedd-release-gate"
+gate_level: 3
+evidence_max: 8
+cheapest_proof: "All level 2 gates pass plus CI proof"
+escalate_when: "Never; this is the heaviest gate"
 description: "Final release gate before deployment"
 ---
 
@@ -13,19 +17,24 @@ description: "Final release gate before deployment"
 - CTO handoff requests release validation
 
 **Procedure:**
-1. Run `skills/quality-gate/SKILL.md` — full pipeline
-2. Run `scripts/statedd_runtime_proof.py` — capture deployment runtime
-3. Run `scripts/statedd_runtime_truth_check.py` — verify matches
-4. Run `scripts/statedd_evidence_type_check.py` — verify release evidence
-5. Verify `docs/ACCEPTANCE_FREEZES.md` has all milestones
-6. Generate release handoff with:
+1. Gate level: **3**.
+2. Run `skills/quality-gate/SKILL.md` — full pipeline.
+3. Run `scripts/statedd_efficiency_check.py --gate-level 3` — efficiency budget check.
+4. Run `scripts/statedd_runtime_proof.py` — capture deployment runtime.
+5. Run `scripts/statedd_runtime_truth_check.py` — verify matches.
+6. Run `scripts/statedd_evidence_type_check.py` — verify release evidence.
+7. Verify `docs/ACCEPTANCE_FREEZES.md` has all milestones.
+8. Generate release handoff with:
    - Version/tag
    - Runtime identity
    - Evidence bundle
    - Rollback plan
+   - Gate level used: 3
+   - Efficiency budget result
 
 **Required evidence:**
 - All quality gate outputs
+- Efficiency check output (exit 0)
 - Deployment runtime proof
 - Acceptance freezes for all user-facing changes
 - Rollback plan documented

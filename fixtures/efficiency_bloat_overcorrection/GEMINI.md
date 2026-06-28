@@ -1,0 +1,12 @@
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.
+This is a duplicated canonical instruction that the agent copied from AGENTS.md into multiple shim files.

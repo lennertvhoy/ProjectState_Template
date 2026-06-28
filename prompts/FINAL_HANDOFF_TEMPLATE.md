@@ -17,6 +17,8 @@ Slice contract
 - non_goals: ...
 - acceptance_criteria: ...
 - failure_scan: docs/failure_scans/<slice>.md | not applicable
+- gate level used: 0 | 1 | 2 | 3
+- efficiency budget result: pass | fail
 - global_quality_gates: passed | failed | not run | not applicable
 
 What changed
