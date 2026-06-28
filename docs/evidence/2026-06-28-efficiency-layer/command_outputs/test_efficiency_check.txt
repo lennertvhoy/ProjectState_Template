@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.5, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+plugins: langsmith-0.7.22, cov-7.1.0, anyio-4.13.0
+collecting ... collected 10 items
+
+scripts/test_efficiency_check.py::test_oversized_root_agents_fails PASSED [ 10%]
+scripts/test_efficiency_check.py::test_oversized_skill_fails PASSED      [ 20%]
+scripts/test_efficiency_check.py::test_missing_gate_level_fails PASSED   [ 30%]
+scripts/test_efficiency_check.py::test_full_gate_at_level_one_fails PASSED [ 40%]
+scripts/test_efficiency_check.py::test_too_many_steps_fails PASSED       [ 50%]
+scripts/test_efficiency_check.py::test_duplicate_instructions_fails PASSED [ 60%]
+scripts/test_efficiency_check.py::test_active_queue_too_long_fails PASSED [ 70%]
+scripts/test_efficiency_check.py::test_evidence_bundle_too_large_fails PASSED [ 80%]
+scripts/test_efficiency_check.py::test_bloat_fixture_fails PASSED        [ 90%]
+scripts/test_efficiency_check.py::test_clean_repo_passes PASSED          [100%]
+
+============================== 10 passed in 0.47s ==============================

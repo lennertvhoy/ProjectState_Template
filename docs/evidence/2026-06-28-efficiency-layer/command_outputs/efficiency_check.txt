@@ -1,0 +1,8 @@
+==================================================
+StateDD Efficiency Check
+==================================================
+
+Gate level: 2
+Budget file: EFFICIENCY_BUDGET.yaml
+
+✅ All efficiency checks passed

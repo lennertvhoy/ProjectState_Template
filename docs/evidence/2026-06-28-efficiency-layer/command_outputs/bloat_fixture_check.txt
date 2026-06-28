@@ -1,0 +1,34 @@
+==================================================
+StateDD Efficiency Check
+==================================================
+
+Gate level: 2
+Budget file: EFFICIENCY_BUDGET.yaml
+
+## active_queue
+  [ERROR] NEXT_ACTIONS.md has 6 active items, max 5  (NEXT_ACTIONS.md)
+  [ERROR] BACKLOG.md NOW has 13 items, max 12  (BACKLOG.md)
+
+## evidence_bundle
+  [ERROR] Evidence folder 2026-06-28-bloat has 6 files, max 5  (docs/evidence/2026-06-28-bloat)
+
+## instruction_size
+  [ERROR] root AGENTS.md has 130 lines, max 110  (AGENTS.md)
+
+## unreferenced_command
+  [WARNING] Command 'statedd-bloat-gate' not referenced in AGENTS.md or README.md  (commands/statedd-bloat-gate.md)
+
+## unreferenced_skill
+  [WARNING] Skill 'bloat-skill' not referenced in AGENTS.md, README.md, or commands  (skills/bloat-skill/SKILL.md)
+
+## workflow_full_gate
+  [ERROR] commands/statedd-bloat-gate.md says 'run all checks/full pipeline' but gate_level is None (must be ≥ 2)  (commands/statedd-bloat-gate.md)
+
+## workflow_gate_level
+  [ERROR] skills/bloat-skill/SKILL.md missing gate_level in frontmatter  (skills/bloat-skill/SKILL.md)
+  [ERROR] commands/statedd-bloat-gate.md missing gate_level in frontmatter  (commands/statedd-bloat-gate.md)
+
+## workflow_steps
+  [ERROR] skills/bloat-skill/SKILL.md has 10 steps, max 8  (skills/bloat-skill/SKILL.md)
+
+Summary: 8 error(s), 2 warning(s)

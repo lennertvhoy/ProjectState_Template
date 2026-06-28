@@ -2,6 +2,38 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-28 - StateDD v5 Efficiency Invariant and gate levels (BL-EFFICIENCY-001)
+
+**Type:** template_maintenance_capability  
+**Status:** IMPLEMENTED (local commit)  
+**Git Head:** d01ed6d before push  
+**Worktree:** dirty due to generated runtime_identity.json  
+**Gate Level:** 2 (slice closure)  
+**Efficiency Budget Result:** pass  
+
+### What changed
+- Added the Efficiency Invariant and tiered Gate Levels to `AGENTS.md`.
+- Created `EFFICIENCY_BUDGET.yaml` with hard limits for instruction size, state queues, evidence bundles, and gate runtimes.
+- Implemented `scripts/statedd_efficiency_check.py` to enforce the budget.
+- Added `scripts/test_efficiency_check.py` with 10 regression tests.
+- Added `fixtures/efficiency_bloat_overcorrection/` regression fixture proving the checker fails on bloat overcorrection.
+- Wired the efficiency check into `scripts/statedd_quality_gate.py`, `scripts/statedd_closure_check.py`, and `commands/statedd-release-gate.md`.
+- Added `gate_level`, `evidence_max`, `cheapest_proof`, and `escalate_when` metadata to every skill and command.
+- Updated `prompts/FINAL_HANDOFF_TEMPLATE.md` to record gate level used and efficiency budget result.
+
+### Verification
+- `python scripts/statedd_efficiency_check.py --gate-level 2` passes.
+- `python -m pytest scripts/test_efficiency_check.py -v` passes (10/10).
+- `python scripts/statedd_efficiency_check.py --gate-level 2 --root fixtures/efficiency_bloat_overcorrection` fails as expected.
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-28-002`
+- `docs/evidence/2026-06-28-efficiency-layer/README.md`
+
+### Risks / Remaining unproven
+- Full `statedd_quality_gate.py` and `statedd_closure_check.py` are blocked by pre-existing template-version baseline failures (`init_template.py` still emits `statedd-template-v4`).
+- Branch `efficiency-layer` is not yet pushed to origin; remote truth gate labels this handoff `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`.
+
 ## 2026-06-28 - Quality firewall template hardening (BL-QUALITY-001)
 
 **Type:** template_maintenance_capability

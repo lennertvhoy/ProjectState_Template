@@ -19,6 +19,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## CLOSED
 
+- [BL-EFFICIENCY-001] Add the StateDD v5 Efficiency Invariant: tiered gate levels, EFFICIENCY_BUDGET.yaml, scripts/statedd_efficiency_check.py, bloat regression fixture, and gate wiring.
 - [BL-QUALITY-001] Add the reusable StateDD quality firewall contract: failure scans, incident response, project quality gates, runtime-truth separation, and generated downstream template propagation.
 - [BL-BROWSER-001] Add provider-agnostic browser verification for user-facing changes.
 - [BL-007] Public usability and release-readiness polish: simplified README top half, added quick commands cheat sheet, improved adoption profile chooser, polished 5-minute guide, and finalized release notes as release-candidate ready.

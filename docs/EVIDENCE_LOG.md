@@ -55,6 +55,26 @@
 - as_of: 2026-06-28T10:02:35+02:00
 - Notes: Runtime/browser proof is not applicable for the template root. Downstream projects must adapt the generic gates to their own product domain.
 
+## EV-2026-06-28-002: StateDD v5 Efficiency Invariant and gate levels (BL-EFFICIENCY-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-efficiency-layer/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-efficiency-layer/command_outputs/efficiency_check.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-efficiency-layer/command_outputs/test_efficiency_check.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-efficiency-layer/command_outputs/bloat_fixture_check.txt
+- Title: BL-EFFICIENCY-001 hard Efficiency Invariant and tiered gate levels
+- Source/System: test
+- Action: Added Efficiency Invariant to AGENTS.md, created EFFICIENCY_BUDGET.yaml, implemented scripts/statedd_efficiency_check.py with tests, wired it into quality/closure/release gates, and added gate-level metadata to all skills/commands.
+- Shows:
+  - `python scripts/statedd_efficiency_check.py --gate-level 2` passes on the template root
+  - `python -m pytest scripts/test_efficiency_check.py -v` passes (10/10)
+  - `python scripts/statedd_efficiency_check.py --gate-level 2 --root fixtures/efficiency_bloat_overcorrection` fails as expected on the bloat regression fixture
+  - All skills and commands declare gate_level, evidence_max, cheapest_proof, and escalate_when
+- Proves:
+  - StateDD v5 now enforces the Efficiency Invariant: no bureaucracy without measurable value, smallest proof that crosses the truth boundary, and a bloat regression guard
+- Type: test
+- as_of: 2026-06-28T11:05:00+02:00
+- Notes: Full quality/closure gates are blocked by pre-existing template-version baseline failures (v4 vs v5 in init_template.py) unrelated to this slice. Closure-grade requires pushing this branch and matching remote truth.
+
 ## EV-2026-06-23-009: Provider-agnostic browser verification contract (BL-BROWSER-001)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
