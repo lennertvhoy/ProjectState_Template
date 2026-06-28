@@ -2,6 +2,29 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-28 - Quality firewall template hardening (BL-QUALITY-001)
+
+**Type:** template_maintenance_capability
+**Status:** COMPLETE
+**Git Head:** 5dd388fc888fe8e6057046d7c94fc50cffb07da6 before final commit
+**Worktree:** dirty during evidence capture
+
+### What changed
+- Added reusable quality firewall, failure taxonomy, incident response, failure scan, incident, and quality gate docs.
+- Updated the root contract/state/backlog/evidence taxonomy to distinguish product truth, runtime truth, adversarial proof, known bad events, post-deploy evidence, and handoff claims.
+- Updated generated downstream templates, schema support, prompt templates, initializer tests, and upgrade tests so new/adopted/upgraded repos receive the generic quality firewall assets.
+
+### Verification
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/test_upgrade.py` passed.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-28-quality-firewall-template --strict` passed.
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-28-001`
+- `docs/evidence/2026-06-28-quality-firewall-template/README.md`
+
 ## 2026-06-23 - Public usability and release-readiness polish (BL-007)
 
 **Type:** template_maintenance_docs

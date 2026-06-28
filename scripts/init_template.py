@@ -77,12 +77,15 @@ TEMPLATE_COPY_ROOT_FILES = {
     Path("AGENTS.md"),
     Path("BACKLOG.md"),
     Path("CHANGELOG.md"),
+    Path("FAILURE_TAXONOMY.md"),
+    Path("INCIDENT_RESPONSE.md"),
     Path("LICENSE"),
     Path("LICENSE_FAQ.md"),
     Path("NEXT_ACTIONS.md"),
     Path("PROJECT_ADAPTER.yaml"),
     Path("PROJECT_DNA.yaml"),
     Path("PROJECT_STATE.yaml"),
+    Path("QUALITY_FIREWALL.md"),
     Path("README.md"),
     Path("STATUS.md"),
     Path("VERSION"),
@@ -130,8 +133,14 @@ SUPPORT_ASSET_PATHS = [
     Path("prompts/SCHEMA_OWNERSHIP_TEMPLATE.md"),
     Path("prompts/SUBAGENT_REVIEW_TEMPLATE.md"),
     Path("prompts/CTO_REVIEW_CHECKLIST.md"),
+    Path("QUALITY_FIREWALL.md"),
+    Path("FAILURE_TAXONOMY.md"),
+    Path("INCIDENT_RESPONSE.md"),
     Path("docs/GETTING_STARTED_5_MIN.md"),
     Path("docs/BOOTSTRAP_QUALITY.md"),
+    Path("docs/failure_scans/TEMPLATE.md"),
+    Path("docs/incidents/README.md"),
+    Path("docs/quality_gates/README.md"),
     Path("docs/UPGRADING.md"),
     Path("docs/ADOPTION_PROFILES.md"),
     Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
@@ -211,10 +220,37 @@ These rules apply in all modes:
 - structured state must remain machine-checkable
 - end each implementation session with a handoff and hygiene check
 - `README.md` is the primary user guide for the project
+- implemented ≠ validated ≠ closure-grade ≠ accepted
+- evidence must prove product/runtime truth, not only command execution
+- closure requires global quality gates when user-facing or operator-facing behavior is involved
+- agent handoffs are claims until durable evidence or an independent gate verifies them
 
 ## Current Mode
 
 This repo currently operates in: `{mode}`
+
+## Quality Firewall
+
+StateDD is a failure-discovery workflow, not only a project-management or
+traceability workflow. Adapt the reusable quality firewall in
+`QUALITY_FIREWALL.md` to this project's domain.
+
+### Quality Firewall Rules
+
+- A slice cannot close merely because it satisfies acceptance criteria written
+  for that slice.
+- User-facing and operator-facing work must also pass applicable global
+  invariants and quality gates defined by this project.
+- If P0 product behavior is broken, set execution mode to `quality_freeze` or
+  `incident_response` and block feature work until the freeze condition is
+  directly addressed.
+- Bad observed events should become durable incidents, fixtures, failure scans,
+  and invariant checks, not one-off fixes.
+- Runtime truth and repo truth are separate: a clean worktree or passing tests
+  do not prove a live service, daemon, website, bot, or deployed artifact is
+  current.
+- Handoffs are claims. Treat them as unverified until they point to durable
+  evidence or an independent quality gate result.
 
 ## Bootstrap Mode
 
@@ -367,6 +403,12 @@ workflow requirement.
 - `WORKLOG.md` = append-only history
 - `docs/EVIDENCE_LOG.md` = proof ledger
 - `docs/ACCEPTANCE_FREEZES.md` = accepted user-facing milestone ledger
+- `QUALITY_FIREWALL.md` = reusable failure-discovery and closure-gate contract
+- `FAILURE_TAXONOMY.md` = shared failure severity and class vocabulary
+- `INCIDENT_RESPONSE.md` = standard bad-event ingestion workflow
+- `docs/failure_scans/` = pre-mortems and adjacent-failure scans
+- `docs/incidents/` = observed bad-event records
+- `docs/quality_gates/` = project-specific invariants and gates
 
 {profile_agents_note(profile)}
 
@@ -424,6 +466,28 @@ def render_status(project_name: str, human_timestamp: str, *, summary_lines: lis
 ## Active Blockers
 
 - None yet.
+
+## Product Truth
+
+- Not proven yet during bootstrap.
+
+## Runtime Truth
+
+- Not proven yet during bootstrap.
+
+## Current Quality Gate
+
+- Product quality gate: not_run.
+- Runtime truth gate: not_run.
+- Known bad events gate: not_run.
+
+## Open P0/P1 Failures
+
+- None recorded yet.
+
+## What Is Not Proven
+
+- Product behavior, runtime identity, deployment shape, and global quality invariants remain unproven until bootstrap fills `PROJECT_STATE.yaml`.
 
 ## Notes
 
@@ -494,6 +558,62 @@ verification_labels:
   invalid: known false or superseded
 
 current_state:
+  execution_mode:
+    status: observed
+    mode: bootstrap
+    allowed_values:
+      - operating
+      - quality_freeze
+      - incident_response
+      - release_candidate
+    notes: |
+      During bootstrap, determine whether the project can enter operating mode
+      or must start in quality_freeze or incident_response because product or
+      runtime truth is already failing.
+
+  quality_gates:
+    status: not_run
+    product_quality_gate: not_run
+    runtime_truth_gate: not_run
+    live_canary_gate: not_applicable
+    redteam_gate: not_run
+    known_bad_events_gate: not_run
+    notes: |
+      Replace these placeholders with project-specific commands, invariants,
+      fixtures, and evidence paths in docs/quality_gates/README.md or the
+      project test suite.
+
+  runtime_truth:
+    status: unknown
+    repo_truth_is_not_runtime_truth_rule: active
+    running_service_head: unknown
+    active_processes_or_pollers: unknown
+    duplicate_runtimes_checked: false
+    notes: |
+      Repo cleanliness and tests do not prove a running artifact. Capture
+      runtime identity before user-facing or operator-facing acceptance.
+
+  known_bad_events:
+    status: none_recorded
+    fixture_root: project_specific
+    notes: |
+      When a bad live event is observed, create an incident note, a failure
+      scan, and a regression fixture or equivalent durable check.
+
+  open_p0_failures: []
+
+  closure_blockers: []
+
+  last_live_canary:
+    status: not_applicable
+    evidence: null
+
+  last_redteam_run:
+    status: not_run
+    evidence: null
+
+  residual_risks: []
+
   repository:
     canonical_path: {repo_scan.canonical_path}
     path_status: observed
@@ -587,9 +707,15 @@ current_state:
       - WORKLOG.md
       - LICENSE
       - LICENSE_FAQ.md
+      - QUALITY_FIREWALL.md
+      - FAILURE_TAXONOMY.md
+      - INCIDENT_RESPONSE.md
       - docs/GETTING_STARTED_5_MIN.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
+      - docs/failure_scans/TEMPLATE.md
+      - docs/incidents/README.md
+      - docs/quality_gates/README.md
       - prompts/OPENCODE_STARTUP_PROMPT.md
       - prompts/TOOL_MODEL_ROUTING_GUIDE.md
       - scripts/statedd_handoff.py
@@ -637,6 +763,7 @@ product:
   is:
     - truth_first
     - evidence_backed
+    - failure_discovery_oriented
     - machine_checkable
     - history_separated_from_state
     - active_queue_is_short
@@ -644,6 +771,7 @@ product:
     - product_specific
     - runtime_status_dump
     - append_only_status_file
+    - proof_by_handoff_only
 
 truth_rules:
   contract_files:
@@ -657,12 +785,19 @@ truth_rules:
     worklog: WORKLOG.md
     evidence_log: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+    quality_firewall: QUALITY_FIREWALL.md
+    failure_taxonomy: FAILURE_TAXONOMY.md
+    incident_response: INCIDENT_RESPONSE.md
 
   hard_rules:
     - no_fake_completeness
     - no_history_in_live_state
     - evidence_required_for_user_facing_claims
     - runtime_identity_required_for_user_facing_acceptance
+    - quality_gates_required_for_user_or_operator_facing_closure
+    - bad_events_become_incidents_and_regression_fixtures
+    - repo_truth_and_runtime_truth_are_separate
+    - handoffs_are_claims_not_verified_truth
     - negative_search_results_do_not_prove_nonexistence
     - clean_worktree_required_at_handoff
     - active_queue_remains_short
@@ -694,6 +829,8 @@ architecture:
     description: Structured current truth in PROJECT_STATE.yaml.
   evidence_plane:
     description: Artifact-backed proof for claims and verification.
+  quality_plane:
+    description: Product/runtime/adversarial gates that can block closure independently of slice-local acceptance criteria.
   history_plane:
     description: Append-only record of completed work in WORKLOG.md.
   routing_plane:
@@ -707,6 +844,9 @@ invariants:
   - "BACKLOG.md assigns stable backlog IDs."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
+  - "A slice cannot close only because its own checklist passed."
+  - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
+  - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
 
 governance:
   evidence_standard: browser_verification_or_test_output
@@ -729,6 +869,11 @@ governance:
   schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
   subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
   cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
+  quality_firewall: QUALITY_FIREWALL.md
+  failure_taxonomy: FAILURE_TAXONOMY.md
+  incident_response: INCIDENT_RESPONSE.md
+  failure_scan_template: docs/failure_scans/TEMPLATE.md
+  quality_gates_directory: docs/quality_gates
   update_policy:
     status: when_current_truth_changes
     project_state: when_structured_truth_changes
@@ -880,6 +1025,8 @@ Initialized with profile: `{profile}` — {profile_summary(profile)}
 - Queue bloat.
 - Unverified claims.
 - Premature operating-mode transition.
+- No feature backlog item may be selected while `execution_mode` is `quality_freeze`, unless it directly closes the freeze condition.
+- Closure evidence must prove product/runtime truth where applicable, not only command execution or handoff claims.
 """
 
 
@@ -918,6 +1065,8 @@ Adopted with profile: `{profile}` — {profile_summary(profile)}
 - Silent overwrite of existing project docs.
 - Treating inherited claims as facts without direct verification.
 - Queue items that are not linked to a backlog ID.
+- No feature backlog item may be selected while `execution_mode` is `quality_freeze`, unless it directly closes the freeze condition.
+- Closure evidence must prove product/runtime truth where applicable, not only command execution or handoff claims.
 """
 
 
@@ -974,7 +1123,7 @@ def render_evidence_log(today: str, mode: str) -> str:
     - visible fact 2
   Proves:
     - why the artifact matters
-  Type: source-data | chatbot | gap | integration | docs-render-verification
+  Type: implementation | test | product_behavior | runtime_truth | adversarial | known_bad_event | post_deploy | security_privacy | state_update | docs-render-verification
   as_of: 2026-03-18T18:00:00+01:00
   Notes: optional context
 ```
@@ -985,6 +1134,8 @@ def render_evidence_log(today: str, mode: str) -> str:
 - Prefer durable artifact paths.
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
+- Treat handoffs as claims; link them to evidence or gate results before accepting closure.
+- For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 """
     if mode == "adopt":
         return guidance + f"""

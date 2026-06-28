@@ -12,6 +12,7 @@ product:
   is:
     - truth_first
     - evidence_backed
+    - failure_discovery_oriented
     - machine_checkable
     - history_separated_from_state
     - active_queue_is_short
@@ -19,6 +20,7 @@ product:
     - runtime_status_dump
     - append_only_status_file
     - proof_by_chat_only
+    - proof_by_handoff_only
 
 truth_rules:
   contract_files:
@@ -33,12 +35,19 @@ truth_rules:
     worklog: WORKLOG.md
     evidence_log: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+    quality_firewall: QUALITY_FIREWALL.md
+    failure_taxonomy: FAILURE_TAXONOMY.md
+    incident_response: INCIDENT_RESPONSE.md
 
   hard_rules:
     - no_fake_completeness
     - no_history_in_live_state
     - evidence_required_for_user_facing_claims
     - runtime_identity_required_for_user_facing_acceptance
+    - quality_gates_required_for_user_or_operator_facing_closure
+    - bad_events_become_incidents_and_regression_fixtures
+    - repo_truth_and_runtime_truth_are_separate
+    - handoffs_are_claims_not_verified_truth
     - negative_search_results_do_not_prove_nonexistence
     - clean_worktree_required_at_handoff
     - active_queue_remains_short
@@ -81,6 +90,8 @@ architecture:
     description: Structured current truth in PROJECT_STATE.yaml.
   evidence_plane:
     description: Artifact-backed proof for claims and verification.
+  quality_plane:
+    description: Product/runtime/adversarial gates that can block closure independently of slice-local acceptance criteria.
   history_plane:
     description: Append-only record of completed work in WORKLOG.md.
   routing_plane:
@@ -100,6 +111,9 @@ invariants:
   - "Implemented, validated, closure-grade, and accepted are four distinct states."
   - "Human overrides are recorded, but they do not turn partial work into closure-grade work."
   - "No schema may exist only in prose."
+  - "A slice cannot close only because its own checklist passed."
+  - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
+  - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
 
 governance:
   evidence_standard: browser_verification_or_test_output
@@ -124,6 +138,11 @@ governance:
   schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
   subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
   cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
+  quality_firewall: QUALITY_FIREWALL.md
+  failure_taxonomy: FAILURE_TAXONOMY.md
+  incident_response: INCIDENT_RESPONSE.md
+  failure_scan_template: docs/failure_scans/TEMPLATE.md
+  quality_gates_directory: docs/quality_gates
   update_policy:
     status: when_current_truth_changes
     project_state: when_structured_truth_changes

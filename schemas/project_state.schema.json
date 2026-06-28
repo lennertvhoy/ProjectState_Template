@@ -46,6 +46,60 @@
       "required": ["repository", "operating_mode", "project", "evidence"],
       "additionalProperties": true,
       "properties": {
+        "execution_mode": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "minLength": 1},
+            "mode": {
+              "type": "string",
+              "enum": ["template-maintenance", "bootstrap", "operating", "quality_freeze", "incident_response", "release_candidate"]
+            }
+          }
+        },
+        "quality_gates": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "minLength": 1},
+            "product_quality_gate": {"type": "string", "minLength": 1},
+            "runtime_truth_gate": {"type": "string", "minLength": 1},
+            "live_canary_gate": {"type": "string", "minLength": 1},
+            "redteam_gate": {"type": "string", "minLength": 1},
+            "known_bad_events_gate": {"type": "string", "minLength": 1}
+          }
+        },
+        "runtime_truth": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "minLength": 1}
+          }
+        },
+        "known_bad_events": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {"type": "string", "minLength": 1}
+          }
+        },
+        "open_p0_failures": {
+          "type": "array"
+        },
+        "closure_blockers": {
+          "type": "array"
+        },
+        "last_live_canary": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "last_redteam_run": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "residual_risks": {
+          "type": "array"
+        },
         "repository": {
           "type": "object",
           "required": ["canonical_path", "path_status"],

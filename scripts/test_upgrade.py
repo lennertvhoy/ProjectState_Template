@@ -92,12 +92,18 @@ def test_apply_adds_safe_missing_assets() -> None:
         run_init(["new", "--name", "Older Demo", "--target", str(target)])
         (target / "scripts" / "statedd_evidence_pack.py").unlink(missing_ok=True)
         (target / "schemas" / "evidence_manifest.schema.json").unlink(missing_ok=True)
+        (target / "QUALITY_FIREWALL.md").unlink(missing_ok=True)
+        (target / "docs" / "quality_gates" / "README.md").unlink(missing_ok=True)
 
         run_upgrade([str(target), "--apply"], expect_success=True)
         if not (target / "scripts" / "statedd_evidence_pack.py").exists():
             raise AssertionError("Apply did not add missing script")
         if not (target / "schemas" / "evidence_manifest.schema.json").exists():
             raise AssertionError("Apply did not add missing schema")
+        if not (target / "QUALITY_FIREWALL.md").exists():
+            raise AssertionError("Apply did not add missing quality firewall")
+        if not (target / "docs" / "quality_gates" / "README.md").exists():
+            raise AssertionError("Apply did not add missing quality gates README")
 
 
 def test_apply_preserves_readme_and_project_truth() -> None:

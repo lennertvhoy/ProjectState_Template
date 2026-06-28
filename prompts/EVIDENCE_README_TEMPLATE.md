@@ -16,9 +16,18 @@ real values. The claim ledger is the core of executable StateDD.
 
 - Claim: <concrete claim 1>
   Evidence: <command or artifact path>
+  Evidence type: implementation | test | product_behavior | runtime_truth | adversarial | known_bad_event | post_deploy | security_privacy | state_update
 
 - Claim: <concrete claim 2>
   Evidence: <command or artifact path>
+  Evidence type: implementation | test | product_behavior | runtime_truth | adversarial | known_bad_event | post_deploy | security_privacy | state_update
+
+## Failure Scan
+
+- Required: yes / no
+- Path: `docs/failure_scans/<slice>.md` / not applicable
+- Adjacent failures checked:
+- Known bad events covered:
 
 ## Verification Log
 
@@ -32,6 +41,10 @@ real values. The claim ledger is the core of executable StateDD.
 | audit | `python3 scripts/statedd_audit.py` | pass / fail |
 | runtime identity proof | `prompts/RUNTIME_IDENTITY_CHECKLIST.md` | yes / no |
 | schema ownership validation | `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` | yes / no / not applicable |
+| product quality gate | project-specific command/path | pass / fail / not applicable |
+| runtime truth gate | project-specific command/path | pass / fail / not applicable |
+| redteam/adversarial gate | project-specific command/path | pass / fail / not applicable |
+| known bad events gate | project-specific command/path | pass / fail / not applicable |
 
 ## Evidence Pack Manifest
 
@@ -58,6 +71,7 @@ real values. The claim ledger is the core of executable StateDD.
 
 - Implemented: yes / no
 - Validated: yes / no
+- Global quality gates passed: yes / no / not applicable
 - Closure-grade: yes / no
 - Accepted: pending / yes / rejected / conditionally accepted
 

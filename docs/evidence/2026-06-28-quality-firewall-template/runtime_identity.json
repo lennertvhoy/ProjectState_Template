@@ -1,0 +1,20 @@
+{
+  "captured_at": "2026-06-28T10:02:35+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "limits": [],
+  "repo": {
+    "branch": "main",
+    "head": "5dd388fc888fe8e6057046d7c94fc50cffb07da6",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "status_porcelain": "M AGENTS.md\n M BACKLOG.md\n M NEXT_ACTIONS.md\n M PROJECT_DNA.yaml\n M PROJECT_STATE.yaml\n M STATUS.md\n M docs/EVIDENCE_LOG.md\n M prompts/EVIDENCE_README_TEMPLATE.md\n M prompts/FINAL_HANDOFF_TEMPLATE.md\n M prompts/SLICE_CONTRACT_TEMPLATE.md\n M schemas/project_state.schema.json\n M scripts/check_state_docs.py\n M scripts/init_template.py\n M scripts/statedd_upgrade.py\n M scripts/test_init_template.py\n M scripts/test_upgrade.py\n?? FAILURE_TAXONOMY.md\n?? INCIDENT_RESPONSE.md\n?? QUALITY_FIREWALL.md\n?? docs/evidence/2026-06-28-quality-firewall-template/\n?? docs/failure_scans/\n?? docs/incidents/\n?? docs/quality_gates/",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "reason": "Template root has no application runtime; this slice changes reusable StateDD docs, generated template scaffolding, schemas, and tests.",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1"
+}

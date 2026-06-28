@@ -208,6 +208,30 @@ def assert_upgrade_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing upgrade assets: {missing}")
 
 
+def assert_quality_firewall_assets_exist(root: Path) -> None:
+    required = [
+        root / "QUALITY_FIREWALL.md",
+        root / "FAILURE_TAXONOMY.md",
+        root / "INCIDENT_RESPONSE.md",
+        root / "docs" / "failure_scans" / "TEMPLATE.md",
+        root / "docs" / "incidents" / "README.md",
+        root / "docs" / "quality_gates" / "README.md",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing quality firewall assets: {missing}")
+
+    agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+    state = (root / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
+    evidence = (root / "docs" / "EVIDENCE_LOG.md").read_text(encoding="utf-8")
+    if "## Quality Firewall" not in agents:
+        raise AssertionError("Generated AGENTS.md does not include the quality firewall contract")
+    if "quality_gates:" not in state or "runtime_truth:" not in state:
+        raise AssertionError("Generated PROJECT_STATE.yaml lacks quality gate/runtime truth fields")
+    if "known_bad_event" not in evidence or "runtime_truth" not in evidence:
+        raise AssertionError("Generated EVIDENCE_LOG.md lacks the expanded evidence taxonomy")
+
+
 def assert_schema_validation_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "project_state.schema.json",
@@ -283,6 +307,13 @@ def test_new_includes_runtime_proof_asset() -> None:
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Runtime Demo", "--target", str(target)], expect_success=True)
         assert_runtime_proof_assets_exist(target)
+
+
+def test_new_includes_quality_firewall_assets() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "Quality Demo", "--target", str(target)], expect_success=True)
+        assert_quality_firewall_assets_exist(target)
 
 
 def test_new_includes_schema_validation_assets_and_passes_schema_validation() -> None:
@@ -397,6 +428,15 @@ def test_adopt_installs_runtime_proof_asset() -> None:
         assert_runtime_proof_assets_exist(repo)
 
 
+def test_adopt_installs_quality_firewall_assets() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
+        run_init(["adopt", "--name", "Quality Adopted", "--target", str(repo)], expect_success=True)
+        assert_quality_firewall_assets_exist(repo)
+
+
 def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = Path(tmp) / "repo"
@@ -499,6 +539,7 @@ def main() -> int:
         test_new_includes_usability_assets,
         test_new_includes_version_assets_and_passes_version_check,
         test_new_includes_runtime_proof_asset,
+        test_new_includes_quality_firewall_assets,
         test_new_includes_schema_validation_assets_and_passes_schema_validation,
         test_new_repo_still_fails_bootstrap_gate_until_investigated,
         test_new_includes_v2_executable_workflow_assets,
@@ -507,6 +548,7 @@ def main() -> int:
         test_adopt_installs_usability_assets,
         test_adopt_installs_version_assets_and_passes_version_check,
         test_adopt_installs_runtime_proof_asset,
+        test_adopt_installs_quality_firewall_assets,
         test_adopt_installs_schema_validation_assets_and_passes_schema_validation,
         test_adopt_installs_v2_executable_workflow_assets,
         test_template_root_uses_template_maintenance_mode,

@@ -16,6 +16,8 @@ Slice contract
 - user_value: ...
 - non_goals: ...
 - acceptance_criteria: ...
+- failure_scan: docs/failure_scans/<slice>.md | not applicable
+- global_quality_gates: passed | failed | not run | not applicable
 
 What changed
 - ...
@@ -31,6 +33,11 @@ Release / update gate
 - tests passed: yes | no
 - app running with latest HEAD: yes | no | not applicable
 - browser proof captured from latest running app: yes | no | not applicable
+- product quality gate: passing | failing | not_run | not_applicable
+- runtime truth gate: passing | failing | not_run | not_applicable
+- redteam/adversarial gate: passing | failing | not_run | not_applicable
+- known bad events gate: passing | failing | not_run | not_applicable
+- post-deploy watch: passing | failing | not_run | not_applicable
 
 Human override
 - Human override used: yes | no
@@ -73,6 +80,10 @@ Evidence refs
 Claim ledger (from evidence README)
 - Claim: ...  Evidence: ...
 - Claim: ...  Evidence: ...
+
+Handoff claims vs verified truth
+- Handoff-only claims that remain unverified: ...
+- Claims verified by evidence or quality gate: ...
 
 What remains partial or risky
 - ...

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-23T17:50:00+02:00
+  updated_at: 2026-06-28T00:00:00+02:00
   updated_by: agent
   version: "statedd-template-v4"
 
@@ -28,6 +28,63 @@ verification_labels:
   invalid: known false or superseded
 
 current_state:
+  execution_mode:
+    status: observed
+    mode: template-maintenance
+    supported_downstream_modes:
+      - operating
+      - quality_freeze
+      - incident_response
+      - release_candidate
+    notes: |
+      The template root stays in template-maintenance. Downstream repos should
+      record operating, quality_freeze, incident_response, or release_candidate
+      according to product/runtime truth.
+
+  quality_gates:
+    status: active
+    product_quality_gate: not_applicable_for_template_root
+    runtime_truth_gate: not_applicable_for_template_root
+    live_canary_gate: not_applicable_for_template_root
+    redteam_gate: passing_for_template_propagation_checks
+    known_bad_events_gate: not_applicable_for_template_root
+    evidence: docs/evidence/2026-06-28-quality-firewall-template/README.md
+    docs:
+      - QUALITY_FIREWALL.md
+      - FAILURE_TAXONOMY.md
+      - INCIDENT_RESPONSE.md
+      - docs/failure_scans/TEMPLATE.md
+      - docs/incidents/README.md
+      - docs/quality_gates/README.md
+
+  runtime_truth:
+    status: not_applicable_for_template_root
+    repo_truth_is_not_runtime_truth_rule: active
+    notes: |
+      The template root has no deployed application runtime. Downstream repos
+      must prove runtime identity for user-facing or operator-facing acceptance.
+
+  known_bad_events:
+    status: none_known_for_template_root
+    fixture_policy: |
+      Downstream projects should convert observed bad events into durable
+      incident notes, fixtures or equivalent artifacts, and regression gates.
+
+  open_p0_failures: []
+
+  closure_blockers: []
+
+  last_live_canary:
+    status: not_applicable_for_template_root
+    evidence: null
+
+  last_redteam_run:
+    status: passing_for_template_propagation_checks
+    evidence: docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
+
+  residual_risks:
+    - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
+
   repository:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
@@ -195,6 +252,12 @@ current_state:
       - docs/GETTING_STARTED_5_MIN.md
       - docs/QUICK_COMMANDS.md
       - docs/BROWSER_VERIFICATION.md
+      - QUALITY_FIREWALL.md
+      - FAILURE_TAXONOMY.md
+      - INCIDENT_RESPONSE.md
+      - docs/failure_scans/TEMPLATE.md
+      - docs/incidents/README.md
+      - docs/quality_gates/README.md
       - docs/UPGRADING.md
       - docs/ADOPTION_PROFILES.md
       - docs/RELEASE_NOTES_statedd-template-v4.md

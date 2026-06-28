@@ -16,7 +16,7 @@
     - visible fact 2
   Proves:
     - why the artifact matters
-  Type: source-data | chatbot | gap | integration | docs-render-verification
+  Type: implementation | test | product_behavior | runtime_truth | adversarial | known_bad_event | post_deploy | security_privacy | state_update | docs-render-verification
   as_of: 2026-03-18T18:00:00+01:00
   Notes: optional context
 ```
@@ -27,6 +27,33 @@
 - Prefer durable artifact paths.
 - Place saved artifacts under `docs/evidence/YYYY-MM-DD-<slug>/` when possible.
 - Add timestamps for anything that may become stale.
+- Treat handoffs as claims; link them to evidence or gate results before accepting closure.
+- For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
+
+## EV-2026-06-28-001: StateDD quality firewall template hardening (BL-QUALITY-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/check_state_docs.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/schema_validation.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_upgrade.txt
+- Title: BL-QUALITY-001 reusable quality firewall contract
+- Source/System: test
+- Action: Added generic quality firewall docs, failure taxonomy, incident response, failure scan and quality gate templates, state fields, schema support, generated downstream propagation, upgrade propagation, and prompt/evidence handoff updates.
+- Shows:
+  - `python3 scripts/check_state_docs.py` passes
+  - `python3 scripts/statedd_validate_schema.py` passes
+  - `python3 scripts/test_init_template.py` passes and covers generated/adopted quality firewall assets
+  - `python3 scripts/test_upgrade.py` passes and covers upgrade propagation
+  - `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-28-quality-firewall-template --strict` passes
+- Proves:
+  - StateDD now includes a reusable failure-discovery layer without making any project-specific bot invariant canonical
+  - downstream generated/adopted repos receive quality firewall guidance and structured quality gate/runtime truth scaffolding
+- Type: test
+- as_of: 2026-06-28T10:02:35+02:00
+- Notes: Runtime/browser proof is not applicable for the template root. Downstream projects must adapt the generic gates to their own product domain.
 
 ## EV-2026-06-23-009: Provider-agnostic browser verification contract (BL-BROWSER-001)
 

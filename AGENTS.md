@@ -45,6 +45,9 @@ These rules apply in all modes:
 - end each implementation session with a handoff and hygiene check
 - `README.md` is the primary user guide for the project
 - implemented ≠ validated ≠ closure-grade ≠ accepted
+- evidence must prove product/runtime truth, not only command execution
+- closure requires global quality gates when user-facing or operator-facing behavior is involved
+- agent handoffs are claims until durable evidence or an independent gate verifies them
 
 ## Human Override Rule — Strong Defaults, Not a Prison
 
@@ -91,6 +94,36 @@ The rules are hard against agent sloppiness, but soft against explicit human dir
 This repo currently operates in: `template-maintenance`
 
 This template repository itself operates in: `template-maintenance`.
+
+## Quality Firewall
+
+StateDD is a failure-discovery workflow, not only a project-management or
+traceability workflow. Every downstream repo should adapt the reusable quality
+firewall in `QUALITY_FIREWALL.md`.
+
+### Quality Firewall Rules
+
+- A slice cannot close merely because it satisfies acceptance criteria written
+  for that slice.
+- User-facing and operator-facing work must also pass applicable global
+  invariants and quality gates defined by the downstream project.
+- If P0 product behavior is broken, set execution mode to `quality_freeze` or
+  `incident_response` and block feature work until the freeze condition is
+  directly addressed.
+- Bad observed events should become durable incidents, fixtures, failure scans,
+  and invariant checks, not one-off fixes.
+- Runtime truth and repo truth are separate: a clean worktree or passing tests
+  do not prove a live service, daemon, bot, website, or deployed artifact is
+  current.
+- Handoffs are not truth by themselves. Treat them as claims that must point to
+  evidence or an independent quality gate result.
+
+Use:
+- `QUALITY_FIREWALL.md` for the reusable closure and quality-gate contract.
+- `FAILURE_TAXONOMY.md` for severity and failure classification.
+- `INCIDENT_RESPONSE.md` for bad-event ingestion.
+- `docs/failure_scans/TEMPLATE.md` before risky or non-trivial implementation.
+- `docs/quality_gates/README.md` for downstream project-specific gates.
 
 ## Template-Maintenance Mode
 
@@ -264,6 +297,12 @@ owns synthesis; subagents do not rewrite the contract.
 - `WORKLOG.md` = append-only history
 - `docs/EVIDENCE_LOG.md` = proof ledger
 - `docs/ACCEPTANCE_FREEZES.md` = accepted user-facing milestone ledger
+- `QUALITY_FIREWALL.md` = reusable failure-discovery and closure-gate contract
+- `FAILURE_TAXONOMY.md` = shared failure severity and class vocabulary
+- `INCIDENT_RESPONSE.md` = standard bad-event ingestion workflow
+- `docs/failure_scans/` = pre-mortems and adjacent-failure scans
+- `docs/incidents/` = observed bad-event records
+- `docs/quality_gates/` = downstream product-specific invariants and gates
 - `docs/adr/` = architecture decision records for long-lived reasoning
 
 ## Executable Workflow Tools

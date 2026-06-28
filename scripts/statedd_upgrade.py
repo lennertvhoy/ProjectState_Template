@@ -26,6 +26,9 @@ TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 # workflow assets, not project-specific truth files.
 SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("VERSION"),
+    Path("QUALITY_FIREWALL.md"),
+    Path("FAILURE_TAXONOMY.md"),
+    Path("INCIDENT_RESPONSE.md"),
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("scripts/statedd_version_check.py"),
@@ -63,6 +66,9 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("prompts/CTO_REVIEW_CHECKLIST.md"),
     Path("docs/GETTING_STARTED_5_MIN.md"),
     Path("docs/BOOTSTRAP_QUALITY.md"),
+    Path("docs/failure_scans/TEMPLATE.md"),
+    Path("docs/incidents/README.md"),
+    Path("docs/quality_gates/README.md"),
     Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
     Path("docs/UPGRADING.md"),
     Path("docs/adr/README.md"),

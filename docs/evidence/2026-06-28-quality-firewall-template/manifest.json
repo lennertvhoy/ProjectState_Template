@@ -1,0 +1,126 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "4d20a80962793cfef6dae3c4321d8702adf2b33ba01264a88214f1ff474d5da2"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked",
+      "sensitive_data": "none_found",
+      "sha256": "b90549452d3d527139ec436c0b3102bb3ecc25aab69a93e76806ca8ef6574d85"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/check_state_docs.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b94ff4d9be7c33fb54ae7ea31293c2d13aab98b6f65978232b211980f847070d"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/schema_validation.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "afb5b9e863f8a43a8e80898a76ee92365d878443b9943a4c85740a1731eea942"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/test_init_template.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "ee3e3850f632805c3b7793128a4cb0c7410949a1d36e2048069ab0d78c03e2b6"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/test_upgrade.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "6916334317b57be250551224a45509222305fe9788f3d6693b888a422b0f90f3"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/git_diff_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "StateDD has reusable, project-agnostic quality firewall docs for failure discovery, incident response, failure taxonomy, failure scans, and downstream quality gates.",
+      "evidence": [
+        "README.md",
+        "command_outputs/check_state_docs.txt"
+      ],
+      "id": "C1",
+      "status": "validated"
+    },
+    {
+      "claim": "The root contract and state files distinguish handoff claims from verified truth, repo truth from runtime truth, and slice-local acceptance from global quality gates.",
+      "evidence": [
+        "README.md",
+        "command_outputs/check_state_docs.txt",
+        "command_outputs/schema_validation.txt"
+      ],
+      "id": "C2",
+      "status": "validated"
+    },
+    {
+      "claim": "Generated and adopted downstream repos receive the generic quality firewall guidance and structured quality gate/runtime truth fields.",
+      "evidence": [
+        "README.md",
+        "command_outputs/test_init_template.txt"
+      ],
+      "id": "C3",
+      "status": "validated"
+    },
+    {
+      "claim": "Existing downstream repos can receive the quality firewall assets through the non-destructive upgrade helper.",
+      "evidence": [
+        "README.md",
+        "command_outputs/test_upgrade.txt"
+      ],
+      "id": "C4",
+      "status": "validated"
+    },
+    {
+      "claim": "The updated structured fields remain schema-valid and the template hygiene gate passes.",
+      "evidence": [
+        "README.md",
+        "command_outputs/schema_validation.txt",
+        "command_outputs/check_state_docs.txt",
+        "command_outputs/git_diff_check.txt"
+      ],
+      "id": "C5",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-06-28T10:02:35+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Pattern-based redaction scan cannot prove absolute absence of secrets.",
+      "Artifacts are docs and command outputs generated during this local template-maintenance slice.",
+      "Automated scan found no obvious patterns in listed artifacts; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "main",
+    "head": "5dd388fc888fe8e6057046d7c94fc50cffb07da6"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-QUALITY-001"
+}
