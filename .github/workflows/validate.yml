@@ -98,14 +98,14 @@ jobs:
           python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --readme-link
           python3 scripts/test_adoption_profiles.py
           python3 scripts/statedd_bootstrap_wizard.py --help
-          tmpdir="$(mktemp -d)"
-          python3 scripts/statedd_browser_verify.py init "$tmpdir/browser-evidence" --slice-id BL-BROWSER-001
-          python3 scripts/statedd_browser_verify.py check "$tmpdir/browser-evidence"
-          tmpdir="$(mktemp -d)"
-          printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$tmpdir/answers.json"
-          python3 scripts/statedd_bootstrap_wizard.py --target "$tmpdir/wizard" --answers "$tmpdir/answers.json"
-          python3 scripts/check_state_docs.py "$tmpdir/wizard"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/wizard"
+          browserdir="$(mktemp -d)"
+          python3 scripts/statedd_browser_verify.py init "$browserdir/browser-evidence" --slice-id BL-BROWSER-001
+          python3 scripts/statedd_browser_verify.py check "$browserdir/browser-evidence"
+          wizarddir="$(mktemp -d)"
+          printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$wizarddir/answers.json"
+          python3 scripts/statedd_bootstrap_wizard.py --target "$wizarddir/wizard" --answers "$wizarddir/answers.json"
+          python3 scripts/check_state_docs.py "$wizarddir/wizard"
+          python3 scripts/statedd_validate_schema.py "$wizarddir/wizard"
           test -f "$tmpdir/adopt-source/scripts/statedd_runtime_proof.py"
           test -f "$tmpdir/adopt-source/prompts/RUNTIME_IDENTITY_CHECKLIST.md"
           test -f "$tmpdir/adopt-source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
