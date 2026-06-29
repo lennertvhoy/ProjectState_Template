@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-REMOTE-CLOSURE-001] Add a Remote CI/CD Closure Finalizer
+### P0 [BL-BROWSER-002] Integrate a concrete browser automation provider
 Owner: coding agent
-Next: finalize implementation, run local verification gates, push, and verify CI is green
-Exit: `scripts/statedd_remote_closure_finalizer.py` passes with `CI verified` label and the close-slice/release-gate flow invokes it
+Next: pick a provider (Kimi WebBridge / Playwright / agent-native) and implement a working browser verification path for user-facing changes
+Exit: a user-facing slice can produce a real browser verification artifact and `scripts/statedd_browser_verify.py check` passes
 
 ## Queue Rules
 

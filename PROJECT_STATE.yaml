@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-28T00:00:00+02:00
+  updated_at: 2026-06-29T10:30:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -48,6 +48,14 @@ current_state:
     live_canary_gate: not_applicable_for_template_root
     redteam_gate: passing_for_template_propagation_checks
     known_bad_events_gate: not_applicable_for_template_root
+    remote_closure_gate:
+      status: active
+      script: scripts/statedd_remote_closure_finalizer.py
+      evidence: docs/evidence/2026-06-29-remote-closure/README.md
+      notes: |
+        Enforces the Remote Closure Invariant: local HEAD, pushed branch, PR head,
+        PR body, in-repo evidence, latest GitHub Actions result, and mergeStateStatus
+        must all agree before a slice is closure-grade.
     evidence: docs/evidence/2026-06-28-quality-firewall-template/README.md
     docs:
       - QUALITY_FIREWALL.md
@@ -90,13 +98,14 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-23T17:50:00+02:00
-      last_verified_branch: main
-      last_verified_head: 2a9afd47b22d67704e097c93bbb2ca6d16fd08e1
-      last_verified_worktree_status: clean
+      captured_at: 2026-06-29T10:30:00+02:00
+      last_verified_branch: bl-remote-closure-001
+      last_verified_head: cea70efe72306f08632016488db37055884e5a42
+      last_verified_worktree_status: dirty
       notes: |
-        Captured after publishing statedd-template-v5 as GitHub release v5 and
-        removing the BL-BROWSER-001 feature worktree. Worktree is clean. Use git,
+        Captured while closing BL-REMOTE-CLOSURE-001. Worktree contains the
+        evidence folder and state updates added after the final implementation
+        commit; these will be committed before closure. Use git,
         scripts/statedd_audit.py, scripts/statedd_doctor.py,
         scripts/statedd_handoff.py, or evidence artifacts for current branch,
         HEAD, and worktree status.
@@ -183,11 +192,13 @@ current_state:
       - scripts/statedd_evidence_pack.py
       - scripts/statedd_upgrade.py
       - scripts/statedd_bootstrap_wizard.py
+      - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
       - scripts/test_runtime_proof.py
       - scripts/test_evidence_pack.py
       - scripts/test_upgrade.py
       - scripts/test_adoption_profiles.py
+      - scripts/test_remote_closure_finalizer.py
     entrypoints:
       - scripts/init_template.py
       - scripts/check_state_docs.py
@@ -200,12 +211,14 @@ current_state:
       - scripts/statedd_evidence_pack.py
       - scripts/statedd_upgrade.py
       - scripts/statedd_bootstrap_wizard.py
+      - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
       - scripts/test_runtime_proof.py
       - scripts/test_schema_validation.py
       - scripts/test_evidence_pack.py
       - scripts/test_upgrade.py
       - scripts/test_adoption_profiles.py
+      - scripts/test_remote_closure_finalizer.py
       - schemas
     test_setup:
       - python3 scripts/check_state_docs.py
@@ -216,6 +229,7 @@ current_state:
       - python3 scripts/test_evidence_pack.py
       - python3 scripts/test_upgrade.py
       - python3 scripts/test_adoption_profiles.py
+      - python3 scripts/test_remote_closure_finalizer.py
       - python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
       - python3 scripts/statedd_audit.py
       - python3 scripts/statedd_doctor.py

@@ -1,0 +1,20 @@
+{
+  "captured_at": "2026-06-29T10:23:12+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "limits": [],
+  "repo": {
+    "branch": "bl-remote-closure-001",
+    "head": "cea70efe72306f08632016488db37055884e5a42",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "status_porcelain": "?? docs/evidence/2026-06-29-remote-closure/",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "reason": "docs/scripts-only slice",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1"
+}

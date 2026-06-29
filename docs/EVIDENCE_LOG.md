@@ -360,3 +360,24 @@
 - Type: docs-render-verification
 - as_of: 2026-06-14T13:40:01+00:00
 - Notes: Template repo remains in bootstrap mode. The SkillSignal-specific canonical schema/export/import loop is deferred to a downstream slice.
+
+## EV-2026-06-29-001: Remote CI/CD Closure Finalizer (BL-REMOTE-CLOSURE-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/manifest.json
+- Title: GitHub-backed remote closure finalizer implemented and verified
+- Source/System: test
+- Action: Added scripts/statedd_remote_closure_finalizer.py, regression tests, AGENTS.md invariant, skill/command wiring, and CI step; fixed bootstrap fixture versions and CI tmpdir bug
+- Shows:
+  - `python3 scripts/test_remote_closure_finalizer.py` passed
+  - `python3 scripts/check_state_docs.py --bootstrap-gate` passed
+  - `python3 scripts/statedd_validate_schema.py` passed
+  - GitHub Actions `Validate Template Docs` passed on PR #3
+  - `python3 scripts/statedd_remote_closure_finalizer.py --pr 3` exited 0
+- Proves:
+  - the template can now enforce a Remote Closure Invariant across local HEAD, pushed branch, PR head, PR body, evidence, Actions status, and mergeStateStatus
+  - closure-grade handoffs require GitHub-visible CI success and a clean merge state
+- Type: implementation
+- as_of: 2026-06-29T10:22:31+02:00
+- Notes: Final PR head recorded in evidence and PR body.

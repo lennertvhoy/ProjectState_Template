@@ -1,0 +1,71 @@
+{
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-REMOTE-CLOSURE-001",
+  "manifest_status": "complete",
+  "created_at": "2026-06-29T10:22:31+02:00",
+  "repo": {
+    "branch": "bl-remote-closure-001",
+    "head": "cea70efe72306f08632016488db37055884e5a42"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "7adce0e424ead3d93cbf1d8845629761a091c673460615a7f9d27a9a4f1b6204"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked",
+      "sensitive_data": "none_found",
+      "sha256": "ae5911aff27860b9885ca36588a1c93271ac7e6725384b05ae3e16f4ca1cf6ff"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "StateDD has an executable, GitHub-backed remote closure finalizer that refuses closure-grade handoffs until local HEAD, pushed branch, PR head, PR body, in-repo evidence, latest GitHub Actions result, and merge state all agree.",
+      "status": "validated",
+      "evidence": ["README.md"]
+    },
+    {
+      "id": "C2",
+      "claim": "The Remote Closure Invariant is now part of the constitutional contract in AGENTS.md.",
+      "status": "validated",
+      "evidence": ["README.md"]
+    },
+    {
+      "id": "C3",
+      "claim": "The finalizer is wired into the close-slice and release-gate flows via skill/command playbooks.",
+      "status": "validated",
+      "evidence": ["README.md"]
+    },
+    {
+      "id": "C4",
+      "claim": "The finalizer and its regression tests pass locally and in CI.",
+      "status": "validated",
+      "evidence": ["README.md"]
+    },
+    {
+      "id": "C5",
+      "claim": "Bootstrap fixtures and CI variable isolation bugs that blocked the template hygiene gate were fixed as part of making closure verifiable.",
+      "status": "validated",
+      "evidence": ["README.md"]
+    }
+  ],
+  "redaction": {
+    "status": "checked_with_limits",
+    "automated_scan": "not_applicable",
+    "manual_review": "completed",
+    "known_limits": [
+      "No runtime secrets or user data present; template docs and scripts only."
+    ]
+  }
+}

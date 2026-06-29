@@ -221,6 +221,7 @@ class RemoteClosureFinalizer:
         default_factory=lambda: run_command
     )
     github_client: GitHubApi | None = None
+    pr_final_head: str | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
         if self.github_client is None:
@@ -411,6 +412,7 @@ class RemoteClosureFinalizer:
     def _check_pr_body(self) -> None:
         body = self.pr.get("body") or ""
         if self.local_head in body:
+            self.pr_final_head = self.local_head
             if self.verbose:
                 print("  ✓ PR body references current HEAD")
             return
@@ -418,6 +420,7 @@ class RemoteClosureFinalizer:
         marked = extract_marked_heads(body)
         final_head = marked.get("final_pr_head")
         if final_head and final_head == self.local_head:
+            self.pr_final_head = self.local_head
             if self.verbose:
                 print("  ✓ PR body uses explicit proof_head/final_head split")
             return
@@ -474,7 +477,7 @@ class RemoteClosureFinalizer:
                     f"({self.local_head})"
                 )
             elif self.verbose:
-                print(f"  ✓ evidence file references current HEAD: {path.relative_to(self.root)}")
+                print(f"  ✓ evidence file agrees with closure HEAD: {path.relative_to(self.root)}")
 
         if checked == 0:
             self.warnings.append(
@@ -492,6 +495,10 @@ class RemoteClosureFinalizer:
             return True
         sha_refs = extract_sha_refs(text)
         if self.local_head in sha_refs or self.local_head[:7] in sha_refs:
+            return True
+        # If the PR body uses an explicit proof_head/final_head split, evidence
+        # may reference the proof head instead of the metadata-only final head.
+        if self.pr_final_head == self.local_head and marked.get("proof_head") in sha_refs:
             return True
         # If the file mentions any head-like SHA but not the current one, treat as stale.
         if sha_refs:
