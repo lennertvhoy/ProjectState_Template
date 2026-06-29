@@ -1,0 +1,20 @@
+{
+  "branch": "bl-remote-closure-001",
+  "ci_run_id": "28359456426",
+  "ci_run_url": "https://github.com/lennertvhoy/StateDD_Template/actions/runs/28359456426",
+  "ci_state": "SUCCESS",
+  "closure_label": "CI verified",
+  "evidence_folder": "/home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure",
+  "failures": [],
+  "generated_at": "2026-06-29T10:40:19+02:00",
+  "local_head": "25ca2807dbf4d8aee145ba849324bae9a35123e4",
+  "merge_state": "CLEAN",
+  "pr_head": "25ca2807dbf4d8aee145ba849324bae9a35123e4",
+  "pr_number": 3,
+  "pr_url": "https://github.com/lennertvhoy/StateDD_Template/pull/3",
+  "remote_url": "https://github.com/lennertvhoy/StateDD_Template.git",
+  "repo_path": "/home/ff/Documents/Projects/StateDD_Template",
+  "schema": "statedd.remote_closure_handoff.v1",
+  "warnings": [],
+  "worktree_clean": true
+}
