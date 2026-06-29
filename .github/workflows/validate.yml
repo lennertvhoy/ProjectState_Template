@@ -98,21 +98,22 @@ jobs:
           python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --readme-link
           python3 scripts/test_adoption_profiles.py
           python3 scripts/statedd_bootstrap_wizard.py --help
-          tmpdir="$(mktemp -d)"
-          python3 scripts/statedd_browser_verify.py init "$tmpdir/browser-evidence" --slice-id BL-BROWSER-001
-          python3 scripts/statedd_browser_verify.py check "$tmpdir/browser-evidence"
-          tmpdir="$(mktemp -d)"
-          printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$tmpdir/answers.json"
-          python3 scripts/statedd_bootstrap_wizard.py --target "$tmpdir/wizard" --answers "$tmpdir/answers.json"
-          python3 scripts/check_state_docs.py "$tmpdir/wizard"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/wizard"
-          test -f "$tmpdir/adopt-source/scripts/statedd_runtime_proof.py"
-          test -f "$tmpdir/adopt-source/prompts/RUNTIME_IDENTITY_CHECKLIST.md"
-          test -f "$tmpdir/adopt-source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
-          test -f "$tmpdir/adopt-source/docs/ACCEPTANCE_FREEZES.md"
-          python3 scripts/check_state_docs.py "$tmpdir/adopt-source"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/adopt-source"
-          python3 scripts/check_state_docs.py --bootstrap-gate "$tmpdir/adopt-source"
+          adopt_source="$tmpdir/adopt-source"
+          browser_tmp="$(mktemp -d)"
+          python3 scripts/statedd_browser_verify.py init "$browser_tmp/browser-evidence" --slice-id BL-BROWSER-001
+          python3 scripts/statedd_browser_verify.py check "$browser_tmp/browser-evidence"
+          wizard_tmp="$(mktemp -d)"
+          printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$wizard_tmp/answers.json"
+          python3 scripts/statedd_bootstrap_wizard.py --target "$wizard_tmp/wizard" --answers "$wizard_tmp/answers.json"
+          python3 scripts/check_state_docs.py "$wizard_tmp/wizard"
+          python3 scripts/statedd_validate_schema.py "$wizard_tmp/wizard"
+          test -f "$adopt_source/scripts/statedd_runtime_proof.py"
+          test -f "$adopt_source/prompts/RUNTIME_IDENTITY_CHECKLIST.md"
+          test -f "$adopt_source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
+          test -f "$adopt_source/docs/ACCEPTANCE_FREEZES.md"
+          python3 scripts/check_state_docs.py "$adopt_source"
+          python3 scripts/statedd_validate_schema.py "$adopt_source"
+          python3 scripts/check_state_docs.py --bootstrap-gate "$adopt_source"
 
       - name: Validate remote closure finalizer
         run: |
