@@ -16,10 +16,11 @@ from typing import List, Tuple
 
 
 class ClosureCheck:
-    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None):
+    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None, gate_level: int = 2):
         self.root = root
         self.verbose = verbose
         self.claimed_files = claimed_files or []
+        self.gate_level = gate_level
         self.failures: List[str] = []
         self.warnings: List[str] = []
 
@@ -156,6 +157,18 @@ class ClosureCheck:
             self.failures.append(f"Remote truth check crashed: {e}")
             return False
 
+    def check_efficiency(self) -> bool:
+        """Run efficiency budget check."""
+        print("⚡ Running efficiency check...")
+        code, out, err = self.run_cmd(
+            ["python", "scripts/statedd_efficiency_check.py", "--gate-level", str(self.gate_level)]
+        )
+        if code == 0:
+            print("  ✓ Efficiency check passed")
+            return True
+        self.failures.append(f"Efficiency check failed:\n{err or out}")
+        return False
+
     def run(self) -> int:
         print("=" * 50)
         print("StateDD Closure Check")
@@ -171,6 +184,7 @@ class ClosureCheck:
             ("Acceptance Freeze", self.check_acceptance_freeze),
             ("Handoff Complete", self.check_handoff_complete),
             ("Remote Truth", self.check_remote_truth),
+            ("Efficiency", self.check_efficiency),
         ]
 
         all_passed = True
@@ -206,10 +220,11 @@ def main():
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--claimed-files", nargs="*", default=[], help="Files claimed as deliverables")
+    parser.add_argument("--gate-level", type=int, default=2, help="Gate level being proven")
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    checker = ClosureCheck(root, args.verbose, args.claimed_files)
+    checker = ClosureCheck(root, args.verbose, args.claimed_files, args.gate_level)
     sys.exit(checker.run())
 
 

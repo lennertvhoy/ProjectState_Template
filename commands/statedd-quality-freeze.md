@@ -1,5 +1,9 @@
 ---
 command: "statedd-quality-freeze"
+gate_level: 2
+evidence_max: 8
+cheapest_proof: "Quality gate exits 0 and freeze is documented in ACCEPTANCE_FREEZES.md"
+escalate_when: "Release requires level 3 with CI proof"
 description: "Enter quality freeze mode and run full quality gate"
 ---
 

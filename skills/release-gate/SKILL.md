@@ -1,5 +1,9 @@
 ---
 name: "release-gate"
+gate_level: 3
+evidence_max: 8
+cheapest_proof: "All level 2 gates pass plus CI proof"
+escalate_when: "Never; this is the heaviest gate"
 description: "Final release gate before deployment or user-facing delivery"
 when_to_use:
   - "Before any deployment, release, or user-facing delivery"

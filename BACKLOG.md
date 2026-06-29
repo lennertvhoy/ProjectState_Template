@@ -11,11 +11,11 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
+- [BL-SANITY-001] StateDD repo coherence and efficiency repair: reconcile PR #2 efficiency layer, add backlog duplicate validation, repair truth files, fix closure evidence, add post-merge verifier, update CI.
 
 ## NEXT
 
-- None.
+- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## CLOSED
 
@@ -23,14 +23,6 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 - [BL-QUALITY-001] Add the reusable StateDD quality firewall contract: failure scans, incident response, project quality gates, runtime-truth separation, and generated downstream template propagation.
 - [BL-BROWSER-001] Add provider-agnostic browser verification for user-facing changes.
 - [BL-007] Public usability and release-readiness polish: simplified README top half, added quick commands cheat sheet, improved adoption profile chooser, polished 5-minute guide, and finalized release notes as release-candidate ready.
-- [BL-005] Add a real canonical schema/export/import example project that generates ChatGPT prompts from the same schema the app validates.
-
-## LATER
-
-- None.
-
-## CLOSED
-
 - [BL-005] Add a real canonical schema/export/import example project that generates ChatGPT prompts from the same schema the app validates.
 - [BL-012] Add evidence pack manifests and a redaction gate.
 - [BL-013] Add non-destructive downstream upgrade tooling.

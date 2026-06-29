@@ -12,7 +12,7 @@
 - BL-007 public usability polish, BL-BROWSER-001 provider-agnostic browser verification, BL-QUALITY-001 quality firewall hardening, and BL-REMOTE-CLOSURE-001 remote CI/CD closure finalizer are accepted as template capabilities; browser verification is provider-agnostic with Kimi WebBridge preferred.
 - StateDD now treats handoffs as claims, separates repo truth from runtime truth, requires downstream projects to define quality gates for product behavior, runtime truth, adversarial checks, known bad events, and post-deploy proof where applicable, and requires GitHub-visible CI success plus a clean merge state before closure-grade handoffs.
 - Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, the bootstrap wizard, provider-agnostic browser verification, the canonical schema/prompt loop example, and the remote closure finalizer remain template capabilities.
-- BL-REMOTE-CLOSURE-001 is merged to main; BL-BROWSER-002 concrete provider integration is now the active open slice and is explicitly not a release blocker.
+- BL-REMOTE-CLOSURE-001 is merged to main; BL-SANITY-001 repo coherence and efficiency repair is now the active open slice; BL-BROWSER-002 is queued behind it and is explicitly not a release blocker.
 
 ## Product Truth
 
@@ -39,7 +39,8 @@
 
 ## Immediate Priorities
 
-1. Integrate a concrete browser automation provider only when one is available and permitted, without making it a hard dependency.
+1. Complete BL-SANITY-001 repo coherence and efficiency repair before resuming browser-provider work.
+2. Integrate a concrete browser automation provider only when one is available and permitted, without making it a hard dependency.
 
 ## Active Blockers
 

@@ -5,8 +5,11 @@
 **Agent:** coding-agent  
 **Branch:** bl-remote-closure-001
 **HEAD:** cea70efe72306f08632016488db37055884e5a42  
-**Proof head:** cea70efe72306f08632016488db37055884e5a42
-**Final PR head:** see PR body (metadata-only commits may follow the proof head)
+**Proof head:** cea70efe72306f08632016488db37055884e5a42  
+**Final PR head:** ba52e09159e687529e7a22c562f9a729e2313614  
+**Merge commit SHA:** ba52e09159e687529e7a22c562f9a729e2313614  
+**Main after merge:** 5185580074c99e8f2786d5782757ebf5269c6cc2  
+**Correction note:** The original `closure.json` was generated before the final metadata commit. It was corrected during BL-SANITY-001 so the recorded PR head and merge commit SHA match GitHub truth for PR #3.
 
 ## Claims
 

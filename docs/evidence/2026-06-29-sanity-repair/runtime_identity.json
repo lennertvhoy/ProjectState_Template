@@ -1,0 +1,31 @@
+{
+  "schema": "statedd.runtime_identity.v1",
+  "captured_at": "2026-06-29T11:30:00+02:00",
+  "repo": {
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "branch": "bl-sanity-001",
+    "head": "5185580074c99e8f2786d5782757ebf5269c6cc2",
+    "worktree_clean": false,
+    "status_porcelain": "?? docs/evidence/2026-06-29-sanity-repair/"
+  },
+  "runtime": {
+    "required": false,
+    "kind": "not_applicable",
+    "url": null,
+    "process": {
+      "detected": false
+    },
+    "reason": "The template root has no application runtime; BL-SANITY-001 changes docs, scripts, and CI wiring only."
+  },
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true,
+    "endpoint_reachable": false,
+    "process_detected": false,
+    "duplicate_runtime_checked": false
+  },
+  "limits": [
+    "No runtime endpoint to probe; runtime_not_applicable recorded.",
+    "Worktree is dirty because evidence files are being written before the final commit."
+  ]
+}

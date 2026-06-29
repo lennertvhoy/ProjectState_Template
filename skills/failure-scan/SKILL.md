@@ -1,5 +1,9 @@
 ---
 name: "failure-scan"
+gate_level: 1
+evidence_max: 2
+cheapest_proof: "Copy template, fill failure modes, log reference to EVIDENCE_LOG.md"
+escalate_when: "Slice closure requires level 2"
 description: "Run a pre-mortem failure scan for risky or non-trivial implementation work"
 when_to_use:
   - "Before starting any non-trivial slice"

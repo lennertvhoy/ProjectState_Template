@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-BROWSER-002] Integrate a concrete browser automation provider
+### P0 [BL-SANITY-001] StateDD repo coherence and efficiency repair
 Owner: coding agent
-Next: pick a provider (Kimi WebBridge / Playwright / agent-native) and implement a working browser verification path for user-facing changes
-Exit: a user-facing slice can produce a real browser verification artifact and `scripts/statedd_browser_verify.py check` passes
+Next: reconcile PR #2 efficiency layer, repair truth files and closure evidence, add post-merge verifier, update CI
+Exit: all sanity checks pass, BL-BROWSER-002 remains queued, and a clean PR is ready for review
 
 ## Queue Rules
 

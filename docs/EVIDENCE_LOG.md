@@ -30,6 +30,28 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-06-29-002: StateDD repo coherence and efficiency repair (BL-SANITY-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/EFFICIENCY_BUDGET.yaml
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_efficiency_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_efficiency_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_check_state_docs.py
+- File: /home/ff/Documents/Projects/StateDD_Template/fixtures/efficiency_bloat_overcorrection/
+- Title: BL-SANITY-001 repo coherence and efficiency repair
+- Source/System: test
+- Action: Salvaged the efficiency layer from PR #2, added backlog structure validation, repaired truth files, and prepared post-merge verifier/CI updates.
+- Shows:
+  - `python3 scripts/statedd_efficiency_check.py --gate-level 2` passes
+  - `python3 scripts/test_efficiency_check.py` passes
+  - `python3 scripts/test_check_state_docs.py` passes
+  - `python3 scripts/check_state_docs.py --bootstrap-gate` passes
+- Proves:
+  - StateDD now enforces an Efficiency Invariant and tiered gate levels
+  - BACKLOG.md cannot silently accumulate duplicate sections or duplicate IDs
+- Type: test
+- as_of: 2026-06-29T11:00:00+02:00
+- Notes: Evidence pack will be finalized when BL-SANITY-001 reaches closure-grade. PR #2 will be closed as superseded.
+
 ## EV-2026-06-28-001: StateDD quality firewall template hardening (BL-QUALITY-001)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/README.md

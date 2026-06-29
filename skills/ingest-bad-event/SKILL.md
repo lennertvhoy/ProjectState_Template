@@ -1,5 +1,9 @@
 ---
 name: "ingest-bad-event"
+gate_level: 1
+evidence_max: 3
+cheapest_proof: "Incident file + failure scan + backlog entry + handoff all exist"
+escalate_when: "P0 triggers level 2 quality freeze"
 description: "Record and handle an invalid input, failure, or unexpected event as a durable incident"
 when_to_use:
   - "Any unhandled error, crash, or unexpected behavior observed"

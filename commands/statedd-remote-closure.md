@@ -1,5 +1,9 @@
 ---
 command: "statedd-remote-closure"
+gate_level: 2
+evidence_max: 4
+cheapest_proof: "Remote closure finalizer exits 0 with CI verified or merged label"
+escalate_when: "Release gate requires level 3 with CI proof"
 description: "Run the remote CI/CD closure finalizer"
 ---
 

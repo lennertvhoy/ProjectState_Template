@@ -79,6 +79,11 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/test_browser_verification.py",
     "scripts/statedd_remote_closure_finalizer.py",
     "scripts/test_remote_closure_finalizer.py",
+    "scripts/statedd_post_merge_verify.py",
+    "scripts/test_post_merge_verify.py",
+    "EFFICIENCY_BUDGET.yaml",
+    "scripts/statedd_efficiency_check.py",
+    "scripts/test_efficiency_check.py",
     "schemas/project_state.schema.json",
     "schemas/project_dna.schema.json",
     "schemas/project_adapter.schema.json",
@@ -170,6 +175,48 @@ def extract_backlog_ids(text: str) -> set[str]:
     return set(BACKLOG_ID_RE.findall(text))
 
 
+def extract_backlog_sections(text: str) -> dict[str, list[str]]:
+    """Return mapping of section name -> list of backlog IDs found in that section."""
+    sections: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in text.splitlines():
+        heading = re.match(r"^##\s+(.+?)\s*$", line)
+        if heading:
+            current = heading.group(1).strip()
+            sections.setdefault(current, [])
+            continue
+        if current is not None:
+            ids = BACKLOG_ID_RE.findall(line)
+            sections[current].extend(ids)
+    return sections
+
+
+def check_backlog_structure(text: str) -> list[str]:
+    """Fail on duplicate second-level sections and duplicate backlog IDs."""
+    issues: list[str] = []
+    headings = re.findall(r"^##\s+(.+?)\s*$", text, re.MULTILINE)
+    seen: dict[str, int] = {}
+    for heading in headings:
+        seen[heading] = seen.get(heading, 0) + 1
+    for heading, count in seen.items():
+        if count > 1:
+            issues.append(f"Duplicate second-level section '## {heading}' appears {count} times")
+
+    sections = extract_backlog_sections(text)
+    id_locations: dict[str, list[str]] = {}
+    for section, ids in sections.items():
+        for bid in ids:
+            id_locations.setdefault(bid, []).append(section)
+
+    for bid, locations in id_locations.items():
+        if len(locations) > 1:
+            issues.append(
+                f"Backlog ID {bid} appears in multiple sections: {', '.join(locations)}"
+            )
+
+    return issues
+
+
 def extract_next_action_ids(text: str) -> list[str]:
     return NEXT_ACTION_ID_RE.findall(text)
 
@@ -250,6 +297,8 @@ def check_file(path: Path) -> list[str]:
         ids = extract_backlog_ids(text)
         if not ids:
             issues.append("BACKLOG.md must include stable backlog IDs like [BL-001]")
+        structure_issues = check_backlog_structure(text)
+        issues.extend(structure_issues)
 
     for forbidden in rules.get("forbidden", []):
         if re.search(rf"\b{re.escape(forbidden)}\b", text):

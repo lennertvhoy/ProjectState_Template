@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-29T10:30:00+02:00
+  updated_at: 2026-06-29T11:00:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -15,7 +15,8 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - concrete browser automation provider integration not yet implemented (BL-BROWSER-002)
+      - BL-SANITY-001 repo coherence and efficiency repair is in progress
+      - concrete browser automation provider integration queued behind BL-SANITY-001 (BL-BROWSER-002)
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -56,6 +57,13 @@ current_state:
         Enforces the Remote Closure Invariant: local HEAD, pushed branch, PR head,
         PR body, in-repo evidence, latest GitHub Actions result, and mergeStateStatus
         must all agree before a slice is closure-grade.
+    efficiency_gate:
+      status: active
+      script: scripts/statedd_efficiency_check.py
+      budget: EFFICIENCY_BUDGET.yaml
+      notes: |
+        Enforces the Efficiency Invariant: instruction size, active queues,
+        evidence bundles, and gate-level metadata must stay within declared budgets.
     evidence: docs/evidence/2026-06-28-quality-firewall-template/README.md
     docs:
       - QUALITY_FIREWALL.md
@@ -98,15 +106,14 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-29T10:30:00+02:00
-      last_verified_branch: bl-remote-closure-001
-      last_verified_head: cea70efe72306f08632016488db37055884e5a42
+      captured_at: 2026-06-29T11:00:00+02:00
+      last_verified_branch: main
+      last_verified_head: 5185580074c99e8f2786d5782757ebf5269c6cc2
       last_verified_worktree_status: dirty
       notes: |
-        Captured while closing BL-REMOTE-CLOSURE-001. Worktree contains the
-        evidence folder and state updates added after the final implementation
-        commit; these will be committed before closure. Use git,
-        scripts/statedd_audit.py, scripts/statedd_doctor.py,
+        Captured while working on BL-SANITY-001 on branch bl-sanity-001 off main.
+        Current truth reflects the merged main state plus in-progress coherence
+        repairs. Use git, scripts/statedd_audit.py, scripts/statedd_doctor.py,
         scripts/statedd_handoff.py, or evidence artifacts for current branch,
         HEAD, and worktree status.
 

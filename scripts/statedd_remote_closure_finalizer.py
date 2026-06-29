@@ -468,9 +468,10 @@ class RemoteClosureFinalizer:
 
         manifest = self.evidence_folder / "manifest.json"
         readme = self.evidence_folder / "README.md"
+        closure = self.evidence_folder / "closure.json"
 
         checked = 0
-        for path in (manifest, readme):
+        for path in (manifest, readme, closure):
             if not path.exists():
                 continue
             checked += 1
@@ -485,7 +486,7 @@ class RemoteClosureFinalizer:
 
         if checked == 0:
             self.warnings.append(
-                f"Evidence folder {self.evidence_folder.relative_to(self.root)} has no manifest.json or README.md"
+                f"Evidence folder {self.evidence_folder.relative_to(self.root)} has no manifest.json, README.md, or closure.json"
             )
 
     def _evidence_file_has_current_head(self, text: str, filename: str) -> bool:

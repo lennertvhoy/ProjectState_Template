@@ -1,5 +1,9 @@
 ---
 name: "runtime-truth"
+gate_level: 2
+evidence_max: 4
+cheapest_proof: "runtime_identity.json + runtime_truth_check exit 0"
+escalate_when: "Browser verification can escalate to level 2"
 description: "Capture and verify runtime environment identity (OS, deps, container, ports, services)"
 when_to_use:
   - "Before any user-facing acceptance"

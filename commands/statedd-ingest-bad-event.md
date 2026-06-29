@@ -1,5 +1,9 @@
 ---
 command: "statedd-ingest-bad-event"
+gate_level: 1
+evidence_max: 3
+cheapest_proof: "Incident file + failure scan + backlog entry + handoff all exist"
+escalate_when: "P0 triggers level 2 quality freeze"
 description: "Ingest a bad event as a durable incident with failure scan"
 ---
 

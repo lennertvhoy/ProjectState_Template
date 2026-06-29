@@ -1,0 +1,32 @@
+schema: statedd.efficiency_budget.v1
+instruction_budgets:
+  root_agents_max_lines: 110
+  nested_agents_max_lines: 80
+  skill_max_lines: 180
+  command_max_lines: 120
+  prompt_max_lines: 200
+  duplicate_instruction_max_lines: 5
+  max_steps_per_workflow: 9
+
+state_budgets:
+  active_next_actions_max: 5
+  active_backlog_items_max: 12
+  final_handoff_max_lines: 80
+
+evidence_budgets:
+  default_max_files: 15
+  docs_only_max_files: 2
+  runtime_change_min_files: 2
+  runtime_change_max_files: 8
+
+gate_budgets:
+  edit_loop_target_seconds: 30
+  closure_gate_target_seconds: 180
+  release_gate_target_seconds: 600
+
+anti_bloat_rules:
+  no_duplicate_instruction_files: true
+  no_more_than_one_canonical_source: true
+  no_unreferenced_skills: true
+  no_unbounded_evidence_dumps: true
+  no_full_repo_audit_for_single_file_edit: true

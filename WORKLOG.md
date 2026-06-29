@@ -2,6 +2,43 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-06-29 - StateDD repo coherence and efficiency repair (BL-SANITY-001)
+
+**Type:** template_maintenance_capability  
+**Status:** IN PROGRESS  
+**Git Head:** main at 5185580074c99e8f2786d5782757ebf5269c6cc2; work dirty on bl-sanity-001  
+**Worktree:** dirty  
+**Gate Level:** 2 (slice closure)  
+
+### What changed
+- Reconciled the efficiency layer from the open PR #2 as a minimal salvage:
+  - Added `EFFICIENCY_BUDGET.yaml` with hard limits on instruction size, state queues, evidence bundles, and gate runtimes.
+  - Added `scripts/statedd_efficiency_check.py` to enforce the budget.
+  - Added `scripts/test_efficiency_check.py` with regression tests.
+  - Added `fixtures/efficiency_bloat_overcorrection/` regression fixture proving the checker fails on bloat overcorrection.
+  - Wired the efficiency check into `scripts/statedd_quality_gate.py` and `scripts/statedd_closure_check.py`.
+  - Added `gate_level`, `evidence_max`, `cheapest_proof`, and `escalate_when` metadata to all skills and commands.
+  - Added the Efficiency Invariant and Gate Levels to `AGENTS.md`.
+- Added backlog structure validation to `scripts/check_state_docs.py`:
+  - Fails on duplicate second-level sections such as repeated `## CLOSED`.
+  - Fails on duplicate backlog IDs unless explicitly allowed in a history-only section.
+  - Added `scripts/test_check_state_docs.py` regression coverage.
+- Repaired `BACKLOG.md` to remove duplicate `## CLOSED` sections and duplicate BL-005.
+- Updated truth files to reflect BL-SANITY-001 as active and BL-BROWSER-002 as queued.
+
+### Verification
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passes.
+- `python3 scripts/statedd_efficiency_check.py --gate-level 2` passes.
+- `python3 scripts/test_efficiency_check.py` passes.
+- `python3 scripts/test_check_state_docs.py` passes.
+
+### Evidence
+- In progress; final evidence pack will be created at closure.
+
+### Notes
+- PR #2 will be closed as superseded once this PR lands.
+- BL-BROWSER-002 remains queued until BL-SANITY-001 closes.
+
 ## 2026-06-28 - Quality firewall template hardening (BL-QUALITY-001)
 
 **Type:** template_maintenance_capability

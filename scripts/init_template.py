@@ -77,6 +77,7 @@ TEMPLATE_COPY_ROOT_FILES = {
     Path("AGENTS.md"),
     Path("BACKLOG.md"),
     Path("CHANGELOG.md"),
+    Path("EFFICIENCY_BUDGET.yaml"),
     Path("FAILURE_TAXONOMY.md"),
     Path("INCIDENT_RESPONSE.md"),
     Path("LICENSE"),

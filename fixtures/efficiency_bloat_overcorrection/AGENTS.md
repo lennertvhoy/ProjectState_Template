@@ -1,0 +1,110 @@
+---
+repo_role: "downstream_project"
+statedd_mode: "operating"
+repo_mode: "operating"
+statedd_version: "statedd-template-v5"
+---
+
+# Bloat Project
+
+This AGENTS.md is intentionally oversized to simulate an agent that tried to fix false closure by adding rules.
+Bloat rule line 0: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 1: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 2: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 3: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 4: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 5: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 6: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 7: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 8: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 9: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 10: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 11: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 12: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 13: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 14: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 15: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 16: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 17: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 18: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 19: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 20: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 21: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 22: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 23: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 24: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 25: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 26: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 27: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 28: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 29: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 30: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 31: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 32: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 33: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 34: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 35: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 36: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 37: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 38: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 39: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 40: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 41: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 42: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 43: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 44: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 45: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 46: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 47: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 48: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 49: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 50: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 51: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 52: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 53: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 54: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 55: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 56: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 57: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 58: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 59: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 60: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 61: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 62: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 63: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 64: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 65: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 66: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 67: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 68: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 69: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 70: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 71: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 72: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 73: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 74: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 75: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 76: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 77: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 78: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 79: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 80: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 81: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 82: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 83: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 84: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 85: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 86: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 87: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 88: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 89: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 90: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 91: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 92: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 93: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 94: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 95: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 96: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 97: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 98: agents must document everything in excessive detail and never skip any ritual.
+Bloat rule line 99: agents must document everything in excessive detail and never skip any ritual.
