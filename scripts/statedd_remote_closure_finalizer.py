@@ -35,47 +35,59 @@ HEAD_LINE_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-PR_QUERY = """
-query($owner: String!, $repo: String!, $branch: String, $sha: String!, $number: Int) {
-  repository(owner: $owner, name: $repo) {
-    byNumber: pullRequest(number: $number) {
-      number
-      headRefOid
-      body
-      mergeStateStatus
-      url
-    }
-    byBranch: pullRequests(headRefName: $branch, states: [OPEN], first: 1) {
-      nodes {
-        number
-        headRefOid
-        body
-        mergeStateStatus
-        url
+PR_FIELDS = """
+  number
+  headRefOid
+  body
+  mergeStateStatus
+  url
+"""
+
+COMMIT_FIELDS = """
+  object(expression: $sha) {
+    ... on Commit {
+      statusCheckRollup {
+        state
       }
-    }
-    object(expression: $sha) {
-      ... on Commit {
-        statusCheckRollup {
-          state
-        }
-        checkSuites(first: 10) {
-          nodes {
+      checkSuites(first: 10) {
+        nodes {
+          databaseId
+          app {
+            name
+          }
+          workflowRun {
             databaseId
-            app {
-              name
-            }
-            workflowRun {
-              databaseId
-              runNumber
-              url
-            }
+            runNumber
+            url
           }
         }
       }
     }
   }
-}
+"""
+
+PR_BY_NUMBER_QUERY = f"""
+query($owner: String!, $repo: String!, $sha: String!, $number: Int!) {{
+  repository(owner: $owner, name: $repo) {{
+    byNumber: pullRequest(number: $number) {{
+{PR_FIELDS}
+    }}
+{COMMIT_FIELDS}
+  }}
+}}
+"""
+
+PR_BY_BRANCH_QUERY = f"""
+query($owner: String!, $repo: String!, $branch: String, $sha: String!) {{
+  repository(owner: $owner, name: $repo) {{
+    byBranch: pullRequests(headRefName: $branch, states: [OPEN], first: 1) {{
+      nodes {{
+{PR_FIELDS}
+      }}
+    }}
+{COMMIT_FIELDS}
+  }}
+}}
 """
 
 
@@ -165,7 +177,11 @@ class GitHubApi:
         for key, value in variables.items():
             if value is None:
                 continue
-            args.extend(["-F", f"{key}={value}"])
+            if isinstance(value, str):
+                args.extend(["-F", f"{key}={value}"])
+            else:
+                # Booleans and numbers must be sent as raw JSON values.
+                args.extend(["-f", f"{key}={json.dumps(value)}"])
         args.extend(["-f", f"query={query}"])
         code, out, err = run_command(args, Path.cwd())
         if code != 0:
@@ -326,14 +342,23 @@ class RemoteClosureFinalizer:
         if not self.owner or not self.repo:
             raise RuntimeError("Cannot query GitHub without owner/repo")
 
-        variables = {
-            "owner": self.owner,
-            "repo": self.repo,
-            "branch": self.branch,
-            "sha": self.local_head,
-            "number": self.pr_number,
-        }
-        data = self.github_client.query(PR_QUERY, variables)
+        if self.pr_number is not None:
+            query = PR_BY_NUMBER_QUERY
+            variables: dict[str, Any] = {
+                "owner": self.owner,
+                "repo": self.repo,
+                "sha": self.local_head,
+                "number": self.pr_number,
+            }
+        else:
+            query = PR_BY_BRANCH_QUERY
+            variables = {
+                "owner": self.owner,
+                "repo": self.repo,
+                "branch": self.branch,
+                "sha": self.local_head,
+            }
+        data = self.github_client.query(query, variables)
         repository = data.get("repository", {})
 
         # Resolve the PR either by explicit number or by branch.
