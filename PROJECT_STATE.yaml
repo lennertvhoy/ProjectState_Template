@@ -15,8 +15,8 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - BL-SANITY-001 repo coherence and efficiency repair is in progress
-      - concrete browser automation provider integration queued behind BL-SANITY-001 (BL-BROWSER-002)
+      - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
+      - BL-BROWSER-002 concrete browser automation provider integration is now active
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -106,16 +106,15 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-29T11:00:00+02:00
+      captured_at: 2026-06-29T11:45:00+02:00
       last_verified_branch: main
-      last_verified_head: 5185580074c99e8f2786d5782757ebf5269c6cc2
-      last_verified_worktree_status: dirty
+      last_verified_head: 6f9cc99e7fe3bb5be7c67bc422536e80c26835e6
+      last_verified_worktree_status: clean
       notes: |
-        Captured while working on BL-SANITY-001 on branch bl-sanity-001 off main.
-        Current truth reflects the merged main state plus in-progress coherence
-        repairs. Use git, scripts/statedd_audit.py, scripts/statedd_doctor.py,
-        scripts/statedd_handoff.py, or evidence artifacts for current branch,
-        HEAD, and worktree status.
+        BL-SANITY-001 merged directly to main. Current truth reflects the
+        accepted merge commit. Use git, scripts/statedd_audit.py,
+        scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
+        artifacts for current branch, HEAD, and worktree status.
 
   operating_mode:
     status: observed

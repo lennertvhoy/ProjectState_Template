@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-SANITY-001] StateDD repo coherence and efficiency repair
+### P0 [BL-BROWSER-002] Integrate a concrete browser automation provider
 Owner: coding agent
-Next: reconcile PR #2 efficiency layer, repair truth files and closure evidence, add post-merge verifier, update CI
-Exit: all sanity checks pass, BL-BROWSER-002 remains queued, and a clean PR is ready for review
+Next: choose an available provider (Kimi WebBridge, Playwright, agent-native, existing E2E, manual, or custom) and implement a closure-grade verification path using the provider-agnostic contract
+Exit: at least one concrete provider path is documented, tested, and can produce a valid browser_verification.json artifact
 
 ## Queue Rules
 

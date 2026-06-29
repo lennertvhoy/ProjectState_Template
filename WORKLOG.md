@@ -5,9 +5,9 @@
 ## 2026-06-29 - StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
 **Type:** template_maintenance_capability  
-**Status:** IN PROGRESS  
-**Git Head:** main at 5185580074c99e8f2786d5782757ebf5269c6cc2; work dirty on bl-sanity-001  
-**Worktree:** dirty  
+**Status:** COMPLETE  
+**Git Head:** main at 6f9cc99e7fe3bb5be7c67bc422536e80c26835e6  
+**Worktree:** clean  
 **Gate Level:** 2 (slice closure)  
 
 ### What changed
@@ -24,20 +24,27 @@
   - Fails on duplicate backlog IDs unless explicitly allowed in a history-only section.
   - Added `scripts/test_check_state_docs.py` regression coverage.
 - Repaired `BACKLOG.md` to remove duplicate `## CLOSED` sections and duplicate BL-005.
-- Updated truth files to reflect BL-SANITY-001 as active and BL-BROWSER-002 as queued.
+- Repaired remote closure evidence for BL-REMOTE-CLOSURE-001 to match the actual merge commit `ba52e09...`.
+- Added `scripts/statedd_post_merge_verify.py` and `scripts/test_post_merge_verify.py` to prove default-branch truth after a PR merges.
+- Updated `.github/workflows/validate.yml` to compile and run the new efficiency and sanity checks.
+- Updated truth files to reflect BL-SANITY-001 as closed and BL-BROWSER-002 as active.
 
 ### Verification
+- `python3 -m pytest -q` → 132 passed, 4 subtests passed.
 - `python3 scripts/check_state_docs.py --bootstrap-gate` passes.
+- `python3 scripts/statedd_validate_schema.py` passes.
 - `python3 scripts/statedd_efficiency_check.py --gate-level 2` passes.
-- `python3 scripts/test_efficiency_check.py` passes.
-- `python3 scripts/test_check_state_docs.py` passes.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-29-sanity-repair --strict` passes.
 
 ### Evidence
-- In progress; final evidence pack will be created at closure.
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-06-29-002`
+- `docs/evidence/2026-06-29-sanity-repair/README.md`
+- `docs/evidence/2026-06-29-sanity-repair/runtime_identity.json`
+- `docs/evidence/2026-06-29-sanity-repair/manifest.json`
 
 ### Notes
-- PR #2 will be closed as superseded once this PR lands.
-- BL-BROWSER-002 remains queued until BL-SANITY-001 closes.
+- Merged directly to main; PR #2 closed as superseded.
+- BL-BROWSER-002 is now the active slice.
 
 ## 2026-06-28 - Quality firewall template hardening (BL-QUALITY-001)
 

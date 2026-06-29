@@ -11,14 +11,15 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-SANITY-001] StateDD repo coherence and efficiency repair: reconcile PR #2 efficiency layer, add backlog duplicate validation, repair truth files, fix closure evidence, add post-merge verifier, update CI.
+- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## NEXT
 
-- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
+- None.
 
 ## CLOSED
 
+- [BL-SANITY-001] StateDD repo coherence and efficiency repair: reconcile PR #2 efficiency layer, add backlog duplicate validation, repair truth files, fix closure evidence, add post-merge verifier, update CI.
 - [BL-REMOTE-CLOSURE-001] Add a Remote CI/CD Closure Finalizer that blocks closure until local HEAD, pushed branch, PR head, PR body, evidence, GitHub Actions, and merge state all agree.
 - [BL-QUALITY-001] Add the reusable StateDD quality firewall contract: failure scans, incident response, project quality gates, runtime-truth separation, and generated downstream template propagation.
 - [BL-BROWSER-001] Add provider-agnostic browser verification for user-facing changes.

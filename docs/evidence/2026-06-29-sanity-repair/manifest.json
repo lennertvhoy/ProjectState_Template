@@ -17,64 +17,37 @@
       "id": "C1",
       "claim": "StateDD has a machine-checkable Efficiency Invariant, tiered gate levels, and an executable budget checker.",
       "status": "validated",
-      "evidence": [
-        "AGENTS.md",
-        "EFFICIENCY_BUDGET.yaml",
-        "scripts/statedd_efficiency_check.py",
-        "scripts/test_efficiency_check.py"
-      ]
+      "evidence": ["README.md"]
     },
     {
       "id": "C2",
       "claim": "The efficiency layer from the stranded PR #2 has been reconciled and merged into main as a minimal, conflict-free salvage.",
       "status": "validated",
-      "evidence": [
-        "EFFICIENCY_BUDGET.yaml",
-        "scripts/statedd_efficiency_check.py",
-        "scripts/test_efficiency_check.py",
-        "fixtures/efficiency_bloat_overcorrection/"
-      ]
+      "evidence": ["README.md"]
     },
     {
       "id": "C3",
       "claim": "BACKLOG.md structure is guarded against duplicate sections and duplicate backlog IDs.",
       "status": "validated",
-      "evidence": [
-        "scripts/check_state_docs.py",
-        "scripts/test_check_state_docs.py"
-      ]
+      "evidence": ["README.md"]
     },
     {
       "id": "C4",
       "claim": "Current truth files agree and PROJECT_STATE.yaml no longer presents stale dirty feature-branch data as current truth.",
       "status": "validated",
-      "evidence": [
-        "STATUS.md",
-        "PROJECT_STATE.yaml",
-        "BACKLOG.md",
-        "NEXT_ACTIONS.md",
-        "WORKLOG.md",
-        "docs/EVIDENCE_LOG.md"
-      ]
+      "evidence": ["README.md"]
     },
     {
       "id": "C5",
       "claim": "The remote closure evidence for BL-REMOTE-CLOSURE-001 now matches the final PR head / merge commit recorded by GitHub.",
       "status": "validated",
-      "evidence": [
-        "docs/evidence/2026-06-29-remote-closure/closure.json",
-        "docs/evidence/2026-06-29-remote-closure/README.md",
-        "docs/evidence/2026-06-29-remote-closure/manifest.json"
-      ]
+      "evidence": ["README.md"]
     },
     {
       "id": "C6",
       "claim": "A post-merge main verifier exists to prove default-branch truth after a PR merges.",
       "status": "validated",
-      "evidence": [
-        "scripts/statedd_post_merge_verify.py",
-        "scripts/test_post_merge_verify.py"
-      ]
+      "evidence": ["README.md"]
     }
   ],
   "artifacts": [

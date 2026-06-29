@@ -6,7 +6,8 @@
 **Branch:** bl-sanity-001  
 **HEAD:** 5185580074c99e8f2786d5782757ebf5269c6cc2  
 **Proof head:** 5185580074c99e8f2786d5782757ebf5269c6cc2  
-**Final PR head:** to be determined at closure  
+**Final merge commit:** 6f9cc99e7fe3bb5be7c67bc422536e80c26835e6  
+**Closure state:** merged directly to main; PR #2 closed as superseded  
 
 ## Claims
 
