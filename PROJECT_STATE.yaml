@@ -295,6 +295,10 @@ current_state:
         status: observed
         path: scripts/statedd_runtime_proof.py
         summary: Captures runtime_identity.json evidence artifacts and skips local process claims for remote endpoints unless explicitly overridden.
+      remote_closure_finalizer:
+        status: observed
+        path: scripts/statedd_remote_closure_finalizer.py
+        summary: Blocks closure-grade handoffs until local HEAD, pushed branch, PR head, PR body, evidence, GitHub Actions, and merge state all agree.
       audit_command:
         status: observed
         path: scripts/statedd_audit.py

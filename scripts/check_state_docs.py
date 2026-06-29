@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BACKLOG_ID_RE = re.compile(r"\[(BL-(?:[A-Z][A-Za-z]*-)?\d{3})\]")
-NEXT_ACTION_ID_RE = re.compile(r"^###\s+P\d+\s+\[(BL-(?:[A-Z][A-Za-z]*-)?\d{3})\]\s+.+$", re.MULTILINE)
+BACKLOG_ID_RE = re.compile(r"\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]")
+NEXT_ACTION_ID_RE = re.compile(r"^###\s+P\d+\s+\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]\s+.+$", re.MULTILINE)
 WORKLOG_ENTRY_RE = re.compile(r"^##\s+\d{4}-\d{2}-\d{2}\s+-\s+.+$", re.MULTILINE)
 EVIDENCE_ENTRY_RE = re.compile(r"^##\s+EV-\d{4}-\d{2}-\d{2}-\d{3}:\s+.+$", re.MULTILINE)
 PINNED_ACTION_RE = re.compile(r"uses:\s+actions/[^@\s]+@([0-9a-f]{40})")
@@ -77,6 +77,8 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/test_evidence_pack.py",
     "scripts/test_upgrade.py",
     "scripts/test_browser_verification.py",
+    "scripts/statedd_remote_closure_finalizer.py",
+    "scripts/test_remote_closure_finalizer.py",
     "schemas/project_state.schema.json",
     "schemas/project_dna.schema.json",
     "schemas/project_adapter.schema.json",
@@ -349,7 +351,7 @@ def check_readme(path: Path) -> list[str]:
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
         "State Driven Development Template",
-        "statedd-template-v4",
+        "statedd-template-v5",
         "scripts/statedd_version_check.py",
         "repo_role",
         "statedd_mode",

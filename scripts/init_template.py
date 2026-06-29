@@ -20,7 +20,7 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
-TEMPLATE_VERSION = "statedd-template-v4"
+TEMPLATE_VERSION = "statedd-template-v5"
 VALID_PROFILES = {"minimal", "solo", "team", "regulated"}
 
 
@@ -111,6 +111,8 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/test_schema_validation.py"),
     Path("scripts/test_evidence_pack.py"),
     Path("scripts/test_upgrade.py"),
+    Path("scripts/statedd_remote_closure_finalizer.py"),
+    Path("scripts/test_remote_closure_finalizer.py"),
     Path("schemas/project_state.schema.json"),
     Path("schemas/project_dna.schema.json"),
     Path("schemas/project_adapter.schema.json"),

@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-06-28
+**Updated At:** 2026-06-29
 **Execution Mode:** template-maintenance
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted
-Owner: human product owner + coding agent
-Next: do not add a hard dependency; add a concrete provider driver (Kimi WebBridge, Playwright, agent-native, existing E2E, or custom) only when the project/agent has one available and the human permits setup
-Exit: user-facing changes can be captured automatically into browser_verification.json artifacts while preserving provider-agnostic audit acceptance
+### P0 [BL-REMOTE-CLOSURE-001] Add a Remote CI/CD Closure Finalizer
+Owner: coding agent
+Next: finalize implementation, run local verification gates, push, and verify CI is green
+Exit: `scripts/statedd_remote_closure_finalizer.py` passes with `CI verified` label and the close-slice/release-gate flow invokes it
 
 ## Queue Rules
 

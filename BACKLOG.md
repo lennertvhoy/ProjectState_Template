@@ -11,11 +11,11 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
+- [BL-REMOTE-CLOSURE-001] Add a Remote CI/CD Closure Finalizer that blocks closure until local HEAD, pushed branch, PR head, PR body, evidence, GitHub Actions, and merge state all agree.
 
 ## NEXT
 
-- None.
+- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## CLOSED
 

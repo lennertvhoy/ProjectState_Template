@@ -42,6 +42,8 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("scripts/test_runtime_proof.py"),
     Path("scripts/test_schema_validation.py"),
     Path("scripts/test_evidence_pack.py"),
+    Path("scripts/statedd_remote_closure_finalizer.py"),
+    Path("scripts/test_remote_closure_finalizer.py"),
     Path("schemas/project_state.schema.json"),
     Path("schemas/project_dna.schema.json"),
     Path("schemas/project_adapter.schema.json"),

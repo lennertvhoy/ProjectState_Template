@@ -4,7 +4,7 @@ statedd_mode: "template-maintenance"
 repo_mode: "template-maintenance"
 statedd_version: "statedd-template-v5"
 initialized_on: 2026-04-26
-last_updated: 2026-06-28
+last_updated: 2026-06-29
 project: "StateDD_Template"
 ---
 
@@ -40,6 +40,7 @@ project: "StateDD_Template"
   6. GitHub-visible files match claimed deliverables
   7. Final handoff states: `local-only` / `pushed` / `PR opened` / `merged` / `CI verified`
   Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
+- **Remote Closure Invariant:** A slice is not done until the pushed PR head, PR body, in-repo evidence, closure handoff, and latest GitHub Actions run all agree on the same final head. Local tests are only preflight. Final closure requires GitHub-visible CI success or an explicit `NOT CI-VERIFIED` label.
 
 ## Truth Boundary
 The agent must always distinguish:
