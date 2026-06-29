@@ -60,7 +60,7 @@
   - A post-merge verifier can prove default-branch truth after a PR merges
 - Type: test
 - as_of: 2026-06-29T11:45:00+02:00
-- Notes: Closure-grade. Merged directly to main (6f9cc99). PR #2 closed as superseded. BL-BROWSER-002 remains queued.
+- Notes: Closure-grade. Merged directly to main (4396610). PR #2 closed as superseded. GitHub Actions validate workflow passing. BL-BROWSER-002 is now active.
 
 ## EV-2026-06-28-001: StateDD quality firewall template hardening (BL-QUALITY-001)
 

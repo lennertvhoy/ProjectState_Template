@@ -6,7 +6,7 @@
 
 **Type:** template_maintenance_capability  
 **Status:** COMPLETE  
-**Git Head:** main at 6f9cc99e7fe3bb5be7c67bc422536e80c26835e6  
+**Git Head:** main at 439661011884f0516f2649c49df9b6df0145c06b  
 **Worktree:** clean  
 **Gate Level:** 2 (slice closure)  
 
@@ -35,6 +35,7 @@
 - `python3 scripts/statedd_validate_schema.py` passes.
 - `python3 scripts/statedd_efficiency_check.py --gate-level 2` passes.
 - `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-06-29-sanity-repair --strict` passes.
+- GitHub Actions `Validate Template Docs` workflow passes on main at 4396610.
 
 ### Evidence
 - `docs/EVIDENCE_LOG.md` entry `EV-2026-06-29-002`

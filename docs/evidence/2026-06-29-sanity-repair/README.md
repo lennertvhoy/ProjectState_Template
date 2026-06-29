@@ -6,8 +6,8 @@
 **Branch:** bl-sanity-001  
 **HEAD:** 5185580074c99e8f2786d5782757ebf5269c6cc2  
 **Proof head:** 5185580074c99e8f2786d5782757ebf5269c6cc2  
-**Final merge commit:** 6f9cc99e7fe3bb5be7c67bc422536e80c26835e6  
-**Closure state:** merged directly to main; PR #2 closed as superseded  
+**Final merge commit:** 439661011884f0516f2649c49df9b6df0145c06b (CI fix included)
+**Closure state:** merged directly to main; PR #2 closed as superseded; GitHub Actions passing  
 
 ## Claims
 
@@ -55,6 +55,7 @@
 | remote closure finalizer tests | `python3 scripts/test_remote_closure_finalizer.py` | pass |
 | init template tests | `python3 scripts/test_init_template.py` | pass |
 | upgrade tests | `python3 scripts/test_upgrade.py` | pass |
+| GitHub Actions CI | `.github/workflows/validate.yml` | pass |
 
 ## Evidence Pack Manifest
 
@@ -82,14 +83,13 @@
 - Implemented: yes
 - Validated: yes
 - Global quality gates passed: yes
-- Closure-grade: pending final commit, remote closure finalizer, and CI
-- Accepted: pending
+- Closure-grade: yes
+- Accepted: yes
 
 ## Risks / What Remains Partial
 
-- PR #2 must be closed as superseded after this PR lands.
-- The post-merge verifier requires a GitHub token or authenticated `gh` CLI.
-- BL-BROWSER-002 remains queued until BL-SANITY-001 closes.
+- The post-merge verifier requires a GitHub token or authenticated `gh` CLI when used outside the merge commit itself.
+- BL-BROWSER-002 is now the active slice.
 
 ## Human Override
 

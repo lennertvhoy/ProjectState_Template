@@ -106,13 +106,13 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-29T11:45:00+02:00
+      captured_at: 2026-06-29T11:55:00+02:00
       last_verified_branch: main
-      last_verified_head: 6f9cc99e7fe3bb5be7c67bc422536e80c26835e6
+      last_verified_head: 439661011884f0516f2649c49df9b6df0145c06b
       last_verified_worktree_status: clean
       notes: |
-        BL-SANITY-001 merged directly to main. Current truth reflects the
-        accepted merge commit. Use git, scripts/statedd_audit.py,
+        BL-SANITY-001 merged directly to main and CI is green. Current truth
+        reflects the accepted merge commit. Use git, scripts/statedd_audit.py,
         scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
         artifacts for current branch, HEAD, and worktree status.
 
