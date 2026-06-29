@@ -1,0 +1,105 @@
+{
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-SANITY-001",
+  "manifest_status": "complete",
+  "created_at": "2026-06-29T11:30:00+02:00",
+  "repo": {
+    "branch": "bl-sanity-001",
+    "head": "5185580074c99e8f2786d5782757ebf5269c6cc2"
+  },
+  "runtime_identity": {
+    "required": false,
+    "path": "runtime_identity.json",
+    "status": "not_applicable"
+  },
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "StateDD has a machine-checkable Efficiency Invariant, tiered gate levels, and an executable budget checker.",
+      "status": "validated",
+      "evidence": [
+        "AGENTS.md",
+        "EFFICIENCY_BUDGET.yaml",
+        "scripts/statedd_efficiency_check.py",
+        "scripts/test_efficiency_check.py"
+      ]
+    },
+    {
+      "id": "C2",
+      "claim": "The efficiency layer from the stranded PR #2 has been reconciled and merged into main as a minimal, conflict-free salvage.",
+      "status": "validated",
+      "evidence": [
+        "EFFICIENCY_BUDGET.yaml",
+        "scripts/statedd_efficiency_check.py",
+        "scripts/test_efficiency_check.py",
+        "fixtures/efficiency_bloat_overcorrection/"
+      ]
+    },
+    {
+      "id": "C3",
+      "claim": "BACKLOG.md structure is guarded against duplicate sections and duplicate backlog IDs.",
+      "status": "validated",
+      "evidence": [
+        "scripts/check_state_docs.py",
+        "scripts/test_check_state_docs.py"
+      ]
+    },
+    {
+      "id": "C4",
+      "claim": "Current truth files agree and PROJECT_STATE.yaml no longer presents stale dirty feature-branch data as current truth.",
+      "status": "validated",
+      "evidence": [
+        "STATUS.md",
+        "PROJECT_STATE.yaml",
+        "BACKLOG.md",
+        "NEXT_ACTIONS.md",
+        "WORKLOG.md",
+        "docs/EVIDENCE_LOG.md"
+      ]
+    },
+    {
+      "id": "C5",
+      "claim": "The remote closure evidence for BL-REMOTE-CLOSURE-001 now matches the final PR head / merge commit recorded by GitHub.",
+      "status": "validated",
+      "evidence": [
+        "docs/evidence/2026-06-29-remote-closure/closure.json",
+        "docs/evidence/2026-06-29-remote-closure/README.md",
+        "docs/evidence/2026-06-29-remote-closure/manifest.json"
+      ]
+    },
+    {
+      "id": "C6",
+      "claim": "A post-merge main verifier exists to prove default-branch truth after a PR merges.",
+      "status": "validated",
+      "evidence": [
+        "scripts/statedd_post_merge_verify.py",
+        "scripts/test_post_merge_verify.py"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "README.md",
+      "kind": "doc",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "runtime_identity.json",
+      "kind": "runtime_identity",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    }
+  ],
+  "redaction": {
+    "status": "checked_with_limits",
+    "automated_scan": "passed",
+    "manual_review": "not_applicable",
+    "known_limits": [
+      "No secrets or PII expected in docs/scripts-only slice.",
+      "Runtime identity records local repo path, which is benign host metadata."
+    ]
+  }
+}

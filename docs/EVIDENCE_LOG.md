@@ -32,25 +32,35 @@
 
 ## EV-2026-06-29-002: StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/manifest.json
 - File: /home/ff/Documents/Projects/StateDD_Template/EFFICIENCY_BUDGET.yaml
 - File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_efficiency_check.py
 - File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_efficiency_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_post_merge_verify.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_post_merge_verify.py
 - File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_check_state_docs.py
 - File: /home/ff/Documents/Projects/StateDD_Template/fixtures/efficiency_bloat_overcorrection/
 - Title: BL-SANITY-001 repo coherence and efficiency repair
 - Source/System: test
-- Action: Salvaged the efficiency layer from PR #2, added backlog structure validation, repaired truth files, and prepared post-merge verifier/CI updates.
+- Action: Salvaged the efficiency layer from PR #2, added backlog structure validation, repaired truth files, repaired remote closure evidence, added a post-merge verifier, and updated CI.
 - Shows:
   - `python3 scripts/statedd_efficiency_check.py --gate-level 2` passes
   - `python3 scripts/test_efficiency_check.py` passes
   - `python3 scripts/test_check_state_docs.py` passes
+  - `python3 scripts/test_post_merge_verify.py` passes
   - `python3 scripts/check_state_docs.py --bootstrap-gate` passes
+  - `python3 scripts/statedd_validate_schema.py` passes
+  - `python3 -m pytest -q` → 132 passed, 4 subtests passed
 - Proves:
   - StateDD now enforces an Efficiency Invariant and tiered gate levels
   - BACKLOG.md cannot silently accumulate duplicate sections or duplicate IDs
+  - Remote closure evidence matches the merge commit recorded by GitHub
+  - A post-merge verifier can prove default-branch truth after a PR merges
 - Type: test
-- as_of: 2026-06-29T11:00:00+02:00
-- Notes: Evidence pack will be finalized when BL-SANITY-001 reaches closure-grade. PR #2 will be closed as superseded.
+- as_of: 2026-06-29T11:45:00+02:00
+- Notes: Closure-grade. Merged directly to main (cea83e1). PR #2 closed as superseded. BL-BROWSER-002 remains queued.
 
 ## EV-2026-06-28-001: StateDD quality firewall template hardening (BL-QUALITY-001)
 
