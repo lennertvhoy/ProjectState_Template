@@ -72,14 +72,14 @@
   - `python scripts/statedd_efficiency_check.py --gate-level 2 --root fixtures/efficiency_bloat_overcorrection` fails as expected on the bloat regression fixture
   - `python -m pytest scripts/ -q` passes (102 passed, 4 subtests passed)
   - `python scripts/statedd_quality_gate.py` passes all gates
-  - GitHub Actions `Validate Template Docs` passes on PR #2 at HEAD 672600d
+  - GitHub Actions `Validate Template Docs` passes on PR #2 at HEAD 2e84aee
   - All skills and commands declare gate_level, evidence_max, cheapest_proof, and escalate_when
 - Proves:
   - StateDD v5 now enforces the Efficiency Invariant: no bureaucracy without measurable value, smallest proof that crosses the truth boundary, and a bloat regression guard
   - The full local and CI quality gates are now clean for this slice
 - Type: test
 - as_of: 2026-06-28T18:17:00+00:00
-- Notes: Branch pushed and GitHub Actions verified clean at HEAD 672600d. The pre-existing v4/v5 fixture drift and CI tmpdir-reuse bug have been fixed; the full quality gate is no longer blocked.
+- Notes: Branch pushed and GitHub Actions verified clean at HEAD 2e84aee. The pre-existing v4/v5 fixture drift and CI tmpdir-reuse bug have been fixed; the full quality gate is no longer blocked.
 
 ## EV-2026-06-23-009: Provider-agnostic browser verification contract (BL-BROWSER-001)
 

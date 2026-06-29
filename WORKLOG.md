@@ -6,7 +6,7 @@
 
 **Type:** template_maintenance_capability  
 **Status:** CLOSURE-GRADE  
-**Git Head:** 672600d pushed to origin  
+**Git Head:** 2e84aee pushed to origin  
 **Worktree:** clean  
 **Gate Level:** 2 (slice closure)  
 **Efficiency Budget Result:** pass  
@@ -33,7 +33,7 @@
 - `python scripts/statedd_quality_gate.py` passes all gates.
 - `python scripts/statedd_closure_check.py --gate-level 2 --claimed-files ...` returns closure-grade and GitHub-verified after push.
 - `python scripts/statedd_remote_truth_check.py --claim ...` passes.
-- GitHub Actions `Validate Template Docs` workflow passes on PR #2 at HEAD 672600d.
+- GitHub Actions `Validate Template Docs` workflow passes on PR #2 at HEAD 2e84aee.
 
 ### Evidence
 - `docs/EVIDENCE_LOG.md` entry `EV-2026-06-28-002`

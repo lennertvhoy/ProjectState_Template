@@ -4,7 +4,7 @@
 **Date:** 2026-06-28  
 **Agent:** coding-agent  
 **Branch:** efficiency-layer  
-**HEAD:** 672600d637931f39bde454e683294eb9949c387d
+**HEAD:** 2e84aeecc33d05e2ffc45cc64f9b5bf4dd0a78a2
 
 ## Claims
 
@@ -43,7 +43,7 @@
 | full quality gate | `python scripts/statedd_quality_gate.py` | all gates passed |
 | closure check with remote truth | `python scripts/statedd_closure_check.py --gate-level 2 --claimed-files ...` | closure-grade, GitHub-verified |
 | remote truth | `python scripts/statedd_remote_truth_check.py --claim ...` | pass |
-| GitHub Actions | `Validate Template Docs` workflow on PR #2 | passed at HEAD 672600d |
+| GitHub Actions | `Validate Template Docs` workflow on PR #2 | passed at HEAD 2e84aee |
 
 ## Closure State
 
