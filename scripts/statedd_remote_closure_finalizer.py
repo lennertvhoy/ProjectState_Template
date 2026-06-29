@@ -178,10 +178,11 @@ class GitHubApi:
             if value is None:
                 continue
             if isinstance(value, str):
-                args.extend(["-F", f"{key}={value}"])
+                # Static string variables use --raw-field so they are quoted as JSON strings.
+                args.extend(["-f", f"{key}={value}"])
             else:
-                # Booleans and numbers must be sent as raw JSON values.
-                args.extend(["-f", f"{key}={json.dumps(value)}"])
+                # gh's --field applies magic type coercion for integers, booleans, null, etc.
+                args.extend(["-F", f"{key}={json.dumps(value)}"])
         args.extend(["-f", f"query={query}"])
         code, out, err = run_command(args, Path.cwd())
         if code != 0:
@@ -222,6 +223,7 @@ class RemoteClosureFinalizer:
     )
     github_client: GitHubApi | None = None
     pr_final_head: str | None = field(default=None, init=False)
+    proof_head: str | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
         if self.github_client is None:
@@ -411,13 +413,15 @@ class RemoteClosureFinalizer:
 
     def _check_pr_body(self) -> None:
         body = self.pr.get("body") or ""
+        marked = extract_marked_heads(body)
+        self.proof_head = marked.get("proof_head")
+
         if self.local_head in body:
             self.pr_final_head = self.local_head
             if self.verbose:
                 print("  ✓ PR body references current HEAD")
             return
 
-        marked = extract_marked_heads(body)
         final_head = marked.get("final_pr_head")
         if final_head and final_head == self.local_head:
             self.pr_final_head = self.local_head
@@ -498,7 +502,11 @@ class RemoteClosureFinalizer:
             return True
         # If the PR body uses an explicit proof_head/final_head split, evidence
         # may reference the proof head instead of the metadata-only final head.
-        if self.pr_final_head == self.local_head and marked.get("proof_head") in sha_refs:
+        if (
+            self.pr_final_head == self.local_head
+            and self.proof_head
+            and (self.proof_head in text or self.proof_head in sha_refs)
+        ):
             return True
         # If the file mentions any head-like SHA but not the current one, treat as stale.
         if sha_refs:

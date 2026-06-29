@@ -3,8 +3,10 @@
 **Slice:** [BL-REMOTE-CLOSURE-001] Add a Remote CI/CD Closure Finalizer  
 **Date:** 2026-06-29  
 **Agent:** coding-agent  
-**Branch:** bl-remote-closure-001  
-**HEAD:** cea70efe72306f08632016488db37055884e5a42
+**Branch:** bl-remote-closure-001
+**HEAD:** cea70efe72306f08632016488db37055884e5a42  
+**Proof head:** cea70efe72306f08632016488db37055884e5a42
+**Final PR head:** see PR body (metadata-only commits may follow the proof head)
 
 ## Claims
 
@@ -43,7 +45,7 @@
 | documentation hygiene | `python3 scripts/check_state_docs.py` | pass |
 | schema validation | `python3 scripts/statedd_validate_schema.py` | pass |
 | CI on PR #3 | GitHub Actions `Validate Template Docs` | pass |
-| remote closure gate | `python3 scripts/statedd_remote_closure_finalizer.py --pr 3` | pass |
+| remote closure gate | `python3 scripts/statedd_remote_closure_finalizer.py --pr-number 3` | pass |
 
 ## Evidence Pack Manifest
 

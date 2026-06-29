@@ -3,6 +3,7 @@
   "slice_id": "BL-REMOTE-CLOSURE-001",
   "manifest_status": "complete",
   "created_at": "2026-06-29T10:22:31+02:00",
+  "proof_head": "cea70efe72306f08632016488db37055884e5a42",
   "repo": {
     "branch": "bl-remote-closure-001",
     "head": "cea70efe72306f08632016488db37055884e5a42"
