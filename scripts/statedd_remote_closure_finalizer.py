@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b")
 HEAD_LINE_RE = re.compile(
-    r"^\s*[*-]?\s*(?:\*\*)?(?:HEAD|Proof head|Final PR head)(?:\*\*)?\s*[:=]\s*([0-9a-f]+)",
+    r"^[ \t>*-]*(?:\*\*)?(HEAD|Proof head|Final PR head)(?:\*\*)?\s*[:=]\s*([0-9a-f]+)",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -147,8 +147,8 @@ def extract_marked_heads(text: str) -> dict[str, str]:
     """Look for HEAD / Proof head / Final PR head markers and return values."""
     found: dict[str, str] = {}
     for match in HEAD_LINE_RE.finditer(text):
-        key = match.group(0).split(":")[0].strip("* -").lower().replace(" ", "_")
-        found[key] = match.group(1).lower()
+        key = match.group(1).lower().replace(" ", "_")
+        found[key] = match.group(2).lower()
     return found
 
 
