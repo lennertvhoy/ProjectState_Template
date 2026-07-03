@@ -4,7 +4,7 @@
 **Date:** 2026-07-03  
 **Agent:** coding-agent  
 **Branch:** bl-workflow-002-worktree-brittleness  
-**HEAD:** 71dd70d565da2394cd92604bd41b1d10b9e33483
+**HEAD:** 89ad0cebf5fd01c8b6ff49e1f79c2459c0e3a436
 
 ## Claims
 
@@ -67,6 +67,7 @@
 | worktree guard preflight | `python3 scripts/statedd_worktree_guard.py --mode start-slice` | pass |
 | handoff/audit | `python3 scripts/statedd_handoff.py --run-audit` | pass |
 | audit | `python3 scripts/statedd_audit.py` | pass |
+| remote closure finalizer parser | `python3 scripts/test_remote_closure_finalizer.py` | pass |
 | diff whitespace | `git diff --check` | pass |
 
 ## Evidence Pack Manifest
