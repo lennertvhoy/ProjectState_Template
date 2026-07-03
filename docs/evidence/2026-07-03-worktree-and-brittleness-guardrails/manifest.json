@@ -13,7 +13,7 @@
   },
   "repo": {
     "branch": "bl-workflow-002-worktree-brittleness",
-    "head": "81257e6119877b200873585c0e4d71c62ef6d4ed"
+    "head": "71dd70d565da2394cd92604bd41b1d10b9e33483"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",

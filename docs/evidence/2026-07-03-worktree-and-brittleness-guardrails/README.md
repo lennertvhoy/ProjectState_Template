@@ -4,7 +4,7 @@
 **Date:** 2026-07-03  
 **Agent:** coding-agent  
 **Branch:** bl-workflow-002-worktree-brittleness  
-**HEAD:** 81257e6
+**HEAD:** 71dd70d565da2394cd92604bd41b1d10b9e33483
 
 ## Claims
 
