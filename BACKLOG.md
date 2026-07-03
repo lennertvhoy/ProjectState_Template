@@ -2,7 +2,7 @@
 
 **Product:** StateDD_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-06-29
+**Updated At:** 2026-07-03
 
 ## Purpose
 
@@ -11,11 +11,11 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
+- [BL-WORKFLOW-002] Add worktree isolation and anti-brittleness guardrails so non-trivial coding-agent slices prove source-of-truth state before edits and avoid brittle example-only closure.
 
 ## NEXT
 
-- None.
+- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## CLOSED
 

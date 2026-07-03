@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-06-29
+**Updated At:** 2026-07-03
 **Execution Mode:** template-maintenance
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-BROWSER-002] Integrate a concrete browser automation provider
+### P0 [BL-WORKFLOW-002] Worktree Isolation + Anti-Brittleness Guardrails
 Owner: coding agent
-Next: choose an available provider (Kimi WebBridge, Playwright, agent-native, existing E2E, manual, or custom) and implement a closure-grade verification path using the provider-agnostic contract
-Exit: at least one concrete provider path is documented, tested, and can produce a valid browser_verification.json artifact
+Next: finish implementation, evidence, validation, PR, CI, and remote closure for the reusable worktree guard and anti-brittleness gate
+Exit: downstream template propagation includes the new guardrails, tests pass, evidence is recorded, and PR/CI agree on the final head
 
 ## Queue Rules
 

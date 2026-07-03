@@ -76,6 +76,15 @@ VALID_BROWSER_PROVIDERS = {
 }
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
+ANTI_BRITTLENESS_MARKERS = [
+    "What invariant prevents the failure class?",
+    "typed/schema/state-machine/validator/contract-based",
+    "Which behavior is centralized instead of scattered?",
+    "Which observed examples are covered by general rules",
+    "What adjacent cases were tested?",
+    "What brittle pattern was explicitly avoided?",
+    "why is that not the authority path?",
+]
 
 
 @dataclass
@@ -337,6 +346,22 @@ def check_worktree_clean(repo: Path, result: AuditResult) -> None:
         )
     else:
         result.add("worktree_clean", "pass", "Worktree is clean")
+
+
+def check_worktree_guard_available(repo: Path, result: AuditResult) -> None:
+    guard = repo / "scripts" / "statedd_worktree_guard.py"
+    if guard.exists():
+        result.add(
+            "worktree_guard",
+            "pass",
+            "scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks",
+        )
+    else:
+        result.add(
+            "worktree_guard",
+            "warn",
+            "scripts/statedd_worktree_guard.py not found; pre-slice worktree isolation guard unavailable",
+        )
 
 
 def check_branch_head_recorded(repo: Path, result: AuditResult) -> None:
@@ -947,6 +972,53 @@ def check_browser_verification(repo: Path, result: AuditResult, strict: bool) ->
         result.add("browser_verification", "fail", "Missing runtime_identity link in browser_verification.json")
 
 
+def evidence_has_anti_brittleness_review(text: str) -> bool:
+    if "Anti-Brittleness" not in text:
+        return False
+    return all(marker.lower() in text.lower() for marker in ANTI_BRITTLENESS_MARKERS)
+
+
+def evidence_indicates_non_trivial_slice(text: str) -> bool:
+    lowered = text.lower()
+    if "non-trivial" in lowered or "nontrivial" in lowered:
+        return True
+    if re.search(r"^\s*-\s*type:\s*(feature|fix|refactor|ops)\b", text, re.MULTILINE | re.IGNORECASE):
+        return True
+    if re.search(r"^\s*type:\s*(feature|fix|refactor|ops)\b", text, re.MULTILINE | re.IGNORECASE):
+        return True
+    return False
+
+
+def check_anti_brittleness_review(repo: Path, result: AuditResult, strict: bool) -> None:
+    folder = latest_evidence_folder(repo)
+    if folder is None:
+        result.add("anti_brittleness_review", "warn", "Cannot inspect anti-brittleness review without an evidence folder")
+        return
+    readme = folder / "README.md"
+    if not readme.exists():
+        result.add("anti_brittleness_review", "warn", "Cannot inspect anti-brittleness review without an evidence README")
+        return
+
+    text = readme.read_text(encoding="utf-8")
+    if evidence_has_anti_brittleness_review(text):
+        result.add("anti_brittleness_review", "pass", "Evidence README contains anti-brittleness review markers")
+        return
+
+    if evidence_indicates_non_trivial_slice(text):
+        status = "fail" if strict else "warn"
+        result.add(
+            "anti_brittleness_review",
+            status,
+            "Non-trivial slice evidence lacks anti-brittleness review markers",
+        )
+    else:
+        result.add(
+            "anti_brittleness_review",
+            "pass",
+            "Anti-brittleness review not required by latest evidence markers",
+        )
+
+
 def check_human_override(
     repo: Path,
     result: AuditResult,
@@ -1022,6 +1094,7 @@ def main(argv: list[str] | None = None) -> int:
     check_state_files_fresh(root, result, args.strict)
     check_evidence_folder(root, result)
     check_worktree_clean(root, result)
+    check_worktree_guard_available(root, result)
     check_branch_head_recorded(root, result)
     check_user_facing_evidence(root, result, args.strict)
     check_runtime_identity(root, result, args.strict)
@@ -1030,6 +1103,7 @@ def main(argv: list[str] | None = None) -> int:
     check_tests_recorded(root, result, args.test_command)
     check_evidence_manifest(root, result, args.strict)
     check_browser_verification(root, result, args.strict)
+    check_anti_brittleness_review(root, result, args.strict)
     check_human_override(root, result, Path(args.override_file) if args.override_file else None)
 
     return render_result(result, args.strict)

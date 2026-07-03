@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-29T11:00:00+02:00
+  updated_at: 2026-07-03T20:35:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -16,7 +16,8 @@ workflow:
     downstream_default_mode: bootstrap
     unknowns_remaining:
       - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - BL-BROWSER-002 concrete browser automation provider integration is now active
+      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is active
+      - BL-BROWSER-002 concrete browser automation provider integration is deferred until BL-WORKFLOW-002 closes
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -64,14 +65,29 @@ current_state:
       notes: |
         Enforces the Efficiency Invariant: instruction size, active queues,
         evidence bundles, and gate-level metadata must stay within declared budgets.
-    evidence: docs/evidence/2026-06-28-quality-firewall-template/README.md
+    worktree_guard:
+      status: active
+      script: scripts/statedd_worktree_guard.py
+      notes: |
+        Enforces pre-slice worktree/source-of-truth inspection and closure-mode
+        clean-worktree checks without deleting files.
+    anti_brittleness_gate:
+      status: active
+      guide: ANTI_BRITTLENESS_GUARD.md
+      script: scripts/statedd_brittleness_check.py
+      notes: |
+        Requires non-trivial fix/feature slices to name the durable invariant
+        and review brittle easy-way-out patterns.
+    evidence: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
     docs:
       - QUALITY_FIREWALL.md
       - FAILURE_TAXONOMY.md
       - INCIDENT_RESPONSE.md
+      - ANTI_BRITTLENESS_GUARD.md
       - docs/failure_scans/TEMPLATE.md
       - docs/incidents/README.md
       - docs/quality_gates/README.md
+      - docs/quality_gates/ANTI_BRITTLENESS_GATE.md
 
   runtime_truth:
     status: not_applicable_for_template_root
@@ -171,6 +187,7 @@ current_state:
     status: observed
     top_level_entries:
       - AGENTS.md
+      - ANTI_BRITTLENESS_GUARD.md
       - BACKLOG.md
       - CHANGELOG.md
       - LICENSE
@@ -194,12 +211,16 @@ current_state:
       - scripts/check_state_docs.py
       - scripts/statedd_audit.py
       - scripts/statedd_doctor.py
+      - scripts/statedd_worktree_guard.py
+      - scripts/statedd_brittleness_check.py
       - scripts/statedd_runtime_proof.py
       - scripts/statedd_evidence_pack.py
       - scripts/statedd_upgrade.py
       - scripts/statedd_bootstrap_wizard.py
       - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
+      - scripts/test_worktree_guard.py
+      - scripts/test_brittleness_check.py
       - scripts/test_runtime_proof.py
       - scripts/test_evidence_pack.py
       - scripts/test_upgrade.py
@@ -213,12 +234,16 @@ current_state:
       - scripts/statedd_handoff.py
       - scripts/statedd_validate_schema.py
       - scripts/statedd_version_check.py
+      - scripts/statedd_worktree_guard.py
+      - scripts/statedd_brittleness_check.py
       - scripts/statedd_runtime_proof.py
       - scripts/statedd_evidence_pack.py
       - scripts/statedd_upgrade.py
       - scripts/statedd_bootstrap_wizard.py
       - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
+      - scripts/test_worktree_guard.py
+      - scripts/test_brittleness_check.py
       - scripts/test_runtime_proof.py
       - scripts/test_schema_validation.py
       - scripts/test_evidence_pack.py
@@ -230,6 +255,8 @@ current_state:
       - python3 scripts/check_state_docs.py
       - python3 scripts/statedd_validate_schema.py
       - python3 scripts/test_init_template.py
+      - python3 scripts/test_worktree_guard.py
+      - python3 scripts/test_brittleness_check.py
       - python3 scripts/test_runtime_proof.py
       - python3 scripts/test_schema_validation.py
       - python3 scripts/test_evidence_pack.py
@@ -311,6 +338,14 @@ current_state:
       handoff_snapshot:
         status: observed
         path: scripts/statedd_handoff.py
+      worktree_guard:
+        status: observed
+        path: scripts/statedd_worktree_guard.py
+        summary: Captures repo root, branch, upstream, worktree topology, dirty-file classification, and start/closure safety without deleting files.
+      brittleness_check:
+        status: observed
+        path: scripts/statedd_brittleness_check.py
+        summary: Advisory warning scan for brittle keyword, exact-string, sleep/timeout, silent-fallback, and fixture-only patterns; not proof of quality.
       runtime_proof:
         status: observed
         path: scripts/statedd_runtime_proof.py

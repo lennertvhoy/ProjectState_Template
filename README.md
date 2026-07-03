@@ -97,6 +97,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `WORKLOG.md` | Append-only history |
 | `LICENSE` | Custom free-use license with teaching rights reserved |
 | `LICENSE_FAQ.md` | Plain-language license guide |
+| `ANTI_BRITTLENESS_GUARD.md` | Reusable anti-brittleness review contract |
 | **`docs/EVIDENCE_LOG.md`** | Proof ledger for user-facing claims |
 | `docs/ACCEPTANCE_FREEZES.md` | Accepted milestone ledger |
 | `docs/evidence/` | Default artifact root for screenshots, logs, and outputs |
@@ -111,11 +112,15 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
 | `scripts/statedd_audit.py` | Machine-checkable closure audit |
 | `scripts/statedd_doctor.py` | Fast StateDD health summary |
+| `scripts/statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard |
+| `scripts/statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scanner |
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
 | `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
 | `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
+| `scripts/test_worktree_guard.py` | Regression-check worktree guard behavior |
+| `scripts/test_brittleness_check.py` | Regression-check brittleness scanner and audit marker behavior |
 | `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
 | `scripts/test_evidence_pack.py` | Regression-check evidence pack manifest and redaction behavior |
 | `schemas/` | Executable StateDD schemas and Markdown contracts |
@@ -127,11 +132,12 @@ This repository publishes the template itself. It keeps the workflow contract pu
 1. `bootstrap`: establish a truthful baseline by separating observed facts from assumptions.
 2. plan: choose one small next backlog slice.
 3. contract: write a slice contract with scope, non-goals, and acceptance criteria.
-4. execute: implement and verify directly.
-5. record: update state and evidence when truth changes.
-6. audit: run `statedd_audit.py` before claiming closure-grade.
-7. handoff: leave the next session a clear starting point.
-8. review: the CTO AI accepts, rejects, or conditions closure.
+4. preflight: run `scripts/statedd_worktree_guard.py --mode start-slice` before non-trivial implementation.
+5. execute: implement and verify directly.
+6. record: update state and evidence when truth changes.
+7. audit: run `statedd_audit.py` before claiming closure-grade.
+8. handoff: leave the next session a clear starting point.
+9. review: the CTO AI accepts, rejects, or conditions closure.
 
 ## What Makes This Different
 
@@ -376,12 +382,31 @@ flowchart TD
 
 Treat work as non-trivial when it changes multiple files, changes workflow or state structure, affects user-facing behavior, or is likely to take more than one prompt. In operating mode, scope that work as one backlog slice and run it through the planning chat plus a fresh coding-agent session.
 
+Before non-trivial implementation, run the worktree preflight from the repo root:
+
+```bash
+pwd
+git remote -v
+git branch --show-current
+git rev-parse HEAD
+git fetch origin --prune
+git status --short
+git worktree list --porcelain
+python3 scripts/statedd_worktree_guard.py --mode start-slice
+```
+
+If the guard reports dirty or ambiguous state, stop implementation and produce a
+worktree recovery handoff. Use `python3 scripts/statedd_worktree_guard.py --mode classify-dirty`
+to record dirty-file classifications in evidence before editing.
+
 ## Common Failure Modes
 
 - the coding agent edits before reading the current state files
 - bootstrap is treated as a formality instead of real discovery
 - the planning chat is treated as if it can read the repo directly
 - model/vendor preferences are hard-coded without checking available tools, task risk, cost limits, or current provider facts
+- dirty shared worktrees allow local-only files to masquerade as progress
+- brittle prompt/string/keyword/fixture-specific fixes are accepted without an invariant
 - user-facing claims are made without evidence
 - screenshots are accepted before runtime identity is proven
 - a failed search is upgraded to a false certainty
@@ -396,7 +421,7 @@ python3 scripts/statedd_doctor.py       # fast health summary
 python3 scripts/statedd_audit.py        # machine-checkable closure audit
 ```
 
-`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema validation, schema ownership, and test/build/lint recording. Use `--strict` to fail on warnings.
+`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema validation, schema ownership, anti-brittleness markers, and test/build/lint recording. Use `--strict` to fail on warnings.
 
 `statedd_doctor.py` prints a one-glance summary of HEAD, worktree, evidence, state-doc freshness, test/browser proof, runtime identity status, open blockers, next slice, and closure grade.
 
@@ -406,17 +431,25 @@ Run the full gate set before handoff, review, or release:
 python3 scripts/check_state_docs.py
 python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
+python3 scripts/test_worktree_guard.py
+python3 scripts/test_brittleness_check.py
 python3 scripts/test_runtime_proof.py
 python3 scripts/test_schema_validation.py
+python3 scripts/statedd_worktree_guard.py --mode start-slice
 python3 scripts/statedd_doctor.py
 python3 scripts/statedd_audit.py
 ```
 
 ## Slice Contracts And Claim Ledgers
 
-Before coding, write a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`. It defines the scope, non-goals, acceptance criteria, and escalation triggers so the agent does not wander into adjacent work.
+Before coding, write a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`. It defines the scope, non-goals, acceptance criteria, worktree preflight, anti-brittleness gate, and escalation triggers so the agent does not wander into adjacent work.
 
 Every evidence folder should contain a `README.md` claim ledger based on `prompts/EVIDENCE_README_TEMPLATE.md`. Each claim is tied to concrete proof.
+
+For non-trivial fix or feature slices, complete `ANTI_BRITTLENESS_GUARD.md` or
+`docs/quality_gates/ANTI_BRITTLENESS_GATE.md`. The optional
+`scripts/statedd_brittleness_check.py` scan can warn about brittle shapes, but a
+clean scan is not proof of quality.
 
 ## Schema Ownership
 
@@ -477,7 +510,7 @@ Long-lived architecture decisions belong in `docs/adr/` rather than `STATUS.md`.
 
 ## CTO Review Checklist
 
-After every coding-agent handoff, the CTO lane answers the checklist in `prompts/CTO_REVIEW_CHECKLIST.md`: closure verdict, missing proof, contradictions, repo hygiene, product value, and next best slice.
+After every coding-agent handoff, the CTO lane answers the checklist in `prompts/CTO_REVIEW_CHECKLIST.md`: closure verdict, missing proof, contradictions, repo hygiene, worktree/source-of-truth visibility, anti-brittleness, product value, and next best slice.
 
 ## Human Override Rule
 
@@ -494,6 +527,8 @@ python3 scripts/check_state_docs.py
 python3 scripts/statedd_version_check.py
 python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
+python3 scripts/test_worktree_guard.py
+python3 scripts/test_brittleness_check.py
 python3 scripts/test_schema_validation.py
 python3 scripts/statedd_handoff.py
 python3 scripts/statedd_doctor.py

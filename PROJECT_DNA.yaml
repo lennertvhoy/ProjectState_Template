@@ -51,6 +51,8 @@ truth_rules:
     - negative_search_results_do_not_prove_nonexistence
     - clean_worktree_required_at_handoff
     - active_queue_remains_short
+    - non_trivial_slices_start_from_isolated_classified_worktree_state
+    - non_trivial_fixes_require_anti_brittleness_review
 
   claim_states:
     observed: verified directly now
@@ -114,6 +116,8 @@ invariants:
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
   - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
+  - "No non-trivial coding-agent slice starts from ambiguous or dirty shared worktree state unless the dirt is classified and isolated first."
+  - "No non-trivial fix or feature slice closes by matching only observed examples without a durable invariant."
 
 governance:
   evidence_standard: browser_verification_or_test_output
@@ -131,6 +135,8 @@ governance:
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   closure_audit: scripts/statedd_audit.py
+  worktree_guard: scripts/statedd_worktree_guard.py
+  brittleness_check: scripts/statedd_brittleness_check.py
   health_summary: scripts/statedd_doctor.py
   schema_validation: scripts/statedd_validate_schema.py
   slice_contract_template: prompts/SLICE_CONTRACT_TEMPLATE.md
@@ -139,6 +145,7 @@ governance:
   subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
   cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
   quality_firewall: QUALITY_FIREWALL.md
+  anti_brittleness_guard: ANTI_BRITTLENESS_GUARD.md
   failure_taxonomy: FAILURE_TAXONOMY.md
   incident_response: INCIDENT_RESPONSE.md
   failure_scan_template: docs/failure_scans/TEMPLATE.md

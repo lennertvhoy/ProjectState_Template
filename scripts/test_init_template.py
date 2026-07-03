@@ -187,6 +187,20 @@ def assert_runtime_proof_assets_exist(root: Path) -> None:
         raise AssertionError(f"Missing runtime proof assets: {missing}")
 
 
+def assert_worktree_and_brittleness_assets_exist(root: Path) -> None:
+    required = [
+        root / "ANTI_BRITTLENESS_GUARD.md",
+        root / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md",
+        root / "scripts" / "statedd_worktree_guard.py",
+        root / "scripts" / "test_worktree_guard.py",
+        root / "scripts" / "statedd_brittleness_check.py",
+        root / "scripts" / "test_brittleness_check.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing worktree/anti-brittleness assets: {missing}")
+
+
 def assert_evidence_pack_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "evidence_manifest.schema.json",
@@ -314,6 +328,7 @@ def test_new_includes_quality_firewall_assets() -> None:
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Quality Demo", "--target", str(target)], expect_success=True)
         assert_quality_firewall_assets_exist(target)
+        assert_worktree_and_brittleness_assets_exist(target)
 
 
 def test_new_includes_schema_validation_assets_and_passes_schema_validation() -> None:
@@ -435,6 +450,7 @@ def test_adopt_installs_quality_firewall_assets() -> None:
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
         run_init(["adopt", "--name", "Quality Adopted", "--target", str(repo)], expect_success=True)
         assert_quality_firewall_assets_exist(repo)
+        assert_worktree_and_brittleness_assets_exist(repo)
 
 
 def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() -> None:

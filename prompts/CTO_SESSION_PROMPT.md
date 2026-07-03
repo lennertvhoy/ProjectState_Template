@@ -51,6 +51,12 @@ When you write a coding-agent prompt, include:
 - the constraints that matter, including non-goals and escalation triggers
 - the recommended tool/model/settings when relevant
 - the files or systems that should be inspected first
+- this mandatory non-trivial-work preflight:
+  `pwd`, `git remote -v`, `git branch --show-current`, `git rev-parse HEAD`,
+  `git fetch origin --prune`, `git status --short`,
+  `git worktree list --porcelain`,
+  `python3 scripts/statedd_worktree_guard.py --mode start-slice`
+- instructions to stop implementation and produce a worktree recovery handoff if the guard reports dirty or ambiguous state
 - the required verification or evidence
 - the condition for being done
 - a reminder to read and follow `AGENTS.md`
@@ -61,6 +67,7 @@ When you write a coding-agent prompt, include:
 - a requirement to use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape
 - a requirement to use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
 - a requirement to use `prompts/EVIDENCE_README_TEMPLATE.md` for the claim ledger in the evidence folder
+- a requirement to complete the anti-brittleness review in `ANTI_BRITTLENESS_GUARD.md` for non-trivial fix or feature slices
 - the relevant validation commands, including `python3 scripts/check_state_docs.py`, `python3 scripts/check_state_docs.py --bootstrap-gate`, `python3 scripts/statedd_audit.py`, and `python3 scripts/statedd_doctor.py`
 - a reminder that implemented ≠ validated ≠ closure-grade ≠ accepted
 

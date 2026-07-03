@@ -30,6 +30,33 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-07-03-001: Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/incident_analysis.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/anti_brittleness_gate_design.md
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_worktree_guard.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_worktree_guard.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_brittleness_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_brittleness_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/ANTI_BRITTLENESS_GUARD.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/quality_gates/ANTI_BRITTLENESS_GATE.md
+- Title: BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails
+- Source/System: test
+- Action: Added pre-slice worktree/source-of-truth guardrails, dirty-file classification, upstream/topology handoff fields, anti-brittleness review contract, advisory brittleness scanner, audit marker checks, and downstream propagation.
+- Shows:
+  - `python3 scripts/test_worktree_guard.py` covers clean, dirty, classified, closure, detached, missing-origin, and linked-worktree cases
+  - `python3 scripts/test_brittleness_check.py` covers advisory warnings and audit anti-brittleness markers
+  - `python3 scripts/test_init_template.py` and `python3 scripts/test_upgrade.py` cover downstream propagation
+  - `python3 scripts/check_state_docs.py` and `python3 scripts/statedd_validate_schema.py` validate updated template docs/contracts
+- Proves:
+  - StateDD now moves dirty/ambiguous worktree detection before non-trivial implementation
+  - Closure handoffs expose worktree topology and upstream/GitHub visibility
+  - Non-trivial fix/feature closure requires anti-brittleness review rather than only example-specific behavior
+- Type: test
+- as_of: 2026-07-03T20:35:00+02:00
+- Notes: Closure pending PR, CI, and remote closure verification.
+
 ## EV-2026-06-29-002: StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/README.md

@@ -29,6 +29,8 @@ This AGENTS.md applies to all work in `scripts/`. It defines how agents interact
 | `statedd_bootstrap_wizard.py` | Interactive bootstrap | 0=ok, 1=failed, 2=error |
 | `statedd_evidence_pack.py` | Package evidence bundle | 0=ok, 1=failed, 2=error |
 | `statedd_remote_closure_finalizer.py` | Final remote CI/CD closure gate | 0=verified, 1=not closure-grade, 2=error |
+| `statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard | 0=pass/template, 1=unsafe, 2=error |
+| `statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scan | 0=scanned, 2=error |
 | `check_state_docs.py` | Doc hygiene & bootstrap gate | 0=clean, 1=dirty, 2=error |
 | `init_template.py` | Initialize downstream repo from template | 0=ok, 1=failed, 2=error |
 

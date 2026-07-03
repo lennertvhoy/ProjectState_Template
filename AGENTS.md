@@ -42,6 +42,8 @@ project: "StateDD_Template"
   Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
 - **Remote Closure Invariant:** A slice is not done until the pushed PR head, PR body, in-repo evidence, closure handoff, and latest GitHub Actions run all agree on the same final head. Local tests are only preflight. Final closure requires GitHub-visible CI success or an explicit `NOT CI-VERIFIED` label.
 - **Efficiency Invariant:** StateDD exists to reduce agent confusion and false closure, not to create bureaucracy. Every required file, gate, command, and evidence artifact must justify its cost. Prefer the smallest proof that crosses the relevant truth boundary.
+- **Worktree Isolation Invariant:** No non-trivial coding-agent slice may start from an ambiguous or dirty shared worktree unless the dirt is classified and isolated first with `scripts/statedd_worktree_guard.py`.
+- **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
 
 ## Gate Levels
 Use the cheapest gate that honestly proves the current claim.

@@ -1,0 +1,43 @@
+============================================================
+STATEDD SCHEMA VALIDATION
+============================================================
+  PASS PROJECT_STATE.yaml
+  PASS PROJECT_DNA.yaml
+  PASS PROJECT_ADAPTER.yaml
+  PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+  PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+  PASS docs/evidence/2026-06-23-release-readiness-polish/README.md
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+  PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+  PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+  PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+  PASS docs/evidence/2026-06-28-quality-firewall-template/README.md
+  PASS docs/evidence/2026-06-29-remote-closure/README.md
+  PASS docs/evidence/2026-06-29-sanity-repair/README.md
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+  PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+  PASS docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
+  PASS docs/evidence/2026-06-29-remote-closure/runtime_identity.json
+  PASS docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+  PASS docs/evidence/2026-06-28-quality-firewall-template/manifest.json
+  PASS docs/evidence/2026-06-29-remote-closure/manifest.json
+  PASS docs/evidence/2026-06-29-sanity-repair/manifest.json
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+PASSED: All StateDD schema checks passed

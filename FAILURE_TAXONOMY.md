@@ -23,6 +23,7 @@ and final handoffs.
 - `security_privacy`: secret, auth, permission, retention, or data exposure failure.
 - `observability`: the system failed without logs, metrics, traces, or useful diagnostics.
 - `workflow`: StateDD process allowed premature closure, weak proof, or wrong sequencing.
+- `brittleness`: the fix only matches observed prompts, strings, keywords, fixtures, sleeps/timeouts, provider quirks, or silent fallbacks instead of a durable invariant.
 
 ## Evidence Status
 
@@ -42,3 +43,6 @@ Use precise closure words:
 - `accepted`: human or CTO lane accepted the result.
 
 Never collapse these states into a generic "done."
+
+A feature or fix slice that only handles the observed failing input without a
+durable invariant is not `closure-grade`.

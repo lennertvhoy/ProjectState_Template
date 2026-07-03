@@ -60,15 +60,20 @@ TEMPLATE_ASSET_PATHS = [
     "QUALITY_FIREWALL.md",
     "FAILURE_TAXONOMY.md",
     "INCIDENT_RESPONSE.md",
+    "ANTI_BRITTLENESS_GUARD.md",
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
     "scripts/statedd_version_check.py",
     "scripts/statedd_handoff.py",
     "scripts/statedd_audit.py",
     "scripts/statedd_doctor.py",
+    "scripts/statedd_worktree_guard.py",
+    "scripts/statedd_brittleness_check.py",
     "scripts/statedd_runtime_proof.py",
     "scripts/statedd_validate_schema.py",
     "scripts/test_init_template.py",
+    "scripts/test_worktree_guard.py",
+    "scripts/test_brittleness_check.py",
     "scripts/test_runtime_proof.py",
     "scripts/test_schema_validation.py",
     "scripts/statedd_evidence_pack.py",
@@ -113,6 +118,7 @@ TEMPLATE_ASSET_PATHS = [
     "docs/failure_scans/TEMPLATE.md",
     "docs/incidents/README.md",
     "docs/quality_gates/README.md",
+    "docs/quality_gates/ANTI_BRITTLENESS_GATE.md",
     "docs/UPGRADING.md",
     "docs/ADOPTION_PROFILES.md",
     "docs/ACCEPTANCE_FREEZES.md",
@@ -382,6 +388,8 @@ def check_readme(path: Path) -> list[str]:
         "prompts/FINAL_HANDOFF_TEMPLATE.md",
         "docs/GETTING_STARTED_5_MIN.md",
         "scripts/statedd_handoff.py",
+        "scripts/statedd_worktree_guard.py",
+        "ANTI_BRITTLENESS_GUARD.md",
         "scripts/statedd_runtime_proof.py",
         "scripts/statedd_validate_schema.py",
         "LICENSE_FAQ.md",
@@ -418,6 +426,7 @@ def check_readme(path: Path) -> list[str]:
         "schema ownership",
         "Human override used: yes",
         "implemented ≠ validated ≠ closure-grade ≠ accepted",
+        "anti-brittleness",
     ]
     for phrase in required_phrases:
         if phrase not in text:
@@ -546,14 +555,25 @@ def check_template_assets(root: Path) -> list[str]:
     final_handoff = root / "prompts" / "FINAL_HANDOFF_TEMPLATE.md"
     if final_handoff.exists():
         handoff_text = final_handoff.read_text(encoding="utf-8")
-        for phrase in ("repo path", "branch", "process/container", "port/base URL", "rebuilt in this slice", "Runtime identity artifact"):
+        for phrase in (
+            "repo path",
+            "branch",
+            "process/container",
+            "port/base URL",
+            "rebuilt in this slice",
+            "Runtime identity artifact",
+            "worktree topology captured",
+            "upstream branch",
+            "GitHub-visible deliverables",
+            "local-only files claimed",
+        ):
             if phrase not in handoff_text:
                 issues.append(f"Final handoff template missing phrase: {phrase}")
 
     cto_prompt = root / "prompts" / "CTO_SESSION_PROMPT.md"
     if cto_prompt.exists():
         cto_text = cto_prompt.read_text(encoding="utf-8")
-        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven"):
+        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven", "statedd_worktree_guard.py", "ANTI_BRITTLENESS_GUARD.md"):
             if phrase not in cto_text:
                 issues.append(f"CTO session prompt missing phrase: {phrase}")
 
@@ -567,7 +587,7 @@ def check_template_assets(root: Path) -> list[str]:
     opencode_prompt = root / "prompts" / "OPENCODE_STARTUP_PROMPT.md"
     if opencode_prompt.exists():
         opencode_text = opencode_prompt.read_text(encoding="utf-8")
-        for phrase in ("OpenCode", "AGENTS.md", "statedd_handoff.py", "not proven"):
+        for phrase in ("OpenCode", "AGENTS.md", "statedd_handoff.py", "not proven", "statedd_worktree_guard.py"):
             if phrase not in opencode_text:
                 issues.append(f"OpenCode startup prompt missing phrase: {phrase}")
 
@@ -581,7 +601,7 @@ def check_template_assets(root: Path) -> list[str]:
     handoff_helper = root / "scripts" / "statedd_handoff.py"
     if handoff_helper.exists():
         handoff_helper_text = handoff_helper.read_text(encoding="utf-8")
-        for phrase in ("StateDD Handoff Snapshot", "repo path", "not proven", "--test-command"):
+        for phrase in ("StateDD Handoff Snapshot", "repo path", "not proven", "--test-command", "GitHub-visible deliverables", "local-only files claimed"):
             if phrase not in handoff_helper_text:
                 issues.append(f"Handoff helper missing phrase: {phrase}")
 
@@ -622,14 +642,14 @@ def check_template_assets(root: Path) -> list[str]:
     slice_contract = root / "prompts" / "SLICE_CONTRACT_TEMPLATE.md"
     if slice_contract.exists():
         slice_text = slice_contract.read_text(encoding="utf-8")
-        for phrase in ("non_goals", "acceptance_criteria", "Human override used: yes"):
+        for phrase in ("non_goals", "acceptance_criteria", "Human override used: yes", "anti_brittleness", "statedd_worktree_guard.py"):
             if phrase not in slice_text:
                 issues.append(f"Slice contract template missing phrase: {phrase}")
 
     evidence_readme = root / "prompts" / "EVIDENCE_README_TEMPLATE.md"
     if evidence_readme.exists():
         evidence_text = evidence_readme.read_text(encoding="utf-8")
-        for phrase in ("Claims", "Verification Log", "Closure State", "Runtime Identity", "runtime_identity.json"):
+        for phrase in ("Claims", "Verification Log", "Closure State", "Runtime Identity", "runtime_identity.json", "Anti-Brittleness Review", "Worktree Dirty File Classification"):
             if phrase not in evidence_text:
                 issues.append(f"Evidence README template missing phrase: {phrase}")
 
@@ -650,7 +670,7 @@ def check_template_assets(root: Path) -> list[str]:
     cto_review = root / "prompts" / "CTO_REVIEW_CHECKLIST.md"
     if cto_review.exists():
         cto_text = cto_review.read_text(encoding="utf-8")
-        for phrase in ("Closure verdict:", "Missing proof:", "Contradictions:", "Next best slice:"):
+        for phrase in ("Closure verdict:", "Missing proof:", "Contradictions:", "Next best slice:", "Anti-brittleness:", "GitHub-visible deliverables"):
             if phrase not in cto_text:
                 issues.append(f"CTO review checklist missing phrase: {phrase}")
 
@@ -670,6 +690,10 @@ def check_template_assets(root: Path) -> list[str]:
             issues.append("GitHub workflow must validate scripts/statedd_validate_schema.py")
         if "scripts/test_schema_validation.py" not in workflow_text:
             issues.append("GitHub workflow must run scripts/test_schema_validation.py")
+        if "scripts/test_worktree_guard.py" not in workflow_text:
+            issues.append("GitHub workflow must run scripts/test_worktree_guard.py")
+        if "scripts/test_brittleness_check.py" not in workflow_text:
+            issues.append("GitHub workflow must run scripts/test_brittleness_check.py")
 
     return issues
 

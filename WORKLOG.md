@@ -2,6 +2,41 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-03 - Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
+
+**Type:** template_maintenance_capability
+**Status:** IMPLEMENTED_VALIDATED_LOCAL
+**Git Head:** 71dd70d565da2394cd92604bd41b1d10b9e33483 before evidence-output amendment
+**Worktree:** clean for guard/audit capture; dirty only after copying command outputs into evidence
+**Gate Level:** 2 (slice closure pending PR/CI/remote closure)
+
+### What changed
+- Added `scripts/statedd_worktree_guard.py` and regression tests for pre-slice, classification, and closure worktree checks.
+- Added `ANTI_BRITTLENESS_GUARD.md`, `docs/quality_gates/ANTI_BRITTLENESS_GATE.md`, `scripts/statedd_brittleness_check.py`, and audit marker checks.
+- Updated startup prompts, slice contract, evidence README, CTO review, final handoff, audit, handoff helper, initializer, upgrade helper, asset registries, schemas, CI, and state docs.
+
+### Verification
+- `python3 scripts/test_worktree_guard.py` passed.
+- `python3 scripts/test_brittleness_check.py` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/test_upgrade.py` passed.
+- `python3 scripts/statedd_worktree_guard.py --mode start-slice` passed on clean commit `71dd70d`.
+- `python3 scripts/statedd_audit.py` passed on clean commit `71dd70d`.
+- `git diff --check` passed.
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-03-001`
+- `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md`
+- `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/`
+- `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json`
+- `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json`
+
+### Notes
+- GitHub PR, CI, and remote closure verification remain pending.
+- BL-BROWSER-002 remains deferred until this workflow hardening slice closes.
+
 ## 2026-06-29 - StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
 **Type:** template_maintenance_capability  

@@ -1,0 +1,81 @@
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 12 files
+
+worktree_clean
+  ✅ Worktree is clean
+
+worktree_guard
+  ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
+
+branch_head_recorded
+  ✅ HEAD 71dd70d recorded in git; evidence README records 81257e6 (acceptable if README was written before the final commit)
+  ✅ Branch 'bl-workflow-002-worktree-brittleness' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ Schema change 'schemas/evidence_readme_contract.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/final_handoff_contract.json' has examples and validation tests nearby (heuristic check)
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked_with_limits
+
+browser_verification
+  ✅ Browser verification not required for this slice
+
+anti_brittleness_review
+  ✅ Evidence README contains anti-brittleness review markers
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 38 pass, 0 warn, 0 fail, 0 override
+AUDIT RESULT: PASS — closure-grade

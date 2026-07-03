@@ -38,6 +38,24 @@ Treat work as non-trivial if it involves any of:
 - migrations, integrations, or state-structure changes
 - anything likely to require more than one implementation prompt
 
+Before non-trivial implementation, run this preflight from the repo root:
+
+```bash
+pwd
+git remote -v
+git branch --show-current
+git rev-parse HEAD
+git fetch origin --prune
+git status --short
+git worktree list --porcelain
+python3 scripts/statedd_worktree_guard.py --mode start-slice
+```
+
+If the guard reports dirty or ambiguous state, stop implementation and produce a
+worktree recovery handoff instead. If dirty files exist, run
+`python3 scripts/statedd_worktree_guard.py --mode classify-dirty` and record the
+classification table in the evidence folder before any non-trivial edits.
+
 Always:
 - anchor on verified current truth
 - forbid overclaiming
@@ -48,6 +66,7 @@ Always:
 - use `prompts/TOOL_MODEL_ROUTING_GUIDE.md` when drafting a CTO prompt that should choose between tools, models, reasoning settings, context strategies, or budget modes
 - use `prompts/SLICE_CONTRACT_TEMPLATE.md` before starting implementation
 - use `prompts/EVIDENCE_README_TEMPLATE.md` for the claim ledger in every evidence folder
+- answer the anti-brittleness questions in `ANTI_BRITTLENESS_GUARD.md` for every non-trivial fix or feature slice
 - use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
 - use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone
 - use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape
