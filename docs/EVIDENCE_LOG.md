@@ -99,8 +99,8 @@
   - Closure handoffs expose worktree topology and upstream/GitHub visibility
   - Non-trivial fix/feature closure requires anti-brittleness review rather than only example-specific behavior
 - Type: test
-- as_of: 2026-07-03T20:35:00+02:00
-- Notes: Closure pending PR, CI, and remote closure verification.
+- as_of: 2026-07-07T21:05:00+02:00
+- Notes: Re-validated after BL-SANITY-002 logic repairs; evidence README, manifest, and runtime_identity.json updated to final PR head 0c2a136. Closure-grade and CI-verified on PR #4; merge pending human acceptance.
 
 ## EV-2026-06-29-002: StateDD repo coherence and efficiency repair (BL-SANITY-001)
 

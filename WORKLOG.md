@@ -49,18 +49,19 @@
 - Closure sequence completed: evidence folder committed and pushed, PR #4 opened, GitHub Actions docs check SUCCESS, `scripts/statedd_remote_closure_finalizer.py --pr 4` passed with closure label `CI verified`.
 - PR #4 is pending human review/merge acceptance; BL-WORKFLOW-002 should be re-validated after BL-SANITY-002 merges.
 
-## 2026-07-03 - Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
+## 2026-07-03 / 2026-07-07 - Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
 
 **Type:** template_maintenance_capability
-**Status:** IMPLEMENTED_VALIDATED_LOCAL
-**Git Head:** 71dd70d565da2394cd92604bd41b1d10b9e33483 before evidence-output amendment
-**Worktree:** clean for guard/audit capture; dirty only after copying command outputs into evidence
-**Gate Level:** 2 (slice closure pending PR/CI/remote closure)
+**Status:** CLOSURE_GRADE_CI_VERIFIED
+**Git Head:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe on branch bl-workflow-002-worktree-brittleness
+**Worktree:** clean
+**Gate Level:** 2 (slice closure) / remote closure verified
 
 ### What changed
 - Added `scripts/statedd_worktree_guard.py` and regression tests for pre-slice, classification, and closure worktree checks.
 - Added `ANTI_BRITTLENESS_GUARD.md`, `docs/quality_gates/ANTI_BRITTLENESS_GATE.md`, `scripts/statedd_brittleness_check.py`, and audit marker checks.
 - Updated startup prompts, slice contract, evidence README, CTO review, final handoff, audit, handoff helper, initializer, upgrade helper, asset registries, schemas, CI, and state docs.
+- Re-validated the slice after BL-SANITY-002 logic repairs and updated evidence to final PR head `0c2a136`.
 
 ### Verification
 - `python3 scripts/test_worktree_guard.py` passed.
@@ -69,9 +70,14 @@
 - `python3 scripts/statedd_validate_schema.py` passed.
 - `python3 scripts/test_init_template.py` passed.
 - `python3 scripts/test_upgrade.py` passed.
-- `python3 scripts/statedd_worktree_guard.py --mode start-slice` passed on clean commit `71dd70d`.
-- `python3 scripts/statedd_audit.py` passed on clean commit `71dd70d`.
-- `git diff --check` passed.
+- `python3 scripts/statedd_worktree_guard.py --mode start-slice` passed on clean commit `0c2a136`.
+- `python3 scripts/statedd_audit.py --strict` passed on clean commit `0c2a136`.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2` passed.
+- `python3 scripts/statedd_closure_check.py` passed.
+- `python3 scripts/statedd_runtime_truth_check.py` passed.
+- `python3 scripts/statedd_evidence_type_check.py` passed.
+- `python3 -m pytest scripts/test_*.py -q` passed: 144 passed, 4 subtests passed.
+- `python3 scripts/statedd_remote_closure_finalizer.py --pr 4 --verbose` passed with closure label `CI verified`.
 
 ### Evidence
 - `docs/EVIDENCE_LOG.md` entry `EV-2026-07-03-001`
@@ -79,10 +85,11 @@
 - `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/`
 - `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json`
 - `docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json`
+- PR #4: https://github.com/lennertvhoy/StateDD_Template/pull/4
 
 ### Notes
-- GitHub PR, CI, and remote closure verification remain pending.
-- BL-BROWSER-002 remains deferred until this workflow hardening slice closes.
+- Closure sequence completed: evidence folder committed and pushed, PR #4 updated, GitHub Actions docs check SUCCESS, `scripts/statedd_remote_closure_finalizer.py --pr 4 --verbose` passed with closure label `CI verified`.
+- PR #4 is pending human review/merge acceptance; BL-BROWSER-002 can resume after merge.
 
 ## 2026-06-29 - StateDD repo coherence and efficiency repair (BL-SANITY-001)
 

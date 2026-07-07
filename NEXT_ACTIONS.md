@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-WORKFLOW-002] Re-validate Worktree Isolation and Anti-Brittleness Guardrails
+### P1 [BL-BROWSER-002] Concrete Browser Automation Provider Integration
 Owner: coding agent
-Next: re-run the full closure sequence for BL-WORKFLOW-002 after the BL-SANITY-002 logic repairs: verify evidence matches final HEAD, push branch if needed, confirm PR/CI green, and run `scripts/statedd_remote_closure_finalizer.py`
-Exit: BL-WORKFLOW-002 is closure-grade with GitHub-visible CI success and remote closure agreement
+Next: integrate a concrete browser automation provider using the provider-agnostic contract; add evidence, tests, and state updates; open/refresh PR and run remote closure finalizer.
+Exit: BL-BROWSER-002 is closure-grade with GitHub-visible CI success and remote closure agreement
 
 ## Queue Rules
 

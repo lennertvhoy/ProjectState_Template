@@ -1,0 +1,1109 @@
+=== test_worktree_guard ===
+PASS test_clean_repo_passes_start_slice
+PASS test_dirty_repo_fails_start_slice_without_classification
+PASS test_dirty_repo_can_warn_only_for_diagnostics
+PASS test_dirty_repo_with_classification_reports_classified_state
+PASS test_closure_mode_fails_dirty_worktree
+PASS test_detached_head_and_missing_origin_are_reported_not_proven
+PASS test_classify_dirty_prints_template_table
+PASS test_linked_worktrees_are_printed
+PASS test_unknown_do_not_touch_blocks_start
+PASS test_feature_branch_is_not_shared_default
+=== test_brittleness_check ===
+PASS test_warns_on_large_keyword_bucket_and_exact_prompt_string
+PASS test_warns_on_many_includes_and_sleep
+PASS test_warns_on_fixture_only_exact_prompt_test
+PASS test_no_warning_output_does_not_claim_quality_proof
+PASS test_anti_brittleness_evidence_marker_passes_audit_check
+PASS test_missing_anti_brittleness_marker_warns_and_fails_strict
+=== check_state_docs ===
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ✅ All checks passed
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+============================================================
+PASSED: All state documentation checks passed
+=== schema_validation ===
+============================================================
+STATEDD SCHEMA VALIDATION
+============================================================
+  PASS PROJECT_STATE.yaml
+  PASS PROJECT_DNA.yaml
+  PASS PROJECT_ADAPTER.yaml
+  PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+  PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+  PASS docs/evidence/2026-06-23-release-readiness-polish/README.md
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+  PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+  PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+  PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+  PASS docs/evidence/2026-06-28-quality-firewall-template/README.md
+  PASS docs/evidence/2026-06-29-remote-closure/README.md
+  PASS docs/evidence/2026-06-29-sanity-repair/README.md
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+  PASS docs/evidence/2026-07-07-sanity-logic-repair/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+  PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+  PASS docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
+  PASS docs/evidence/2026-06-29-remote-closure/runtime_identity.json
+  PASS docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json
+  PASS docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+  PASS docs/evidence/2026-06-28-quality-firewall-template/manifest.json
+  PASS docs/evidence/2026-06-29-remote-closure/manifest.json
+  PASS docs/evidence/2026-06-29-sanity-repair/manifest.json
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json
+  PASS docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+PASSED: All StateDD schema checks passed
+=== test_init_template ===
+PASS test_adopt_rejects_symlinked_managed_directory
+PASS test_new_rejects_symlinked_existing_directory
+PASS test_readme_link_rejects_symlinked_readme_before_writes
+PASS test_top_level_help_shows_subcommands
+PASS test_legacy_new_invocation_still_works
+PASS test_new_copies_curated_template_surface_only
+PASS test_new_includes_tool_model_routing_guide
+PASS test_new_includes_usability_assets
+PASS test_new_includes_version_assets_and_passes_version_check
+PASS test_new_includes_runtime_proof_asset
+PASS test_new_includes_quality_firewall_assets
+PASS test_new_includes_schema_validation_assets_and_passes_schema_validation
+PASS test_new_repo_still_fails_bootstrap_gate_until_investigated
+PASS test_new_includes_v2_executable_workflow_assets
+PASS test_new_includes_license_faq
+PASS test_adopt_installs_tool_model_routing_guide
+PASS test_adopt_installs_usability_assets
+PASS test_adopt_installs_version_assets_and_passes_version_check
+PASS test_adopt_installs_runtime_proof_asset
+PASS test_adopt_installs_quality_firewall_assets
+PASS test_adopt_installs_schema_validation_assets_and_passes_schema_validation
+PASS test_adopt_installs_v2_executable_workflow_assets
+PASS test_template_root_uses_template_maintenance_mode
+PASS test_template_root_bootstrap_gate_passes
+PASS test_handoff_snapshot_runs
+PASS test_doctor_runs
+=== test_upgrade ===
+PASS test_dry_run_on_current_repo_refuses_template_root
+PASS test_dry_run_on_generated_repo_is_no_op_or_safe
+PASS test_dry_run_on_older_fixture_reports_missing_assets
+PASS test_apply_adds_safe_missing_assets
+PASS test_apply_preserves_readme_and_project_truth
+PASS test_conflict_fixture_refuses_unsafe_overwrite
+PASS test_force_managed_replaces_outdated_safe_asset
+PASS test_force_managed_never_overwrites_truth_files
+PASS test_report_writes_json
+PASS test_report_reflects_dry_run_value
+=== worktree_guard_start_slice ===
+StateDD Worktree Guard
+Mode: start-slice
+
+Repo truth
+- repo root: /home/ff/Documents/Projects/StateDD_Template
+- current branch: bl-workflow-002-worktree-brittleness
+- local HEAD: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+- origin remote URL: https://github.com/lennertvhoy/StateDD_Template.git
+- upstream branch: origin/bl-workflow-002-worktree-brittleness
+- upstream HEAD: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+- default branch: main
+- current branch is shared/default branch: no
+- local HEAD equals upstream: yes
+- safe to start: no
+
+Worktree topology
+- worktree topology captured: yes
+- current worktree path: /home/ff/Documents/Projects/StateDD_Template
+- linked worktrees:
+  - /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+- git worktree list --porcelain:
+  worktree /home/ff/Documents/Projects/StateDD_Template
+  HEAD 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+  branch refs/heads/bl-workflow-002-worktree-brittleness
+  
+  worktree /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+  HEAD 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  branch refs/heads/efficiency-layer
+
+Dirty state
+- dirty files classified: no
+- classification file: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+- dirty file count: 20
+- staged file count: 1
+- unstaged file count: 18
+- untracked file count: 1
+- dirty files:
+  - M  ACKLOG.md [not classified]
+  -  M NEXT_ACTIONS.md [not classified]
+  -  M PROJECT_STATE.yaml [not classified]
+  -  M STATUS.md [not classified]
+  -  M WORKLOG.md [not classified]
+  -  M docs/EVIDENCE_LOG.md [not classified]
+  -  M docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/check_state_docs.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/git_diff_check.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/schema_validation.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/statedd_audit.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/statedd_handoff.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_brittleness_check.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_init_template.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_upgrade.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_worktree_guard.txt [not classified]
+  -  D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/worktree_guard_start_slice.txt [not classified]
+  -  M docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json [not classified]
+  -  M docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json [not classified]
+  - ?? docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/verification_log.txt [not classified]
+- untracked files:
+  - docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/verification_log.txt
+
+Warnings
+- none
+
+Blocking problems
+- Dirty files are not fully classified; run --mode classify-dirty and record the table in evidence before edits.
+=== handoff_audit ===
+# StateDD Handoff Snapshot
+
+Generated: 2026-07-07T21:10:16+02:00
+
+## Repo Identity
+
+- repo path: /home/ff/Documents/Projects/StateDD_Template
+- branch: bl-workflow-002-worktree-brittleness
+- head: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+- origin remote URL: https://github.com/lennertvhoy/StateDD_Template.git
+- upstream branch: origin/bl-workflow-002-worktree-brittleness
+- upstream HEAD: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+- local HEAD: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+- local HEAD equals upstream: yes
+- worktree: dirty
+- dirty files classified: yes
+- GitHub-visible deliverables: no
+- local-only files claimed: yes
+
+## Worktree Topology
+
+- worktree topology captured: yes
+- current worktree path: /home/ff/Documents/Projects/StateDD_Template
+- linked worktrees:
+  - /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+- git worktree list --porcelain:
+  worktree /home/ff/Documents/Projects/StateDD_Template
+  HEAD 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+  branch refs/heads/bl-workflow-002-worktree-brittleness
+  
+  worktree /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+  HEAD 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  branch refs/heads/efficiency-layer
+
+## Changed Files
+
+- M BACKLOG.md
+- M NEXT_ACTIONS.md
+- M PROJECT_STATE.yaml
+- M STATUS.md
+- M WORKLOG.md
+- M docs/EVIDENCE_LOG.md
+- M docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/check_state_docs.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/git_diff_check.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/schema_validation.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/statedd_audit.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/statedd_handoff.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_brittleness_check.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_init_template.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_upgrade.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/test_worktree_guard.txt
+- D docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/worktree_guard_start_slice.txt
+- M docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json
+- M docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json
+- ?? docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/command_outputs/verification_log.txt
+
+## Runtime Identity
+
+- process/container: not proven by this helper
+- port/base URL: not proven by this helper
+- rebuilt in this slice: not proven by this helper
+- duplicate runtimes checked: not proven by this helper
+- active listener source: ss -ltnp
+  - State  Recv-Q Send-Q               Local Address:Port  Peer Address:PortProcess                                     
+  - LISTEN 0      5                          0.0.0.0:8080       0.0.0.0:*    users:(("python3",pid=17881,fd=3))         
+  - LISTEN 0      2048                       0.0.0.0:8180       0.0.0.0:*    users:(("homeops",pid=17879,fd=13))        
+  - LISTEN 0      4096                     127.0.0.1:631        0.0.0.0:*                                               
+  - LISTEN 0      4096                 127.0.0.53%lo:53         0.0.0.0:*                                               
+  - LISTEN 0      4096                  100.78.44.52:3002       0.0.0.0:*                                               
+  - LISTEN 0      4096                       0.0.0.0:5355       0.0.0.0:*                                               
+  - LISTEN 0      4096                     127.0.0.1:3002       0.0.0.0:*                                               
+  - LISTEN 0      512                        0.0.0.0:5177       0.0.0.0:*    users:(("bun",pid=17877,fd=11))            
+  - LISTEN 0      511                      127.0.0.1:6463       0.0.0.0:*    users:(("Discord",pid=399257,fd=113))      
+  - LISTEN 0      4096                  100.78.44.52:8083       0.0.0.0:*                                               
+  - LISTEN 0      4096                  100.78.44.52:8082       0.0.0.0:*                                               
+  - LISTEN 0      50                         0.0.0.0:139        0.0.0.0:*                                               
+  - LISTEN 0      128                        0.0.0.0:22         0.0.0.0:*                                               
+  - LISTEN 0      4096                     127.0.0.1:8083       0.0.0.0:*                                               
+  - LISTEN 0      4096                     127.0.0.1:8082       0.0.0.0:*                                               
+  - LISTEN 0      50                         0.0.0.0:445        0.0.0.0:*                                               
+  - LISTEN 0      5                        127.0.0.1:8765       0.0.0.0:*    users:(("python3",pid=299299,fd=3))        
+  - LISTEN 0      512                      127.0.0.1:8787       0.0.0.0:*    users:(("bun",pid=17875,fd=13))            
+  - LISTEN 0      4096                    127.0.0.54:53         0.0.0.0:*                                               
+  - LISTEN 0      4096                  100.78.44.52:59075      0.0.0.0:*                                               
+  - LISTEN 0      4096                     127.0.0.1:10086      0.0.0.0:*    users:(("kimi-webbridge",pid=290692,fd=8)) 
+  - LISTEN 0      10                         0.0.0.0:27500      0.0.0.0:*                                               
+  - LISTEN 0      512                              *:7878             *:*                                               
+  - LISTEN 0      4096                          [::]:5355          [::]:*                                               
+  - LISTEN 0      5                                *:3390             *:*    users:(("gnome-remote-de",pid=21317,fd=18))
+  - LISTEN 0      5                                *:3389             *:*                                               
+  - LISTEN 0      4096   [fd7a:115c:a1e0::ee36:2c34]:57131         [::]:*                                               
+  - LISTEN 0      50                            [::]:139           [::]:*                                               
+  - LISTEN 0      128                           [::]:22            [::]:*                                               
+
+## Direct Verification
+
+- not run by this helper; pass `--test-command` to include command output
+
+## StateDD Audit
+
+- audit exit code: 1
+  ============================================================
+  STATEDD AUDIT
+  ============================================================
+  
+  required_files
+    ✅ AGENTS.md exists
+    ✅ STATUS.md exists
+    ✅ PROJECT_STATE.yaml exists
+    ✅ PROJECT_DNA.yaml exists
+    ✅ PROJECT_ADAPTER.yaml exists
+    ✅ NEXT_ACTIONS.md exists
+    ✅ BACKLOG.md exists
+    ✅ WORKLOG.md exists
+    ✅ docs/EVIDENCE_LOG.md exists
+    ✅ docs/ACCEPTANCE_FREEZES.md exists
+  
+  repo_role_mode
+    ✅ repo_role: template_repository
+    ✅ statedd_mode: template-maintenance
+    ✅ Template repository uses template-maintenance mode
+    ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+  
+  state_freshness
+    ✅ STATUS.md updated within the last 14 days
+    ✅ PROJECT_STATE.yaml updated within the last 14 days
+    ✅ NEXT_ACTIONS.md updated within the last 14 days
+    ✅ BACKLOG.md updated within the last 14 days
+  
+  evidence_folder
+    ✅ Latest evidence folder: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails
+  
+  evidence_readme
+    ✅ Evidence README exists: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+    ✅ Evidence README contains branch/head and claim markers
+  
+  evidence_size
+    ✅ Evidence folder has 6 files
+  
+  worktree_clean
+    ❌ Worktree is dirty (20 changed file(s)); closure-grade requires clean worktree
+  
+  worktree_guard
+    ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
+  
+  branch_head_recorded
+    ✅ HEAD 0c2a136 recorded in evidence README
+    ✅ Branch 'bl-workflow-002-worktree-brittleness' recorded in evidence README
+  
+  user_facing_evidence
+    ✅ No user-facing file changes detected
+  
+  runtime_identity
+    ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+    ✅ Runtime marked not required for this evidence slice
+  
+  schema_validation
+    ✅ StateDD schema validation passed
+  
+  schema_ownership
+    ✅ Schema change 'schemas/evidence_readme_contract.json' has examples and validation tests nearby (heuristic check)
+    ✅ Schema change 'schemas/final_handoff_contract.json' has examples and validation tests nearby (heuristic check)
+  
+  tests_recorded
+    ✅ Evidence README records test/build/lint results
+  
+  evidence_manifest
+    ✅ manifest.json schema: statedd.evidence_manifest.v1
+    ✅ manifest.json redaction status: checked
+  
+  browser_verification
+    ✅ Browser verification not required for this slice
+  
+  anti_brittleness_review
+    ✅ Evidence README contains anti-brittleness review markers
+  
+  human_override
+    ✅ No human override declared
+  
+  ============================================================
+  Summary: 37 pass, 0 warn, 1 fail, 0 override
+  ... truncated 1 line(s)
+
+## Handoff Reminder
+
+- Use prompts/FINAL_HANDOFF_TEMPLATE.md for the final human-facing handoff.
+- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.
+- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.
+=== audit ===
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 6 files
+
+worktree_clean
+  ❌ Worktree is dirty (20 changed file(s)); closure-grade requires clean worktree
+
+worktree_guard
+  ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
+
+branch_head_recorded
+  ✅ HEAD 0c2a136 recorded in evidence README
+  ✅ Branch 'bl-workflow-002-worktree-brittleness' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v1
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ Schema change 'schemas/evidence_readme_contract.json' has examples and validation tests nearby (heuristic check)
+  ✅ Schema change 'schemas/final_handoff_contract.json' has examples and validation tests nearby (heuristic check)
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked
+
+browser_verification
+  ✅ Browser verification not required for this slice
+
+anti_brittleness_review
+  ✅ Evidence README contains anti-brittleness review markers
+
+human_override
+  ✅ No human override declared
+
+============================================================
+Summary: 37 pass, 0 warn, 1 fail, 0 override
+AUDIT RESULT: FAIL — closure-grade not met
+=== test_remote_closure_finalizer ===
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmp3ssmu7nj
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+PASS test_all_green
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpa0hvopis
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: no
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - Worktree is dirty:
+M file.txt
+
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Worktree is dirty:
+M file.txt
+
+PASS test_dirty_worktree_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpigfv43rf
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - Branch 'feature/remote-closure' not found on origin
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Branch 'feature/remote-closure' not found on origin
+PASS test_unpushed_branch_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpdpptuza_
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- remaining_risks:
+  - No open PR found for branch 'feature/remote-closure'
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ No open PR found for branch 'feature/remote-closure'
+PASS test_no_pr_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpbh2ucl4h
+- branch: feature/remote-closure
+- local_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- pr_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - PR body does not reference the current HEAD (use full SHA or explicit Proof head/Final PR head split)
+  - Evidence file docs/evidence/2026-06-29-remote-closure/manifest.json does not reference current HEAD (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e)
+  - Evidence file docs/evidence/2026-06-29-remote-closure/README.md does not reference current HEAD (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR body does not reference the current HEAD (use full SHA or explicit Proof head/Final PR head split)
+  ✗ Evidence file docs/evidence/2026-06-29-remote-closure/manifest.json does not reference current HEAD (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e)
+  ✗ Evidence file docs/evidence/2026-06-29-remote-closure/README.md does not reference current HEAD (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e)
+PASS test_pr_head_mismatch_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpzjwns8wf
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - PR body does not reference the current HEAD (use full SHA or explicit Proof head/Final PR head split)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR body does not reference the current HEAD (use full SHA or explicit Proof head/Final PR head split)
+PASS test_stale_pr_body_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpax1fxy1o
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+PASS test_pr_body_proof_final_split_passes
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     PENDING
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmp1ztkggct
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: PENDING
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - CI is still pending on current HEAD (PENDING)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ CI is still pending on current HEAD (PENDING)
+PASS test_ci_pending_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     FAILURE
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpp388l4k2
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: FAILURE
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - CI did not succeed on current HEAD (FAILURE)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ CI did not succeed on current HEAD (FAILURE)
+PASS test_ci_failure_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpqd3f4o3c
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - No GitHub Actions run found for current HEAD
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ No GitHub Actions run found for current HEAD
+PASS test_no_actions_run_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  BLOCKED
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmp2nt574jo
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: BLOCKED
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - mergeStateStatus is 'BLOCKED', expected one of {'MERGED', 'CLEAN', 'HAS_HOOKS'}
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ mergeStateStatus is 'BLOCKED', expected one of {'MERGED', 'CLEAN', 'HAS_HOOKS'}
+PASS test_merge_state_blocked_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpz44jngyh
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - Evidence file docs/evidence/2026-06-29-remote-closure/manifest.json does not reference current HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+  - Evidence file docs/evidence/2026-06-29-remote-closure/README.md does not reference current HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Evidence file docs/evidence/2026-06-29-remote-closure/manifest.json does not reference current HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+  ✗ Evidence file docs/evidence/2026-06-29-remote-closure/README.md does not reference current HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+PASS test_evidence_head_mismatch_fails
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmpwnxfiwgp
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+PASS test_evidence_proof_final_split_passes
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmp2wgelszt
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+PASS test_explicit_pr_number
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-07T21:10:17+02:00
+- repo_path: /tmp/tmp_62wx4l0
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+
+Wrote remote closure handoff: /tmp/tmp_62wx4l0/closure.json
+PASS test_writes_output_json
+=== diff_whitespace ===
+docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md:4: trailing whitespace.
++**Date:** 2026-07-07  
+docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md:7: trailing whitespace.
++**HEAD:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe  
+docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md:8: trailing whitespace.
++**Proof head:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe  
+docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md:9: trailing whitespace.
++**Final PR head:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe  
+=== runtime_truth_check ===
+==================================================
+StateDD Runtime Truth Check
+==================================================
+📸 Capturing current runtime...
+📖 Loading recorded runtime...
+🔍 Comparing...
+
+✅ RUNTIME IDENTITY MATCHES RECORDED
+==================================================
+=== evidence_type_check ===
+==================================================
+StateDD Evidence Type Check
+==================================================
+📝 Recent change: docs(state): record final CI run id for BL-SANITY-002 closure
+📁 Files: 2
+🔍 Detected type: docs
+📋 Required evidence: ['rendered_preview']
+  ✅ rendered_preview
+
+==================================================
+✅ ALL REQUIRED EVIDENCE PRESENT
+==================================================
+=== pytest ===
+.................................................................... [ 47%]
+........................................................................ [ 97%]
+....                                                                     [100%]
+144 passed, 4 subtests passed in 8.90s

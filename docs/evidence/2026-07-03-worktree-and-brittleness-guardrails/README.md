@@ -1,10 +1,13 @@
 # Evidence: Worktree Isolation + Anti-Brittleness Guardrails
 
 **Slice:** [BL-WORKFLOW-002] Worktree Isolation + Anti-Brittleness Guardrails  
-**Date:** 2026-07-03  
+**Date:** 2026-07-07  
 **Agent:** coding-agent  
 **Branch:** bl-workflow-002-worktree-brittleness  
-**HEAD:** 89ad0cebf5fd01c8b6ff49e1f79c2459c0e3a436
+**HEAD:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe  
+**Proof head:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe  
+**Final PR head:** 0c2a13639894cd799506a9a5e94ecb1f3a070ffe  
+**Closure state:** CI verified on PR #4; pending merge acceptance
 
 ## Claims
 
@@ -39,7 +42,7 @@
 
 | status | path | category | owner/notes |
 | --- | --- | --- | --- |
-| clean | not applicable | safe_to_discard_after_proof | Final validation should run from a committed clean worktree. |
+| clean | entire repo | not applicable | Worktree was clean at commit `0c2a136` before evidence artifacts were regenerated. |
 
 ## Anti-Brittleness Review
 
@@ -73,7 +76,8 @@
 ## Evidence Pack Manifest
 
 - Manifest: `manifest.json`
-- Redaction status: checked_with_limits
+- Verification log: `command_outputs/verification_log.txt`
+- Redaction status: checked
 
 ## Runtime Identity
 
@@ -94,10 +98,10 @@
 ## Closure State
 
 - Implemented: yes
-- Validated: pending
-- Global quality gates passed: pending
-- Closure-grade: pending PR/CI/remote closure
-- Accepted: pending
+- Validated: yes
+- Global quality gates passed: yes
+- Closure-grade: CI verified on PR #4
+- Accepted: pending merge acceptance
 
 ## Human Override
 
