@@ -30,19 +30,21 @@ evidence_folder
   ✅ Latest evidence folder: docs/evidence/2026-07-07-sanity-logic-repair
 
 evidence_readme
-  ❌ Latest evidence folder lacks README.md: docs/evidence/2026-07-07-sanity-logic-repair
+  ✅ Evidence README exists: docs/evidence/2026-07-07-sanity-logic-repair/README.md
+  ✅ Evidence README contains branch/head and claim markers
 
 evidence_size
-  ✅ Evidence folder has 5 files
+  ✅ Evidence folder has 8 files
 
 worktree_clean
-  ❌ Worktree is dirty (2 changed file(s)); closure-grade requires clean worktree
+  ❌ Worktree is dirty (3 changed file(s)); closure-grade requires clean worktree
 
 worktree_guard
   ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
 
 branch_head_recorded
-  ❌ Evidence folder README missing; cannot verify branch/head recording
+  ✅ HEAD 55d13e9 not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
+  ✅ Branch 'bl-workflow-002-worktree-brittleness' recorded in evidence README
 
 user_facing_evidence
   ✅ No user-facing file changes detected
@@ -59,17 +61,22 @@ schema_ownership
   ✅ Schema change 'schemas/final_handoff_contract.json' has examples and validation tests nearby (heuristic check)
 
 tests_recorded
-  ⚠️ No test commands provided and evidence README does not record test/build/lint results
+  ✅ Evidence README records test/build/lint results
 
 evidence_manifest
-  ❌ Strict audit requires manifest.json in the latest evidence folder
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked
 
 browser_verification
   ✅ Browser verification not required for this slice
 
 anti_brittleness_review
-  ⚠️ Cannot inspect anti-brittleness review without an evidence README
+  ✅ Evidence README contains anti-brittleness review markers
+
+human_override
+  ✅ No human override declared
 
 ============================================================
-Summary: 28 pass, 2 warn, 4 fail, 0 override
+Summary: 37 pass, 0 warn, 1 fail, 0 override
 AUDIT RESULT: FAIL — closure-grade not met
+exit: 1

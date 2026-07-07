@@ -7,3 +7,4 @@ StateDD Runtime Truth Check
 
 ✅ RUNTIME IDENTITY MATCHES RECORDED
 ==================================================
+exit: 0
