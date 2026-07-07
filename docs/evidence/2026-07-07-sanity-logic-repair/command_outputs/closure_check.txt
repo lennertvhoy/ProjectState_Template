@@ -5,7 +5,7 @@ StateDD Closure Check
 🔗 Checking for broken links...
   ✓ No broken internal links
 🖥️  Checking runtime proof...
-  ✓ Runtime identity present and complete
+  ✓ Runtime identity present and complete (docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json)
 📦 Checking evidence bundle...
   ✓ Evidence log has content
 🧊 Checking acceptance freezes...
@@ -25,20 +25,16 @@ Truth Boundaries:
   ✓ git_status: git status --short
   ✓ git_log: git log --oneline -8
   ✓ head_sha: git rev-parse HEAD
-  ✗ remote_contains_head: git ls-remote origin bl-workflow-002-worktree-brittleness
+  ✓ remote_contains_head: git ls-remote origin bl-workflow-002-worktree-brittleness
   ✓ github_visible: git ls-remote origin HEAD
 
-Failures (1):
-  ✗ Boundary 'remote_contains_head' failed: remote SHA d10df979710c2329bb103d23b536250b0e231acd != local HEAD a39d26dc95e3ad000e726832942c1314280ed467
-
-Closure Label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+Closure Label: GitHub-verified
 ============================================================
-❌ REMOTE TRUTH CHECK FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+✅ REMOTE TRUTH CHECK PASSED — GitHub-verified
 ⚡ Running efficiency check...
   ✓ Efficiency check passed
 
 ==================================================
-Failures:
-  ✗ Remote truth: Boundary 'remote_contains_head' failed: remote SHA d10df979710c2329bb103d23b536250b0e231acd != local HEAD a39d26dc95e3ad000e726832942c1314280ed467
+✅ ALL CLOSURE CRITERIA MET - Closure-grade
 ==================================================
-❌ CLOSURE CHECK FAILED - Not closure-grade
+exit: 0
