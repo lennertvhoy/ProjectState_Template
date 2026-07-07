@@ -42,7 +42,7 @@
 - `docs/evidence/2026-07-07-sanity-logic-repair/manifest.json`
 - `docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json`
 - PR #4: https://github.com/lennertvhoy/StateDD_Template/pull/4
-- GitHub Actions run: https://github.com/lennertvhoy/StateDD_Template/actions/runs/28889809293
+- GitHub Actions run: https://github.com/lennertvhoy/StateDD_Template/actions/runs/28889982468
 
 ### Notes
 - State files updated: BL-SANITY-002 moved to CLOSED in BACKLOG.md, NEXT_ACTIONS.md now tracks BL-WORKFLOW-002 re-validation, STATUS.md open failures cleared.
