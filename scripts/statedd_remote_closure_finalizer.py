@@ -118,7 +118,8 @@ def git_value(repo: Path, args: list[str], fallback: str | None = None) -> str |
 
 def parse_remote_url(url: str) -> tuple[str, str] | None:
     """Return (owner, repo) for a GitHub HTTPS or SSH URL."""
-    match = re.search(r"github\.com[/:]([^/]+)/([^/]+?)(?:\.git)?$", url)
+    cleaned = url.rstrip("/")
+    match = re.search(r"github\.com[/:]([^/]+)/([^/]+?)(?:\.git)?$", cleaned)
     if not match:
         return None
     return match.group(1), match.group(2)
@@ -155,7 +156,8 @@ def extract_marked_heads(text: str) -> dict[str, str]:
 class GitHubApi:
     """Minimal GitHub GraphQL client using `gh` when available, urllib fallback."""
 
-    def __init__(self, token: str | None = None):
+    def __init__(self, root: Path, token: str | None = None):
+        self.root = root
         self.token = token or os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
 
     def query(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
@@ -184,10 +186,23 @@ class GitHubApi:
                 # gh's --field applies magic type coercion for integers, booleans, null, etc.
                 args.extend(["-F", f"{key}={json.dumps(value)}"])
         args.extend(["-f", f"query={query}"])
-        code, out, err = run_command(args, Path.cwd())
-        if code != 0:
-            raise RuntimeError(err or out or "unknown gh error")
-        data = json.loads(out)
+        env = os.environ.copy()
+        if self.token:
+            env["GH_TOKEN"] = self.token
+        try:
+            completed = subprocess.run(
+                args,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                check=False,
+                env=env,
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(str(exc))
+        if completed.returncode != 0:
+            raise RuntimeError(completed.stderr or completed.stdout or "unknown gh error")
+        data = json.loads(completed.stdout)
         if data.get("errors"):
             raise RuntimeError(str(data["errors"]))
         return data.get("data", {})
@@ -227,7 +242,7 @@ class RemoteClosureFinalizer:
 
     def __post_init__(self) -> None:
         if self.github_client is None:
-            self.github_client = GitHubApi(self.github_token)
+            self.github_client = GitHubApi(self.root, self.github_token)
         self.failures: list[str] = []
         self.warnings: list[str] = []
         self.closure_label = "NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM"
@@ -397,9 +412,6 @@ class RemoteClosureFinalizer:
             if run and run.get("databaseId"):
                 self.ci_run_id = str(run["databaseId"])
                 self.ci_run_url = run.get("url")
-                return
-            if suite.get("databaseId"):
-                self.ci_run_id = str(suite["databaseId"])
                 return
 
     def _check_pr_head_agrees(self) -> None:

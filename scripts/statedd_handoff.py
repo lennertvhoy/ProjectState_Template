@@ -187,7 +187,12 @@ def main(argv: list[str] | None = None) -> int:
     topology_captured, topology_raw, linked_worktrees = worktree_topology(repo)
     dirty_classified = dirty_classification_status(repo, changed_files)
     github_visible = github_visible_deliverables(local_equals_upstream, changed_files)
-    local_only_claimed = "yes" if changed_files or local_equals_upstream == "no" else "no"
+    if changed_files or local_equals_upstream == "no":
+        local_only_claimed = "yes"
+    elif local_equals_upstream == "yes":
+        local_only_claimed = "no"
+    else:
+        local_only_claimed = "not proven"
 
     print("# StateDD Handoff Snapshot")
     print()

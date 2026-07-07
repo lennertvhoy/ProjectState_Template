@@ -159,6 +159,43 @@ def test_linked_worktrees_are_printed() -> None:
         assert_contains(completed.stdout, str(linked))
 
 
+def test_unknown_do_not_touch_blocks_start() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        (repo / "local.txt").write_text("dirty\n", encoding="utf-8")
+        evidence = repo / "docs" / "evidence" / "slice" / "README.md"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text(
+            """# Evidence
+
+## Worktree Dirty File Classification
+
+| status | path | category | owner/notes |
+| --- | --- | --- | --- |
+| ?? | `local.txt` | unknown_do_not_touch | dangerous legacy file |
+| ?? | `docs/evidence/slice/README.md` | intended_slice_work | classification evidence |
+""",
+            encoding="utf-8",
+        )
+        completed = run(
+            ["--repo", str(repo), "--mode", "start-slice", "--classification-file", str(evidence)],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(completed.stdout, "safe to start: no")
+        assert_contains(completed.stdout, "do-not-touch")
+
+
+def test_feature_branch_is_not_shared_default() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        git(repo, "checkout", "-b", "feature-x")
+        git(repo, "push", "-u", "origin", "feature-x")
+        (repo / "local.txt").write_text("dirty\n", encoding="utf-8")
+        completed = run(["--repo", str(repo), "--mode", "start-slice"], cwd=repo, expect_code=1)
+        assert_contains(completed.stdout, "current branch is shared/default branch: no")
+
+
 def main() -> int:
     tests = [
         test_clean_repo_passes_start_slice,
@@ -169,6 +206,8 @@ def main() -> int:
         test_detached_head_and_missing_origin_are_reported_not_proven,
         test_classify_dirty_prints_template_table,
         test_linked_worktrees_are_printed,
+        test_unknown_do_not_touch_blocks_start,
+        test_feature_branch_is_not_shared_default,
     ]
     for test in tests:
         test()

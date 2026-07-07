@@ -89,6 +89,16 @@ def test_new_rejects_symlinked_existing_directory() -> None:
         assert_no_external_files(outside)
 
 
+def test_new_rejects_template_root() -> None:
+    completed = run_init(
+        ["new", "--name", "Template Root", "--target", str(ROOT)],
+        expect_success=False,
+    )
+    output = f"{completed.stdout}\n{completed.stderr}".lower()
+    if "template root" not in output:
+        raise AssertionError(f"Expected template-root refusal, got:\n{output}")
+
+
 def test_readme_link_rejects_symlinked_readme_before_writes() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)

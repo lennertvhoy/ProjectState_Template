@@ -63,7 +63,6 @@ BROWSER_VERIFICATION_FILE = "browser_verification.json"
 RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
 EVIDENCE_MANIFEST_FILE = "manifest.json"
 EVIDENCE_MANIFEST_SCHEMA = "statedd.evidence_manifest.v1"
-BROWSER_VERIFICATION_FILE = "browser_verification.json"
 BROWSER_VERIFICATION_SCHEMA = "statedd.browser_verification.v1"
 VALID_BROWSER_PROVIDERS = {
     "kimi_webbridge",
@@ -139,6 +138,14 @@ def read_optional(path: Path) -> str:
 def extract_scalar(text: str, key: str) -> str | None:
     match = re.search(rf'^\s*{re.escape(key)}:\s*"?([^"\n#]+)"?\s*$', text, re.MULTILINE)
     return match.group(1).strip() if match else None
+
+
+SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b", re.IGNORECASE)
+
+
+def extract_sha_refs(text: str) -> set[str]:
+    """Return all 7-40 character hex strings that look like git SHAs."""
+    return set(SHA_RE.findall(text.lower()))
 
 
 def repo_context(root: Path) -> tuple[str | None, str | None]:
@@ -364,7 +371,7 @@ def check_worktree_guard_available(repo: Path, result: AuditResult) -> None:
         )
 
 
-def check_branch_head_recorded(repo: Path, result: AuditResult) -> None:
+def check_branch_head_recorded(repo: Path, result: AuditResult, strict: bool) -> None:
     branch, head = git_branch_and_head(repo)
     folder = latest_evidence_folder(repo)
     if folder is None:
@@ -385,35 +392,36 @@ def check_branch_head_recorded(repo: Path, result: AuditResult) -> None:
         return
 
     text = readme.read_text(encoding="utf-8")
-    head_like = re.search(r"\b[0-9a-f]{7,40}\b", text, re.IGNORECASE)
-    if head_like:
-        recorded = head_like.group(0)
-        if recorded == head[:7] or recorded == head:
-            result.add("branch_head_recorded", "pass", f"HEAD {head[:7]} recorded in evidence README")
-        else:
-            result.add(
-                "branch_head_recorded",
-                "pass",
-                f"HEAD {head[:7]} recorded in git; evidence README records {recorded[:7]} (acceptable if README was written before the final commit)",
-            )
+    recorded_heads = extract_sha_refs(text)
+    head_match = head in recorded_heads or head[:7] in recorded_heads
+    if head_match:
+        result.add("branch_head_recorded", "pass", f"HEAD {head[:7]} recorded in evidence README")
     else:
+        status = "fail" if strict else "warn"
         result.add(
             "branch_head_recorded",
-            "fail",
-            f"HEAD {head[:7]} not found in evidence README; record current HEAD before closure",
+            status,
+            f"HEAD {head[:7]} not found in evidence README; record current HEAD or a Proof head/Final PR head split before closure",
         )
     if branch in text:
         result.add("branch_head_recorded", "pass", f"Branch '{branch}' recorded in evidence README")
     else:
+        status = "fail" if strict else "warn"
         result.add(
             "branch_head_recorded",
-            "fail",
+            status,
             f"Branch '{branch}' not found in evidence README",
         )
 
 
 def changed_files_in_slice(repo: Path) -> list[str]:
-    """Return files changed relative to HEAD (uncommitted) or the last commit."""
+    """Return files changed in the current slice.
+
+    If the worktree is dirty, return the uncommitted files. If the worktree is
+    clean, return the files on the current branch since it diverged from the
+    default branch (e.g. origin/main). If no default branch can be determined,
+    return an empty list rather than guessing from the last commit.
+    """
     code, status, _ = run_command(["git", "status", "--short"], repo)
     if code != 0:
         return []
@@ -422,12 +430,25 @@ def changed_files_in_slice(repo: Path) -> list[str]:
         line = line.strip()
         if not line:
             continue
+        # Porcelain status is two characters followed by a space; the path starts
+        # at column 3. Rename lines look like "R  old -> new".
         if len(line) >= 3 and line[1] in "MARD":
-            files.append(line[3:])
+            path_part = line[3:]
+            if line[0] == "R" and " -> " in path_part:
+                path_part = path_part.split(" -> ", 1)[1]
+            files.append(path_part)
     if files:
         return files
-    # If worktree is clean, inspect the most recent commit.
-    code, stdout, _ = run_command(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"], repo)
+
+    # Worktree is clean; diff against the merge-base with the default branch.
+    code, default_branch, _ = run_command(["git", "rev-parse", "--abbrev-ref", "origin/HEAD"], repo)
+    if code != 0 or not default_branch:
+        return []
+    base = default_branch.strip()
+    code, merge_base, _ = run_command(["git", "merge-base", "HEAD", base], repo)
+    if code != 0 or not merge_base:
+        return []
+    code, stdout, _ = run_command(["git", "diff", "--name-only", f"{merge_base.strip()}..HEAD"], repo)
     if code == 0:
         return [line.strip() for line in stdout.splitlines() if line.strip()]
     return []
@@ -1095,7 +1116,7 @@ def main(argv: list[str] | None = None) -> int:
     check_evidence_folder(root, result)
     check_worktree_clean(root, result)
     check_worktree_guard_available(root, result)
-    check_branch_head_recorded(root, result)
+    check_branch_head_recorded(root, result, args.strict)
     check_user_facing_evidence(root, result, args.strict)
     check_runtime_identity(root, result, args.strict)
     check_schema_validation(root, result)

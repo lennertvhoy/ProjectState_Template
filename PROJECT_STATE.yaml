@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-03T20:35:00+02:00
+  updated_at: 2026-07-07T19:25:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -16,7 +16,8 @@ workflow:
     downstream_default_mode: bootstrap
     unknowns_remaining:
       - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is active
+      - BL-SANITY-002 template logic-hole repair is implemented; PR/CI closure pending
+      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is queued for re-validation after BL-SANITY-002
       - BL-BROWSER-002 concrete browser automation provider integration is deferred until BL-WORKFLOW-002 closes
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
@@ -405,4 +406,28 @@ current_state:
         status: observed
         path: docs/adr/0000-adr-template.md
 
-active_problems: []
+active_problems:
+  - id: BL-SANITY-002
+    title: Repair template logic holes discovered by 2026-07-07 ultra-critical sanity check
+    severity: P0
+    opened_at: 2026-07-07T19:25:00+02:00
+    files:
+      - scripts/statedd_audit.py
+      - scripts/statedd_doctor.py
+      - scripts/statedd_handoff.py
+      - scripts/statedd_runtime_proof.py
+      - scripts/statedd_runtime_truth_check.py
+      - scripts/statedd_closure_check.py
+      - scripts/statedd_worktree_guard.py
+      - scripts/statedd_brittleness_check.py
+      - scripts/init_template.py
+      - scripts/statedd_upgrade.py
+      - scripts/statedd_browser_verify.py
+      - scripts/statedd_remote_closure_finalizer.py
+      - scripts/statedd_post_merge_verify.py
+      - scripts/statedd_probe_guidance.py
+    summary: |
+      The sanity check found critical false-positive closure-grade paths, incompatible
+      runtime_identity.json schemas, weak worktree/brittleness guards, and unsafe file
+      operations across the template scripts. These must be repaired before any
+      closure-grade handoff.

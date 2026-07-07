@@ -188,6 +188,24 @@ def test_report_writes_json() -> None:
             raise AssertionError("Report has unexpected schema")
 
 
+def test_report_reflects_dry_run_value() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "older"
+        dry_report = Path(tmp) / "dry_report.json"
+        applied_report = Path(tmp) / "applied_report.json"
+        run_init(["new", "--name", "Older Demo", "--target", str(target)])
+
+        run_upgrade([str(target), "--report", str(dry_report)], expect_success=True)
+        dry_data = json.loads(dry_report.read_text(encoding="utf-8"))
+        if dry_data.get("dry_run") is not True:
+            raise AssertionError("Dry-run report should state dry_run: true")
+
+        run_upgrade([str(target), "--apply", "--report", str(applied_report)], expect_success=True)
+        applied_data = json.loads(applied_report.read_text(encoding="utf-8"))
+        if applied_data.get("dry_run") is not False:
+            raise AssertionError("Applied upgrade report should state dry_run: false")
+
+
 def main() -> int:
     tests = [
         test_dry_run_on_current_repo_refuses_template_root,
@@ -199,6 +217,7 @@ def main() -> int:
         test_force_managed_replaces_outdated_safe_asset,
         test_force_managed_never_overwrites_truth_files,
         test_report_writes_json,
+        test_report_reflects_dry_run_value,
     ]
     for test in tests:
         test()

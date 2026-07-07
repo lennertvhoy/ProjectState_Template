@@ -2,6 +2,48 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-07 - Template logic-hole repair (BL-SANITY-002)
+
+**Type:** template_maintenance_repair
+**Status:** CLOSURE_PENDING_PR_CI
+**Git Head:** d10df979710c2329bb103d23b536250b0e231acd before repair commits; final HEAD to be recorded after commit/push
+**Worktree:** clean after repair commits; evidence folder to be committed
+**Gate Level:** 2 (slice closure pending PR/CI/remote closure)
+
+### What changed
+- Integrated BL-SANITY-002 into `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `docs/EVIDENCE_LOG.md`, and `docs/failure_scans/BL-SANITY-002.md`.
+- Hardened `scripts/statedd_audit.py` to require the current HEAD in evidence (or an explicit proof/final split) and to compute changed files from the merge-base with the default branch instead of the last commit.
+- Fixed `scripts/statedd_doctor.py` to count real open blockers from `PROJECT_STATE.yaml` instead of `NEXT_ACTIONS.md` headings.
+- Fixed `scripts/statedd_handoff.py` to report `local-only files claimed: not proven` when upstream state is unknown.
+- Hardened `scripts/statedd_worktree_guard.py` to reject `unknown_do_not_touch` classifications and to stop labeling ordinary tracked feature branches as shared/default.
+- Added legacy compatibility fields to `scripts/statedd_runtime_proof.py` so `statedd_runtime_truth_check.py` and `statedd_closure_check.py` accept the canonical `runtime_identity.json`; tightened endpoint reachability to HTTP 2xx/3xx; made artifact writes atomic.
+- Fixed `statedd_runtime_truth_check.py` to capture the full git HEAD instead of a 12-character prefix.
+- Hardened `scripts/init_template.py` to refuse `new --target <template-root>`.
+- Hardened `scripts/statedd_upgrade.py` with target-path traversal guards and fixed the JSON report to reflect the actual `--apply`/`--dry-run` mode.
+- Hardened `scripts/statedd_browser_verify.py` to reject artifact paths that escape the evidence directory.
+- Fixed `scripts/statedd_remote_closure_finalizer.py` to run `gh` from the repo root, honor `--github-token` via the `GH_TOKEN` environment variable, and avoid using the check-suite databaseId as a workflow run id.
+- Fixed `scripts/statedd_post_merge_verify.py` to declare the `$sha` GraphQL variable and to fetch the default branch before checking merge ancestry.
+- Hardened `scripts/statedd_probe_guidance.py` to run probes in an isolated temporary copy of the repo instead of polluting the original worktree.
+- Added regression tests for the above in `scripts/test_worktree_guard.py`, `scripts/test_init_template.py`, `scripts/test_upgrade.py`, and `scripts/test_browser_verification.py`.
+
+### Verification
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 -m pytest scripts/test_*.py -q` passed: 144 passed, 4 subtests passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/test_upgrade.py` passed.
+- `python3 scripts/test_browser_verification.py` passed.
+- `python3 scripts/statedd_doctor.py` reports `Open blockers: 1` (BL-SANITY-002 active problem) and `Closure grade: fail` because the worktree is dirty and the latest evidence README records the pre-repair HEAD.
+
+### Evidence
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-07-001`
+- `docs/failure_scans/BL-SANITY-002.md`
+
+### Notes
+- State files updated: BL-SANITY-002 moved to CLOSED in BACKLOG.md, NEXT_ACTIONS.md now tracks BL-WORKFLOW-002 re-validation, STATUS.md open failures cleared.
+- The remaining closure steps for BL-SANITY-002 are: create evidence folder matching the final HEAD, commit it, push branch, open PR, verify CI, and run `scripts/statedd_remote_closure_finalizer.py`.
+- BL-WORKFLOW-002 should be re-validated after BL-SANITY-002 closes.
+
 ## 2026-07-03 - Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
 
 **Type:** template_maintenance_capability

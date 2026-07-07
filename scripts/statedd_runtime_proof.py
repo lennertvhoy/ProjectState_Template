@@ -15,8 +15,10 @@ import hashlib
 import ipaddress
 import json
 import os
+import platform
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -25,6 +27,33 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = "statedd.runtime_identity.v1"
+
+
+def runtime_identity_compat_block(head: str | None = None) -> dict[str, object]:
+    """Return legacy top-level fields kept for consumers still using the v0 layout."""
+    block: dict[str, object] = {
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
+        "os": platform.system(),
+        "os_version": platform.version(),
+        "kernel": platform.release(),
+        "arch": platform.machine(),
+        "python": platform.python_version(),
+        "hostname": platform.node(),
+        "git_head": head or "not proven",
+        "in_container": Path("/.dockerenv").exists(),
+    }
+    if block["in_container"]:
+        try:
+            cgroup = Path("/proc/self/cgroup").read_text()
+            if "docker" in cgroup:
+                block["container_runtime"] = "docker"
+            elif "kubepods" in cgroup:
+                block["container_runtime"] = "kubernetes"
+            else:
+                block["container_runtime"] = "unknown"
+        except OSError:
+            block["container_runtime"] = "unknown"
+    return block
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
@@ -335,19 +364,21 @@ def output_path(args: argparse.Namespace) -> Path:
 
 
 def build_not_applicable_artifact(repo: Path, reason: str) -> dict[str, object]:
+    repo_info = repo_block(repo)
     return {
         "schema": SCHEMA,
         "captured_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
-        "repo": repo_block(repo),
+        "repo": repo_info,
         "runtime": {
             "required": False,
             "reason": reason,
         },
         "checks": {
             "runtime_not_applicable_recorded": True,
-            "head_recorded": bool(git_value(repo, ["rev-parse", "HEAD"])),
+            "head_recorded": bool(repo_info.get("head")),
         },
         "limits": [],
+        **runtime_identity_compat_block(repo_info.get("head")),
     }
 
 
@@ -360,16 +391,18 @@ def build_url_artifact(args: argparse.Namespace, repo: Path) -> tuple[dict[str, 
         process, process_limits, duplicate_checked = detect_process(port, repo, args.process_name)
     else:
         process, process_limits, duplicate_checked = remote_process_not_applicable(url)
-    endpoint_reachable = probe.get("http_status") is not None and int(probe["http_status"]) < 500
+    http_status = probe.get("http_status")
+    endpoint_reachable = http_status is not None and 200 <= int(http_status) < 400
     cwd_matches = None
     if isinstance(process, dict):
         cwd_matches = process.get("cwd_matches_repo")
     limits = [*probe_limits, *process_limits]
+    repo_info = repo_block(repo)
 
     artifact = {
         "schema": SCHEMA,
         "captured_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
-        "repo": repo_block(repo),
+        "repo": repo_info,
         "runtime": {
             "required": True,
             "kind": args.kind,
@@ -380,18 +413,30 @@ def build_url_artifact(args: argparse.Namespace, repo: Path) -> tuple[dict[str, 
         "checks": {
             "endpoint_reachable": endpoint_reachable,
             "process_cwd_matches_repo": cwd_matches if cwd_matches is not None else "unknown",
-            "head_recorded": bool(git_value(repo, ["rev-parse", "HEAD"])),
+            "head_recorded": bool(repo_info.get("head")),
             "duplicate_runtime_checked": duplicate_checked,
             "process_detected": bool(process.get("detected")) if isinstance(process, dict) else False,
         },
         "limits": limits,
+        **runtime_identity_compat_block(repo_info.get("head")),
     }
     return artifact, 0 if endpoint_reachable else 1
 
 
 def write_artifact(path: Path, artifact: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    payload = json.dumps(artifact, indent=2, sort_keys=True) + "\n"
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(payload)
+        os.replace(tmp, path)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def main(argv: list[str] | None = None) -> int:

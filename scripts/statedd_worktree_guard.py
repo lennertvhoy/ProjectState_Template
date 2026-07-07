@@ -216,10 +216,6 @@ def shared_or_default_branch(ctx: GitContext) -> str:
         return "not proven"
     if ctx.default_branch != "not proven" and ctx.branch == ctx.default_branch:
         return "yes"
-    if ctx.upstream_branch != "not proven":
-        return "yes"
-    if ctx.same_name_origin_head != "not proven":
-        return "yes"
     return "no"
 
 
@@ -354,7 +350,16 @@ def evaluate_start_slice(ctx: GitContext, classifications: dict[str, str]) -> tu
                 "Dirty files are not fully classified; run --mode classify-dirty and record the table in evidence before edits."
             )
         else:
-            warnings.append("Dirty files are classified; preserve category boundaries and do not touch unrelated dirt.")
+            do_not_touch = [
+                path for path in dirty_paths
+                if "do_not_touch" in classifications.get(path, "")
+            ]
+            if do_not_touch:
+                problems.append(
+                    f"Dirty files classified as do-not-touch cannot be part of a slice: {', '.join(do_not_touch)}"
+                )
+            else:
+                warnings.append("Dirty files are classified; preserve category boundaries and do not touch unrelated dirt.")
         if shared_or_default_branch(ctx) == "yes":
             warnings.append("Current branch is shared/default and dirty; prefer an isolated branch/worktree for non-trivial work.")
 

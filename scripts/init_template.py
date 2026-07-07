@@ -1866,6 +1866,11 @@ def main(argv: list[str] | None = None) -> int:
     profile = validate_profile("minimal" if getattr(args, "minimal", False) else args.profile)
 
     if args.command == "new":
+        if target == TEMPLATE_ROOT:
+            raise SystemExit(
+                "Refusing to initialize into the template root itself. "
+                "Choose a different target directory."
+            )
         copy_template_tree(
             TEMPLATE_ROOT,
             target,

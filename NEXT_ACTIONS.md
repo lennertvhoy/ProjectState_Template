@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-07-03
+**Updated At:** 2026-07-07
 **Execution Mode:** template-maintenance
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-WORKFLOW-002] Worktree Isolation + Anti-Brittleness Guardrails
+### P0 [BL-WORKFLOW-002] Re-validate Worktree Isolation and Anti-Brittleness Guardrails
 Owner: coding agent
-Next: finish implementation, evidence, validation, PR, CI, and remote closure for the reusable worktree guard and anti-brittleness gate
-Exit: downstream template propagation includes the new guardrails, tests pass, evidence is recorded, and PR/CI agree on the final head
+Next: re-run the full closure sequence for BL-WORKFLOW-002 after the BL-SANITY-002 logic repairs: verify evidence matches final HEAD, push branch if needed, confirm PR/CI green, and run `scripts/statedd_remote_closure_finalizer.py`
+Exit: BL-WORKFLOW-002 is closure-grade with GitHub-visible CI success and remote closure agreement
 
 ## Queue Rules
 

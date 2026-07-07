@@ -30,6 +30,51 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-07-07-001: Template logic-hole repair failure scan (BL-SANITY-002)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
+- File: /home/ff/Documents/Projects/StateDD_Template/STATUS.md
+- File: /home/ff/Documents/Projects/StateDD_Template/NEXT_ACTIONS.md
+- File: /home/ff/Documents/Projects/StateDD_Template/BACKLOG.md
+- File: /home/ff/Documents/Projects/StateDD_Template/PROJECT_STATE.yaml
+- Title: BL-SANITY-002 failure scan and state integration
+- Source/System: code review
+- Action: Performed an ultra-critical sanity check, identified critical logic holes, integrated BL-SANITY-002 into backlog/state, and produced a failure scan with mitigations.
+- Shows:
+  - `scripts/statedd_audit.py`, `scripts/statedd_doctor.py`, `scripts/statedd_handoff.py` have false-pass paths
+  - `scripts/statedd_runtime_proof.py` and its consumers disagree on `runtime_identity.json` schema
+  - `scripts/statedd_worktree_guard.py` and `scripts/statedd_brittleness_check.py` have weak guards
+  - `scripts/init_template.py`, `scripts/statedd_upgrade.py`, `scripts/statedd_browser_verify.py`, `scripts/statedd_remote_closure_finalizer.py`, `scripts/statedd_post_merge_verify.py`, `scripts/statedd_probe_guidance.py` have unsafe or brittle behavior
+- Proves:
+  - The failures are recorded as active P0 problems and linked to a backlog item with a failure scan
+- Type: known_bad_event
+- as_of: 2026-07-07T19:25:00+02:00
+- Notes: Implementation repairs completed in BL-SANITY-002; see EV-2026-07-07-002 for closure evidence.
+
+## EV-2026-07-07-002: Template logic-hole repair closure evidence (BL-SANITY-002)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
+- Title: BL-SANITY-002 template logic-hole repair and regression tests
+- Source/System: test
+- Action: Repaired the critical logic holes discovered by the 2026-07-07 ultra-critical sanity check and added regression tests; ran the full StateDD gate suite.
+- Shows:
+  - `python3 scripts/check_state_docs.py` passes
+  - `python3 scripts/statedd_validate_schema.py` passes
+  - `python3 scripts/statedd_quality_gate.py --gate-level 2` passes
+  - `python3 scripts/statedd_audit.py --strict` passes on the clean worktree
+  - `python3 scripts/statedd_closure_check.py` passes
+  - `python3 scripts/statedd_runtime_truth_check.py` passes
+  - `python3 -m pytest scripts/test_*.py -q` passes: 144 passed, 4 subtests passed
+- Proves:
+  - The identified false-pass, schema-mismatch, worktree/brittleness, and unsafe-file-operation holes are fixed
+  - The fixes are guarded by regression tests
+- Type: test
+- as_of: 2026-07-07T19:25:00+02:00
+- Notes: Closure pending PR/CI verification and remote closure finalizer.
+
 ## EV-2026-07-03-001: Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md

@@ -42,7 +42,7 @@ class RuntimeTruthCheck:
                 cwd=self.root, capture_output=True, text=True, timeout=5
             )
             if result.returncode == 0:
-                identity["git_head"] = result.stdout.strip()[:12]
+                identity["git_head"] = result.stdout.strip()
             result = subprocess.run(
                 ["git", "branch", "--show-current"],
                 cwd=self.root, capture_output=True, text=True, timeout=5
