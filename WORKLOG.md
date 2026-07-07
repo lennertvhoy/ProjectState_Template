@@ -2,6 +2,49 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-07 - Parallel-Agent Worktree Orchestrator (BL-PARALLEL-001)
+
+**Type:** template_maintenance_feature
+**Status:** LOCAL_CLOSURE_GRADE
+**Git Head:** 0e0af8f96ac211871c2f03663fed154ddf00899e on branch bl-workflow-002-worktree-brittleness
+**Worktree:** clean
+**Gate Level:** 2 (slice closure) / local closure verified; remote closure pending push/PR/CI
+
+### What changed
+- Added `scripts/statedd_agent_worktree.py` orchestrator with `start`, `guard`, `handoff`, `close`, `cleanup`, and `list` subcommands.
+- Provisions isolated per-agent branches, worktrees under `.worktrees/`, and atomic reservation refs under `refs/statedd/reservations/`.
+- Detects git lock contention (`index.lock`, `config.lock`) and fails fast with bounded optional `--wait` polling; never deletes lock files.
+- Enforces safe worktree removal only under `<repo-root>/.worktrees/`.
+- Made `scripts/statedd_worktree_guard.py` agent-context-aware via `--agent-context` / auto-detect `.statedd/agent.context`; suppressed shared/default branch check and relaxed unclassified-dirt handling in agent context.
+- Made `scripts/statedd_handoff.py` report `agent_id`, `slice_id`, `worktree_path`, `reservation_ref`, and `worktree_owner` when in an agent worktree.
+- Made `scripts/statedd_audit.py` agent-context-aware: relaxed `worktree_clean` for classified slice dirt, `changed_files_in_slice` diffs from the agent branch base, and `latest_evidence_folder` prefers matching `slice_id`.
+- Made `scripts/statedd_closure_check.py` skip the dirty-worktree failure when dirt is classified slice work in agent context.
+- Made `scripts/statedd_remote_closure_finalizer.py` reject PR branch mismatches and re-check remote HEAD before declaring closure to catch interleaved pushes.
+- Added `scripts/test_agent_worktree.py` with 8 regression tests covering start, double-reservation, guard, lock detection, handoff, close, cleanup, and audit-in-agent-context.
+- Updated `.github/workflows/validate.yml` to compile and run the new test file and run a dry-run smoke test.
+- Propagated the new assets through `scripts/init_template.py` and `scripts/statedd_upgrade.py`.
+- Updated state/docs: `AGENTS.md` Parallel-Agent Invariant, `BACKLOG.md`, `NEXT_ACTIONS.md`, `PROJECT_STATE.yaml`, `docs/failure_scans/BL-PARALLEL-001.md`, `skills/close-slice/SKILL.md`, `prompts/CODING_AGENT_STARTUP_PROMPT.md`.
+
+### Verification
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_validate_schema.py` passed.
+- `python3 -m pytest scripts/ -q` passed: 152 passed, 4 subtests passed.
+- `python3 scripts/test_init_template.py` passed.
+- `python3 scripts/statedd_efficiency_check.py --gate-level 2` passed.
+- `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-07-07-parallel-agent-worktree` passed.
+- `python3 scripts/statedd_audit.py --strict` passed with `AUDIT RESULT: PASS — closure-grade`.
+- `python3 scripts/statedd_doctor.py` reports `Closure grade: pass` and `Evidence manifest: valid`.
+
+### Evidence
+- `docs/failure_scans/BL-PARALLEL-001.md`
+- `docs/evidence/2026-07-07-parallel-agent-worktree/README.md`
+- `docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json`
+- `docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json`
+
+### Notes
+- Local commit `0e0af8f` is ahead of remote `dadf4ad` on `bl-workflow-002-worktree-brittleness`.
+- Remote closure (push, PR, GitHub Actions, `statedd_remote_closure_finalizer.py`) is pending explicit approval for the outward-facing push.
+
 ## 2026-07-07 - Template logic-hole repair (BL-SANITY-002)
 
 **Type:** template_maintenance_repair

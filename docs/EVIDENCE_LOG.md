@@ -485,3 +485,25 @@
 - Type: implementation
 - as_of: 2026-06-29T10:22:31+02:00
 - Notes: Final PR head recorded in evidence and PR body.
+
+## EV-2026-07-07-003: Parallel-Agent Worktree Orchestrator (BL-PARALLEL-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-PARALLEL-001.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json
+- Title: First-class concurrent-agent worktree isolation
+- Source/System: test
+- Action: Implemented scripts/statedd_agent_worktree.py, updated existing scripts for agent-context awareness, added regression tests and CI smoke test, and updated state/docs/skills/prompts.
+- Shows:
+  - `python3 -m pytest scripts/test_agent_worktree.py -v` passed (8 tests)
+  - `python3 -m pytest scripts/ -q` passed (152 passed, 4 subtests passed)
+  - `python3 scripts/statedd_audit.py --strict` passed with closure-grade
+  - `python3 scripts/statedd_doctor.py` reports `Closure grade: pass`
+- Proves:
+  - Multiple coding agents can provision isolated branches/worktrees without collision
+  - Existing StateDD gates recognize agent context and adjust single-agent checks
+  - Git lock contention is reported, not ignored or corrupted
+- Type: implementation
+- as_of: 2026-07-07T22:45:00+02:00
+- Notes: Local closure verified; remote push/PR/CI pending explicit approval.
