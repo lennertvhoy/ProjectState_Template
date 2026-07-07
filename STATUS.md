@@ -12,7 +12,7 @@
 - BL-007 public usability polish, BL-BROWSER-001 provider-agnostic browser verification, BL-QUALITY-001 quality firewall hardening, and BL-REMOTE-CLOSURE-001 remote CI/CD closure finalizer are accepted as template capabilities; browser verification is provider-agnostic with Kimi WebBridge preferred.
 - StateDD now treats handoffs as claims, separates repo truth from runtime truth, requires downstream quality gates, and requires GitHub-visible CI success plus a clean merge state before closure-grade handoffs.
 - Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, the bootstrap wizard, provider-agnostic browser verification, the remote closure finalizer, worktree isolation guard, and anti-brittleness guard remain template capabilities.
-- BL-SANITY-002 repair of template logic holes is implemented and closure-grade pending PR/CI verification. BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is queued for re-validation after BL-SANITY-002 closes. BL-BROWSER-002 concrete browser automation provider integration is deferred and is not a release blocker.
+- BL-SANITY-002 repair of template logic holes is closure-grade and CI-verified on PR #4 (bdb621c), pending merge acceptance. BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is queued for re-validation after BL-SANITY-002 merges. BL-BROWSER-002 concrete browser automation provider integration is deferred and is not a release blocker.
 
 ## Product Truth
 
@@ -36,12 +36,12 @@
 ## What Is Not Proven
 
 - Whether the 2026-07-07 sanity-check findings were exhaustive.
-- CI green on the BL-SANITY-002 PR (pending remote verification).
+- PR #4 merge acceptance.
 - Downstream repos have not yet upgraded to the BL-WORKFLOW-002 guardrails.
 
 ## Immediate Priorities
 
-1. Finish PR/CI closure for BL-SANITY-002.
+1. Merge BL-SANITY-002 PR #4 after review.
 2. Re-validate BL-WORKFLOW-002 evidence, PR, CI, and remote closure.
 3. Resume BL-BROWSER-002 concrete browser automation provider integration after the above close.
 

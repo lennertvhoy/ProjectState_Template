@@ -16,8 +16,8 @@ workflow:
     downstream_default_mode: bootstrap
     unknowns_remaining:
       - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - BL-SANITY-002 template logic-hole repair is implemented; PR/CI closure pending
-      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is queued for re-validation after BL-SANITY-002
+      - BL-SANITY-002 template logic-hole repair is closure-grade and CI-verified on PR #4; merge pending
+      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is queued for re-validation after BL-SANITY-002 merges
       - BL-BROWSER-002 concrete browser automation provider integration is deferred until BL-WORKFLOW-002 closes
       - downstream upgrade semantic merges of customized workflow files not yet supported
 

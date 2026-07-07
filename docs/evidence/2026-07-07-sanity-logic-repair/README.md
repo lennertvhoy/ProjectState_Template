@@ -6,8 +6,8 @@
 **Branch:** bl-workflow-002-worktree-brittleness  
 **HEAD:** a39d26dc95e3ad000e726832942c1314280ed467  
 **Proof head:** a39d26dc95e3ad000e726832942c1314280ed467  
-**Final PR head:** b1b00f3b0328b42bd15c7868f4ea9815aa5e6551  
-**Closure state:** PR/CI pending
+**Final PR head:** bdb621cce6499d0114d02ef4f1b25946a9d05874  
+**Closure state:** CI verified on PR #4; pending merge acceptance
 
 ## Claims
 
@@ -122,8 +122,8 @@
 - Implemented: yes
 - Validated: yes
 - Global quality gates passed: yes
-- Closure-grade: pending PR/CI verification
-- Accepted: pending
+- Closure-grade: yes
+- Accepted: pending merge acceptance
 
 ## Human Override
 

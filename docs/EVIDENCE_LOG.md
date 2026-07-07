@@ -72,8 +72,8 @@
   - The identified false-pass, schema-mismatch, worktree/brittleness, and unsafe-file-operation holes are fixed
   - The fixes are guarded by regression tests
 - Type: test
-- as_of: 2026-07-07T19:25:00+02:00
-- Notes: Closure pending PR/CI verification and remote closure finalizer.
+- as_of: 2026-07-07T20:38:00+02:00
+- Notes: Closure-grade and CI-verified on PR #4 (head bdb621cce6499d0114d02ef4f1b25946a9d05874); merge pending human acceptance.
 
 ## EV-2026-07-03-001: Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
 

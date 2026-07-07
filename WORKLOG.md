@@ -5,10 +5,10 @@
 ## 2026-07-07 - Template logic-hole repair (BL-SANITY-002)
 
 **Type:** template_maintenance_repair
-**Status:** CLOSURE_PENDING_PR_CI
-**Git Head:** d10df979710c2329bb103d23b536250b0e231acd before repair commits; final HEAD to be recorded after commit/push
-**Worktree:** clean after repair commits; evidence folder to be committed
-**Gate Level:** 2 (slice closure pending PR/CI/remote closure)
+**Status:** CLOSURE_GRADE_CI_VERIFIED
+**Git Head:** bdb621cce6499d0114d02ef4f1b25946a9d05874 on branch bl-workflow-002-worktree-brittleness
+**Worktree:** clean
+**Gate Level:** 2 (slice closure) / remote closure verified
 
 ### What changed
 - Integrated BL-SANITY-002 into `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `docs/EVIDENCE_LOG.md`, and `docs/failure_scans/BL-SANITY-002.md`.
@@ -36,13 +36,18 @@
 - `python3 scripts/statedd_doctor.py` reports `Open blockers: 1` (BL-SANITY-002 active problem) and `Closure grade: fail` because the worktree is dirty and the latest evidence README records the pre-repair HEAD.
 
 ### Evidence
-- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-07-001`
+- `docs/EVIDENCE_LOG.md` entries `EV-2026-07-07-001` and `EV-2026-07-07-002`
 - `docs/failure_scans/BL-SANITY-002.md`
+- `docs/evidence/2026-07-07-sanity-logic-repair/README.md`
+- `docs/evidence/2026-07-07-sanity-logic-repair/manifest.json`
+- `docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json`
+- PR #4: https://github.com/lennertvhoy/StateDD_Template/pull/4
+- GitHub Actions run: https://github.com/lennertvhoy/StateDD_Template/actions/runs/28889809293
 
 ### Notes
 - State files updated: BL-SANITY-002 moved to CLOSED in BACKLOG.md, NEXT_ACTIONS.md now tracks BL-WORKFLOW-002 re-validation, STATUS.md open failures cleared.
-- The remaining closure steps for BL-SANITY-002 are: create evidence folder matching the final HEAD, commit it, push branch, open PR, verify CI, and run `scripts/statedd_remote_closure_finalizer.py`.
-- BL-WORKFLOW-002 should be re-validated after BL-SANITY-002 closes.
+- Closure sequence completed: evidence folder committed and pushed, PR #4 opened, GitHub Actions docs check SUCCESS, `scripts/statedd_remote_closure_finalizer.py --pr 4` passed with closure label `CI verified`.
+- PR #4 is pending human review/merge acceptance; BL-WORKFLOW-002 should be re-validated after BL-SANITY-002 merges.
 
 ## 2026-07-03 - Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
 
