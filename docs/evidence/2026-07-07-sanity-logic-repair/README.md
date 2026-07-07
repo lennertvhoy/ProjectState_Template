@@ -4,6 +4,7 @@
 **Date:** 2026-07-07  
 **Agent:** coding-agent  
 **Branch:** bl-workflow-002-worktree-brittleness  
+**HEAD:** a39d26dc95e3ad000e726832942c1314280ed467  
 **Proof head:** a39d26dc95e3ad000e726832942c1314280ed467  
 **Final PR head:** b1b00f3b0328b42bd15c7868f4ea9815aa5e6551  
 **Closure state:** PR/CI pending
