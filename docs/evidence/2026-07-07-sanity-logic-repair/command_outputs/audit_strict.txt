@@ -37,13 +37,13 @@ evidence_size
   ✅ Evidence folder has 8 files
 
 worktree_clean
-  ❌ Worktree is dirty (3 changed file(s)); closure-grade requires clean worktree
+  ✅ Worktree is clean
 
 worktree_guard
   ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
 
 branch_head_recorded
-  ✅ HEAD 55d13e9 not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
+  ✅ HEAD aec53c6 not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
   ✅ Branch 'bl-workflow-002-worktree-brittleness' recorded in evidence README
 
 user_facing_evidence
@@ -77,6 +77,6 @@ human_override
   ✅ No human override declared
 
 ============================================================
-Summary: 37 pass, 0 warn, 1 fail, 0 override
-AUDIT RESULT: FAIL — closure-grade not met
-exit: 1
+Summary: 38 pass, 0 warn, 0 fail, 0 override
+AUDIT RESULT: PASS — closure-grade
+exit: 0
