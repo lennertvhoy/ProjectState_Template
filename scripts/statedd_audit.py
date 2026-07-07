@@ -75,6 +75,9 @@ VALID_BROWSER_PROVIDERS = {
 }
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
+CLASSIFIED_DIRT_CATEGORIES = {"intended_slice_work", "generated_artifact"}
 ANTI_BRITTLENESS_MARKERS = [
     "What invariant prevents the failure class?",
     "typed/schema/state-machine/validator/contract-based",
@@ -173,6 +176,115 @@ def repo_context(root: Path) -> tuple[str | None, str | None]:
     return role, mode
 
 
+def find_agent_context(root: Path, explicit: str | None = None) -> Path | None:
+    """Return the path to an agent context file, or None if not found."""
+    candidate: Path
+    if explicit:
+        path = Path(explicit)
+        if path.is_absolute():
+            candidate = path
+        else:
+            candidate = (root / path).resolve()
+        # Allow passing the worktree root or the context file itself.
+        if candidate.is_dir():
+            candidate = candidate / AGENT_CONTEXT_FILE
+        return candidate if candidate.exists() else None
+    candidate = root / AGENT_CONTEXT_FILE
+    return candidate if candidate.exists() else None
+
+
+def load_agent_context(path: Path) -> dict | None:
+    """Load and validate an agent.context JSON file."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return None
+    return data
+
+
+def agent_branch_base(repo: Path, context: dict) -> str | None:
+    """Return the base commit for the agent branch from reservation ref or base_branch."""
+    reservation_ref = context.get("reservation_ref")
+    if reservation_ref:
+        code, stdout, _ = run_command(["git", "rev-parse", reservation_ref], repo)
+        if code == 0 and stdout:
+            return stdout.strip()
+    base_branch = context.get("base_branch")
+    if base_branch:
+        code, merge_base, _ = run_command(["git", "merge-base", "HEAD", base_branch], repo)
+        if code == 0 and merge_base:
+            return merge_base.strip()
+    return None
+
+
+def normalize_cell(cell: str) -> str:
+    return cell.strip().strip("`").strip()
+
+
+def parse_classification_file(path: Path) -> dict[str, str]:
+    """Parse a markdown classification table into {path: category}."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return {}
+    classifications: dict[str, str] = {}
+    for raw in text.splitlines():
+        stripped = raw.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [normalize_cell(cell) for cell in stripped.strip("|").split("|")]
+        if not cells or set(cells[0]) <= {"-", ":"}:
+            continue
+        lower = [cell.lower() for cell in cells]
+        if "path" in lower and "category" in lower:
+            continue
+        file_path = ""
+        category = ""
+        if len(cells) >= 3 and cells[2] in {
+            "intended_slice_work",
+            "pre_existing_unrelated",
+            "generated_artifact",
+            "unknown_do_not_touch",
+            "safe_to_discard_after_proof",
+        }:
+            file_path = cells[1]
+            category = cells[2]
+        elif len(cells) >= 2 and cells[1] in {
+            "intended_slice_work",
+            "pre_existing_unrelated",
+            "generated_artifact",
+            "unknown_do_not_touch",
+            "safe_to_discard_after_proof",
+        }:
+            file_path = cells[0]
+            category = cells[1]
+        if file_path and category:
+            classifications[file_path] = category
+    return classifications
+
+
+def extract_status_path(line: str) -> str:
+    """Extract the file path from a git status --short or --porcelain line."""
+    # git status --short is two status characters, a space, then the path.
+    stripped = line.rstrip("\n")
+    if len(stripped) >= 3 and stripped[2] == " ":
+        path = stripped[3:].strip()
+        if stripped[0] == "R" and " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        return path
+    # Fallback for already-trimmed status lines (e.g. "M file.txt").
+    if len(stripped) >= 2 and stripped[1] == " ":
+        path = stripped[2:].strip()
+        if stripped[0] == "R" and " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        return path
+    return stripped.strip()
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Machine-checkable StateDD audit command",
@@ -193,6 +305,17 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--override-file",
         default=None,
         help="Path to an evidence README containing a declared human override",
+    )
+    parser.add_argument(
+        "--agent-context",
+        default=None,
+        help="Path to agent.context JSON (auto-detects .statedd/agent.context if omitted)",
+    )
+    parser.add_argument(
+        "--evidence-folder",
+        default=None,
+        type=Path,
+        help="Override the evidence folder used for audit checks",
     )
     return parser.parse_args(argv[1:])
 
@@ -282,7 +405,20 @@ def check_state_files_fresh(root: Path, result: AuditResult, strict: bool) -> No
             )
 
 
-def latest_evidence_folder(root: Path) -> Path | None:
+def latest_evidence_folder(
+    root: Path,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> Path | None:
+    """Return the evidence folder to use for audit checks.
+
+    Explicit --evidence-folder takes precedence. In agent context, prefer a
+    folder whose manifest.json slice_id matches the current slice_id before
+    falling back to the most recently modified folder.
+    """
+    if explicit_folder is not None:
+        return explicit_folder if explicit_folder.exists() else None
+
     evidence_root = root / "docs" / "evidence"
     if not evidence_root.exists():
         return None
@@ -293,6 +429,20 @@ def latest_evidence_folder(root: Path) -> Path | None:
     ]
     if not candidates:
         return None
+
+    if agent_context and agent_context.get("slice_id"):
+        slice_id = agent_context["slice_id"]
+        for candidate in candidates:
+            manifest = candidate / EVIDENCE_MANIFEST_FILE
+            if not manifest.exists():
+                continue
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if isinstance(data, dict) and data.get("slice_id") == slice_id:
+                return candidate
+
     return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
@@ -303,8 +453,13 @@ def evidence_files(folder: Path) -> list[Path]:
         return []
 
 
-def check_evidence_folder(root: Path, result: AuditResult) -> None:
-    folder = latest_evidence_folder(root)
+def check_evidence_folder(
+    root: Path,
+    result: AuditResult,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
+    folder = latest_evidence_folder(root, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         result.add("evidence_folder", "warn", "No evidence folder found under docs/evidence/")
         return
@@ -339,7 +494,8 @@ def git_changed_files(repo: Path) -> tuple[bool, list[str]]:
     code, status, _ = run_command(["git", "status", "--short"], repo)
     if code != 0:
         return False, []
-    return True, [line.strip() for line in status.splitlines() if line.strip()]
+    # Preserve leading whitespace so status columns remain aligned; skip blank lines.
+    return True, [line.rstrip("\n") for line in status.splitlines() if line.strip()]
 
 
 def git_branch_and_head(repo: Path) -> tuple[str, str]:
@@ -348,7 +504,12 @@ def git_branch_and_head(repo: Path) -> tuple[str, str]:
     return branch, head
 
 
-def check_worktree_clean(repo: Path, result: AuditResult) -> None:
+def check_worktree_clean(
+    repo: Path,
+    result: AuditResult,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
     is_git_repo, changed = git_changed_files(repo)
     if not is_git_repo:
         result.add(
@@ -357,14 +518,41 @@ def check_worktree_clean(repo: Path, result: AuditResult) -> None:
             "Not a git repository; cannot verify worktree cleanliness",
         )
         return
-    if changed:
-        result.add(
-            "worktree_clean",
-            "fail",
-            f"Worktree is dirty ({len(changed)} changed file(s)); closure-grade requires clean worktree",
-        )
-    else:
+    if not changed:
         result.add("worktree_clean", "pass", "Worktree is clean")
+        return
+
+    if agent_context is not None:
+        folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
+        classifications: dict[str, str] = {}
+        if folder is not None:
+            readme = folder / "README.md"
+            if readme.exists():
+                classifications = parse_classification_file(readme)
+        unclassified = [
+            extract_status_path(line)
+            for line in changed
+            if classifications.get(extract_status_path(line)) not in CLASSIFIED_DIRT_CATEGORIES
+        ]
+        if not unclassified:
+            result.add(
+                "worktree_clean",
+                "pass",
+                f"Worktree is dirty with {len(changed)} file(s), all classified as intended slice work or generated artifact",
+            )
+        else:
+            result.add(
+                "worktree_clean",
+                "fail",
+                f"Unclassified dirty files in agent context: {', '.join(unclassified)}",
+            )
+        return
+
+    result.add(
+        "worktree_clean",
+        "fail",
+        f"Worktree is dirty ({len(changed)} changed file(s)); closure-grade requires clean worktree",
+    )
 
 
 def check_worktree_guard_available(repo: Path, result: AuditResult) -> None:
@@ -383,9 +571,15 @@ def check_worktree_guard_available(repo: Path, result: AuditResult) -> None:
         )
 
 
-def check_branch_head_recorded(repo: Path, result: AuditResult, strict: bool) -> None:
+def check_branch_head_recorded(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
     branch, head = git_branch_and_head(repo)
-    folder = latest_evidence_folder(repo)
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         result.add("branch_head_recorded", "warn", "Cannot verify branch/head recording without evidence folder")
         return
@@ -443,13 +637,17 @@ def check_branch_head_recorded(repo: Path, result: AuditResult, strict: bool) ->
         )
 
 
-def changed_files_in_slice(repo: Path) -> list[str]:
+def changed_files_in_slice(repo: Path, agent_context: dict | None = None) -> list[str]:
     """Return files changed in the current slice.
 
     If the worktree is dirty, return the uncommitted files. If the worktree is
     clean, return the files on the current branch since it diverged from the
     default branch (e.g. origin/main). If no default branch can be determined,
     return an empty list rather than guessing from the last commit.
+
+    In agent context, the agent branch base (from the reservation ref or
+    base_branch merge-base) is used as the diff base so that both committed and
+    uncommitted slice work is captured.
     """
     code, status, _ = run_command(["git", "status", "--short"], repo)
     if code != 0:
@@ -466,6 +664,17 @@ def changed_files_in_slice(repo: Path) -> list[str]:
             if line[0] == "R" and " -> " in path_part:
                 path_part = path_part.split(" -> ", 1)[1]
             files.append(path_part)
+
+    if agent_context is not None:
+        base_commit = agent_branch_base(repo, agent_context)
+        if base_commit:
+            code, stdout, _ = run_command(["git", "diff", "--name-only", base_commit], repo)
+            if code == 0:
+                slice_files = set(files)
+                slice_files.update(line.strip() for line in stdout.splitlines() if line.strip())
+                return sorted(slice_files)
+        # If no agent base found, fall through to default behavior.
+
     if files:
         return files
 
@@ -487,14 +696,20 @@ def looks_user_facing(relpath: str) -> bool:
     return any(pattern.search(relpath) for pattern in USER_FACING_PATTERNS)
 
 
-def check_user_facing_evidence(repo: Path, result: AuditResult, strict: bool) -> None:
-    changed = changed_files_in_slice(repo)
+def check_user_facing_evidence(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
+    changed = changed_files_in_slice(repo, agent_context=agent_context)
     user_facing = [p for p in changed if looks_user_facing(p)]
     if not user_facing:
         result.add("user_facing_evidence", "pass", "No user-facing file changes detected")
         return
 
-    folder = latest_evidence_folder(repo)
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         status = "fail" if strict else "warn"
         result.add(
@@ -549,15 +764,23 @@ def evidence_has_visual_or_browser_artifact(folder: Path) -> bool:
     )
 
 
-def check_runtime_identity(repo: Path, result: AuditResult, strict: bool) -> None:
-    folder = latest_evidence_folder(repo)
+def check_runtime_identity(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         result.add("runtime_identity", "warn", "Cannot inspect runtime_identity.json without an evidence folder")
         return
 
     artifact = folder / RUNTIME_IDENTITY_FILE
     claims_runtime = evidence_readme_claims_runtime_identity(folder)
-    user_facing_changed = any(looks_user_facing(p) for p in changed_files_in_slice(repo))
+    user_facing_changed = any(
+        looks_user_facing(p) for p in changed_files_in_slice(repo, agent_context=agent_context)
+    )
     visual_or_browser_evidence = evidence_has_visual_or_browser_artifact(folder)
     runtime_required = claims_runtime or user_facing_changed or visual_or_browser_evidence
 
@@ -645,8 +868,13 @@ def looks_like_schema(relpath: str) -> bool:
     return any(pattern.search(relpath) for pattern in SCHEMA_PATTERNS)
 
 
-def check_schema_ownership(repo: Path, result: AuditResult, strict: bool) -> None:
-    changed = changed_files_in_slice(repo)
+def check_schema_ownership(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+) -> None:
+    changed = changed_files_in_slice(repo, agent_context=agent_context)
     schemas = [p for p in changed if looks_like_schema(p)]
     if not schemas:
         result.add("schema_ownership", "pass", "No schema file changes detected")
@@ -694,8 +922,10 @@ def check_tests_recorded(
     repo: Path,
     result: AuditResult,
     test_commands: list[str],
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
 ) -> None:
-    folder = latest_evidence_folder(repo)
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     readme = folder / "README.md" if folder else None
     has_recorded_tests = False
     if readme and readme.exists():
@@ -751,8 +981,14 @@ def check_schema_validation(repo: Path, result: AuditResult) -> None:
     )
 
 
-def check_evidence_manifest(repo: Path, result: AuditResult, strict: bool) -> None:
-    folder = latest_evidence_folder(repo)
+def check_evidence_manifest(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         result.add("evidence_manifest", "warn", "Cannot inspect manifest.json without an evidence folder")
         return
@@ -859,13 +1095,17 @@ def check_evidence_manifest(repo: Path, result: AuditResult, strict: bool) -> No
             )
 
 
-def browser_verification_required(repo: Path) -> tuple[bool, str]:
+def browser_verification_required(
+    repo: Path,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> tuple[bool, str]:
     """Return (required, reason) for browser verification in the latest evidence folder."""
-    folder = latest_evidence_folder(repo)
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         return False, "no evidence folder"
 
-    changed = changed_files_in_slice(repo)
+    changed = changed_files_in_slice(repo, agent_context=agent_context)
     user_facing_changed = any(looks_user_facing(p) for p in changed)
     visual_or_browser_evidence = evidence_has_visual_or_browser_artifact(folder)
     if user_facing_changed:
@@ -883,9 +1123,15 @@ def load_json_object(path: Path) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
-def check_browser_verification(repo: Path, result: AuditResult, strict: bool) -> None:
-    folder = latest_evidence_folder(repo)
-    required, reason = browser_verification_required(repo)
+def check_browser_verification(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
+    required, reason = browser_verification_required(repo, agent_context=agent_context, explicit_folder=explicit_folder)
 
     if folder is None:
         if required:
@@ -1039,8 +1285,14 @@ def evidence_indicates_non_trivial_slice(text: str) -> bool:
     return False
 
 
-def check_anti_brittleness_review(repo: Path, result: AuditResult, strict: bool) -> None:
-    folder = latest_evidence_folder(repo)
+def check_anti_brittleness_review(
+    repo: Path,
+    result: AuditResult,
+    strict: bool,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
+) -> None:
+    folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
     if folder is None:
         result.add("anti_brittleness_review", "warn", "Cannot inspect anti-brittleness review without an evidence folder")
         return
@@ -1073,9 +1325,11 @@ def check_human_override(
     repo: Path,
     result: AuditResult,
     override_file: Path | None,
+    agent_context: dict | None = None,
+    explicit_folder: Path | None = None,
 ) -> None:
     if override_file is None:
-        folder = latest_evidence_folder(repo)
+        folder = latest_evidence_folder(repo, agent_context=agent_context, explicit_folder=explicit_folder)
         candidate = folder / "README.md" if folder else None
         override_file = candidate
     if override_file is None or not override_file.exists():
@@ -1139,22 +1393,26 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(args.root).resolve()
     result = AuditResult()
 
+    agent_context_path = find_agent_context(root, args.agent_context)
+    agent_context = load_agent_context(agent_context_path) if agent_context_path else None
+    explicit_folder = Path(args.evidence_folder).resolve() if args.evidence_folder else None
+
     check_required_files(root, result)
     check_repo_role_mode(root, result)
     check_state_files_fresh(root, result, args.strict)
-    check_evidence_folder(root, result)
-    check_worktree_clean(root, result)
+    check_evidence_folder(root, result, agent_context, explicit_folder)
+    check_worktree_clean(root, result, agent_context, explicit_folder)
     check_worktree_guard_available(root, result)
-    check_branch_head_recorded(root, result, args.strict)
-    check_user_facing_evidence(root, result, args.strict)
-    check_runtime_identity(root, result, args.strict)
+    check_branch_head_recorded(root, result, args.strict, agent_context, explicit_folder)
+    check_user_facing_evidence(root, result, args.strict, agent_context, explicit_folder)
+    check_runtime_identity(root, result, args.strict, agent_context, explicit_folder)
     check_schema_validation(root, result)
-    check_schema_ownership(root, result, args.strict)
-    check_tests_recorded(root, result, args.test_command)
-    check_evidence_manifest(root, result, args.strict)
-    check_browser_verification(root, result, args.strict)
-    check_anti_brittleness_review(root, result, args.strict)
-    check_human_override(root, result, Path(args.override_file) if args.override_file else None)
+    check_schema_ownership(root, result, args.strict, agent_context)
+    check_tests_recorded(root, result, args.test_command, agent_context, explicit_folder)
+    check_evidence_manifest(root, result, args.strict, agent_context, explicit_folder)
+    check_browser_verification(root, result, args.strict, agent_context, explicit_folder)
+    check_anti_brittleness_review(root, result, args.strict, agent_context, explicit_folder)
+    check_human_override(root, result, Path(args.override_file) if args.override_file else None, agent_context, explicit_folder)
 
     return render_result(result, args.strict)
 

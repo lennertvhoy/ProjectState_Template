@@ -10,6 +10,7 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -17,6 +18,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 VALID_CATEGORIES = {
     "intended_slice_work",
@@ -78,6 +82,50 @@ def resolve_repo(path: Path) -> tuple[int, Path, str]:
     if code != 0:
         return 2, path.resolve(), stderr or "not a git repository"
     return 0, Path(stdout).resolve(), ""
+
+
+def detect_git_locks(repo: Path) -> tuple[bool, str]:
+    git_dir_str = git_value(repo, ["rev-parse", "--git-dir"], fallback="")
+    common_dir_str = git_value(repo, ["rev-parse", "--git-common-dir"], fallback="")
+    for directory_str in {git_dir_str, common_dir_str}:
+        if not directory_str:
+            continue
+        directory = Path(directory_str)
+        if not directory.is_absolute():
+            directory = repo / directory
+        directory = directory.resolve()
+        for name in ("index.lock", "config.lock"):
+            lock_path = directory / name
+            if lock_path.exists():
+                return False, f"Another git operation holds {lock_path}; use --wait or retry."
+    return True, ""
+
+
+def default_agent_context_path(repo: Path) -> Path:
+    return repo / AGENT_CONTEXT_PATH
+
+
+def load_agent_context(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    required_keys = {
+        "schema",
+        "agent_id",
+        "slice_id",
+        "reservation_ref",
+        "worktree_path",
+        "branch",
+        "base_branch",
+    }
+    if not required_keys.issubset(data.keys()):
+        return None
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return None
+    return data
 
 
 def parse_status(status: str) -> list[DirtyEntry]:
@@ -211,7 +259,9 @@ def head_equals_upstream(ctx: GitContext) -> str:
     return "yes" if ctx.local_head == ctx.upstream_head else "no"
 
 
-def shared_or_default_branch(ctx: GitContext) -> str:
+def shared_or_default_branch(ctx: GitContext, agent_context: dict | None = None) -> str:
+    if agent_context is not None:
+        return "no"
     if ctx.detached:
         return "not proven"
     if ctx.default_branch != "not proven" and ctx.branch == ctx.default_branch:
@@ -254,6 +304,7 @@ def print_report(
     safe: bool,
     warnings: list[str],
     problems: list[str],
+    agent_context: dict | None = None,
 ) -> None:
     dirty_paths = [entry.path for entry in ctx.dirty_entries]
     untracked = [entry.path for entry in ctx.dirty_entries if entry.untracked]
@@ -268,6 +319,9 @@ def print_report(
     print(f"Mode: {mode}")
     print()
     print("Repo truth")
+    if agent_context:
+        print(f"- agent_id: {agent_context['agent_id']}")
+        print(f"- slice_id: {agent_context['slice_id']}")
     print(f"- repo root: {ctx.repo}")
     print(f"- current branch: {ctx.branch}")
     print(f"- local HEAD: {ctx.local_head}")
@@ -275,7 +329,7 @@ def print_report(
     print(f"- upstream branch: {ctx.upstream_branch}")
     print(f"- upstream HEAD: {ctx.upstream_head}")
     print(f"- default branch: {ctx.default_branch}")
-    print(f"- current branch is shared/default branch: {shared_or_default_branch(ctx)}")
+    print(f"- current branch is shared/default branch: {shared_or_default_branch(ctx, agent_context)}")
     print(f"- local HEAD equals upstream: {head_equals_upstream(ctx)}")
     print(f"- safe to start: {'yes' if safe else 'no'}")
     print()
@@ -331,7 +385,12 @@ def print_report(
         print("- none")
 
 
-def evaluate_start_slice(ctx: GitContext, classifications: dict[str, str]) -> tuple[bool, list[str], list[str]]:
+def evaluate_start_slice(
+    ctx: GitContext,
+    classifications: dict[str, str],
+    classification_file: Path | None,
+    agent_context: dict | None = None,
+) -> tuple[bool, list[str], list[str]]:
     warnings: list[str] = []
     problems: list[str] = []
 
@@ -346,9 +405,14 @@ def evaluate_start_slice(ctx: GitContext, classifications: dict[str, str]) -> tu
     if dirty_paths:
         missing = [path for path in dirty_paths if path not in classifications]
         if missing:
-            problems.append(
-                "Dirty files are not fully classified; run --mode classify-dirty and record the table in evidence before edits."
-            )
+            if agent_context is not None:
+                warnings.append(
+                    "Dirty files are expected slice work but are not yet classified; classification table is required."
+                )
+            else:
+                problems.append(
+                    "Dirty files are not fully classified; run --mode classify-dirty and record the table in evidence before edits."
+                )
         else:
             do_not_touch = [
                 path for path in dirty_paths
@@ -360,7 +424,7 @@ def evaluate_start_slice(ctx: GitContext, classifications: dict[str, str]) -> tu
                 )
             else:
                 warnings.append("Dirty files are classified; preserve category boundaries and do not touch unrelated dirt.")
-        if shared_or_default_branch(ctx) == "yes":
+        if shared_or_default_branch(ctx, agent_context) == "yes":
             warnings.append("Current branch is shared/default and dirty; prefer an isolated branch/worktree for non-trivial work.")
 
     return not problems, warnings, problems
@@ -392,6 +456,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Evidence README or markdown file containing a dirty-file classification table",
     )
     parser.add_argument(
+        "--agent-context",
+        help="Path to agent.context JSON file (default: .statedd/agent.context in repo root)",
+    )
+    parser.add_argument(
         "--warn-only",
         action="store_true",
         help="Print unsafe state but exit 0; use only for diagnostics, not closure",
@@ -406,20 +474,40 @@ def main(argv: list[str] | None = None) -> int:
         print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {error}")
         return code
 
+    if args.mode in ("start-slice", "closure"):
+        locks_ok, lock_msg = detect_git_locks(repo)
+        if not locks_ok:
+            print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {lock_msg}")
+            return 1
+
     ctx = collect_context(repo)
     if args.mode == "classify-dirty":
         print_classification_template(ctx)
         return 0
 
+    agent_context = None
+    if args.agent_context:
+        agent_context = load_agent_context(Path(args.agent_context).resolve())
+        if agent_context is None:
+            print(
+                f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n"
+                f"- Invalid or missing agent context file: {args.agent_context}"
+            )
+            return 1
+    else:
+        default_path = default_agent_context_path(repo)
+        if default_path.exists():
+            agent_context = load_agent_context(default_path)
+
     source = classification_source(repo, args.classification_file)
     classifications = parse_classification_file(source) if source and source.exists() else {}
 
     if args.mode == "start-slice":
-        safe, warnings, problems = evaluate_start_slice(ctx, classifications)
+        safe, warnings, problems = evaluate_start_slice(ctx, classifications, source, agent_context)
     else:
         safe, warnings, problems = evaluate_closure(ctx)
 
-    print_report(args.mode, ctx, classifications, source, safe, warnings, problems)
+    print_report(args.mode, ctx, classifications, source, safe, warnings, problems, agent_context)
     if safe or args.warn_only:
         return 0
     return 1

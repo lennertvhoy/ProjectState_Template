@@ -12,15 +12,97 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Tuple
+
+
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
+CLASSIFIED_DIRT_CATEGORIES = {"intended_slice_work", "generated_artifact"}
+
+
+def find_agent_context(root: Path, explicit: str | None = None) -> Path | None:
+    """Return the path to an agent context file, or None if not found."""
+    candidate: Path
+    if explicit:
+        path = Path(explicit)
+        if path.is_absolute():
+            candidate = path
+        else:
+            candidate = (root / path).resolve()
+        # Allow passing the worktree root or the context file itself.
+        if candidate.is_dir():
+            candidate = candidate / AGENT_CONTEXT_FILE
+        return candidate if candidate.exists() else None
+    candidate = root / AGENT_CONTEXT_FILE
+    return candidate if candidate.exists() else None
+
+
+def load_agent_context(path: Path) -> dict | None:
+    """Load and validate an agent.context JSON file."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return None
+    return data
+
+
+def normalize_cell(cell: str) -> str:
+    return cell.strip().strip("`").strip()
+
+
+def parse_classification_file(path: Path) -> Dict[str, str]:
+    """Parse a markdown classification table into {path: category}."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return {}
+    classifications: Dict[str, str] = {}
+    for raw in text.splitlines():
+        stripped = raw.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [normalize_cell(cell) for cell in stripped.strip("|").split("|")]
+        if not cells or set(cells[0]) <= {"-", ":"}:
+            continue
+        lower = [cell.lower() for cell in cells]
+        if "path" in lower and "category" in lower:
+            continue
+        file_path = ""
+        category = ""
+        if len(cells) >= 3 and cells[2] in {
+            "intended_slice_work",
+            "pre_existing_unrelated",
+            "generated_artifact",
+            "unknown_do_not_touch",
+            "safe_to_discard_after_proof",
+        }:
+            file_path = cells[1]
+            category = cells[2]
+        elif len(cells) >= 2 and cells[1] in {
+            "intended_slice_work",
+            "pre_existing_unrelated",
+            "generated_artifact",
+            "unknown_do_not_touch",
+            "safe_to_discard_after_proof",
+        }:
+            file_path = cells[0]
+            category = cells[1]
+        if file_path and category:
+            classifications[file_path] = category
+    return classifications
 
 
 class ClosureCheck:
-    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None, gate_level: int = 2):
+    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None, gate_level: int = 2, agent_context: dict | None = None):
         self.root = root
         self.verbose = verbose
         self.claimed_files = claimed_files or []
         self.gate_level = gate_level
+        self.agent_context = agent_context
         self.failures: List[str] = []
         self.warnings: List[str] = []
 
@@ -152,6 +234,51 @@ class ClosureCheck:
         self.warnings.append("No handoff reference found in WORKLOG.md")
         return True
 
+    def check_dirty_worktree(self) -> bool:
+        """In agent context, dirty files must be classified slice work."""
+        if self.agent_context is None:
+            return True
+        print("🧹 Checking dirty worktree classification in agent context...")
+        code, out, _ = self.run_cmd(["git", "status", "--short"])
+        if code != 0:
+            self.failures.append("Could not check worktree status")
+            return False
+        if not out.strip():
+            return True
+        changed = []
+        for line in out.splitlines():
+            raw = line.rstrip("\n")
+            if not raw.strip():
+                continue
+            # git status --short is two status chars, a space, then the path.
+            if len(raw) >= 3 and raw[2] == " ":
+                path = raw[3:].strip()
+            elif len(raw) >= 2 and raw[1] == " ":
+                # Already-trimmed line (e.g. "M file.txt").
+                path = raw[2:].strip()
+            else:
+                path = raw.strip()
+            if " -> " in path:
+                path = path.split(" -> ", 1)[1]
+            changed.append(path)
+        if not changed:
+            return True
+        folder = self.latest_evidence_folder()
+        if folder is None:
+            self.failures.append("Dirty worktree in agent context and no evidence folder to classify dirt")
+            return False
+        readme = folder / "README.md"
+        if not readme.exists():
+            self.failures.append("Dirty worktree in agent context and no evidence README to classify dirt")
+            return False
+        classifications = parse_classification_file(readme)
+        unclassified = [p for p in changed if classifications.get(p) not in CLASSIFIED_DIRT_CATEGORIES]
+        if unclassified:
+            self.failures.append(f"Unclassified dirty files in agent context: {', '.join(unclassified)}")
+            return False
+        print("  ✓ Dirty worktree classified as intended slice work or generated artifact")
+        return True
+
     def check_remote_truth(self) -> bool:
         """Verify remote GitHub state matches local claims (Truth Boundary Gate)."""
         print("🌐 Checking remote truth (Truth Boundary Gate)...")
@@ -200,6 +327,7 @@ class ClosureCheck:
             ("Evidence Bundle", self.check_evidence_bundle),
             ("Acceptance Freeze", self.check_acceptance_freeze),
             ("Handoff Complete", self.check_handoff_complete),
+            ("Dirty Worktree", self.check_dirty_worktree),
             ("Remote Truth", self.check_remote_truth),
             ("Efficiency", self.check_efficiency),
         ]
@@ -238,10 +366,17 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--claimed-files", nargs="*", default=[], help="Files claimed as deliverables")
     parser.add_argument("--gate-level", type=int, default=2, help="Gate level being proven")
+    parser.add_argument(
+        "--agent-context",
+        default=None,
+        help="Path to agent.context JSON (auto-detects .statedd/agent.context if omitted)",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    checker = ClosureCheck(root, args.verbose, args.claimed_files, args.gate_level)
+    agent_context_path = find_agent_context(root, args.agent_context)
+    agent_context = load_agent_context(agent_context_path) if agent_context_path else None
+    checker = ClosureCheck(root, args.verbose, args.claimed_files, args.gate_level, agent_context)
     sys.exit(checker.run())
 
 

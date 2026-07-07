@@ -51,6 +51,17 @@ git worktree list --porcelain
 python3 scripts/statedd_worktree_guard.py --mode start-slice
 ```
 
+For parallel-agent slices, prefer an isolated agent worktree:
+
+```bash
+python3 scripts/statedd_agent_worktree.py start --slice-id <BL-XXX>
+```
+
+This provisions a private branch, worktree, and reservation ref under
+`.worktrees/` and writes `.statedd/agent.context` so existing StateDD scripts
+recognize the agent context. Use `python3 scripts/statedd_agent_worktree.py list`
+to inspect active worktrees and reservations.
+
 If the guard reports dirty or ambiguous state, stop implementation and produce a
 worktree recovery handoff instead. If dirty files exist, run
 `python3 scripts/statedd_worktree_guard.py --mode classify-dirty` and record the

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import shlex
 import shutil
 import subprocess
@@ -13,6 +14,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
@@ -80,6 +84,52 @@ def worktree_topology(repo: Path) -> tuple[bool, str, list[str]]:
         if path and Path(path).resolve() != repo:
             linked.append(path)
     return True, stdout, linked
+
+
+def default_agent_context_path(repo: Path) -> Path:
+    return repo / AGENT_CONTEXT_PATH
+
+
+def load_agent_context(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    required_keys = {
+        "schema",
+        "agent_id",
+        "slice_id",
+        "reservation_ref",
+        "worktree_path",
+        "branch",
+        "base_branch",
+    }
+    if not required_keys.issubset(data.keys()):
+        return None
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return None
+    return data
+
+
+def find_agent_contexts(repo: Path) -> tuple[dict | None, list[dict]]:
+    """Return (current_worktree_context, sibling_worktree_contexts)."""
+    current = load_agent_context(default_agent_context_path(repo))
+    siblings: list[dict] = []
+    code, stdout, _ = run_command(["git", "worktree", "list", "--porcelain"], repo)
+    if code != 0:
+        return current, siblings
+    for line in stdout.splitlines():
+        if not line.startswith("worktree "):
+            continue
+        wt_path = Path(line.removeprefix("worktree ").strip()).resolve()
+        if wt_path == repo:
+            continue
+        ctx = load_agent_context(wt_path / AGENT_CONTEXT_PATH)
+        if ctx:
+            siblings.append(ctx)
+    return current, siblings
 
 
 def dirty_classification_status(repo: Path, changed_files: list[str]) -> str:
@@ -184,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
     short_status = git_value(repo, ["status", "--short"], fallback="")
     worktree = "clean" if not short_status.strip() else "dirty"
     changed_files = git_changed_files(repo)
+    agent_context, sibling_contexts = find_agent_contexts(repo)
     topology_captured, topology_raw, linked_worktrees = worktree_topology(repo)
     dirty_classified = dirty_classification_status(repo, changed_files)
     github_visible = github_visible_deliverables(local_equals_upstream, changed_files)
@@ -212,6 +263,30 @@ def main(argv: list[str] | None = None) -> int:
     print(f"- dirty files classified: {dirty_classified}")
     print(f"- GitHub-visible deliverables: {github_visible}")
     print(f"- local-only files claimed: {local_only_claimed}")
+    if agent_context:
+        print()
+        print("## Agent Context")
+        print()
+        print(f"- agent_id: {agent_context['agent_id']}")
+        print(f"- slice_id: {agent_context['slice_id']}")
+        print(f"- worktree_path: {agent_context.get('worktree_path', 'not proven')}")
+        print(f"- reservation_ref: {agent_context.get('reservation_ref', 'not proven')}")
+        owner = "self"
+        expected_path = agent_context.get("worktree_path")
+        if expected_path:
+            try:
+                if Path(expected_path).resolve() != repo:
+                    owner = "other"
+            except OSError:
+                owner = "other"
+        print(f"- worktree_owner: {owner}")
+        if sibling_contexts:
+            print("- sibling agent worktrees:")
+            for ctx in sibling_contexts:
+                print(
+                    f"  - {ctx.get('worktree_path', 'not proven')} "
+                    f"({ctx.get('agent_id', 'unknown')}/{ctx.get('slice_id', 'unknown')})"
+                )
     print()
     print("## Worktree Topology")
     print()

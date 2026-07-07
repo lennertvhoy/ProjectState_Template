@@ -35,9 +35,13 @@ HEAD_LINE_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
+
 PR_FIELDS = """
   number
   headRefOid
+  headRefName
   body
   mergeStateStatus
   url
@@ -123,6 +127,36 @@ def parse_remote_url(url: str) -> tuple[str, str] | None:
     if not match:
         return None
     return match.group(1), match.group(2)
+
+
+def find_agent_context(root: Path, explicit: str | None = None) -> Path | None:
+    """Return the path to an agent context file, or None if not found."""
+    candidate: Path
+    if explicit:
+        path = Path(explicit)
+        if path.is_absolute():
+            candidate = path
+        else:
+            candidate = (root / path).resolve()
+        # Allow passing the worktree root or the context file itself.
+        if candidate.is_dir():
+            candidate = candidate / AGENT_CONTEXT_FILE
+        return candidate if candidate.exists() else None
+    candidate = root / AGENT_CONTEXT_FILE
+    return candidate if candidate.exists() else None
+
+
+def load_agent_context(path: Path) -> dict | None:
+    """Load and validate an agent.context JSON file."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return None
+    return data
 
 
 def latest_evidence_folder(root: Path) -> Path | None:
@@ -237,6 +271,7 @@ class RemoteClosureFinalizer:
         default_factory=lambda: run_command
     )
     github_client: GitHubApi | None = None
+    agent_context: dict | None = None
     pr_final_head: str | None = field(default=None, init=False)
     proof_head: str | None = field(default=None, init=False)
 
@@ -276,6 +311,8 @@ class RemoteClosureFinalizer:
             self._check_remote_contains_head()
             self._resolve_owner_repo()
             self._fetch_pr_and_ci_state()
+            self._check_remote_head_unchanged()
+            self._check_agent_branch_matches_pr()
             self._check_pr_head_agrees()
             self._check_pr_body()
             self._check_ci_status()
@@ -413,6 +450,35 @@ class RemoteClosureFinalizer:
                 self.ci_run_id = str(run["databaseId"])
                 self.ci_run_url = run.get("url")
                 return
+
+    def _check_remote_head_unchanged(self) -> None:
+        """Re-check remote HEAD after fetching PR state to catch interleaved pushes."""
+        output = self._git(["ls-remote", "origin", self.branch], "") or ""
+        remote_sha = output.split("\t")[0] if "\t" in output else ""
+        if not remote_sha:
+            self.failures.append(f"Could not re-check remote HEAD for branch '{self.branch}'")
+        elif remote_sha != self.local_head:
+            self.failures.append(
+                f"Remote HEAD changed during finalization: expected {self.local_head}, found {remote_sha}"
+            )
+        elif self.verbose:
+            print("  ✓ remote HEAD unchanged since initial check")
+
+    def _check_agent_branch_matches_pr(self) -> None:
+        """In agent context, ensure the PR branch matches the reserved agent branch."""
+        if not self.agent_context:
+            return
+        agent_branch = self.agent_context.get("branch", "")
+        pr_branch = self.pr.get("headRefName", "") if self.pr else ""
+        if not pr_branch or not agent_branch:
+            return
+        if pr_branch != agent_branch:
+            self.failures.append(
+                f"PR branch '{pr_branch}' does not match agent branch '{agent_branch}'; "
+                "another agent may have pushed to a different branch for this slice"
+            )
+        elif self.verbose:
+            print("  ✓ PR branch matches agent branch")
 
     def _check_pr_head_agrees(self) -> None:
         pr_head = self.pr.get("headRefOid", "")
@@ -558,6 +624,10 @@ class RemoteClosureFinalizer:
         print(f"- worktree_clean: {'yes' if not (self._git(['status', '--short'], '') or '').strip() else 'no'}")
         print(f"- closure_label: {self.closure_label}")
         print(f"- evidence_folder: {self.evidence_folder.relative_to(self.root) if self.evidence_folder else 'not found'}")
+        if self.agent_context:
+            print(f"- agent_id: {self.agent_context.get('agent_id', 'not found')}")
+            print(f"- slice_id: {self.agent_context.get('slice_id', 'not found')}")
+            print(f"- reservation_ref: {self.agent_context.get('reservation_ref', 'not found')}")
 
         risks = list(self.warnings)
         if self.failures:
@@ -589,6 +659,10 @@ class RemoteClosureFinalizer:
             "failures": self.failures,
             "warnings": self.warnings,
         }
+        if self.agent_context:
+            artifact["agent_id"] = self.agent_context.get("agent_id")
+            artifact["slice_id"] = self.agent_context.get("slice_id")
+            artifact["reservation_ref"] = self.agent_context.get("reservation_ref")
         self.output.parent.mkdir(parents=True, exist_ok=True)
         self.output.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(f"\nWrote remote closure handoff: {self.output}")
@@ -603,17 +677,26 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--github-token", default=None, help="GitHub token (fallback: GH_TOKEN / GITHUB_TOKEN env)")
     parser.add_argument("--output", "-o", type=Path, help="Write handoff JSON to this path")
     parser.add_argument("--verbose", "-v", action="store_true", help="Print passed checks")
+    parser.add_argument(
+        "--agent-context",
+        default=None,
+        help="Path to agent.context JSON (auto-detects .statedd/agent.context if omitted)",
+    )
     return parser.parse_args(argv[1:])
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
+    root = Path(args.root).resolve()
+    agent_context_path = find_agent_context(root, args.agent_context)
+    agent_context = load_agent_context(agent_context_path) if agent_context_path else None
     finalizer = RemoteClosureFinalizer(
-        root=Path(args.root).resolve(),
+        root=root,
         verbose=args.verbose,
         pr_number=args.pr_number,
         output=args.output,
         github_token=args.github_token,
+        agent_context=agent_context,
     )
     return finalizer.run()
 

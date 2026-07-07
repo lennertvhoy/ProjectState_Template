@@ -11,11 +11,11 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
+- [BL-PARALLEL-001] Add first-class support for multiple coding agents working on the same repository via a managed agent worktree orchestrator, reservation refs, lock awareness, and agent-context-aware existing scripts.
 
 ## NEXT
 
-- (queue empty — select next item from WATCHLIST or product priorities)
+- [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## CLOSED
 

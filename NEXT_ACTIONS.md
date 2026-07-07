@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P1 [BL-BROWSER-002] Concrete Browser Automation Provider Integration
+### P1 [BL-PARALLEL-001] Parallel-Agent Worktree Orchestrator
 Owner: coding agent
-Next: integrate a concrete browser automation provider using the provider-agnostic contract; add evidence, tests, and state updates; open/refresh PR and run remote closure finalizer.
-Exit: BL-BROWSER-002 is closure-grade with GitHub-visible CI success and remote closure agreement
+Next: implement `scripts/statedd_agent_worktree.py`, update existing scripts for agent-context awareness, add regression tests and CI smoke test, update AGENTS.md/BACKLOG.md/PROJECT_STATE.yaml/failure scans/skills/prompts, then run remote closure finalizer.
+Exit: BL-PARALLEL-001 is closure-grade with GitHub-visible CI success and remote closure agreement
 
 ## Queue Rules
 

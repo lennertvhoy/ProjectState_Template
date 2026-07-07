@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-07T21:05:00+02:00
+  updated_at: 2026-07-07T22:15:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -133,6 +133,21 @@ current_state:
         scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
         artifacts for current branch, HEAD, and worktree status.
 
+  parallel_agent_support:
+    status: observed
+    orchestrator: scripts/statedd_agent_worktree.py
+    reservation_ref_prefix: refs/statedd/reservations/
+    worktree_dir: .worktrees
+    agent_context_file: .statedd/agent.context
+    agent_context_schema: statedd.agent_context.v1
+    notes: |
+      First-class support for concurrent coding agents. Each non-trivial slice
+      defaults to an isolated branch + worktree + reservation ref. Existing
+      worktree guard, handoff, audit, closure check, and remote closure finalizer
+      are agent-context-aware. Lock detection reports contention instead of
+      corrupting state. Evidence selection prefers the folder whose manifest
+      slice_id matches the current agent context.
+
   operating_mode:
     status: observed
     mode: template-maintenance
@@ -213,6 +228,7 @@ current_state:
       - scripts/statedd_audit.py
       - scripts/statedd_doctor.py
       - scripts/statedd_worktree_guard.py
+      - scripts/statedd_agent_worktree.py
       - scripts/statedd_brittleness_check.py
       - scripts/statedd_runtime_proof.py
       - scripts/statedd_evidence_pack.py
@@ -221,6 +237,7 @@ current_state:
       - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
       - scripts/test_worktree_guard.py
+      - scripts/test_agent_worktree.py
       - scripts/test_brittleness_check.py
       - scripts/test_runtime_proof.py
       - scripts/test_evidence_pack.py
@@ -236,6 +253,7 @@ current_state:
       - scripts/statedd_validate_schema.py
       - scripts/statedd_version_check.py
       - scripts/statedd_worktree_guard.py
+      - scripts/statedd_agent_worktree.py
       - scripts/statedd_brittleness_check.py
       - scripts/statedd_runtime_proof.py
       - scripts/statedd_evidence_pack.py
@@ -244,6 +262,7 @@ current_state:
       - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
       - scripts/test_worktree_guard.py
+      - scripts/test_agent_worktree.py
       - scripts/test_brittleness_check.py
       - scripts/test_runtime_proof.py
       - scripts/test_schema_validation.py
@@ -257,6 +276,7 @@ current_state:
       - python3 scripts/statedd_validate_schema.py
       - python3 scripts/test_init_template.py
       - python3 scripts/test_worktree_guard.py
+      - python3 scripts/test_agent_worktree.py
       - python3 scripts/test_brittleness_check.py
       - python3 scripts/test_runtime_proof.py
       - python3 scripts/test_schema_validation.py
@@ -343,6 +363,10 @@ current_state:
         status: observed
         path: scripts/statedd_worktree_guard.py
         summary: Captures repo root, branch, upstream, worktree topology, dirty-file classification, and start/closure safety without deleting files.
+      agent_worktree_orchestrator:
+        status: observed
+        path: scripts/statedd_agent_worktree.py
+        summary: Provisions isolated per-agent worktrees, branches, and reservation refs; detects git locks; runs guard/handoff/close/cleanup/list in agent context.
       brittleness_check:
         status: observed
         path: scripts/statedd_brittleness_check.py

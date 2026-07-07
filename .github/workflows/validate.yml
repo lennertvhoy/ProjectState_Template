@@ -27,7 +27,7 @@ jobs:
 
       - name: Compile Python scripts
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_worktree_guard.py scripts/statedd_brittleness_check.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/statedd_browser_verify.py scripts/statedd_remote_closure_finalizer.py scripts/statedd_efficiency_check.py scripts/statedd_post_merge_verify.py scripts/test_init_template.py scripts/test_worktree_guard.py scripts/test_brittleness_check.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py scripts/test_browser_verification.py scripts/test_remote_closure_finalizer.py scripts/test_efficiency_check.py scripts/test_post_merge_verify.py scripts/test_check_state_docs.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_worktree_guard.py scripts/statedd_agent_worktree.py scripts/statedd_brittleness_check.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/statedd_browser_verify.py scripts/statedd_remote_closure_finalizer.py scripts/statedd_efficiency_check.py scripts/statedd_post_merge_verify.py scripts/test_init_template.py scripts/test_worktree_guard.py scripts/test_agent_worktree.py scripts/test_brittleness_check.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py scripts/test_browser_verification.py scripts/test_remote_closure_finalizer.py scripts/test_efficiency_check.py scripts/test_post_merge_verify.py scripts/test_check_state_docs.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
 
       - name: Validate root docs
         run: |
@@ -128,6 +128,11 @@ jobs:
           python3 scripts/test_efficiency_check.py
           python3 scripts/test_check_state_docs.py
           python3 scripts/test_post_merge_verify.py
+
+      - name: Validate agent worktree orchestrator
+        run: |
+          python3 scripts/test_agent_worktree.py
+          python3 scripts/statedd_agent_worktree.py --dry-run start --slice-id CI-SMOKE-001
 
       - name: Validate remote closure finalizer
         run: |

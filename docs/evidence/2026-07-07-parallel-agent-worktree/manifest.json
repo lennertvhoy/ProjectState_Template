@@ -1,0 +1,104 @@
+{
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-PARALLEL-001",
+  "manifest_status": "complete",
+  "created_at": "2026-07-07T22:39:53+02:00",
+  "repo": {
+    "branch": "bl-workflow-002-worktree-brittleness",
+    "head": "434f882ea28291584cdcb8b145d39bf35a419e91",
+    "proof_head": "434f882ea28291584cdcb8b145d39bf35a419e91"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "claims": [
+    {
+      "id": "agent-worktree-orchestrator",
+      "claim": "StateDD provides a scripts/statedd_agent_worktree.py orchestrator that provisions isolated per-agent branches, worktrees, and reservation refs",
+      "status": "validated",
+      "evidence": ["README.md", "command_outputs/test_agent_worktree.txt"]
+    },
+    {
+      "id": "agent-context-awareness",
+      "claim": "Existing StateDD scripts are agent-context-aware via .statedd/agent.context",
+      "status": "validated",
+      "evidence": ["README.md", "command_outputs/regression_tests.txt"]
+    },
+    {
+      "id": "lock-detection",
+      "claim": "Git lock contention is detected and reported without deleting lock files",
+      "status": "validated",
+      "evidence": ["README.md", "command_outputs/test_agent_worktree.txt"]
+    },
+    {
+      "id": "reservation-refs",
+      "claim": "Reservation refs prevent branch/worktree double-claiming",
+      "status": "validated",
+      "evidence": ["README.md", "command_outputs/test_agent_worktree.txt"]
+    },
+    {
+      "id": "regression-and-ci",
+      "claim": "The implementation is validated by regression tests and a CI smoke test",
+      "status": "validated",
+      "evidence": ["README.md", "command_outputs/test_agent_worktree.txt", "command_outputs/regression_tests.txt"]
+    },
+    {
+      "id": "state-docs-skills",
+      "claim": "State, documentation, and skills are updated for parallel-agent support",
+      "status": "validated",
+      "evidence": ["README.md", "command_outputs/check_state_docs.txt"]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "README.md",
+      "kind": "doc",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "runtime_identity.json",
+      "kind": "runtime_identity",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/test_agent_worktree.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/regression_tests.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/check_state_docs.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/validate_schema.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    }
+  ],
+  "redaction": {
+    "status": "checked",
+    "automated_scan": "passed",
+    "manual_review": "completed",
+    "known_limits": []
+  }
+}
