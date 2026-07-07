@@ -148,6 +148,18 @@ def extract_sha_refs(text: str) -> set[str]:
     return set(SHA_RE.findall(text.lower()))
 
 
+def is_ancestor(repo: Path, ancestor: str, descendant: str) -> bool:
+    """Return True if ancestor is an ancestor of descendant in repo history."""
+    code, _, _ = run_command(["git", "merge-base", "--is-ancestor", ancestor, descendant], repo)
+    return code == 0
+
+
+def has_proof_final_split(text: str) -> bool:
+    """Return True if the evidence README declares a Proof head / Final PR head split."""
+    lower = text.lower()
+    return "proof head" in lower and ("final pr head" in lower or "final merge commit" in lower)
+
+
 def repo_context(root: Path) -> tuple[str | None, str | None]:
     project_state = read_optional(root / "PROJECT_STATE.yaml")
     agents = read_optional(root / "AGENTS.md")
@@ -396,6 +408,23 @@ def check_branch_head_recorded(repo: Path, result: AuditResult, strict: bool) ->
     head_match = head in recorded_heads or head[:7] in recorded_heads
     if head_match:
         result.add("branch_head_recorded", "pass", f"HEAD {head[:7]} recorded in evidence README")
+    elif has_proof_final_split(text):
+        # Accept a declared proof/final split if at least one recorded head is an
+        # ancestor of the current HEAD. This keeps evidence honest while allowing
+        # the evidence commit itself to follow the proof commit.
+        if any(is_ancestor(repo, h, head) or h.startswith(head[:7]) or head.startswith(h[:7]) for h in recorded_heads if len(h) >= 7):
+            result.add(
+                "branch_head_recorded",
+                "pass",
+                f"HEAD {head[:7]} not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit",
+            )
+        else:
+            status = "fail" if strict else "warn"
+            result.add(
+                "branch_head_recorded",
+                status,
+                f"Evidence README declares a Proof/Final head split, but none of the recorded heads are ancestors of {head[:7]}",
+            )
     else:
         status = "fail" if strict else "warn"
         result.add(

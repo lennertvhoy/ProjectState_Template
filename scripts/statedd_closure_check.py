@@ -74,10 +74,27 @@ class ClosureCheck:
         print("  ✓ No broken internal links")
         return True
 
+    def latest_evidence_folder(self) -> Path | None:
+        evidence_root = self.root / "docs" / "evidence"
+        if not evidence_root.exists():
+            return None
+        candidates = [entry for entry in evidence_root.iterdir() if entry.is_dir() and not entry.name.startswith(".")]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda p: p.stat().st_mtime)
+
+    def runtime_identity_path(self) -> Path:
+        folder = self.latest_evidence_folder()
+        if folder:
+            candidate = folder / "runtime_identity.json"
+            if candidate.exists():
+                return candidate
+        return self.root / "runtime_identity.json"
+
     def check_runtime_proof(self) -> bool:
         """Verify runtime identity proof exists for user-facing changes."""
         print("🖥️  Checking runtime proof...")
-        runtime_identity = self.root / "runtime_identity.json"
+        runtime_identity = self.runtime_identity_path()
         if not runtime_identity.exists():
             self.failures.append("runtime_identity.json not found")
             return False
@@ -88,7 +105,7 @@ class ClosureCheck:
                 if field not in data:
                     self.failures.append(f"runtime_identity.json missing field: {field}")
                     return False
-            print("  ✓ Runtime identity present and complete")
+            print(f"  ✓ Runtime identity present and complete ({runtime_identity.relative_to(self.root)})")
             return True
         except json.JSONDecodeError:
             self.failures.append("runtime_identity.json is invalid JSON")

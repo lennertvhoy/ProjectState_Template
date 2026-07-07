@@ -5,7 +5,7 @@
   "created_at": "2026-07-07T19:25:00+02:00",
   "repo": {
     "branch": "bl-workflow-002-worktree-brittleness",
-    "head": "a39d26dc95e3ad000e726832942c1314280ed467"
+    "head": "b1b00f3b0328b42bd15c7868f4ea9815aa5e6551"
   },
   "runtime_identity": {
     "required": false,
