@@ -51,6 +51,7 @@
 | M | `WORKLOG.md` | intended_slice_work | append-only local validation record |
 | M | `docs/ADOPTION_PROFILES.md` | intended_slice_work | corrected profile contract |
 | M | `docs/EVIDENCE_LOG.md` | intended_slice_work | baseline evidence entry |
+| M | `fixtures/bootstrap_dry_run/bootstrap/NEXT_ACTIONS.md` | intended_slice_work | remove queued transition not in backlog NOW |
 | M | `scripts/AGENTS.md` | intended_slice_work | executable catalog updates |
 | M | `scripts/check_state_docs.py` | intended_slice_work | semantic lifecycle validator |
 | M | `scripts/init_template.py` | intended_slice_work | allowlisted generator and compact state |
@@ -106,6 +107,10 @@
 | runtime truth gate | not applicable | template root has no application runtime |
 | redteam/adversarial gate | duplicate YAML, footprint, manifest, lifecycle regressions | pass |
 | known bad events gate | baseline failure reproduced then protected by regressions | pass |
+
+GitHub CI initially falsified closure by finding the bootstrap fixture queued
+BL-004 while its backlog placed BL-004 in NEXT. The fixture queue was corrected;
+the semantic validator was not weakened.
 
 ## Evidence Pack Manifest
 

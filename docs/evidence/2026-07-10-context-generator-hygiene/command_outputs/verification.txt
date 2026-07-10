@@ -8,6 +8,8 @@ BL-CONTEXT-001 verification summary (pre-final)
 - Repaired regulated: 72 files, 506,201 bytes, 8,394 startup bytes, 2,099 estimated tokens.
 - Every profile's own quality gate passed.
 - `python3 -m pytest scripts/ -q`: 164 passed, 4 subtests passed.
+- Initial GitHub CI found a fixture lifecycle contradiction: queued BL-004 was in
+  BACKLOG NEXT, not NOW. The fixture queue was corrected without weakening the gate.
 
 Local StateDD quality, schema, state/bootstrap, version, runtime-truth,
 evidence-type, instruction, efficiency, brittleness, and evidence-pack gates passed.

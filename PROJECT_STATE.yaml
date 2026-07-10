@@ -454,6 +454,7 @@ active_problems:
       - scripts/test_efficiency_check.py
       - scripts/test_upgrade.py
       - scripts/test_worktree_guard.py
+      - fixtures/bootstrap_dry_run/bootstrap/NEXT_ACTIONS.md
       - .github/workflows/validate.yml
     summary: |
       The repair is implemented and locally validated: all generated profiles pass
