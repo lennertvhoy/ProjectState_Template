@@ -1,6 +1,6 @@
 # StateDD Template Status
 
-**Updated At:** 2026-07-10 22:03 +02:00
+**Updated At:** 2026-07-10 22:18 +02:00
 **Execution Mode:** template-maintenance
 **Project State:** template_maintenance_active
 **Public URL:** https://github.com/lennertvhoy/StateDD_Template/releases/tag/v5
@@ -12,7 +12,7 @@
 - BL-007 public usability polish, BL-BROWSER-001 provider-agnostic browser verification, BL-QUALITY-001 quality firewall hardening, and BL-REMOTE-CLOSURE-001 remote CI/CD closure finalizer are accepted as template capabilities; browser verification is provider-agnostic with Kimi WebBridge preferred.
 - StateDD now treats handoffs as claims, separates repo truth from runtime truth, requires downstream quality gates, and requires GitHub-visible CI success plus a clean merge state before closure-grade handoffs.
 - Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, the bootstrap wizard, provider-agnostic browser verification, the remote closure finalizer, worktree isolation guard, and anti-brittleness guard remain template capabilities.
-- BL-SANITY-002 and BL-WORKFLOW-002 are closed and CI-verified on PR #4. BL-PARALLEL-001 is locally implemented but still needs remote closure. BL-CONTEXT-001 is implemented and locally validated; remote CI/closure are pending.
+- BL-SANITY-002 and BL-WORKFLOW-002 are closed and CI-verified on PR #4. BL-PARALLEL-001 is locally implemented but still needs remote closure. BL-CONTEXT-001 implementation proof head `8840a3c` is CI-verified on PR #5; the final state head is governed by the remote closure finalizer.
 
 ## Product Truth
 
@@ -26,12 +26,12 @@
 
 ## Current Quality Gate
 
-- Template quality gate: passing locally for BL-CONTEXT-001 (164 tests plus 4 subtests).
+- Template quality gate: passing for BL-CONTEXT-001 (164 tests plus 4 subtests); GitHub Actions passed twice on proof head `8840a3c`.
 - Every generated profile passes its own gate. `minimal` is 29 files/145,995 bytes with about 2,082 estimated startup tokens; `solo` is 62 files/411,582 bytes with about 2,056.
 
 ## Open P0/P1 Failures
 
-- P1 [BL-CONTEXT-001]: local repair is validated, but GitHub-visible CI and remote closure are not yet proven.
+- None.
 
 ## What Is Not Proven
 
@@ -39,17 +39,17 @@
 - PR #4 merge acceptance.
 - Downstream repos have not yet upgraded to the BL-WORKFLOW-002 guardrails.
 - BL-BROWSER-002 concrete provider integration is not yet implemented.
-- Remote branch, PR, and CI truth for BL-CONTEXT-001.
+- Human review/merge acceptance for PR #5; final-head CI/remote truth must be read from GitHub and the remote closure finalizer, not inferred from this file alone.
 
 ## Immediate Priorities
 
-1. Commit, push, open the stacked BL-CONTEXT-001 PR, and verify CI/remote closure.
+1. Review and merge stacked PR #5 after parent-branch acceptance.
 2. Complete BL-PARALLEL-001 parent-branch merge acceptance.
 3. Resume BL-BROWSER-002 after the generator baseline is internally correct.
 
 ## Active Blockers
 
-- BL-CONTEXT-001 remains non-closure-grade until the final pushed head and CI agree.
+- None for implementation; PR #5 acceptance/merge remains human-controlled.
 
 ## Notes
 

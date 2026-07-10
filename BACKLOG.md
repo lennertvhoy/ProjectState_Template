@@ -11,7 +11,6 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-CONTEXT-001] Repair generated-repo correctness and context hygiene: explicit profile asset manifests, generated self-gates, strict YAML keys, measurable footprint budgets, and semantic lifecycle checks.
 - [BL-PARALLEL-001] Complete remote push/PR/CI closure for the implemented parallel-agent worktree orchestrator; local implementation and gates are already recorded in WORKLOG.md.
 
 ## NEXT
@@ -20,6 +19,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## CLOSED
 
+- [BL-CONTEXT-001] Repair generated-repo correctness and context hygiene with explicit profile asset manifests, generated self-gates, strict YAML keys, measurable footprint budgets, semantic lifecycle checks, and preserved Git porcelain columns; implementation proof head `8840a3c` is CI-verified on PR #5 and the final state head is governed by the remote closure finalizer.
 - [BL-WORKFLOW-002] Re-validate and close worktree isolation and anti-brittleness guardrails after BL-SANITY-002 repairs; evidence, PR body, CI, and remote closure all agree on final head `0c2a136`.
 - [BL-SANITY-002] Repair template logic holes discovered by the 2026-07-07 ultra-critical sanity check: close false-positive closure-grade audit/handoff/doctor paths, align runtime-identity consumers with the canonical schema, harden worktree/brittleness guards, and remove unsafe file operations in init/upgrade/browser/remote-closure/probe scripts.
 - [BL-SANITY-001] StateDD repo coherence and efficiency repair: reconcile PR #2 efficiency layer, add backlog duplicate validation, repair truth files, fix closure evidence, add post-merge verifier, update CI.

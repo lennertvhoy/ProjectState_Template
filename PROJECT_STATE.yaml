@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-10T22:03:00+02:00
+  updated_at: 2026-07-10T22:18:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -19,7 +19,7 @@ workflow:
       - BL-SANITY-002 template logic-hole repair is closure-grade and CI-verified on PR #4; merge pending
       - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is closure-grade and CI-verified on PR #4; merge pending
       - BL-PARALLEL-001 is locally implemented and validated; remote closure is pending
-      - BL-CONTEXT-001 is implemented and locally validated; push, PR, CI, and remote closure are pending
+      - BL-CONTEXT-001 implementation proof head 8840a3c is CI-verified on PR #5; the final state head is governed by the remote closure finalizer
       - BL-BROWSER-002 concrete browser automation provider integration follows the generator repair
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
@@ -107,9 +107,7 @@ current_state:
 
   open_p0_failures: []
 
-  closure_blockers:
-    - id: BL-CONTEXT-001
-      reason: local repair is validated, but the final head is not yet pushed or CI-verified
+  closure_blockers: []
 
   last_live_canary:
     status: not_applicable_for_template_root
@@ -435,29 +433,4 @@ current_state:
         status: observed
         path: docs/adr/0000-adr-template.md
 
-active_problems:
-  - id: BL-CONTEXT-001
-    title: Repair generated-repo correctness and context hygiene
-    severity: P1
-    opened_at: 2026-07-10T20:36:25+02:00
-    files:
-      - scripts/init_template.py
-      - scripts/statedd_validate_schema.py
-      - scripts/statedd_efficiency_check.py
-      - scripts/statedd_quality_gate.py
-      - scripts/statedd_upgrade.py
-      - scripts/statedd_worktree_guard.py
-      - scripts/check_state_docs.py
-      - scripts/test_init_template.py
-      - scripts/test_adoption_profiles.py
-      - scripts/test_schema_validation.py
-      - scripts/test_efficiency_check.py
-      - scripts/test_upgrade.py
-      - scripts/test_worktree_guard.py
-      - fixtures/bootstrap_dry_run/bootstrap/NEXT_ACTIONS.md
-      - .github/workflows/validate.yml
-    summary: |
-      The repair is implemented and locally validated: all generated profiles pass
-      their own gate, manifest/footprint/YAML/lifecycle regressions pass, and the
-      worktree guard now preserves Git porcelain status columns. Remote CI and
-      closure agreement remain unproven.
+active_problems: []

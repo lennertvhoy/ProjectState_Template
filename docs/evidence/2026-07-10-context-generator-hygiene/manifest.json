@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "b4385421f1b95e8c8db101e7c477d07c4c6dc4005004411ca8383fb238b839fd"
+      "sha256": "60ea9f6d58ef1a8471872608c73bb27fab751f454266df15d72fccc1367177a9"
     },
     {
       "kind": "runtime_identity",
@@ -19,7 +19,7 @@
       "path": "command_outputs/verification.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "f941f671a184dd58245e80117940ab7d8bd587ca93186a3954c7599f8483c932"
+      "sha256": "4d8004d19e41ec0b08d080fca2168feafcabe3f51c56d0e4fb3a40997b31823d"
     }
   ],
   "claims": [
@@ -84,8 +84,8 @@
   },
   "repo": {
     "branch": "bl-bl-context-001-code-a1daa",
-    "head": "976a3f0e2a38ba7bf096a300db16b95b65bd53f4",
-    "proof_head": "976a3f0e2a38ba7bf096a300db16b95b65bd53f4"
+    "head": "8840a3c2bed468b6440705c031dcc0015df807d1",
+    "proof_head": "8840a3c2bed468b6440705c031dcc0015df807d1"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",

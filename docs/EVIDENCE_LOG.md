@@ -545,3 +545,19 @@
 - Type: test
 - as_of: 2026-07-10T22:03:00+02:00
 - Notes: Local validation only; remote branch, PR, and CI truth are pending.
+
+## EV-2026-07-10-003: BL-CONTEXT-001 CI-verified proof head and closure candidate
+
+- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/README.md
+- Title: GitHub Actions validates the generator/context repair proof head
+- Source/System: ci
+- Action: Pushed PR #5, used the semantic gate to catch and repair a fixture lifecycle contradiction, and reran both push and PR workflows on proof head `8840a3c`.
+- Shows:
+  - GitHub Actions runs `29120524026` and `29120525510` passed on `8840a3c`
+  - the PR head, evidence proof head, and implementation under test agree
+  - final state truth is carried in a following metadata commit and requires a second CI/finalizer pass
+- Proves:
+  - the implementation crosses the GitHub-visible CI truth boundary at proof head `8840a3c`
+- Type: post_deploy
+- as_of: 2026-07-10T22:18:00+02:00
+- Notes: The final closure label is not claimed by this entry; the remote closure finalizer remains authoritative for the final state head.

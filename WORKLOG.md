@@ -2,6 +2,26 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-10 - BL-CONTEXT-001 remote closure candidate
+
+**Type:** template_maintenance_closure
+**Status:** CLOSURE_CANDIDATE
+**Git Head:** proof head 8840a3c2bed468b6440705c031dcc0015df807d1 on PR #5; final state commit follows
+**Worktree:** isolated agent worktree
+**Gate Level:** 2; proof head passed both push and pull-request GitHub Actions runs
+
+### Verification
+- GitHub Actions runs `29120524026` and `29120525510` both passed on proof head `8840a3c`.
+- The initial CI failure on `aea07bd` correctly exposed a fixture queue/backlog contradiction; the fixture was repaired without weakening the new semantic gate.
+- The final state commit must pass GitHub Actions and `scripts/statedd_remote_closure_finalizer.py --pr 5` before any closure-grade handoff.
+
+### Evidence
+- `docs/evidence/2026-07-10-context-generator-hygiene/README.md`
+- PR #5: https://github.com/lennertvhoy/StateDD_Template/pull/5
+
+### Notes
+- This entry records a closure candidate, not pre-emptive CI truth for the following state-only commit.
+
 ## 2026-07-10 - Generated-repo correctness and context hygiene (BL-CONTEXT-001)
 
 **Type:** template_maintenance_repair
