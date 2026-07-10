@@ -44,7 +44,7 @@ query($owner: String!, $repo: String!) {
 """
 
 PR_QUERY = """
-query($owner: String!, $repo: String!, $number: Int!) {
+query($owner: String!, $repo: String!, $number: Int!, $sha: String!) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $number) {
       number
@@ -339,6 +339,17 @@ class PostMergeVerifier:
         merge_commit = (self.pr.get("mergeCommit") or {}).get("oid", "")
         if not merge_commit:
             return
+        # Ensure the remote default branch head is present locally before ancestry check.
+        if self.default_branch:
+            fetch_code, _, fetch_err = self.run_command_fn(
+                ["git", "fetch", "origin", self.default_branch],
+                self.root,
+            )
+            if fetch_code != 0:
+                self.failures.append(
+                    f"Could not fetch origin/{self.default_branch}: {fetch_err or 'unknown error'}"
+                )
+                return
         # Check that the merge commit is an ancestor of default branch HEAD
         code, _, _ = self.run_command_fn(
             ["git", "merge-base", "--is-ancestor", merge_commit, self.default_branch_head],

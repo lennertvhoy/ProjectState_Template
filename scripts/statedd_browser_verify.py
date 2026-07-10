@@ -44,6 +44,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def safe_artifact_path(evidence_dir: Path, ref: str) -> Path:
+    """Resolve an artifact path and ensure it stays inside the evidence directory."""
+    if not ref or ref.startswith(("/", "\\")) or ".." in Path(ref).parts:
+        raise SystemExit(f"Invalid artifact path: {ref}")
+    candidate = (evidence_dir / ref).resolve()
+    evidence_dir_resolved = evidence_dir.resolve()
+    if evidence_dir_resolved not in candidate.parents and candidate != evidence_dir_resolved:
+        raise SystemExit(f"Artifact path escapes evidence directory: {ref}")
+    return candidate
+
+
 def load_browser_verification(evidence_dir: Path) -> dict[str, Any]:
     path = evidence_dir / ARTIFACT_NAME
     if not path.exists():
@@ -177,7 +188,7 @@ def command_check(evidence_dir: Path, *, strict: bool = False) -> int:
         if not ref:
             issues.append(f"Artifact {index} has no path")
             continue
-        artifact_path = evidence_dir / ref
+        artifact_path = safe_artifact_path(evidence_dir, ref)
         if not artifact_path.exists():
             issues.append(f"Missing artifact: {ref}")
             continue
@@ -213,7 +224,7 @@ def command_check(evidence_dir: Path, *, strict: bool = False) -> int:
             issues.append(f"Check {check_id} has no evidence artifacts")
             continue
         for ref in evidence:
-            artifact_path = evidence_dir / ref
+            artifact_path = safe_artifact_path(evidence_dir, ref)
             if not artifact_path.exists():
                 issues.append(f"Check {check_id} references missing artifact: {ref}")
             if ref not in artifact_paths:
@@ -262,7 +273,7 @@ def command_hash(evidence_dir: Path) -> int:
             continue
         if ref == ARTIFACT_NAME:
             continue
-        artifact_path = evidence_dir / ref
+        artifact_path = safe_artifact_path(evidence_dir, ref)
         if not artifact_path.exists():
             print(f"Skipping missing artifact: {ref}")
             continue

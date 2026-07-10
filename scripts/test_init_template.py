@@ -89,6 +89,16 @@ def test_new_rejects_symlinked_existing_directory() -> None:
         assert_no_external_files(outside)
 
 
+def test_new_rejects_template_root() -> None:
+    completed = run_init(
+        ["new", "--name", "Template Root", "--target", str(ROOT)],
+        expect_success=False,
+    )
+    output = f"{completed.stdout}\n{completed.stderr}".lower()
+    if "template root" not in output:
+        raise AssertionError(f"Expected template-root refusal, got:\n{output}")
+
+
 def test_readme_link_rejects_symlinked_readme_before_writes() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -185,6 +195,20 @@ def assert_runtime_proof_assets_exist(root: Path) -> None:
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
         raise AssertionError(f"Missing runtime proof assets: {missing}")
+
+
+def assert_worktree_and_brittleness_assets_exist(root: Path) -> None:
+    required = [
+        root / "ANTI_BRITTLENESS_GUARD.md",
+        root / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md",
+        root / "scripts" / "statedd_worktree_guard.py",
+        root / "scripts" / "test_worktree_guard.py",
+        root / "scripts" / "statedd_brittleness_check.py",
+        root / "scripts" / "test_brittleness_check.py",
+    ]
+    missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+    if missing:
+        raise AssertionError(f"Missing worktree/anti-brittleness assets: {missing}")
 
 
 def assert_evidence_pack_assets_exist(root: Path) -> None:
@@ -314,6 +338,7 @@ def test_new_includes_quality_firewall_assets() -> None:
         target = Path(tmp) / "demo"
         run_init(["new", "--name", "Quality Demo", "--target", str(target)], expect_success=True)
         assert_quality_firewall_assets_exist(target)
+        assert_worktree_and_brittleness_assets_exist(target)
 
 
 def test_new_includes_schema_validation_assets_and_passes_schema_validation() -> None:
@@ -435,6 +460,7 @@ def test_adopt_installs_quality_firewall_assets() -> None:
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
         run_init(["adopt", "--name", "Quality Adopted", "--target", str(repo)], expect_success=True)
         assert_quality_firewall_assets_exist(repo)
+        assert_worktree_and_brittleness_assets_exist(repo)
 
 
 def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() -> None:

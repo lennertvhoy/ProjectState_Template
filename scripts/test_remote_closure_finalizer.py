@@ -221,7 +221,7 @@ def test_pr_body_proof_final_split_passes() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         write_evidence(root, head=None, final_head=LOCAL_HEAD)
-        body = f"Proof head: {PROOF_HEAD}\nFinal PR head: {LOCAL_HEAD}"
+        body = f"- Proof head: {PROOF_HEAD}\n- Final PR head: {LOCAL_HEAD}"
         f = make_finalizer(root, github_data=None, body=body)
         assert f.run() == 0
         assert f.closure_label == "CI verified"

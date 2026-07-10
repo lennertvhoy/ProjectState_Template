@@ -16,6 +16,16 @@ from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
 
+def latest_evidence_folder(root: Path) -> Path | None:
+    evidence_root = root / "docs" / "evidence"
+    if not evidence_root.exists():
+        return None
+    candidates = [entry for entry in evidence_root.iterdir() if entry.is_dir() and not entry.name.startswith(".")]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: p.stat().st_mtime)
+
+
 class RuntimeTruthCheck:
     def __init__(self, root: Path, verbose: bool = False):
         self.root = root
@@ -42,7 +52,7 @@ class RuntimeTruthCheck:
                 cwd=self.root, capture_output=True, text=True, timeout=5
             )
             if result.returncode == 0:
-                identity["git_head"] = result.stdout.strip()[:12]
+                identity["git_head"] = result.stdout.strip()
             result = subprocess.run(
                 ["git", "branch", "--show-current"],
                 cwd=self.root, capture_output=True, text=True, timeout=5
@@ -69,26 +79,49 @@ class RuntimeTruthCheck:
         return identity
 
     def load_recorded(self) -> Dict[str, Any]:
-        """Load recorded runtime identity."""
-        path = self.root / "runtime_identity.json"
+        """Load recorded runtime identity from the latest evidence folder, falling back to the repo root."""
+        folder = latest_evidence_folder(self.root)
+        path = (folder / "runtime_identity.json") if folder else self.root / "runtime_identity.json"
+        if not path.exists():
+            # Fallback to root if the evidence folder lacks the artifact.
+            path = self.root / "runtime_identity.json"
         if not path.exists():
             raise FileNotFoundError("runtime_identity.json not found")
         return json.loads(path.read_text())
+
+    def is_ancestor(self, ancestor: str, descendant: str) -> bool:
+        try:
+            result = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+                cwd=self.root, capture_output=True, text=True, timeout=5
+            )
+            return result.returncode == 0
+        except Exception:
+            return False
 
     def compare(self, current: Dict, recorded: Dict) -> List[str]:
         """Compare current vs recorded, return list of mismatches."""
         mismatches = []
 
-        # Fields that must match exactly
-        critical_fields = [
-            "os", "kernel", "arch", "python", "git_head"
-        ]
-
+        # Machine/environment fields must match exactly.
+        critical_fields = ["os", "kernel", "arch", "python"]
         for field in critical_fields:
             curr_val = current.get(field)
             rec_val = recorded.get(field)
             if curr_val != rec_val:
                 mismatches.append(f"{field}: current={curr_val} recorded={rec_val}")
+
+        # git_head must match exactly or be an ancestor of the current HEAD.
+        # This lets a committed evidence artifact from an earlier proof commit stay
+        # valid after later evidence-only commits.
+        curr_head = current.get("git_head")
+        rec_head = recorded.get("git_head")
+        if curr_head != rec_head:
+            if rec_head and isinstance(rec_head, str) and self.is_ancestor(rec_head, curr_head or ""):
+                if self.verbose:
+                    print(f"  ℹ git_head differs but recorded {rec_head[:7]} is an ancestor of current {curr_head[:7]}")
+            else:
+                mismatches.append(f"git_head: current={curr_head} recorded={rec_head}")
 
         # Fields that can differ (warn only)
         flexible_fields = ["timestamp", "hostname", "cwd", "git_branch"]

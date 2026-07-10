@@ -1,0 +1,141 @@
+{
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-SANITY-002",
+  "manifest_status": "complete",
+  "created_at": "2026-07-07T19:25:00+02:00",
+  "repo": {
+    "branch": "bl-workflow-002-worktree-brittleness",
+    "head": "b1b00f3b0328b42bd15c7868f4ea9815aa5e6551",
+    "proof_head": "a39d26dc95e3ad000e726832942c1314280ed467"
+  },
+  "runtime_identity": {
+    "required": false,
+    "path": "runtime_identity.json",
+    "status": "not_applicable"
+  },
+  "claims": [
+    {
+      "id": "audit-stale-head",
+      "claim": "statedd_audit.py rejects stale HEAD evidence and uses merge-base for changed files",
+      "status": "validated",
+      "evidence": ["scripts/statedd_audit.py", "command_outputs/audit_strict.txt"]
+    },
+    {
+      "id": "doctor-blockers",
+      "claim": "statedd_doctor.py counts real open blockers from PROJECT_STATE.yaml",
+      "status": "validated",
+      "evidence": ["scripts/statedd_doctor.py"]
+    },
+    {
+      "id": "handoff-unknown-upstream",
+      "claim": "statedd_handoff.py reports not proven when upstream is unknown",
+      "status": "validated",
+      "evidence": ["scripts/statedd_handoff.py"]
+    },
+    {
+      "id": "runtime-schema-agreement",
+      "claim": "runtime_identity.json producer and consumers agree on the canonical schema",
+      "status": "validated",
+      "evidence": ["scripts/statedd_runtime_proof.py", "scripts/statedd_runtime_truth_check.py", "runtime_identity.json"]
+    },
+    {
+      "id": "worktree-guard",
+      "claim": "statedd_worktree_guard.py rejects unknown_do_not_touch and mislabeled shared branches",
+      "status": "validated",
+      "evidence": ["scripts/statedd_worktree_guard.py", "scripts/test_worktree_guard.py"]
+    },
+    {
+      "id": "init-root-refusal",
+      "claim": "init_template.py refuses to overwrite the template root",
+      "status": "validated",
+      "evidence": ["scripts/init_template.py", "scripts/test_init_template.py"]
+    },
+    {
+      "id": "upgrade-safety",
+      "claim": "statedd_upgrade.py blocks path traversal and reports true dry-run state",
+      "status": "validated",
+      "evidence": ["scripts/statedd_upgrade.py", "scripts/test_upgrade.py"]
+    },
+    {
+      "id": "browser-path-traversal",
+      "claim": "statedd_browser_verify.py rejects artifact paths that escape the evidence directory",
+      "status": "validated",
+      "evidence": ["scripts/statedd_browser_verify.py", "scripts/test_browser_verification.py"]
+    },
+    {
+      "id": "remote-closure-gh",
+      "claim": "statedd_remote_closure_finalizer.py runs gh from repo root and honors github-token",
+      "status": "validated",
+      "evidence": ["scripts/statedd_remote_closure_finalizer.py"]
+    },
+    {
+      "id": "post-merge-graphql",
+      "claim": "statedd_post_merge_verify.py declares the sha variable and fetches before ancestry checks",
+      "status": "validated",
+      "evidence": ["scripts/statedd_post_merge_verify.py"]
+    },
+    {
+      "id": "probe-isolation",
+      "claim": "statedd_probe_guidance.py runs probes in an isolated temporary copy",
+      "status": "validated",
+      "evidence": ["scripts/statedd_probe_guidance.py"]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "README.md",
+      "kind": "doc",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "runtime_identity.json",
+      "kind": "runtime_identity",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/quality_gate.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/closure_check.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/runtime_truth_check.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/audit_strict.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/pytest.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    }
+  ],
+  "redaction": {
+    "status": "checked",
+    "automated_scan": "passed",
+    "manual_review": "completed",
+    "known_limits": []
+  }
+}

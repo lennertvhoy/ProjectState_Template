@@ -29,16 +29,23 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("QUALITY_FIREWALL.md"),
     Path("FAILURE_TAXONOMY.md"),
     Path("INCIDENT_RESPONSE.md"),
+    Path("ANTI_BRITTLENESS_GUARD.md"),
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("scripts/statedd_version_check.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
+    Path("scripts/statedd_worktree_guard.py"),
+    Path("scripts/statedd_agent_worktree.py"),
+    Path("scripts/statedd_brittleness_check.py"),
     Path("scripts/statedd_runtime_proof.py"),
     Path("scripts/statedd_validate_schema.py"),
     Path("scripts/statedd_evidence_pack.py"),
     Path("scripts/test_init_template.py"),
+    Path("scripts/test_worktree_guard.py"),
+    Path("scripts/test_agent_worktree.py"),
+    Path("scripts/test_brittleness_check.py"),
     Path("scripts/test_runtime_proof.py"),
     Path("scripts/test_schema_validation.py"),
     Path("scripts/test_evidence_pack.py"),
@@ -71,6 +78,7 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("docs/failure_scans/TEMPLATE.md"),
     Path("docs/incidents/README.md"),
     Path("docs/quality_gates/README.md"),
+    Path("docs/quality_gates/ANTI_BRITTLENESS_GATE.md"),
     Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
     Path("docs/UPGRADING.md"),
     Path("docs/adr/README.md"),
@@ -253,25 +261,43 @@ def print_plan(plan: dict[str, Any], target: Path, template_version: str, target
         print("\nManual actions required: (none)")
 
 
+def _safe_target_path(target: Path, relpath: Path) -> Path:
+    """Resolve a destination path and ensure it stays inside the target root."""
+    normalized = Path(*relpath.parts)
+    if ".." in normalized.parts:
+        raise SystemExit(f"Refusing to traverse outside target: {relpath}")
+    destination = (target / normalized).resolve()
+    target_resolved = target.resolve()
+    if target_resolved not in destination.parents and destination != target_resolved:
+        raise SystemExit(f"Refusing to write outside target: {relpath}")
+    return destination
+
+
+def _safe_copy2(source: Path, destination: Path) -> None:
+    """Copy a regular file, refusing symlinks or non-regular sources."""
+    if source.is_symlink() or not source.is_file():
+        raise SystemExit(f"Refusing to copy non-regular file: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+
+
 def execute_plan(plan: dict[str, Any], target: Path) -> None:
     for info in plan["will_add"]:
         relpath = Path(info["relpath"])
         source = TEMPLATE_ROOT / relpath
-        destination = target / relpath
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
+        destination = _safe_target_path(target, relpath)
+        _safe_copy2(source, destination)
         print(f"Added {info['relpath']}")
 
     for info in plan["will_modify"]:
         relpath = Path(info["relpath"])
         source = TEMPLATE_ROOT / relpath
-        destination = target / relpath
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
+        destination = _safe_target_path(target, relpath)
+        _safe_copy2(source, destination)
         print(f"Modified {info['relpath']}")
 
 
-def write_report(path: Path, plan: dict[str, Any], target: Path, template_version: str, target_version: str | None) -> None:
+def write_report(path: Path, plan: dict[str, Any], target: Path, template_version: str, target_version: str | None, *, dry_run: bool) -> None:
     report = {
         "schema": "statedd.upgrade_report.v1",
         "generated_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -279,7 +305,7 @@ def write_report(path: Path, plan: dict[str, Any], target: Path, template_versio
         "target": str(target),
         "template_version": template_version,
         "target_version": target_version,
-        "dry_run": True,
+        "dry_run": dry_run,
         "summary": {
             "will_add": len(plan["will_add"]),
             "will_modify": len(plan["will_modify"]),
@@ -351,7 +377,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\nUpgrade applied.")
 
     if args.report:
-        write_report(Path(args.report).resolve(), plan, target, template_version, target_version)
+        write_report(Path(args.report).resolve(), plan, target, template_version, target_version, dry_run=not args.apply)
 
     return 0
 

@@ -1,0 +1,29 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-07-07T22:41:27+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "434f882ea28291584cdcb8b145d39bf35a419e91",
+  "hostname": "ff-fedora",
+  "in_container": false,
+  "kernel": "7.0.14-201.fc44.x86_64",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Wed Jul  1 13:34:38 UTC 2026",
+  "python": "3.14.6",
+  "repo": {
+    "branch": "bl-workflow-002-worktree-brittleness",
+    "head": "434f882ea28291584cdcb8b145d39bf35a419e91",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "status_porcelain": "M .github/workflows/validate.yml\n M AGENTS.md\n M BACKLOG.md\n M NEXT_ACTIONS.md\n M PROJECT_STATE.yaml\n M prompts/CODING_AGENT_STARTUP_PROMPT.md\n M scripts/init_template.py\n M scripts/statedd_audit.py\n M scripts/statedd_closure_check.py\n M scripts/statedd_handoff.py\n M scripts/statedd_remote_closure_finalizer.py\n M scripts/statedd_upgrade.py\n M scripts/statedd_worktree_guard.py\n M skills/close-slice/SKILL.md\n?? docs/evidence/2026-07-07-parallel-agent-worktree/\n?? docs/failure_scans/BL-PARALLEL-001.md\n?? scripts/statedd_agent_worktree.py\n?? scripts/test_agent_worktree.py",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "reason": "docs/scripts-only slice",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1",
+  "timestamp": "2026-07-07T20:41:27.057346Z"
+}

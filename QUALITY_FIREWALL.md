@@ -12,6 +12,11 @@ A slice is not closure-grade merely because its own acceptance checklist passed.
 It must also pass the current project quality gates and any global invariants
 that protect user-facing or operator-facing behavior.
 
+A non-trivial fix or feature slice is not closure-grade if it only handles the
+observed failing input without a durable invariant. Use
+`ANTI_BRITTLENESS_GUARD.md` and `docs/quality_gates/ANTI_BRITTLENESS_GATE.md`
+to record the anti-brittleness review.
+
 ## Evidence Hierarchy
 
 Evidence should prove product truth, not only that commands ran.
@@ -39,6 +44,8 @@ Before closure, answer these questions honestly:
 5. Do global invariants pass independently of the slice checklist?
 6. Is post-deploy or post-change watching required, and if so, did it pass?
 7. Do the state files record residual risk instead of hiding it?
+8. Does the fix generalize through a typed/schema/state-machine/validator/contract
+   authority path instead of exact observed strings or fixture-only behavior?
 
 ## Execution Modes
 
@@ -85,7 +92,8 @@ When a user reports a bad live event, use the incident workflow:
 8. Prove adjacent cases pass.
 9. Capture runtime/live proof when applicable.
 10. Run post-deploy watch when applicable.
-11. Close only when global gates pass or a human override records the remaining risk.
+11. Complete the anti-brittleness review for non-trivial fixes/features.
+12. Close only when global gates pass or a human override records the remaining risk.
 
 ## Handoff Truth
 

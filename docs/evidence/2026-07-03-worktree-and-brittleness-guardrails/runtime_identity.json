@@ -1,0 +1,29 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-07-07T21:02:04+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "0c2a13639894cd799506a9a5e94ecb1f3a070ffe",
+  "hostname": "ff-fedora",
+  "in_container": false,
+  "kernel": "7.0.14-201.fc44.x86_64",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Wed Jul  1 13:34:38 UTC 2026",
+  "python": "3.14.6",
+  "repo": {
+    "branch": "bl-workflow-002-worktree-brittleness",
+    "head": "0c2a13639894cd799506a9a5e94ecb1f3a070ffe",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "docs/scripts-only slice",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1",
+  "timestamp": "2026-07-07T19:02:04.030232Z"
+}

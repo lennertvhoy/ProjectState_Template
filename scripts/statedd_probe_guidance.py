@@ -9,10 +9,10 @@ Creates fake issues/tasks and checks if agent follows correct workflow.
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 from dataclasses import dataclass, asdict
@@ -100,9 +100,28 @@ PROBES = [
 
 class ProbeGuidance:
     def __init__(self, root: Path, verbose: bool = False):
-        self.root = root
+        self.original_root = root
         self.verbose = verbose
         self.results: List[Dict[str, Any]] = []
+        self._temp_dir = tempfile.TemporaryDirectory(prefix="statedd_probe_")
+        self.root = Path(self._temp_dir.name) / "repo"
+        # Copy the repo into an isolated temporary workspace so probes cannot
+        # pollute or overwrite the original repository.
+        shutil.copytree(
+            root,
+            self.root,
+            symlinks=False,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
+        )
+        # Preserve git metadata by re-initializing a fresh repo in the copy.
+        # Probes rely on the file tree, not the commit history.
+        self.run_cmd(
+            "git init -b main && "
+            "git config user.email 'probe@example.invalid' && "
+            "git config user.name 'Probe' && "
+            "git add . && "
+            "git commit -m 'probe baseline'"
+        )
 
     def run_cmd(self, cmd: str, cwd: Path = None) -> Tuple[int, str, str]:
         """Run shell command."""

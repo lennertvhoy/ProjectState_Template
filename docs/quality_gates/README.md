@@ -12,6 +12,7 @@ The template supplies the workflow, but each downstream project must define what
 - `live_canary_gate`: live or deployment-adjacent proof passes when applicable.
 - `redteam_gate`: adversarial or adjacent-failure checks pass.
 - `known_bad_events_gate`: prior bad events remain fixed by fixture or durable check.
+- `anti_brittleness_gate`: non-trivial fixes/features are backed by a durable invariant, not exact observed examples.
 
 Valid statuses:
 
@@ -44,6 +45,10 @@ quality_gates:
     status: not_run
     command: null
     evidence: null
+  anti_brittleness_gate:
+    status: not_run
+    command: python3 scripts/statedd_brittleness_check.py
+    evidence: docs/quality_gates/ANTI_BRITTLENESS_GATE.md
 ```
 
 During `quality_freeze`, no feature backlog item should be selected unless it

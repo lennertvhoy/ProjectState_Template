@@ -30,6 +30,78 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-07-07-001: Template logic-hole repair failure scan (BL-SANITY-002)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
+- File: /home/ff/Documents/Projects/StateDD_Template/STATUS.md
+- File: /home/ff/Documents/Projects/StateDD_Template/NEXT_ACTIONS.md
+- File: /home/ff/Documents/Projects/StateDD_Template/BACKLOG.md
+- File: /home/ff/Documents/Projects/StateDD_Template/PROJECT_STATE.yaml
+- Title: BL-SANITY-002 failure scan and state integration
+- Source/System: code review
+- Action: Performed an ultra-critical sanity check, identified critical logic holes, integrated BL-SANITY-002 into backlog/state, and produced a failure scan with mitigations.
+- Shows:
+  - `scripts/statedd_audit.py`, `scripts/statedd_doctor.py`, `scripts/statedd_handoff.py` have false-pass paths
+  - `scripts/statedd_runtime_proof.py` and its consumers disagree on `runtime_identity.json` schema
+  - `scripts/statedd_worktree_guard.py` and `scripts/statedd_brittleness_check.py` have weak guards
+  - `scripts/init_template.py`, `scripts/statedd_upgrade.py`, `scripts/statedd_browser_verify.py`, `scripts/statedd_remote_closure_finalizer.py`, `scripts/statedd_post_merge_verify.py`, `scripts/statedd_probe_guidance.py` have unsafe or brittle behavior
+- Proves:
+  - The failures are recorded as active P0 problems and linked to a backlog item with a failure scan
+- Type: known_bad_event
+- as_of: 2026-07-07T19:25:00+02:00
+- Notes: Implementation repairs completed in BL-SANITY-002; see EV-2026-07-07-002 for closure evidence.
+
+## EV-2026-07-07-002: Template logic-hole repair closure evidence (BL-SANITY-002)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
+- Title: BL-SANITY-002 template logic-hole repair and regression tests
+- Source/System: test
+- Action: Repaired the critical logic holes discovered by the 2026-07-07 ultra-critical sanity check and added regression tests; ran the full StateDD gate suite.
+- Shows:
+  - `python3 scripts/check_state_docs.py` passes
+  - `python3 scripts/statedd_validate_schema.py` passes
+  - `python3 scripts/statedd_quality_gate.py --gate-level 2` passes
+  - `python3 scripts/statedd_audit.py --strict` passes on the clean worktree
+  - `python3 scripts/statedd_closure_check.py` passes
+  - `python3 scripts/statedd_runtime_truth_check.py` passes
+  - `python3 -m pytest scripts/test_*.py -q` passes: 144 passed, 4 subtests passed
+- Proves:
+  - The identified false-pass, schema-mismatch, worktree/brittleness, and unsafe-file-operation holes are fixed
+  - The fixes are guarded by regression tests
+- Type: test
+- as_of: 2026-07-07T20:40:00+02:00
+- Notes: Closure-grade and CI-verified on PR #4 (head 38ac9279ab18cde22e4967acddf2f1c531132574, run 28889982468); merge pending human acceptance.
+
+## EV-2026-07-03-001: Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/incident_analysis.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/anti_brittleness_gate_design.md
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_worktree_guard.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_worktree_guard.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_brittleness_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_brittleness_check.py
+- File: /home/ff/Documents/Projects/StateDD_Template/ANTI_BRITTLENESS_GUARD.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/quality_gates/ANTI_BRITTLENESS_GATE.md
+- Title: BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails
+- Source/System: test
+- Action: Added pre-slice worktree/source-of-truth guardrails, dirty-file classification, upstream/topology handoff fields, anti-brittleness review contract, advisory brittleness scanner, audit marker checks, and downstream propagation.
+- Shows:
+  - `python3 scripts/test_worktree_guard.py` covers clean, dirty, classified, closure, detached, missing-origin, and linked-worktree cases
+  - `python3 scripts/test_brittleness_check.py` covers advisory warnings and audit anti-brittleness markers
+  - `python3 scripts/test_init_template.py` and `python3 scripts/test_upgrade.py` cover downstream propagation
+  - `python3 scripts/check_state_docs.py` and `python3 scripts/statedd_validate_schema.py` validate updated template docs/contracts
+- Proves:
+  - StateDD now moves dirty/ambiguous worktree detection before non-trivial implementation
+  - Closure handoffs expose worktree topology and upstream/GitHub visibility
+  - Non-trivial fix/feature closure requires anti-brittleness review rather than only example-specific behavior
+- Type: test
+- as_of: 2026-07-07T21:05:00+02:00
+- Notes: Re-validated after BL-SANITY-002 logic repairs; evidence README, manifest, and runtime_identity.json updated to final PR head 0c2a136. Closure-grade and CI-verified on PR #4; merge pending human acceptance.
+
 ## EV-2026-06-29-002: StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/README.md
@@ -413,3 +485,25 @@
 - Type: implementation
 - as_of: 2026-06-29T10:22:31+02:00
 - Notes: Final PR head recorded in evidence and PR body.
+
+## EV-2026-07-07-003: Parallel-Agent Worktree Orchestrator (BL-PARALLEL-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-PARALLEL-001.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json
+- Title: First-class concurrent-agent worktree isolation
+- Source/System: test
+- Action: Implemented scripts/statedd_agent_worktree.py, updated existing scripts for agent-context awareness, added regression tests and CI smoke test, and updated state/docs/skills/prompts.
+- Shows:
+  - `python3 -m pytest scripts/test_agent_worktree.py -v` passed (8 tests)
+  - `python3 -m pytest scripts/ -q` passed (152 passed, 4 subtests passed)
+  - `python3 scripts/statedd_audit.py --strict` passed with closure-grade
+  - `python3 scripts/statedd_doctor.py` reports `Closure grade: pass`
+- Proves:
+  - Multiple coding agents can provision isolated branches/worktrees without collision
+  - Existing StateDD gates recognize agent context and adjust single-agent checks
+  - Git lock contention is reported, not ignored or corrupted
+- Type: implementation
+- as_of: 2026-07-07T22:45:00+02:00
+- Notes: Local closure verified; remote push/PR/CI pending explicit approval.

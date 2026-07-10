@@ -77,6 +77,8 @@ def test_dry_run_on_older_fixture_reports_missing_assets() -> None:
         (target / "scripts" / "statedd_evidence_pack.py").unlink(missing_ok=True)
         (target / "schemas" / "evidence_manifest.schema.json").unlink(missing_ok=True)
         (target / "scripts" / "test_evidence_pack.py").unlink(missing_ok=True)
+        (target / "scripts" / "statedd_worktree_guard.py").unlink(missing_ok=True)
+        (target / "ANTI_BRITTLENESS_GUARD.md").unlink(missing_ok=True)
 
         completed = run_upgrade([str(target)], expect_success=True)
         output = completed.stdout
@@ -84,6 +86,10 @@ def test_dry_run_on_older_fixture_reports_missing_assets() -> None:
             raise AssertionError("Missing evidence pack script not reported")
         if "evidence_manifest.schema.json" not in output:
             raise AssertionError("Missing evidence manifest schema not reported")
+        if "statedd_worktree_guard.py" not in output:
+            raise AssertionError("Missing worktree guard script not reported")
+        if "ANTI_BRITTLENESS_GUARD.md" not in output:
+            raise AssertionError("Missing anti-brittleness guard doc not reported")
 
 
 def test_apply_adds_safe_missing_assets() -> None:
@@ -94,6 +100,8 @@ def test_apply_adds_safe_missing_assets() -> None:
         (target / "schemas" / "evidence_manifest.schema.json").unlink(missing_ok=True)
         (target / "QUALITY_FIREWALL.md").unlink(missing_ok=True)
         (target / "docs" / "quality_gates" / "README.md").unlink(missing_ok=True)
+        (target / "scripts" / "statedd_worktree_guard.py").unlink(missing_ok=True)
+        (target / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md").unlink(missing_ok=True)
 
         run_upgrade([str(target), "--apply"], expect_success=True)
         if not (target / "scripts" / "statedd_evidence_pack.py").exists():
@@ -104,6 +112,10 @@ def test_apply_adds_safe_missing_assets() -> None:
             raise AssertionError("Apply did not add missing quality firewall")
         if not (target / "docs" / "quality_gates" / "README.md").exists():
             raise AssertionError("Apply did not add missing quality gates README")
+        if not (target / "scripts" / "statedd_worktree_guard.py").exists():
+            raise AssertionError("Apply did not add missing worktree guard")
+        if not (target / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md").exists():
+            raise AssertionError("Apply did not add missing anti-brittleness gate")
 
 
 def test_apply_preserves_readme_and_project_truth() -> None:
@@ -176,6 +188,24 @@ def test_report_writes_json() -> None:
             raise AssertionError("Report has unexpected schema")
 
 
+def test_report_reflects_dry_run_value() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "older"
+        dry_report = Path(tmp) / "dry_report.json"
+        applied_report = Path(tmp) / "applied_report.json"
+        run_init(["new", "--name", "Older Demo", "--target", str(target)])
+
+        run_upgrade([str(target), "--report", str(dry_report)], expect_success=True)
+        dry_data = json.loads(dry_report.read_text(encoding="utf-8"))
+        if dry_data.get("dry_run") is not True:
+            raise AssertionError("Dry-run report should state dry_run: true")
+
+        run_upgrade([str(target), "--apply", "--report", str(applied_report)], expect_success=True)
+        applied_data = json.loads(applied_report.read_text(encoding="utf-8"))
+        if applied_data.get("dry_run") is not False:
+            raise AssertionError("Applied upgrade report should state dry_run: false")
+
+
 def main() -> int:
     tests = [
         test_dry_run_on_current_repo_refuses_template_root,
@@ -187,6 +217,7 @@ def main() -> int:
         test_force_managed_replaces_outdated_safe_asset,
         test_force_managed_never_overwrites_truth_files,
         test_report_writes_json,
+        test_report_reflects_dry_run_value,
     ]
     for test in tests:
         test()
