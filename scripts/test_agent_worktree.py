@@ -128,6 +128,23 @@ def test_double_reserve_same_branch_fails() -> None:
         assert_contains(completed.stderr, "Reservation ref already exists")
 
 
+def test_start_auto_base_uses_current_branch_when_main_is_absent() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        git(repo, "checkout", "-b", "feature-ci-checkout")
+        git(repo, "branch", "-D", "main")
+        git(repo, "remote", "set-head", "origin", "-d")
+        git(repo, "update-ref", "-d", "refs/remotes/origin/main")
+
+        completed = run(
+            ["--repo", str(repo), "--dry-run", "start", "--slice-id", "CI-SMOKE-001", "--agent-id", "agent-a1b2"],
+            cwd=repo,
+            expect_code=0,
+        )
+        assert_contains(completed.stdout, "DRY RUN: would create branch")
+        assert_contains(completed.stdout, "base: feature-ci-checkout")
+
+
 def test_guard_passes_in_agent_worktree_with_dirty_files() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
@@ -306,6 +323,7 @@ def main() -> int:
     tests = [
         test_start_creates_worktree_and_reservation,
         test_double_reserve_same_branch_fails,
+        test_start_auto_base_uses_current_branch_when_main_is_absent,
         test_guard_passes_in_agent_worktree_with_dirty_files,
         test_lock_detection_reports_concurrent_git_operation,
         test_handoff_includes_agent_context,

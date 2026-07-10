@@ -236,6 +236,46 @@ def current_branch(repo: Path) -> str:
     return git_value(repo, ["rev-parse", "--abbrev-ref", "HEAD"], fallback="not proven")
 
 
+def origin_default_branch(repo: Path) -> str:
+    ref = git_value(repo, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"], fallback="")
+    if ref.startswith("origin/"):
+        return ref.removeprefix("origin/")
+    return ""
+
+
+def resolve_base_ref(repo: Path, explicit_base: str | None) -> tuple[str, str]:
+    """Resolve the base ref for a new agent worktree.
+
+    Fresh CI checkouts often contain only the checked-out branch, so a hard-coded
+    local ``main`` default is not reliable. Explicit --base remains strict; the
+    implicit default tries default-branch refs first, then the current branch,
+    then HEAD as a last resort.
+    """
+    if explicit_base:
+        base = explicit_base.strip()
+        return base, git_value(repo, ["rev-parse", base], fallback="")
+
+    candidates: list[str] = []
+    default_branch = origin_default_branch(repo)
+    if default_branch:
+        candidates.extend([default_branch, f"origin/{default_branch}"])
+    candidates.extend(["main", "origin/main", "master", "origin/master"])
+    branch = current_branch(repo)
+    if branch and branch != "not proven":
+        candidates.append(branch)
+    candidates.append("HEAD")
+
+    seen: set[str] = set()
+    for candidate in candidates:
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        commit = git_value(repo, ["rev-parse", candidate], fallback="")
+        if commit:
+            return candidate, commit
+    return "", ""
+
+
 def dirty_files(repo: Path) -> list[str]:
     status = git_value(repo, ["status", "--short"], fallback="")
     paths: list[str] = []
@@ -314,12 +354,11 @@ def cmd_start(args: argparse.Namespace) -> int:
     branch = args.branch if args.branch else compute_branch_name(slice_id, agent_short_id)
     wt_path = (repo / WORKTREE_DIR / branch).resolve()
     ref = reservation_ref(branch)
-    base = (args.base or "main").strip()
-
     # Verify git is available and base exists.
-    base_commit = git_value(repo, ["rev-parse", base], fallback="")
+    base, base_commit = resolve_base_ref(repo, args.base)
     if not base_commit:
-        print(f"Base branch/ref '{base}' could not be resolved", file=sys.stderr)
+        requested = args.base if args.base else "auto"
+        print(f"Base branch/ref '{requested}' could not be resolved", file=sys.stderr)
         return 1
 
     # Fail fast if reservation already exists.
@@ -804,7 +843,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     start = subparsers.add_parser("start", help="Create a new agent worktree")
     start.add_argument("--slice-id", required=True, help="Backlog slice identifier")
     start.add_argument("--agent-id", help="Agent identifier (default: env STATEDD_AGENT_ID or uuid4 fragment)")
-    start.add_argument("--base", default="main", help="Base branch/ref (default: main)")
+    start.add_argument("--base", help="Base branch/ref (default: repo default branch, then current branch)")
     start.add_argument("--branch", help="Override computed branch name")
     start.add_argument("--wait", action="store_true", help="Wait briefly if git locks are held")
 
