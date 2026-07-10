@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tempfile
@@ -71,6 +72,49 @@ def write_budget(root: Path, **overrides: int) -> None:
     import yaml
 
     (root / "EFFICIENCY_BUDGET.yaml").write_text(yaml.safe_dump(defaults), encoding="utf-8")
+
+
+def add_context_budget(root: Path, *, max_startup_bytes: int) -> None:
+    import yaml
+
+    path = root / "EFFICIENCY_BUDGET.yaml"
+    budget = yaml.safe_load(path.read_text(encoding="utf-8"))
+    budget["context_budgets"] = {
+        "token_estimator": "utf8_bytes_div_4_ceiling",
+        "startup_files": ["AGENTS.md", "STATUS.md"],
+        "profiles": {
+            "minimal": {
+                "max_startup_files": 2,
+                "max_startup_bytes": max_startup_bytes,
+                "max_startup_estimated_tokens": 100,
+                "max_footprint_files": 10,
+                "max_footprint_bytes": 10000,
+            }
+        },
+    }
+    path.write_text(yaml.safe_dump(budget), encoding="utf-8")
+
+
+def write_minimal_context_fixture(root: Path) -> None:
+    (root / "AGENTS.md").write_text("short\n", encoding="utf-8")
+    (root / "STATUS.md").write_text("short\n", encoding="utf-8")
+    (root / "PROJECT_STATE.yaml").write_text(
+        "workflow:\n  repo_role: downstream_project\n"
+        "current_state:\n  project:\n    profile: minimal\n",
+        encoding="utf-8",
+    )
+    assets = ["AGENTS.md", "STATUS.md", "PROJECT_STATE.yaml", "STATEDD_ASSETS.json"]
+    (root / "STATEDD_ASSETS.json").write_text(
+        json.dumps(
+            {
+                "schema": "statedd.runtime_assets.v1",
+                "generation_mode": "new",
+                "profile": "minimal",
+                "assets": assets,
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 def test_oversized_root_agents_fails() -> None:
@@ -186,6 +230,34 @@ def test_clean_repo_passes() -> None:
         run_check(["--root", str(root)], expect_success=True)
 
 
+def test_context_metrics_are_reported_and_enforced() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_budget(root)
+        add_context_budget(root, max_startup_bytes=20)
+        write_minimal_context_fixture(root)
+        completed = run_check(["--root", str(root)], expect_success=True)
+        for phrase in ("startup_estimated_tokens", "footprint_files", "footprint_bytes"):
+            if phrase not in completed.stdout:
+                raise AssertionError(f"Missing context metric {phrase}:\n{completed.stdout}")
+
+        add_context_budget(root, max_startup_bytes=1)
+        completed = run_check(["--root", str(root)], expect_success=False)
+        if "startup_bytes" not in completed.stdout:
+            raise AssertionError(f"Expected startup byte budget failure:\n{completed.stdout}")
+
+
+def test_duplicate_budget_key_fails() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_budget(root)
+        budget = root / "EFFICIENCY_BUDGET.yaml"
+        budget.write_text(budget.read_text(encoding="utf-8") + "\nschema: duplicate\n", encoding="utf-8")
+        completed = run_check(["--root", str(root)], expect_success=False)
+        if "duplicate mapping key 'schema'" not in completed.stdout:
+            raise AssertionError(f"Expected duplicate YAML key failure:\n{completed.stdout}")
+
+
 if __name__ == "__main__":
     tests = [
         test_oversized_root_agents_fails,
@@ -198,6 +270,8 @@ if __name__ == "__main__":
         test_evidence_bundle_too_large_fails,
         test_bloat_fixture_fails,
         test_clean_repo_passes,
+        test_context_metrics_are_reported_and_enforced,
+        test_duplicate_budget_key_fails,
     ]
     for t in tests:
         t()

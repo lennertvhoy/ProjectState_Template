@@ -103,16 +103,50 @@ def test_runtime_required_unreachable_fixture_fails() -> None:
     assert_output_contains(completed, "endpoint_reachable must be true")
 
 
+def test_duplicate_root_yaml_key_fails() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "duplicate-root"
+        run_init(["new", "--name", "Duplicate Root", "--target", str(target), "--profile", "minimal"])
+        dna = target / "PROJECT_DNA.yaml"
+        dna.write_text(dna.read_text(encoding="utf-8") + "\ninvariants:\n  - duplicate\n", encoding="utf-8")
+        completed = run(
+            [str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
+            cwd=target,
+            expect_success=False,
+        )
+        assert_output_contains(completed, "duplicate mapping key 'invariants'")
+
+
+def test_duplicate_nested_yaml_key_fails() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "duplicate-nested"
+        run_init(["new", "--name", "Duplicate Nested", "--target", str(target), "--profile", "minimal"])
+        state = target / "PROJECT_STATE.yaml"
+        text = state.read_text(encoding="utf-8")
+        text = text.replace(
+            "  repo_role: downstream_project\n",
+            "  repo_role: downstream_project\n  repo_role: downstream_project\n",
+            1,
+        )
+        state.write_text(text, encoding="utf-8")
+        completed = run(
+            [str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
+            cwd=target,
+            expect_success=False,
+        )
+        assert_output_contains(completed, "duplicate mapping key 'repo_role'")
+
+
 def assert_schema_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "project_state.schema.json",
         root / "schemas" / "project_dna.schema.json",
         root / "schemas" / "project_adapter.schema.json",
+        root / "schemas" / "statedd_assets.schema.json",
         root / "schemas" / "runtime_identity.schema.json",
         root / "schemas" / "evidence_readme_contract.json",
         root / "schemas" / "final_handoff_contract.json",
         root / "scripts" / "statedd_validate_schema.py",
-        root / "scripts" / "test_schema_validation.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -144,6 +178,8 @@ def main() -> int:
         test_invalid_evidence_readme_fails_contract,
         test_runtime_not_applicable_fixture_passes,
         test_runtime_required_unreachable_fixture_fails,
+        test_duplicate_root_yaml_key_fails,
+        test_duplicate_nested_yaml_key_fails,
         test_generated_new_repo_includes_schema_validation_assets_and_passes,
         test_adopted_repo_includes_schema_validation_assets_and_passes,
     ]

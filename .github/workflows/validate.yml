@@ -83,6 +83,11 @@ jobs:
           python3 scripts/statedd_validate_schema.py "$tmpdir/demo"
           python3 scripts/statedd_doctor.py "$tmpdir/demo"
           python3 scripts/statedd_audit.py "$tmpdir/demo"
+          for profile in minimal solo team regulated; do
+            profile_target="$tmpdir/profile-$profile"
+            python3 scripts/init_template.py new --name "CI $profile" --profile "$profile" --target "$profile_target"
+            python3 "$profile_target/scripts/statedd_quality_gate.py" --root "$profile_target" --gate-level 1
+          done
           mkdir -p "$tmpdir/nonempty-safe"
           printf 'keep me\n' > "$tmpdir/nonempty-safe/local-note.txt"
           python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-safe" --overwrite

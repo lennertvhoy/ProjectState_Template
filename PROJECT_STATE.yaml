@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-07T22:15:00+02:00
+  updated_at: 2026-07-10T22:18:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -18,7 +18,9 @@ workflow:
       - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
       - BL-SANITY-002 template logic-hole repair is closure-grade and CI-verified on PR #4; merge pending
       - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is closure-grade and CI-verified on PR #4; merge pending
-      - BL-BROWSER-002 concrete browser automation provider integration is now active
+      - BL-PARALLEL-001 is locally implemented and validated; remote closure is pending
+      - BL-CONTEXT-001 implementation proof head 8840a3c is CI-verified on PR #5; the final state head is governed by the remote closure finalizer
+      - BL-BROWSER-002 concrete browser automation provider integration follows the generator repair
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -79,7 +81,7 @@ current_state:
       notes: |
         Requires non-trivial fix/feature slices to name the durable invariant
         and review brittle easy-way-out patterns.
-    evidence: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+    evidence: docs/evidence/2026-07-10-context-generator-hygiene/README.md
     docs:
       - QUALITY_FIREWALL.md
       - FAILURE_TAXONOMY.md
@@ -113,10 +115,11 @@ current_state:
 
   last_redteam_run:
     status: passing_for_template_propagation_checks
-    evidence: docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
+    evidence: docs/evidence/2026-07-10-context-generator-hygiene/command_outputs/verification.txt
 
   residual_risks:
     - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
+    - ultra-terse model-facing context remains a benchmark variant and is not canonical state
 
   repository:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
@@ -430,28 +433,4 @@ current_state:
         status: observed
         path: docs/adr/0000-adr-template.md
 
-active_problems:
-  - id: BL-SANITY-002
-    title: Repair template logic holes discovered by 2026-07-07 ultra-critical sanity check
-    severity: P0
-    opened_at: 2026-07-07T19:25:00+02:00
-    files:
-      - scripts/statedd_audit.py
-      - scripts/statedd_doctor.py
-      - scripts/statedd_handoff.py
-      - scripts/statedd_runtime_proof.py
-      - scripts/statedd_runtime_truth_check.py
-      - scripts/statedd_closure_check.py
-      - scripts/statedd_worktree_guard.py
-      - scripts/statedd_brittleness_check.py
-      - scripts/init_template.py
-      - scripts/statedd_upgrade.py
-      - scripts/statedd_browser_verify.py
-      - scripts/statedd_remote_closure_finalizer.py
-      - scripts/statedd_post_merge_verify.py
-      - scripts/statedd_probe_guidance.py
-    summary: |
-      The sanity check found critical false-positive closure-grade paths, incompatible
-      runtime_identity.json schemas, weak worktree/brittleness guards, and unsafe file
-      operations across the template scripts. These must be repaired before any
-      closure-grade handoff.
+active_problems: []

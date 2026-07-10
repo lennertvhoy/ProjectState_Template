@@ -196,6 +196,36 @@ def test_feature_branch_is_not_shared_default() -> None:
         assert_contains(completed.stdout, "current branch is shared/default branch: no")
 
 
+def test_unstaged_hidden_path_preserves_porcelain_columns() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        hidden = repo / ".github" / "workflow.yml"
+        hidden.parent.mkdir()
+        hidden.write_text("before\n", encoding="utf-8")
+        git(repo, "add", ".github/workflow.yml")
+        git(repo, "commit", "-m", "add hidden path")
+        hidden.write_text("after\n", encoding="utf-8")
+
+        evidence = repo / "evidence.md"
+        evidence.write_text(
+            """## Worktree Dirty File Classification
+
+| status | path | category | owner/notes |
+| --- | --- | --- | --- |
+| M | `.github/workflow.yml` | intended_slice_work | hidden path under test |
+| ?? | `evidence.md` | generated_artifact | classification file |
+""",
+            encoding="utf-8",
+        )
+        completed = run(
+            ["--repo", str(repo), "--mode", "start-slice", "--classification-file", str(evidence)],
+            cwd=repo,
+            expect_code=0,
+        )
+        assert_contains(completed.stdout, "dirty files classified: yes")
+        assert_contains(completed.stdout, ".github/workflow.yml [intended_slice_work]")
+
+
 def main() -> int:
     tests = [
         test_clean_repo_passes_start_slice,
@@ -208,6 +238,7 @@ def main() -> int:
         test_linked_worktrees_are_printed,
         test_unknown_do_not_touch_blocks_start,
         test_feature_branch_is_not_shared_default,
+        test_unstaged_hidden_path_preserves_porcelain_columns,
     ]
     for test in tests:
         test()

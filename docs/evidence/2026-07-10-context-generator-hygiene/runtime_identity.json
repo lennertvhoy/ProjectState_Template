@@ -1,0 +1,29 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-07-10T21:47:58+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "976a3f0e2a38ba7bf096a300db16b95b65bd53f4",
+  "hostname": "ff-fedora",
+  "in_container": false,
+  "kernel": "7.1.3-200.fc44.x86_64",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Sat Jul  4 19:20:12 UTC 2026",
+  "python": "3.14.6",
+  "repo": {
+    "branch": "bl-bl-context-001-code-a1daa",
+    "head": "976a3f0e2a38ba7bf096a300db16b95b65bd53f4",
+    "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa",
+    "status_porcelain": "M .github/workflows/validate.yml\n M BACKLOG.md\n M EFFICIENCY_BUDGET.yaml\n M NEXT_ACTIONS.md\n M PROJECT_STATE.yaml\n M README.md\n M STATUS.md\n M docs/ADOPTION_PROFILES.md\n M docs/EVIDENCE_LOG.md\n M scripts/AGENTS.md\n M scripts/check_state_docs.py\n M scripts/init_template.py\n M scripts/statedd_efficiency_check.py\n M scripts/statedd_quality_gate.py\n M scripts/statedd_upgrade.py\n M scripts/statedd_validate_schema.py\n M scripts/statedd_version_check.py\n M scripts/test_adoption_profiles.py\n M scripts/test_check_state_docs.py\n M scripts/test_efficiency_check.py\n M scripts/test_init_template.py\n M scripts/test_schema_validation.py\n M scripts/test_upgrade.py\n?? .statedd/\n?? docs/failure_scans/BL-CONTEXT-001.md\n?? schemas/statedd_assets.schema.json",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "reason": "Template generator, schema, and workflow validation slice; no application runtime changed",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v1",
+  "timestamp": "2026-07-10T19:47:58.009970Z"
+}

@@ -140,7 +140,13 @@ def parse_sequence(lines: list[tuple[int, str, int]], index: int, indent: int) -
             else:
                 item_map[key] = scalar(value_text)
             if index < len(lines) and lines[index][0] > indent:
+                extra_lineno = lines[index][2]
                 extra, index = parse_mapping(lines, index, lines[index][0])
+                duplicate_keys = sorted(set(item_map) & set(extra))
+                if duplicate_keys:
+                    raise StateDDYamlError(
+                        f"line {extra_lineno}: duplicate mapping key {duplicate_keys[0]!r}"
+                    )
                 item_map.update(extra)
             items.append(item_map)
         else:
@@ -167,12 +173,18 @@ def parse_mapping(lines: list[tuple[int, str, int]], index: int, indent: int) ->
         if current_indent != indent or content.startswith("- "):
             break
         key, value_text = split_key_value(content, lineno)
+        if key in mapping:
+            raise StateDDYamlError(f"line {lineno}: duplicate mapping key {key!r}")
         index += 1
         if value_text in {"|", ">"}:
             mapping[key], index = parse_block_scalar(lines, index, indent + 2)
         elif value_text == "":
             if index < len(lines) and lines[index][0] > indent:
                 mapping[key], index = parse_block(lines, index, lines[index][0])
+            elif index < len(lines) and lines[index][0] == indent and lines[index][1].startswith("- "):
+                # YAML permits a sequence value to use the same indentation as
+                # its parent key (the common "indentless sequence" style).
+                mapping[key], index = parse_sequence(lines, index, indent)
             else:
                 mapping[key] = {}
         else:
@@ -366,6 +378,7 @@ def root_targets(root: Path) -> list[tuple[Path, Path, bool]]:
         (root / "PROJECT_STATE.yaml", schema_path(root, "project_state.schema.json"), True),
         (root / "PROJECT_DNA.yaml", schema_path(root, "project_dna.schema.json"), True),
         (root / "PROJECT_ADAPTER.yaml", schema_path(root, "project_adapter.schema.json"), False),
+        (root / "STATEDD_ASSETS.json", schema_path(root, "statedd_assets.schema.json"), False),
         (root / "prompts" / "FINAL_HANDOFF_TEMPLATE.md", schema_path(root, "final_handoff_contract.json"), False),
     ]
 

@@ -26,13 +26,16 @@ TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 # workflow assets, not project-specific truth files.
 SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("VERSION"),
+    Path("EFFICIENCY_BUDGET.yaml"),
     Path("QUALITY_FIREWALL.md"),
     Path("FAILURE_TAXONOMY.md"),
     Path("INCIDENT_RESPONSE.md"),
     Path("ANTI_BRITTLENESS_GUARD.md"),
-    Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("scripts/statedd_version_check.py"),
+    Path("scripts/statedd_instruction_lint.py"),
+    Path("scripts/statedd_efficiency_check.py"),
+    Path("scripts/statedd_quality_gate.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
@@ -42,28 +45,23 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("scripts/statedd_runtime_proof.py"),
     Path("scripts/statedd_validate_schema.py"),
     Path("scripts/statedd_evidence_pack.py"),
-    Path("scripts/test_init_template.py"),
-    Path("scripts/test_worktree_guard.py"),
-    Path("scripts/test_agent_worktree.py"),
-    Path("scripts/test_brittleness_check.py"),
-    Path("scripts/test_runtime_proof.py"),
-    Path("scripts/test_schema_validation.py"),
-    Path("scripts/test_evidence_pack.py"),
+    Path("scripts/statedd_browser_verify.py"),
+    Path("scripts/statedd_closure_check.py"),
+    Path("scripts/statedd_runtime_truth_check.py"),
+    Path("scripts/statedd_evidence_type_check.py"),
+    Path("scripts/statedd_remote_truth_check.py"),
     Path("scripts/statedd_remote_closure_finalizer.py"),
-    Path("scripts/test_remote_closure_finalizer.py"),
+    Path("scripts/statedd_post_merge_verify.py"),
     Path("schemas/project_state.schema.json"),
     Path("schemas/project_dna.schema.json"),
     Path("schemas/project_adapter.schema.json"),
+    Path("schemas/statedd_assets.schema.json"),
     Path("schemas/runtime_identity.schema.json"),
     Path("schemas/evidence_readme_contract.json"),
     Path("schemas/evidence_manifest.schema.json"),
     Path("schemas/final_handoff_contract.json"),
-    Path("schemas/examples/runtime_identity_not_required.json"),
-    Path("schemas/tests/README.md"),
+    Path("schemas/browser_verification.schema.json"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
-    Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
-    Path("prompts/OPENCODE_STARTUP_PROMPT.md"),
-    Path("prompts/BOOTSTRAP_INTAKE_PROMPT.md"),
     Path("prompts/TOOL_MODEL_ROUTING_GUIDE.md"),
     Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
     Path("prompts/RUNTIME_IDENTITY_CHECKLIST.md"),
@@ -73,13 +71,11 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("prompts/SCHEMA_OWNERSHIP_TEMPLATE.md"),
     Path("prompts/SUBAGENT_REVIEW_TEMPLATE.md"),
     Path("prompts/CTO_REVIEW_CHECKLIST.md"),
-    Path("docs/GETTING_STARTED_5_MIN.md"),
-    Path("docs/BOOTSTRAP_QUALITY.md"),
     Path("docs/failure_scans/TEMPLATE.md"),
     Path("docs/incidents/README.md"),
     Path("docs/quality_gates/README.md"),
     Path("docs/quality_gates/ANTI_BRITTLENESS_GATE.md"),
-    Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
+    Path("docs/BROWSER_VERIFICATION.md"),
     Path("docs/UPGRADING.md"),
     Path("docs/adr/README.md"),
     Path("docs/adr/0000-adr-template.md"),
@@ -88,7 +84,6 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
 # Optional GitHub assets that are only upgraded when the downstream repo already
 # has a .github directory or when explicitly requested.
 GITHUB_ASSET_PATHS: list[Path] = [
-    Path(".github/workflows/validate.yml"),
     Path(".github/pull_request_template.md"),
     Path(".github/ISSUE_TEMPLATE/config.yml"),
     Path(".github/ISSUE_TEMPLATE/bootstrap-init.md"),
@@ -137,8 +132,22 @@ def read_version(root: Path) -> str | None:
 
 def managed_asset_list(target: Path, include_github: bool) -> list[Path]:
     assets = list(SAFE_TEMPLATE_ASSETS)
+    declared_paths: set[Path] | None = None
+    manifest = target / "STATEDD_ASSETS.json"
+    if manifest.exists():
+        try:
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            payload = None
+        declared = payload.get("assets") if isinstance(payload, dict) else None
+        if isinstance(declared, list) and all(isinstance(item, str) for item in declared):
+            declared_paths = {Path(item) for item in declared}
+            assets = [path for path in assets if path in declared_paths]
     if include_github or (target / ".github").exists():
-        assets.extend(GITHUB_ASSET_PATHS)
+        github_assets = GITHUB_ASSET_PATHS
+        if declared_paths is not None:
+            github_assets = [path for path in github_assets if path in declared_paths]
+        assets.extend(github_assets)
     return assets
 
 

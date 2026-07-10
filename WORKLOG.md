@@ -2,6 +2,62 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-10 - BL-CONTEXT-001 remote closure candidate
+
+**Type:** template_maintenance_closure
+**Status:** CLOSURE_CANDIDATE
+**Git Head:** proof head 8840a3c2bed468b6440705c031dcc0015df807d1 on PR #5; final state commit follows
+**Worktree:** isolated agent worktree
+**Gate Level:** 2; proof head passed both push and pull-request GitHub Actions runs
+
+### Verification
+- GitHub Actions runs `29120524026` and `29120525510` both passed on proof head `8840a3c`.
+- The initial CI failure on `aea07bd` correctly exposed a fixture queue/backlog contradiction; the fixture was repaired without weakening the new semantic gate.
+- The final state commit must pass GitHub Actions and `scripts/statedd_remote_closure_finalizer.py --pr 5` before any closure-grade handoff.
+
+### Evidence
+- `docs/evidence/2026-07-10-context-generator-hygiene/README.md`
+- PR #5: https://github.com/lennertvhoy/StateDD_Template/pull/5
+
+### Notes
+- This entry records a closure candidate, not pre-emptive CI truth for the following state-only commit.
+
+## 2026-07-10 - Generated-repo correctness and context hygiene (BL-CONTEXT-001)
+
+**Type:** template_maintenance_repair
+**Status:** VALIDATED_LOCAL_ONLY
+**Git Head:** proof base 976a3f0e2a38ba7bf096a300db16b95b65bd53f4 on branch bl-bl-context-001-code-a1daa; final commit pending
+**Worktree:** isolated agent worktree; classified slice dirt
+**Gate Level:** 2 local validation; remote push/PR/CI closure pending
+
+### What changed
+- Replaced broad directory copying with explicit profile asset allowlists and a schema-backed `STATEDD_ASSETS.json` emitted into every generated/adopted repo.
+- Excluded template tests, fixtures, maintenance evidence/history, incidents, changelog, release material, and the initializer from downstream instances and upgrades.
+- Made `minimal` core-gates-only and moved repository inventory out of mandatory startup state; compacted generated AGENTS, PROJECT_STATE, PROJECT_DNA, README, and startup prompt without opaque abbreviations.
+- Made duplicate YAML keys fatal at root/nested levels and reused the strict parser for efficiency budgets.
+- Added startup file/byte/estimated-token and profile file/byte budgets, with measurements printed by the efficiency gate.
+- Made PROJECT_STATE active problems canonical for STATUS P0/P1 failures and enforced semantic backlog NOW/CLOSED, queue, and terminal worklog agreement.
+- Made the quality gate select declared project tests/static analysis rather than treating globally installed tools or absent tests as failures.
+- Fixed the worktree guard so leading Git porcelain status columns and hidden paths are preserved.
+
+### Verification
+- `python3 -m pytest scripts/ -q` passed after final local state updates (164 tests, 4 subtests).
+- Each `minimal`, `solo`, `team`, and `regulated` generated repo passed its own quality gate.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2` passed.
+- Schema, state/bootstrap, version, runtime-truth, evidence-type, instruction, efficiency, and brittleness gates passed locally.
+- `minimal`: 29 files / 145,995 bytes / about 2,082 estimated startup tokens.
+- `solo`: 62 files / 411,582 bytes / about 2,056 estimated startup tokens.
+
+### Evidence
+- `docs/failure_scans/BL-CONTEXT-001.md`
+- `docs/evidence/2026-07-10-context-generator-hygiene/README.md`
+- `docs/evidence/2026-07-10-context-generator-hygiene/manifest.json`
+- `docs/evidence/2026-07-10-context-generator-hygiene/runtime_identity.json`
+
+### Notes
+- Local behavior is validated, but the slice remains in BACKLOG NOW and active state until the pushed PR head and GitHub Actions agree.
+- Ultra-terse/caveman model context is not canonical; compact/modular/ephemeral representations remain benchmark variants.
+
 ## 2026-07-07 - Parallel-Agent Worktree Orchestrator (BL-PARALLEL-001)
 
 **Type:** template_maintenance_feature
