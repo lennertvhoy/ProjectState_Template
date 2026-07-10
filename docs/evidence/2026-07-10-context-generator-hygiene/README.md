@@ -18,7 +18,7 @@
   Evidence: `scripts/init_template.py`, `schemas/statedd_assets.schema.json`, `scripts/test_init_template.py`
   Evidence type: implementation | test
 
-- Claim: `minimal` is materially smaller than `solo`, and startup/footprint files, bytes, and estimated tokens have enforced budgets.
+- Claim: `minimal` is materially smaller than `solo`, has the smallest normalized startup payload of every profile, and startup/footprint files, bytes, and estimated tokens have enforced budgets.
   Evidence: `EFFICIENCY_BUDGET.yaml`, `scripts/statedd_efficiency_check.py`, `scripts/test_efficiency_check.py`, `scripts/test_adoption_profiles.py`
   Evidence type: implementation | test
 
@@ -90,7 +90,7 @@
 | Is the fix typed/schema/state-machine/validator/contract-based? | Yes: JSON Schema plus manifest validation, strict YAML mapping validation, budget contracts, and lifecycle set validation. |
 | Which behavior is centralized instead of scattered? | Profile assets are centralized in `PROFILE_ASSET_PATHS`; YAML parsing is shared by schema and efficiency checks; cross-file lifecycle authority is centralized in `check_cross_file_rules`. |
 | Which observed examples are covered by general rules rather than exact strings? | Any repeated mapping key, any declared profile asset, any queue/backlog ID, any P0/P1 active problem, and any exact terminal worklog state use general validators. |
-| What adjacent cases were tested? | Root/nested duplicate keys, missing/duplicate/unsafe manifest paths, all profiles, legacy minimal alias, adoption, profile budgets, CLOSED queue IDs, STATUS disagreement, and terminal worklog IDs. |
+| What adjacent cases were tested? | Root/nested duplicate keys, missing/duplicate/unsafe manifest paths, all profiles, normalized startup-context ordering, legacy minimal alias, adoption, profile budgets, CLOSED queue IDs, STATUS disagreement, and terminal worklog IDs. |
 | What brittle pattern was explicitly avoided? | No observed-file deletion list, copied-directory cleanup, token-obscuring abbreviations, installed-tool guessing, fixture-only authority, sleeps, silent success fallback, or provider-specific behavior. |
 | Did the slice add keyword buckets, regex branches, exact prompt handling, fixture-only behavior, sleeps/timeouts, global mutable state, silent fallback, or provider-specific assumptions? | Structured Markdown headings/IDs use bounded regex extraction, but strict YAML/schema data and lifecycle sets remain the authority. No provider or timing behavior was added. |
 | If yes, why is that not the authority path? | Regex only extracts the existing Markdown view format; closure decisions compare extracted IDs with canonical parsed state and explicit terminal enums. |
@@ -100,7 +100,7 @@
 | Check | Command / Path | Result |
 | --- | --- | --- |
 | full script suite | `python3 -m pytest scripts/ -q` | pass after closure-context fix: 164 tests, 4 subtests |
-| generated profile self-gates | `python3 scripts/test_adoption_profiles.py` | pass: minimal, solo, team, regulated, adopt, wizard |
+| generated profile self-gates | `python3 scripts/test_adoption_profiles.py` | pass: all profiles self-gate; normalized `minimal` startup is strictly smallest |
 | schema validation | `python3 scripts/statedd_validate_schema.py` | pass |
 | state semantics/hygiene | `python3 scripts/check_state_docs.py --bootstrap-gate` | pass |
 | context/footprint budget | `python3 scripts/statedd_efficiency_check.py --gate-level 2` | pass |

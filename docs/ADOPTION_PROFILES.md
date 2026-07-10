@@ -91,3 +91,5 @@ files in `STATEDD_ASSETS.json`. No profile receives template-maintenance tests,
 fixtures, historical evidence, incident records, changelog, or release history.
 CI runs each generated profile's own quality gate. `EFFICIENCY_BUDGET.yaml`
 enforces startup files/bytes/estimated tokens and managed footprint files/bytes.
+Profile regressions use identical project names and equal-length target paths and
+require `minimal` to remain the smallest mandatory startup payload.

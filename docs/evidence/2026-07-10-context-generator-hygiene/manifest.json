@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "820fbcbee8447272ac61cae05b77fe72b7951a925907c76ee8eb75ce0ae49a14"
+      "sha256": "0161929959d11fa91d2a69175f06d7f64516e008446b194e8299210d73243529"
     },
     {
       "kind": "runtime_identity",
@@ -19,7 +19,7 @@
       "path": "command_outputs/verification.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "654e3d7b18ea9d777c67b60aab56dd1586ec6aa14bbd6aed4ef73a3964c97ffc"
+      "sha256": "1a1787b017e2826498108301b4aeb549b520605ecca90f8d6764623f233c6c1a"
     }
   ],
   "claims": [
@@ -42,7 +42,7 @@
       "status": "validated"
     },
     {
-      "claim": "Startup and profile footprint files, bytes, and estimated tokens are measured and budgeted",
+      "claim": "Startup and profile footprint files, bytes, and estimated tokens are measured and budgeted, with minimal strictly smallest under normalized inputs",
       "evidence": [
         "README.md",
         "command_outputs/verification.txt"

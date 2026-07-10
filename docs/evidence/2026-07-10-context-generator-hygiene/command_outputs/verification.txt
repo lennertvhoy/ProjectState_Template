@@ -2,10 +2,12 @@ BL-CONTEXT-001 verification summary (pre-final)
 
 - Baseline minimal: 212 files, 1,146,498 bytes; solo: 286 files, 1,202,682 bytes.
 - Baseline fresh solo quality gate: failed after 99 passing tests because copied template tests required template_repository; generated AGENTS.md also exceeded 110 lines.
-- Repaired minimal: 29 files, 145,995 bytes, 8,326 startup bytes, 2,082 estimated tokens.
-- Repaired solo: 62 files, 411,582 bytes, 8,223 startup bytes, 2,056 estimated tokens.
-- Repaired team: 71 files, 489,102 bytes, 8,220 startup bytes, 2,055 estimated tokens.
-- Repaired regulated: 72 files, 506,201 bytes, 8,394 startup bytes, 2,099 estimated tokens.
+- Repaired minimal: 29 files, 145,977 bytes, 8,224 startup bytes, 2,056 estimated tokens.
+- Repaired solo: 62 files, 411,939 bytes, 8,260 startup bytes, 2,065 estimated tokens.
+- Repaired team: 71 files, 489,459 bytes, 8,257 startup bytes, 2,065 estimated tokens.
+- Repaired regulated: 72 files, 506,518 bytes, 8,411 startup bytes, 2,103 estimated tokens.
+- Profile context comparison uses identical project names and equal-length target
+  paths; `minimal` is now strictly the smallest startup payload.
 - Every profile's own quality gate passed.
 - `python3 -m pytest scripts/ -q`: 164 passed, 4 subtests passed.
 - `python3 scripts/test_agent_worktree.py`: 9 worktree/orchestrator regressions

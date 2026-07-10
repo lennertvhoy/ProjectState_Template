@@ -16,6 +16,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
 WIZARD_SCRIPT = ROOT / "scripts" / "statedd_bootstrap_wizard.py"
+STARTUP_FILES = (
+    "AGENTS.md",
+    "STATUS.md",
+    "PROJECT_STATE.yaml",
+    "PROJECT_DNA.yaml",
+    "NEXT_ACTIONS.md",
+)
 
 
 def run_init(args: list[str], *, expect_success: bool) -> subprocess.CompletedProcess[str]:
@@ -134,27 +141,33 @@ def test_profile_footprints_are_bounded_and_minimal_is_materially_smaller() -> N
     }
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        measured: dict[str, tuple[int, int]] = {}
-        for profile, (max_files, max_bytes) in limits.items():
-            target = root / profile
+        measured: dict[str, tuple[int, int, int]] = {}
+        for index, (profile, (max_files, max_bytes)) in enumerate(limits.items()):
+            # Keep project names and target-path lengths identical so the
+            # profile comparison measures policy payload, not fixture wording.
+            target = root / f"p{index}"
             run_init(
-                ["new", "--name", f"{profile} footprint", "--target", str(target), "--profile", profile],
+                ["new", "--name", "Profile footprint", "--target", str(target), "--profile", profile],
                 expect_success=True,
             )
             files = [path for path in target.rglob("*") if path.is_file()]
             file_count = len(files)
             byte_count = sum(path.stat().st_size for path in files)
-            measured[profile] = (file_count, byte_count)
+            startup_bytes = sum((target / path).stat().st_size for path in STARTUP_FILES)
+            measured[profile] = (file_count, byte_count, startup_bytes)
             if file_count > max_files or byte_count > max_bytes:
                 raise AssertionError(
                     f"{profile} footprint exceeds budget: files={file_count}/{max_files}, "
                     f"bytes={byte_count}/{max_bytes}"
                 )
 
-        minimal_files, minimal_bytes = measured["minimal"]
-        solo_files, solo_bytes = measured["solo"]
+        minimal_files, minimal_bytes, minimal_startup_bytes = measured["minimal"]
+        solo_files, solo_bytes, _ = measured["solo"]
         if minimal_files * 2 > solo_files or minimal_bytes * 2 > solo_bytes:
             raise AssertionError(f"minimal is not materially smaller than solo: {measured}")
+        other_startup_bytes = [values[2] for profile, values in measured.items() if profile != "minimal"]
+        if minimal_startup_bytes >= min(other_startup_bytes):
+            raise AssertionError(f"minimal startup context is not the smallest profile payload: {measured}")
 
 
 def test_adopt_with_profile_preserves_readme() -> None:

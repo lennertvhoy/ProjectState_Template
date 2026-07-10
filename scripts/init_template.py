@@ -42,9 +42,7 @@ def profile_agents_note(profile: str) -> str:
     if profile == "minimal":
         return """## Profile
 
-`minimal`: core truth, schema, hygiene, efficiency, and quality gates only. Add
-runtime/evidence helpers when the project needs them; claim requirements do not
-weaken because an optional helper is absent."""
+`minimal`: core state and gates only; add optional proof helpers when needed."""
     if profile == "team":
         return """## Profile
 

@@ -58,7 +58,8 @@
 - `PROJECT_STATE.yaml.active_problems` is canonical for open P0/P1 status; active
   queue IDs must be in `BACKLOG.md` `NOW`, closed/terminal IDs cannot remain active.
 - Startup files, startup bytes, estimated tokens, managed file count, and managed
-  bytes are measured and bounded together.
+  bytes are measured and bounded together; normalized profile tests require
+  `minimal` to have the smallest startup payload.
 
 ## Adversarial Case
 
