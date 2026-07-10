@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "60ea9f6d58ef1a8471872608c73bb27fab751f454266df15d72fccc1367177a9"
+      "sha256": "820fbcbee8447272ac61cae05b77fe72b7951a925907c76ee8eb75ce0ae49a14"
     },
     {
       "kind": "runtime_identity",
@@ -19,7 +19,7 @@
       "path": "command_outputs/verification.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "4d8004d19e41ec0b08d080fca2168feafcabe3f51c56d0e4fb3a40997b31823d"
+      "sha256": "654e3d7b18ea9d777c67b60aab56dd1586ec6aa14bbd6aed4ef73a3964c97ffc"
     }
   ],
   "claims": [
@@ -66,6 +66,15 @@
         "command_outputs/verification.txt"
       ],
       "id": "semantic-lifecycle",
+      "status": "validated"
+    },
+    {
+      "claim": "Ephemeral StateDD agent context is ignored so isolated worktrees can reach closure-grade cleanliness",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "ephemeral-context-cleanliness",
       "status": "validated"
     }
   ],

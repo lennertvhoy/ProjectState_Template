@@ -30,6 +30,10 @@
   Evidence: `scripts/check_state_docs.py`, `scripts/test_check_state_docs.py`
   Evidence type: state_update | adversarial | test
 
+- Claim: Ephemeral StateDD agent context does not make an otherwise clean isolated worktree fail closure.
+  Evidence: `.gitignore`, `scripts/test_agent_worktree.py`
+  Evidence type: implementation | test
+
 ## Failure Scan
 
 - Required: yes
@@ -41,6 +45,7 @@
 
 | status | path | category | owner/notes |
 | --- | --- | --- | --- |
+| M | `.gitignore` | intended_slice_work | ignore ephemeral StateDD agent context in template and generated repositories |
 | M | `.github/workflows/validate.yml` | intended_slice_work | generated-profile self-gate matrix |
 | M | `BACKLOG.md` | intended_slice_work | active slice and corrected parallel-closure state |
 | M | `EFFICIENCY_BUDGET.yaml` | intended_slice_work | startup and footprint budgets |
@@ -62,6 +67,7 @@
 | M | `scripts/statedd_version_check.py` | intended_slice_work | downstream no longer requires initializer |
 | M | `scripts/statedd_worktree_guard.py` | intended_slice_work | preserve Git porcelain leading status columns |
 | M | `scripts/test_adoption_profiles.py` | intended_slice_work | profile self-gates and footprint matrix |
+| M | `scripts/test_agent_worktree.py` | intended_slice_work | ephemeral context cleanliness regression |
 | M | `scripts/test_check_state_docs.py` | intended_slice_work | lifecycle adversaries |
 | M | `scripts/test_efficiency_check.py` | intended_slice_work | metric/budget adversaries |
 | M | `scripts/test_init_template.py` | intended_slice_work | manifest/exclusion regressions |
@@ -93,15 +99,16 @@
 
 | Check | Command / Path | Result |
 | --- | --- | --- |
-| full script suite | `python3 -m pytest scripts/ -q` | pass: 164 tests, 4 subtests |
+| full script suite | `python3 -m pytest scripts/ -q` | pass after closure-context fix: 164 tests, 4 subtests |
 | generated profile self-gates | `python3 scripts/test_adoption_profiles.py` | pass: minimal, solo, team, regulated, adopt, wizard |
 | schema validation | `python3 scripts/statedd_validate_schema.py` | pass |
 | state semantics/hygiene | `python3 scripts/check_state_docs.py --bootstrap-gate` | pass |
 | context/footprint budget | `python3 scripts/statedd_efficiency_check.py --gate-level 2` | pass |
 | evidence manifest | `python3 scripts/statedd_evidence_pack.py check docs/evidence/2026-07-10-context-generator-hygiene --strict` | pass after final rehash |
 | worktree guard | `python3 scripts/statedd_worktree_guard.py --mode start-slice` | pass in isolated agent worktree; dirt now classified here |
+| agent worktree regression | `python3 scripts/test_agent_worktree.py` | pass: context exists, is ignored, and worktree remains clean |
 | brittleness scan | `python3 scripts/statedd_brittleness_check.py --base 976a3f0...` | pass: 0 heuristic warnings; manual review complete |
-| audit | `python3 scripts/statedd_audit.py --strict` | pending clean committed worktree |
+| audit | `python3 scripts/statedd_audit.py --strict` | pass: 37 checks; all five dirty files classified before final commit |
 | runtime identity proof | `runtime_identity.json` | valid; runtime not applicable |
 | product quality gate | generated profile quality gates | pass |
 | runtime truth gate | not applicable | template root has no application runtime |

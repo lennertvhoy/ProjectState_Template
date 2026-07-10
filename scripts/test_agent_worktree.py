@@ -50,7 +50,8 @@ def init_repo(root: Path) -> Path:
     git(repo, "config", "user.email", "statedd@example.invalid")
     git(repo, "config", "user.name", "StateDD Test")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    git(repo, "add", "README.md")
+    (repo / ".gitignore").write_text((ROOT / ".gitignore").read_text(encoding="utf-8"), encoding="utf-8")
+    git(repo, "add", "README.md", ".gitignore")
     git(repo, "commit", "-m", "initial")
     origin = root / "origin.git"
     git(root, "init", "--bare", str(origin))
@@ -97,6 +98,11 @@ def test_start_creates_worktree_and_reservation() -> None:
         assert context["slice_id"] == "BL-TEST-001"
         assert context["branch"].startswith(agent_branch_prefix("BL-TEST-001", agent_id))
         assert context["worktree_path"] == str(worktree)
+
+        # The orchestrator's own context must not make closure-grade worktrees
+        # appear dirty. Generated repositories inherit this ignore contract.
+        assert git(worktree, "check-ignore", ".statedd/agent.context") == ".statedd/agent.context"
+        assert ".statedd/" not in git(worktree, "status", "--short", "--untracked-files=all")
 
         # Reservation ref should exist and point to base commit.
         ref = context["reservation_ref"]
