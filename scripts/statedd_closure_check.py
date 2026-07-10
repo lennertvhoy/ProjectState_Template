@@ -16,13 +16,30 @@ from typing import List, Tuple
 
 
 class ClosureCheck:
-    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None, gate_level: int = 2):
+    def __init__(
+        self,
+        root: Path,
+        verbose: bool = False,
+        claimed_files: List[str] = None,
+        gate_level: int = 2,
+        pr_number: int | None = None,
+        slice_id: str | None = None,
+        required_checks: List[str] | None = None,
+        privacy_profile: str = "public",
+    ):
         self.root = root
         self.verbose = verbose
         self.claimed_files = claimed_files or []
         self.gate_level = gate_level
+        self.pr_number = pr_number
+        self.slice_id = slice_id
+        self.required_checks = required_checks or []
+        self.privacy_profile = privacy_profile
         self.failures: List[str] = []
         self.warnings: List[str] = []
+        self.evidence_folder: Path | None = None
+        self.evidence_manifest: dict | None = None
+        self.local_head = ""
 
     def run_cmd(self, cmd: List[str]) -> Tuple[int, str, str]:
         try:
@@ -75,37 +92,65 @@ class ClosureCheck:
         return True
 
     def check_runtime_proof(self) -> bool:
-        """Verify runtime identity proof exists for user-facing changes."""
+        """Run the shared runtime contract against the selected slice bundle."""
         print("🖥️  Checking runtime proof...")
-        runtime_identity = self.root / "runtime_identity.json"
-        if not runtime_identity.exists():
-            self.failures.append("runtime_identity.json not found")
+        if self.evidence_folder is None or self.evidence_manifest is None or not self.local_head:
+            self.failures.append("Runtime proof cannot be checked before exact-slice evidence selection")
             return False
         try:
-            data = json.loads(runtime_identity.read_text())
-            required = ["os", "kernel", "git_head", "timestamp"]
-            for field in required:
-                if field not in data:
-                    self.failures.append(f"runtime_identity.json missing field: {field}")
-                    return False
-            print("  ✓ Runtime identity present and complete")
-            return True
-        except json.JSONDecodeError:
-            self.failures.append("runtime_identity.json is invalid JSON")
+            from statedd_runtime_truth_check import RuntimeTruthCheck
+
+            slice_id = str(self.evidence_manifest["slice_id"])
+            checker = RuntimeTruthCheck(
+                self.root,
+                slice_id=slice_id,
+                expected_head=self.local_head,
+                evidence_dir=self.evidence_folder,
+                privacy_profile=self.privacy_profile,
+                verbose=self.verbose,
+            )
+            result = checker.run()
+            if result == 0:
+                print("  ✓ Runtime identity satisfies the shared exact-slice contract")
+                return True
+            self.failures.append(f"Runtime truth check failed with exit code {result}")
+            return False
+        except (ImportError, KeyError, TypeError, ValueError) as exc:
+            self.failures.append(f"Runtime truth check could not load the shared contract: {exc}")
             return False
 
     def check_evidence_bundle(self) -> bool:
-        """Check evidence bundle exists and is complete."""
+        """Load one schema-validated evidence bundle for this slice and HEAD."""
         print("📦 Checking evidence bundle...")
-        evidence_log = self.root / "docs" / "EVIDENCE_LOG.md"
-        if not evidence_log.exists():
-            self.failures.append("EVIDENCE_LOG.md not found")
+        code, head, err = self.run_cmd(["git", "rev-parse", "HEAD"])
+        if code != 0 or not head.strip():
+            self.failures.append(f"Could not determine evidence HEAD: {err or 'git rev-parse failed'}")
             return False
-        content = evidence_log.read_text()
-        if len(content.strip()) < 100:
-            self.failures.append("EVIDENCE_LOG.md appears minimal")
+        code, branch, err = self.run_cmd(["git", "branch", "--show-current"])
+        if code != 0 or not branch.strip():
+            self.failures.append(f"Could not determine evidence branch: {err or 'detached HEAD'}")
             return False
-        print("  ✓ Evidence log has content")
+        self.local_head = head.strip().lower()
+        try:
+            from statedd_remote_closure_finalizer import select_evidence_manifest
+
+            folder, manifest, errors = select_evidence_manifest(
+                self.root,
+                head=self.local_head,
+                branch=branch.strip(),
+                slice_id=self.slice_id,
+                privacy_profile=self.privacy_profile,
+            )
+        except ImportError as exc:
+            self.failures.append(f"Shared evidence selector not found: {exc}")
+            return False
+        if errors or folder is None or manifest is None:
+            self.failures.extend([f"Evidence: {error}" for error in errors])
+            return False
+        self.evidence_folder = folder
+        self.evidence_manifest = manifest
+        self.slice_id = str(manifest["slice_id"])
+        print(f"  ✓ Exact-slice evidence bundle validated: {folder.relative_to(self.root)}")
         return True
 
     def check_acceptance_freeze(self) -> bool:
@@ -136,7 +181,7 @@ class ClosureCheck:
         return True
 
     def check_remote_truth(self) -> bool:
-        """Verify remote GitHub state matches local claims (Truth Boundary Gate)."""
+        """Require both exact Git refs and exact-head GitHub CI closure."""
         print("🌐 Checking remote truth (Truth Boundary Gate)...")
         # Import and run remote truth check
         sys.path.insert(0, str(self.root / "scripts"))
@@ -149,6 +194,24 @@ class ClosureCheck:
                 self.closure_label = checker.closure_label
                 return False
             self.closure_label = checker.closure_label
+
+            from statedd_remote_closure_finalizer import RemoteClosureFinalizer
+
+            finalizer = RemoteClosureFinalizer(
+                root=self.root,
+                verbose=self.verbose,
+                pr_number=self.pr_number,
+                slice_id=self.slice_id,
+                required_checks=self.required_checks,
+                privacy_profile=self.privacy_profile,
+            )
+            final_result = finalizer.run()
+            self.closure_label = finalizer.closure_label
+            if final_result != 0:
+                self.failures.extend([f"Remote closure: {failure}" for failure in finalizer.failures])
+                if not finalizer.failures:
+                    self.failures.append("Remote closure finalizer failed without a diagnostic")
+                return False
             return True
         except ImportError as e:
             self.failures.append(f"Remote truth check module not found: {e}")
@@ -177,12 +240,10 @@ class ClosureCheck:
         self.closure_label = "NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM"
 
         checks = [
-            ("Unproven Claims", self.check_no_unproven_claims),
             ("Broken Links", self.check_no_broken_links),
-            ("Runtime Proof", self.check_runtime_proof),
             ("Evidence Bundle", self.check_evidence_bundle),
+            ("Runtime Proof", self.check_runtime_proof),
             ("Acceptance Freeze", self.check_acceptance_freeze),
-            ("Handoff Complete", self.check_handoff_complete),
             ("Remote Truth", self.check_remote_truth),
             ("Efficiency", self.check_efficiency),
         ]
@@ -202,7 +263,9 @@ class ClosureCheck:
             for w in self.warnings:
                 print(f"  ⚠ {w}")
 
-        if self.failures:
+        if self.failures or not all_passed:
+            if not self.failures:
+                self.failures.append("One or more closure checks returned failure without a diagnostic")
             print("Failures:")
             for f in self.failures:
                 print(f"  ✗ {f}")
@@ -221,10 +284,28 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--claimed-files", nargs="*", default=[], help="Files claimed as deliverables")
     parser.add_argument("--gate-level", type=int, default=2, help="Gate level being proven")
+    parser.add_argument("--pr-number", type=int, default=None, help="Explicit pull request number")
+    parser.add_argument("--slice-id", default=None, help="Exact evidence slice_id to verify")
+    parser.add_argument("--required-check", action="append", default=[], help="Required CI context (repeatable)")
+    parser.add_argument(
+        "--privacy-profile",
+        choices=["public", "private", "local_only"],
+        default="public",
+        help="Required evidence privacy profile",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    checker = ClosureCheck(root, args.verbose, args.claimed_files, args.gate_level)
+    checker = ClosureCheck(
+        root,
+        args.verbose,
+        args.claimed_files,
+        args.gate_level,
+        args.pr_number,
+        args.slice_id,
+        args.required_check,
+        args.privacy_profile,
+    )
     sys.exit(checker.run())
 
 

@@ -100,10 +100,17 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("scripts/statedd_version_check.py"),
+    Path("scripts/test_version_check.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
+    Path("scripts/statedd_remote_truth_check.py"),
+    Path("scripts/statedd_closure_check.py"),
+    Path("scripts/statedd_post_merge_verify.py"),
+    Path("scripts/statedd_quality_gate.py"),
     Path("scripts/statedd_doctor.py"),
     Path("scripts/statedd_runtime_proof.py"),
+    Path("scripts/statedd_runtime_truth_check.py"),
+    Path("scripts/statedd_evidence_type_check.py"),
     Path("scripts/statedd_validate_schema.py"),
     Path("scripts/statedd_evidence_pack.py"),
     Path("scripts/statedd_upgrade.py"),
@@ -114,6 +121,13 @@ SUPPORT_ASSET_PATHS = [
     Path("scripts/test_upgrade.py"),
     Path("scripts/statedd_remote_closure_finalizer.py"),
     Path("scripts/test_remote_closure_finalizer.py"),
+    Path("scripts/test_remote_truth_check.py"),
+    Path("scripts/test_closure_check.py"),
+    Path("scripts/test_audit_closure.py"),
+    Path("scripts/test_handoff.py"),
+    Path("scripts/test_quality_gate.py"),
+    Path("scripts/test_runtime_evidence_contract.py"),
+    Path("scripts/test_post_merge_verify.py"),
     Path("schemas/project_state.schema.json"),
     Path("schemas/project_dna.schema.json"),
     Path("schemas/project_adapter.schema.json"),
@@ -850,6 +864,9 @@ invariants:
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
   - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
+  - "Implemented, validated, closure-grade, and accepted are four distinct states."
+  - "Human overrides are recorded, but they do not turn partial work into closure-grade work."
+  - "No schema may exist only in prose."
 
 governance:
   evidence_standard: browser_verification_or_test_output
@@ -882,18 +899,6 @@ governance:
     project_state: when_structured_truth_changes
     worklog: when_work_is_completed
     evidence_log: when_user_facing_claims_are_verified
-
-invariants:
-  - "STATUS.md stays short and current."
-  - "PROJECT_STATE.yaml stores structured live truth only."
-  - "PROJECT_DNA.yaml changes slowly."
-  - "NEXT_ACTIONS.md contains open work only."
-  - "BACKLOG.md assigns stable backlog IDs."
-  - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
-  - "WORKLOG.md is append-only."
-  - "Implemented, validated, closure-grade, and accepted are four distinct states."
-  - "Human overrides are recorded, but they do not turn partial work into closure-grade work."
-  - "No schema may exist only in prose."
 """
 
 

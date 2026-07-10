@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -20,11 +21,13 @@ REQUIRED_VERSION_FILES = (
     "scripts/init_template.py",
 )
 
-TEMPLATE_MAINTENANCE_VERSION_FILES = (
+TEMPLATE_REPOSITORY_VERSION_FILES = (
     "README.md",
     "CHANGELOG.md",
     "docs/UPGRADING.md",
 )
+
+VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 
 SCAN_ROOT_FILES = (
     "AGENTS.md",
@@ -57,14 +60,67 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def repo_is_template_maintenance(root: Path) -> bool:
-    readme = root / "README.md"
-    if not readme.exists():
-        return False
+def parse_front_matter(path: Path) -> tuple[dict[str, str] | None, list[str]]:
+    if not path.exists():
+        return None, [f"{path.name} is missing; repository role is not proven"]
     try:
-        return read_text(readme).startswith("# State Driven Development Template")
-    except UnicodeDecodeError:
-        return False
+        lines = read_text(path).splitlines()
+    except UnicodeDecodeError as exc:
+        return None, [f"{path.name} is unreadable: {exc}"]
+
+    if not lines or lines[0].strip() != "---":
+        return None, [f"{path.name} is missing YAML front matter"]
+
+    try:
+        closing_index = next(
+            index for index, line in enumerate(lines[1:], start=1) if line.strip() == "---"
+        )
+    except StopIteration:
+        return None, [f"{path.name} has unterminated YAML front matter"]
+
+    values: dict[str, str] = {}
+    issues: list[str] = []
+    for lineno, line in enumerate(lines[1:closing_index], start=2):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if line[0].isspace() or ":" not in line:
+            issues.append(f"{path.name} front matter line {lineno} is not a top-level key/value")
+            continue
+        key, raw_value = line.split(":", 1)
+        key = key.strip()
+        raw_value = raw_value.strip()
+        if key in values:
+            issues.append(f"{path.name} front matter repeats key {key!r}")
+            continue
+        if raw_value.startswith('"'):
+            try:
+                parsed_value = json.loads(raw_value)
+            except json.JSONDecodeError as exc:
+                issues.append(f"{path.name} front matter line {lineno} has invalid quoted value: {exc.msg}")
+                continue
+        elif raw_value.startswith("'") and raw_value.endswith("'"):
+            parsed_value = raw_value[1:-1].replace("''", "'")
+        else:
+            parsed_value = raw_value.split(" #", 1)[0].strip()
+        if not isinstance(parsed_value, str):
+            issues.append(f"{path.name} front matter key {key!r} must have a scalar string value")
+            continue
+        values[key] = parsed_value
+
+    return values, issues
+
+
+def repository_role(root: Path) -> tuple[str | None, list[str]]:
+    values, issues = parse_front_matter(root / "AGENTS.md")
+    if values is None:
+        return None, issues
+    role = values.get("repo_role")
+    if role not in VALID_REPO_ROLES:
+        expected = ", ".join(sorted(VALID_REPO_ROLES))
+        issues.append(f"AGENTS.md repo_role must be one of {expected}; got {role or 'not proven'}")
+        return None, issues
+    return role, issues
 
 
 def expected_version(root: Path) -> tuple[str | None, list[str]]:
@@ -113,11 +169,11 @@ def text_files_to_scan(root: Path) -> list[Path]:
     return sorted(paths)
 
 
-def check_required_files(root: Path, version: str) -> list[str]:
+def check_required_files(root: Path, version: str, role: str | None) -> list[str]:
     issues: list[str] = []
     required = list(REQUIRED_VERSION_FILES)
-    if repo_is_template_maintenance(root):
-        required.extend(TEMPLATE_MAINTENANCE_VERSION_FILES)
+    if role == "template_repository":
+        required.extend(TEMPLATE_REPOSITORY_VERSION_FILES)
 
     for relpath in required:
         path = root / relpath
@@ -163,7 +219,9 @@ def main(argv: list[str] | None = None) -> int:
 
     version, issues = expected_version(root)
     if version is not None:
-        issues.extend(check_required_files(root, version))
+        role, role_issues = repository_role(root)
+        issues.extend(role_issues)
+        issues.extend(check_required_files(root, version, role))
         issues.extend(check_conflicting_versions(root, version))
 
     print("StateDD Version Check")

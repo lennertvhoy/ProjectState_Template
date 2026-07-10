@@ -390,8 +390,46 @@ def build_url_artifact(args: argparse.Namespace, repo: Path) -> tuple[dict[str, 
 
 
 def write_artifact(path: Path, artifact: dict[str, object]) -> None:
+    artifact = public_artifact(artifact)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def normalize_public_url(value: object) -> object:
+    if not isinstance(value, str):
+        return value
+    parsed = urlparse(value)
+    if parsed.scheme and parsed.hostname and (
+        host_is_local(parsed.hostname)
+        or parsed.username
+        or parsed.password
+    ):
+        return f"{parsed.scheme}://<private-endpoint>"
+    return value
+
+
+def public_artifact(artifact: dict[str, object]) -> dict[str, object]:
+    """Return the public-safe representation written by the default CLI."""
+    safe = json.loads(json.dumps(artifact))
+    safe["privacy"] = {"profile": "public", "machine_identity": "normalized"}
+    repo = safe.get("repo")
+    if isinstance(repo, dict):
+        repo["path"] = "$REPO_ROOT"
+        repo.pop("status_porcelain", None)
+    runtime = safe.get("runtime")
+    if isinstance(runtime, dict):
+        runtime["endpoint"] = normalize_public_url(runtime.get("endpoint"))
+        process = runtime.get("process")
+        if isinstance(process, dict):
+            runtime["process"] = {
+                key: value
+                for key, value in process.items()
+                if key not in {"pid", "pids", "all_candidate_pids", "cwd", "command", "cmdline"}
+            }
+    probe = safe.get("probe")
+    if isinstance(probe, dict):
+        probe["url"] = normalize_public_url(probe.get("url"))
+    return safe
 
 
 def main(argv: list[str] | None = None) -> int:

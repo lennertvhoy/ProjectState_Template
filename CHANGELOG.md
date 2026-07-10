@@ -2,6 +2,12 @@
 
 All notable StateDD template changes are tracked here.
 
+## statedd-template-v5 - Unreleased
+
+- Removed duplicate generated `PROJECT_DNA.yaml` mappings while retaining the full invariant set.
+- Made version checks derive template-only requirements from parsed repository role metadata instead of README wording.
+- Made upgrade reports distinguish applied upgrades (`dry_run: false`) from dry-run plans (`dry_run: true`).
+
 ## statedd-template-v4 - 2026-06-23
 
 - Added `VERSION` as the canonical StateDD template spec-version source.

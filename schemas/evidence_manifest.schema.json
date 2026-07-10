@@ -36,6 +36,36 @@
         }
       }
     },
+    "privacy": {
+      "type": "object",
+      "required": ["profile", "machine_identity"],
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "type": "string",
+          "enum": ["public", "private", "local_only"]
+        },
+        "machine_identity": {
+          "type": "string",
+          "enum": ["normalized", "raw_local_only"]
+        }
+      }
+    },
+    "change": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["ui", "api", "config", "docs", "refactor", "infra"]
+        },
+        "files": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
     "runtime_identity": {
       "type": "object",
       "required": ["required"],
@@ -138,6 +168,24 @@
         "kind": {
           "type": "string",
           "enum": ["command_output", "runtime_identity", "screenshot", "log", "doc", "other"]
+        },
+        "evidence_types": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "browser_screenshot",
+              "runtime_proof",
+              "request_response_log",
+              "schema_validation",
+              "diff",
+              "validation_output",
+              "rendered_preview",
+              "test_coverage",
+              "benchmark"
+            ]
+          }
         },
         "sha256": {
           "type": ["string", "null"]

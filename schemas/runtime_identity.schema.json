@@ -9,6 +9,21 @@
     "schema": {"type": "string", "const": "statedd.runtime_identity.v1"},
     "generated_at": {"type": "string", "minLength": 10},
     "captured_at": {"type": "string", "minLength": 10},
+    "privacy": {
+      "type": "object",
+      "required": ["profile", "machine_identity"],
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "type": "string",
+          "enum": ["public", "private", "local_only"]
+        },
+        "machine_identity": {
+          "type": "string",
+          "enum": ["normalized", "raw_local_only"]
+        }
+      }
+    },
     "repo": {
       "type": "object",
       "required": ["path", "branch", "head", "worktree_clean"],
@@ -29,6 +44,7 @@
         "required": {"type": "boolean"},
         "kind": {"type": "string", "minLength": 1},
         "url": {"type": ["string", "null"]},
+        "endpoint": {"type": ["string", "null"]},
         "process": {
           "type": "object",
           "required": ["detected"],
@@ -56,6 +72,7 @@
     }
   },
   "statedd_semantics": {
-    "runtime_required_requires_endpoint_reachable": true
+    "runtime_required_requires_endpoint_reachable": true,
+    "public_runtime_identity": true
   }
 }

@@ -2,6 +2,47 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-10 - Upstream audit intake and stabilization roadmap normalization
+
+**Type:** template_maintenance_state_planning
+**Status:** IMPLEMENTED_AND_LOCALLY_VALIDATED; NOT_CLOSURE_GRADE
+**Git Head:** branch base `81257e6119877b200873585c0e4d71c62ef6d4ed`; state edits uncommitted at entry capture
+**Worktree:** isolated branch `bl-audit-001-state-integration`
+**Gate Level:** 1 (state-only edit loop)
+
+### What changed
+- Replaced the stale browser-first queue with one P0 stabilization slice, BL-CORE-001.
+- Added exact BL-CORE-001 scope, non-goals, failure-injection method, and 12 machine-verifiable acceptance conditions.
+- Ordered the package, manifest, adapter, Git, CI, schema, evidence, closure, worktree, updater, compatibility, toolpack, model-routing, provenance, privacy, performance, override, browser, and next-major-version work behind explicit dependencies.
+- Recorded StudyDD-specific learning features as downstream handoffs so agents do not implement them in the StateDD repository.
+- Reclassified the 2026-07-10 audit as reported input, with separately listed direct Git/GitHub/state observations and pending local reproductions.
+- Marked draft PR #4 and its prior BL-SANITY-002 / BL-WORKFLOW-002 head-bound claims as not closure-grade at current head `976a3f0e2a38ba7bf096a300db16b95b65bd53f4`.
+- Removed committed developer-machine path, kernel, and runtime details from live state; public paths now use `$REPO_ROOT`.
+- Removed stale hand-maintained script/document catalogs from live state pending the managed-asset manifest.
+- Left `PROJECT_DNA.yaml` unchanged because the proposed next-major-version architecture is backlog direction, not an implemented invariant.
+
+### Independent review
+- One read-only reviewer checked state truth and identified stale/invalid closure claims, public machine identity, and queue contradictions.
+- One read-only reviewer converted the audit into dependency-ordered, bounded implementation slices.
+- One read-only reviewer checked state schemas, hygiene limits, backlog ID rules, efficiency budgets, and the cheapest honest gate.
+- The root agent remained the sole writer in the isolated worktree.
+
+### Verification
+- `git diff --check -- STATUS.md PROJECT_STATE.yaml PROJECT_DNA.yaml NEXT_ACTIONS.md BACKLOG.md WORKLOG.md` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/statedd_validate_schema.py --quiet` passed.
+- `python3 scripts/statedd_efficiency_check.py --gate-level 1` passed.
+- A strict PyYAML loader confirmed unique mapping keys in `PROJECT_STATE.yaml` and `PROJECT_DNA.yaml`.
+
+### Truth boundary
+- Direct observations are timestamped in `PROJECT_STATE.yaml`; audit claims not reproduced locally remain `reported`.
+- No code defect from the audit was repaired in this planning slice.
+- At entry capture, no commit, push, PR, merge, post-merge CI result, runtime proof, or user acceptance was claimed.
+- Final label: `NOT CLOSURE-GRADE - LOCAL OR UNVERIFIED CLAIM`.
+
+### Next action
+- Execute BL-CORE-001 from freshly fetched `main` in a new isolated worktree and focused PR.
+
 ## 2026-06-29 - StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
 **Type:** template_maintenance_capability  
@@ -586,3 +627,36 @@
 - The SkillSignal-specific canonical schema/export/import loop is a downstream application of the new `SCHEMA_OWNERSHIP_TEMPLATE.md`, not implemented in this slice.
 - The Human Override Rule was added explicitly so the workflow stays a strong default, not a prison.
 - Subagent review feedback was integrated: fixed `.jpg` suffix detection, expanded override marker checks, hardened `statedd_doctor.py` file reads, added `AGENTS.md` freshness to doctor output, and aligned generated `PROJECT_DNA.yaml` / `PROJECT_ADAPTER.yaml` versions to v4.
+
+## 2026-07-10 - BL-CORE-001 false-closure and generator stabilization implementation
+
+**Type:** template_maintenance_implementation
+**Status:** IMPLEMENTED_AND_LOCALLY_VALIDATED; NOT_CLOSURE_GRADE
+**Git Head:** base `81257e6119877b200873585c0e4d71c62ef6d4ed`; implementation uncommitted
+**Worktree:** isolated `bl-audit-001-state-integration`
+**Gate Level:** 1 preflight; closure gates remain open
+
+### What changed
+- Added exact dirty/staged/untracked and local/upstream/remote equality checks to remote truth and closure consumers.
+- Required current-head, explicitly configured CI checks and exact evidence selection in remote closure and post-merge verification.
+- Made failed handoff commands non-zero and missing test/linter configuration explicit `NOT_CONFIGURED` failures.
+- Added a shared, schema-validated evidence bundle contract bound to slice/head, with public machine-identity privacy checks.
+- Rejected duplicate YAML mapping keys and fixed generated `PROJECT_DNA.yaml` duplicate top-level invariants.
+- Made repository-role parsing drive version validation, aligned `CHANGELOG.md` to v5, and corrected applied-upgrade `dry_run: false` reports.
+- Expanded initializer/upgrader propagation and CI discovery; CI now compiles discovered Python files, runs pytest discovery, and asserts a clean checkout.
+- Added focused failure-injection tests for each repaired false-pass class.
+
+### Verification
+- `python3 -m pytest -q` → 186 passed, 4 subtests passed.
+- `python3 -m py_compile $(find scripts schemas fixtures -type f -name '*.py' -print | sort)` passed.
+- Version check, schema validation, documentation hygiene, efficiency level 2, and `git diff --check` passed.
+- Handoff verification with `python3 -m pytest -q` exited zero.
+- Quality gate remains intentionally non-passing locally because exact-slice evidence and an explicit linter configuration are not present for this uncommitted head.
+
+### Truth boundary
+- Local implementation and preflight tests are observed in this worktree.
+- No commit, push, PR, GitHub-visible CI, merge, post-merge verification, or user acceptance is claimed.
+- Final label: `NOT CLOSURE-GRADE - LOCAL OR UNVERIFIED CLAIM`.
+
+### Next action
+- Review the complete diff, create exact-head evidence after the last edit, then commit/push and open the focused PR for current-head CI and remote closure verification.

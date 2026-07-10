@@ -1,163 +1,164 @@
 #!/usr/bin/env python3
-"""
-StateDD Runtime Truth Check
+"""Validate runtime truth from the exact current-slice evidence bundle.
 
-Verifies that the current runtime identity matches what's recorded in runtime_identity.json.
-Exit codes: 0=match, 1=mismatch, 2=error
+Exit codes: 0=match, 1=mismatch/invalid evidence, 2=execution error.
 """
+
+from __future__ import annotations
 
 import argparse
-import json
-import platform
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+
+from statedd_validate_schema import ArtifactContractError, EvidenceBundle, load_evidence_bundle
 
 
 class RuntimeTruthCheck:
-    def __init__(self, root: Path, verbose: bool = False):
-        self.root = root
+    def __init__(
+        self,
+        root: Path,
+        *,
+        slice_id: str,
+        expected_head: str | None = None,
+        evidence_dir: Path | None = None,
+        privacy_profile: str = "public",
+        verbose: bool = False,
+    ):
+        self.root = root.resolve()
+        self.slice_id = slice_id
+        self.expected_head = expected_head
+        self.evidence_dir = evidence_dir
+        self.privacy_profile = privacy_profile
         self.verbose = verbose
-        self.mismatches: List[str] = []
+        self.mismatches: list[str] = []
+        self.bundle: EvidenceBundle | None = None
 
-    def capture_current(self) -> Dict[str, Any]:
-        """Capture current runtime identity."""
-        identity = {
-            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            "os": platform.system(),
-            "os_version": platform.version(),
-            "kernel": platform.release(),
-            "arch": platform.machine(),
-            "python": platform.python_version(),
-            "hostname": platform.node(),
-            "cwd": str(self.root),
-        }
+    def git_value(self, *args: str) -> str:
+        completed = subprocess.run(
+            ["git", *args],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(completed.stderr.strip() or f"git {' '.join(args)} failed")
+        value = completed.stdout.strip()
+        if not value:
+            raise RuntimeError(f"git {' '.join(args)} returned no value")
+        return value
 
-        # Git info
+    def compare_repo_identity(self, bundle: EvidenceBundle, head: str, branch: str) -> None:
+        manifest_repo = bundle.manifest.get("repo")
+        if not isinstance(manifest_repo, dict):
+            self.mismatches.append("manifest repo identity is missing")
+            return
+        if manifest_repo.get("head") != head:
+            self.mismatches.append(
+                f"manifest head {manifest_repo.get('head')!r} does not match current head {head!r}"
+            )
+        if manifest_repo.get("branch") != branch:
+            self.mismatches.append(
+                f"manifest branch {manifest_repo.get('branch')!r} does not match current branch {branch!r}"
+            )
+
+    def compare_runtime_claim(self, bundle: EvidenceBundle) -> None:
+        runtime = bundle.runtime_identity.get("runtime")
+        checks = bundle.runtime_identity.get("checks")
+        if not isinstance(runtime, dict) or not isinstance(checks, dict):
+            self.mismatches.append("runtime identity is missing runtime/checks objects")
+            return
+        if runtime.get("required") is True and checks.get("endpoint_reachable") is not True:
+            self.mismatches.append("required runtime does not record endpoint_reachable=true")
+        if runtime.get("required") is False and checks.get("runtime_not_applicable_recorded") is not True:
+            self.mismatches.append(
+                "non-required runtime does not record runtime_not_applicable_recorded=true"
+            )
+
+    def display_path(self, path: Path) -> str:
         try:
-            result = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=self.root, capture_output=True, text=True, timeout=5
-            )
-            if result.returncode == 0:
-                identity["git_head"] = result.stdout.strip()[:12]
-            result = subprocess.run(
-                ["git", "branch", "--show-current"],
-                cwd=self.root, capture_output=True, text=True, timeout=5
-            )
-            if result.returncode == 0:
-                identity["git_branch"] = result.stdout.strip()
-        except Exception:
-            pass
-
-        # Container detection
-        identity["in_container"] = Path("/.dockerenv").exists()
-        if identity["in_container"]:
-            try:
-                cgroup = Path("/proc/self/cgroup").read_text()
-                if "docker" in cgroup:
-                    identity["container_runtime"] = "docker"
-                elif "kubepods" in cgroup:
-                    identity["container_runtime"] = "kubernetes"
-                else:
-                    identity["container_runtime"] = "unknown"
-            except Exception:
-                pass
-
-        return identity
-
-    def load_recorded(self) -> Dict[str, Any]:
-        """Load recorded runtime identity."""
-        path = self.root / "runtime_identity.json"
-        if not path.exists():
-            raise FileNotFoundError("runtime_identity.json not found")
-        return json.loads(path.read_text())
-
-    def compare(self, current: Dict, recorded: Dict) -> List[str]:
-        """Compare current vs recorded, return list of mismatches."""
-        mismatches = []
-
-        # Fields that must match exactly
-        critical_fields = [
-            "os", "kernel", "arch", "python", "git_head"
-        ]
-
-        for field in critical_fields:
-            curr_val = current.get(field)
-            rec_val = recorded.get(field)
-            if curr_val != rec_val:
-                mismatches.append(f"{field}: current={curr_val} recorded={rec_val}")
-
-        # Fields that can differ (warn only)
-        flexible_fields = ["timestamp", "hostname", "cwd", "git_branch"]
-        for field in flexible_fields:
-            curr_val = current.get(field)
-            rec_val = recorded.get(field)
-            if curr_val != rec_val and self.verbose:
-                print(f"  ℹ {field} differs (expected): current={curr_val} recorded={rec_val}")
-
-        # Container runtime
-        curr_cont = current.get("in_container")
-        rec_cont = recorded.get("in_container")
-        if curr_cont != rec_cont:
-            mismatches.append(f"container: current={curr_cont} recorded={rec_cont}")
-
-        return mismatches
+            return path.relative_to(self.root).as_posix()
+        except ValueError:
+            return path.as_posix()
 
     def run(self) -> int:
-        print("=" * 50)
+        print("=" * 60)
         print("StateDD Runtime Truth Check")
-        print("=" * 50)
+        print("=" * 60)
 
         try:
-            print("📸 Capturing current runtime...")
-            current = self.capture_current()
-
-            print("📖 Loading recorded runtime...")
-            recorded = self.load_recorded()
-
-            print("🔍 Comparing...")
-            self.mismatches = self.compare(current, recorded)
-
-            if self.mismatches:
-                print("\n❌ RUNTIME MISMATCH DETECTED:")
-                for m in self.mismatches:
-                    print(f"  ✗ {m}")
-                print("\n💡 Run 'python scripts/statedd_runtime_proof.py' to update runtime_identity.json")
-                print("=" * 50)
+            current_head = self.git_value("rev-parse", "HEAD").lower()
+            current_branch = self.git_value("branch", "--show-current")
+            expected_head = (self.expected_head or current_head).lower()
+            if expected_head != current_head:
+                print(
+                    f"FAIL expected head {expected_head} does not match current repository head {current_head}"
+                )
                 return 1
 
-            print("\n✅ RUNTIME IDENTITY MATCHES RECORDED")
-            print("=" * 50)
+            self.bundle = load_evidence_bundle(
+                self.root,
+                self.slice_id,
+                expected_head,
+                evidence_dir=self.evidence_dir,
+                privacy_profile=self.privacy_profile,
+            )
+            self.compare_repo_identity(self.bundle, current_head, current_branch)
+            self.compare_runtime_claim(self.bundle)
+
+            print(f"slice: {self.slice_id}")
+            print(f"head: {current_head}")
+            print(f"manifest: {self.display_path(self.bundle.manifest_path)}")
+            print(f"runtime artifact: {self.display_path(self.bundle.runtime_identity_path)}")
+
+            if self.mismatches:
+                print("FAIL runtime truth mismatch:")
+                for mismatch in self.mismatches:
+                    print(f"  - {mismatch}")
+                return 1
+
+            runtime = self.bundle.runtime_identity["runtime"]
+            runtime_state = "required" if runtime.get("required") is True else "not_applicable"
+            print(f"PASS runtime identity is schema-valid and exact-head bound ({runtime_state})")
             return 0
-
-        except FileNotFoundError as e:
-            print(f"\n❌ ERROR: {e}")
-            print("💡 Run 'python scripts/statedd_runtime_proof.py' to create runtime_identity.json")
-            print("=" * 50)
-            return 2
-        except json.JSONDecodeError:
-            print("\n❌ ERROR: runtime_identity.json is invalid JSON")
-            print("=" * 50)
-            return 2
-        except Exception as e:
-            print(f"\n❌ ERROR: {e}")
-            print("=" * 50)
+        except ArtifactContractError as exc:
+            print(f"FAIL artifact contract: {exc}")
+            return 1
+        except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+            print(f"ERROR runtime truth check could not execute: {exc}")
             return 2
 
 
-def main():
-    parser = argparse.ArgumentParser(description="StateDD Runtime Truth Check")
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Validate exact-slice StateDD runtime truth")
     parser.add_argument("--root", default=".", help="Repository root")
+    parser.add_argument("--slice-id", required=True, help="Exact backlog slice identity")
+    parser.add_argument("--head", help="Expected exact commit; defaults to current HEAD")
+    parser.add_argument("--evidence-dir", help="Explicit evidence bundle directory")
+    parser.add_argument(
+        "--privacy-profile",
+        choices=["public", "private", "local_only"],
+        default="public",
+        help="Required evidence privacy profile",
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
-    args = parser.parse_args()
+    return parser.parse_args(argv[1:])
 
-    root = Path(args.root).resolve()
-    checker = RuntimeTruthCheck(root, args.verbose)
-    sys.exit(checker.run())
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv or sys.argv)
+    checker = RuntimeTruthCheck(
+        Path(args.root),
+        slice_id=args.slice_id,
+        expected_head=args.head,
+        evidence_dir=Path(args.evidence_dir) if args.evidence_dir else None,
+        privacy_profile=args.privacy_profile,
+        verbose=args.verbose,
+    )
+    return checker.run()
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

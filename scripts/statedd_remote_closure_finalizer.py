@@ -29,9 +29,8 @@ from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 
-SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b")
 HEAD_LINE_RE = re.compile(
-    r"^\s*[*-]?\s*(?:\*\*)?(?:HEAD|Proof head|Final PR head)(?:\*\*)?\s*[:=]\s*([0-9a-f]+)",
+    r"^[ \t>*-]*(?:\*\*)?(HEAD|Proof head|Final PR head)(?:\*\*)?\s*[:=]\s*([0-9a-f]{40})\s*(?:\*\*)?\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -39,6 +38,18 @@ PR_FIELDS = """
   number
   headRefOid
   body
+  baseRef {
+    name
+    branchProtectionRule {
+      requiresStatusChecks
+      requiredStatusChecks {
+        context
+        app {
+          id
+        }
+      }
+    }
+  }
   mergeStateStatus
   url
 """
@@ -46,19 +57,40 @@ PR_FIELDS = """
 COMMIT_FIELDS = """
   object(expression: $sha) {
     ... on Commit {
+      oid
       statusCheckRollup {
         state
-      }
-      checkSuites(first: 10) {
-        nodes {
-          databaseId
-          app {
-            name
+        contexts(first: 100) {
+          nodes {
+            __typename
+            ... on CheckRun {
+              name
+              status
+              conclusion
+              checkSuite {
+                app {
+                  id
+                  databaseId
+                  name
+                  slug
+                }
+                commit {
+                  oid
+                }
+                workflowRun {
+                  databaseId
+                  runNumber
+                  url
+                }
+              }
+            }
+            ... on StatusContext {
+              context
+              state
+            }
           }
-          workflowRun {
-            databaseId
-            runNumber
-            url
+          pageInfo {
+            hasNextPage
           }
         }
       }
@@ -124,32 +156,210 @@ def parse_remote_url(url: str) -> tuple[str, str] | None:
     return match.group(1), match.group(2)
 
 
-def latest_evidence_folder(root: Path) -> Path | None:
-    evidence_root = root / "docs" / "evidence"
-    if not evidence_root.exists():
-        return None
-    candidates = [
-        entry
-        for entry in evidence_root.iterdir()
-        if entry.is_dir() and not entry.name.startswith(".")
-    ]
-    if not candidates:
-        return None
-    return max(candidates, key=lambda p: p.stat().st_mtime)
-
-
-def extract_sha_refs(text: str) -> set[str]:
-    """Return all 7-40 char hex strings that look like git SHAs."""
-    return set(SHA_RE.findall(text.lower()))
-
-
 def extract_marked_heads(text: str) -> dict[str, str]:
-    """Look for HEAD / Proof head / Final PR head markers and return values."""
+    """Parse the explicit PR/evidence head contract from anchored fields."""
     found: dict[str, str] = {}
     for match in HEAD_LINE_RE.finditer(text):
-        key = match.group(0).split(":")[0].strip("* -").lower().replace(" ", "_")
-        found[key] = match.group(1).lower()
+        key = match.group(1).lower().replace(" ", "_")
+        found[key] = match.group(2).lower()
     return found
+
+
+def _required_check_specs(
+    protection: dict[str, Any] | None,
+    explicit_names: list[str] | tuple[str, ...],
+) -> list[dict[str, str | None]]:
+    specs: list[dict[str, str | None]] = []
+    if isinstance(protection, dict) and protection.get("requiresStatusChecks") is True:
+        raw_specs = protection.get("requiredStatusChecks")
+        if isinstance(raw_specs, list):
+            for raw in raw_specs:
+                if not isinstance(raw, dict) or not isinstance(raw.get("context"), str):
+                    continue
+                app = raw.get("app") if isinstance(raw.get("app"), dict) else {}
+                specs.append({"context": raw["context"], "app_id": app.get("id")})
+    for name in explicit_names:
+        specs.append({"context": name, "app_id": None})
+
+    unique: dict[tuple[str, str | None], dict[str, str | None]] = {}
+    for spec in specs:
+        unique[(str(spec["context"]), spec["app_id"])] = spec
+    return list(unique.values())
+
+
+def verify_ci_commit(
+    commit: dict[str, Any] | None,
+    protection: dict[str, Any] | None,
+    expected_head: str,
+    explicit_required_checks: list[str] | tuple[str, ...] = (),
+) -> tuple[list[str], dict[str, Any] | None, list[str]]:
+    """Validate exact-head required checks and return a required Actions run."""
+    failures: list[str] = []
+    observed_names: list[str] = []
+    if not isinstance(commit, dict):
+        return ["No CI commit object found for current HEAD"], None, observed_names
+
+    commit_head = str(commit.get("oid") or "").lower()
+    if commit_head != expected_head.lower():
+        failures.append(
+            f"CI commit head ({commit_head or 'missing'}) does not match expected head ({expected_head})"
+        )
+
+    rollup = commit.get("statusCheckRollup")
+    if not isinstance(rollup, dict):
+        failures.append("No CI check rollup found for current HEAD")
+        return failures, None, observed_names
+    if rollup.get("state") != "SUCCESS":
+        failures.append(f"CI check rollup did not succeed on current HEAD ({rollup.get('state') or 'missing'})")
+
+    contexts = rollup.get("contexts")
+    if not isinstance(contexts, dict):
+        failures.append("CI check contexts are missing for current HEAD")
+        return failures, None, observed_names
+    page_info = contexts.get("pageInfo")
+    if isinstance(page_info, dict) and page_info.get("hasNextPage") is True:
+        failures.append("CI check context query was truncated; required checks cannot be proven")
+    nodes = contexts.get("nodes")
+    if not isinstance(nodes, list):
+        failures.append("CI check contexts are malformed for current HEAD")
+        return failures, None, observed_names
+
+    specs = _required_check_specs(protection, explicit_required_checks)
+    if not specs:
+        failures.append("No required CI checks are configured or explicitly declared")
+        return failures, None, observed_names
+
+    required_actions_run: dict[str, Any] | None = None
+    for spec in specs:
+        context = str(spec["context"])
+        app_id = spec["app_id"]
+        matches: list[dict[str, Any]] = []
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            name = node.get("name") if node.get("__typename") == "CheckRun" else node.get("context")
+            if isinstance(name, str):
+                observed_names.append(name)
+            if name != context:
+                continue
+            if app_id is not None:
+                suite = node.get("checkSuite") if isinstance(node.get("checkSuite"), dict) else {}
+                app = suite.get("app") if isinstance(suite.get("app"), dict) else {}
+                if app.get("id") != app_id:
+                    continue
+            matches.append(node)
+
+        if not matches:
+            failures.append(f"Required CI check '{context}' is missing from current HEAD")
+            continue
+
+        successful = False
+        for node in matches:
+            node_type = node.get("__typename")
+            if node_type == "CheckRun":
+                if node.get("status") != "COMPLETED":
+                    failures.append(
+                        f"Required CI check '{context}' is not completed ({node.get('status') or 'missing'})"
+                    )
+                    continue
+                if node.get("conclusion") != "SUCCESS":
+                    failures.append(
+                        f"Required CI check '{context}' did not succeed ({node.get('conclusion') or 'missing'})"
+                    )
+                    continue
+                suite = node.get("checkSuite") if isinstance(node.get("checkSuite"), dict) else {}
+                suite_commit = suite.get("commit") if isinstance(suite.get("commit"), dict) else {}
+                suite_head = str(suite_commit.get("oid") or "").lower()
+                if suite_head != expected_head.lower():
+                    failures.append(
+                        f"Required CI check '{context}' belongs to stale head {suite_head or 'missing'}"
+                    )
+                    continue
+                successful = True
+                app = suite.get("app") if isinstance(suite.get("app"), dict) else {}
+                run = suite.get("workflowRun") if isinstance(suite.get("workflowRun"), dict) else None
+                if (
+                    (app.get("slug") == "github-actions" or app.get("name") == "GitHub Actions")
+                    and run
+                    and run.get("databaseId")
+                ):
+                    required_actions_run = run
+            elif node_type == "StatusContext":
+                if node.get("state") == "SUCCESS":
+                    successful = True
+                else:
+                    failures.append(
+                        f"Required CI status '{context}' did not succeed ({node.get('state') or 'missing'})"
+                    )
+        if not successful and not any(context in failure for failure in failures):
+            failures.append(f"Required CI check '{context}' has no successful current-head result")
+
+    if required_actions_run is None:
+        failures.append("No successful required GitHub Actions run found for current HEAD")
+    return failures, required_actions_run, sorted(set(observed_names))
+
+
+def select_evidence_manifest(
+    root: Path,
+    *,
+    head: str,
+    branch: str,
+    slice_id: str | None,
+    privacy_profile: str = "public",
+) -> tuple[Path | None, dict[str, Any] | None, list[str]]:
+    """Load the shared evidence contract for one slice, branch, and exact head."""
+    try:
+        from statedd_validate_schema import ArtifactContractError, load_evidence_bundle
+    except ImportError as exc:
+        return None, None, [f"Shared evidence validator is unavailable: {exc}"]
+
+    evidence_root = root / "docs" / "evidence"
+    if not evidence_root.is_dir():
+        return None, None, ["No evidence root found under docs/evidence/"]
+
+    resolved_slice = slice_id
+    if resolved_slice is None:
+        inferred: set[str] = set()
+        for manifest_path in sorted(evidence_root.glob("*/manifest.json")):
+            try:
+                data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(data, dict):
+                continue
+            repo = data.get("repo") if isinstance(data.get("repo"), dict) else {}
+            candidate_slice = data.get("slice_id")
+            if (
+                repo.get("branch") == branch
+                and repo.get("head") == head.lower()
+                and isinstance(candidate_slice, str)
+                and candidate_slice
+            ):
+                inferred.add(candidate_slice)
+        if len(inferred) != 1:
+            detail = "none" if not inferred else ", ".join(sorted(inferred))
+            return None, None, [
+                f"Could not infer one evidence slice for branch {branch}, exact head {head}; candidates: {detail}"
+            ]
+        resolved_slice = next(iter(inferred))
+
+    try:
+        bundle = load_evidence_bundle(
+            root,
+            resolved_slice,
+            head,
+            privacy_profile=privacy_profile,
+        )
+    except ArtifactContractError as exc:
+        return None, None, [f"Evidence artifact contract failed: {exc}"]
+
+    repo = bundle.manifest.get("repo")
+    manifest_branch = repo.get("branch") if isinstance(repo, dict) else None
+    if manifest_branch != branch:
+        return None, None, [
+            f"Evidence manifest branch ({manifest_branch or 'missing'}) does not match expected branch ({branch})"
+        ]
+    return bundle.directory, bundle.manifest, []
 
 
 class GitHubApi:
@@ -218,6 +428,9 @@ class RemoteClosureFinalizer:
     pr_number: int | None = None
     output: Path | None = None
     github_token: str | None = None
+    slice_id: str | None = None
+    required_checks: list[str] = field(default_factory=list)
+    privacy_profile: str = "public"
     run_command_fn: Callable[[list[str], Path], tuple[int, str, str]] = field(
         default_factory=lambda: run_command
     )
@@ -243,6 +456,10 @@ class RemoteClosureFinalizer:
         self.merge_state: str | None = None
         self.evidence_folder: Path | None = None
         self.remote_head: str | None = None
+        self.upstream_ref: str | None = None
+        self.upstream_head: str | None = None
+        self.worktree_clean = False
+        self.required_check_names: list[str] = []
 
     def _git(self, args: list[str], fallback: str | None = None) -> str | None:
         code, stdout, _ = self.run_command_fn(["git", *args], self.root)
@@ -258,6 +475,7 @@ class RemoteClosureFinalizer:
         try:
             self._collect_local_truth()
             self._check_worktree_clean()
+            self._check_upstream_equality()
             self._check_remote_contains_head()
             self._resolve_owner_repo()
             self._fetch_pr_and_ci_state()
@@ -313,21 +531,61 @@ class RemoteClosureFinalizer:
         print(f"  remote: {self.remote_url}")
 
     def _check_worktree_clean(self) -> None:
-        status = self._git(["status", "--short"], "") or ""
-        if status.strip():
+        code, status, err = self.run_command_fn(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            self.root,
+        )
+        self.worktree_clean = code == 0 and not status.strip()
+        if code != 0:
+            self.failures.append(f"Could not inspect worktree status: {err or 'git status failed'}")
+        elif status.strip():
             self.failures.append(f"Worktree is dirty:\n{status}")
         elif self.verbose:
             print("  ✓ worktree clean")
 
-    def _check_remote_contains_head(self) -> None:
-        output = self._git(["ls-remote", "origin", self.branch], "") or ""
-        remote_sha = output.split("\t")[0] if "\t" in output else ""
-        self.remote_head = remote_sha
-        if not remote_sha:
-            self.failures.append(f"Branch '{self.branch}' not found on origin")
-        elif remote_sha != self.local_head:
+    def _check_upstream_equality(self) -> None:
+        code, upstream, err = self.run_command_fn(
+            ["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"],
+            self.root,
+        )
+        expected = f"origin/{self.branch}"
+        self.upstream_ref = upstream.strip() if code == 0 else None
+        if code != 0 or self.upstream_ref != expected:
             self.failures.append(
-                f"Remote branch head ({remote_sha}) does not match local HEAD ({self.local_head})"
+                "Current branch has no matching upstream: "
+                + (err or f"expected {expected}, got {self.upstream_ref or 'missing'}")
+            )
+
+        code, upstream_head, err = self.run_command_fn(
+            ["git", "rev-parse", "@{upstream}"],
+            self.root,
+        )
+        self.upstream_head = upstream_head.strip().lower() if code == 0 else None
+        if code != 0 or self.upstream_head != self.local_head.lower():
+            self.failures.append(
+                "Upstream tracking head does not match local HEAD: "
+                + (err or f"{self.upstream_head or 'missing'} != {self.local_head}")
+            )
+        elif self.verbose:
+            print("  ✓ upstream tracking ref equals local HEAD")
+
+    def _check_remote_contains_head(self) -> None:
+        code, output, err = self.run_command_fn(
+            ["git", "ls-remote", "--heads", "origin", f"refs/heads/{self.branch}"],
+            self.root,
+        )
+        lines = [line.split("\t", 1) for line in output.splitlines() if "\t" in line]
+        matching = [parts[0].lower() for parts in lines if parts[1] == f"refs/heads/{self.branch}"]
+        remote_sha = matching[0] if len(matching) == 1 else ""
+        self.remote_head = remote_sha
+        if code != 0:
+            self.failures.append(f"Could not read origin branch head: {err or 'git ls-remote failed'}")
+        elif not remote_sha:
+            self.failures.append(f"Branch '{self.branch}' not found uniquely on origin")
+        elif remote_sha != self.local_head.lower() or remote_sha != self.upstream_head:
+            self.failures.append(
+                f"Remote branch head ({remote_sha}) does not match local HEAD "
+                f"({self.local_head}) and upstream ({self.upstream_head or 'missing'})"
             )
         elif self.verbose:
             print(f"  ✓ remote branch contains local HEAD")
@@ -377,7 +635,23 @@ class RemoteClosureFinalizer:
         commit = repository.get("object", {}) or {}
         rollup = commit.get("statusCheckRollup") or {}
         self.ci_state = rollup.get("state")
-        self._find_actions_run(commit.get("checkSuites", {}).get("nodes", []))
+        base_ref = pr.get("baseRef") if isinstance(pr.get("baseRef"), dict) else {}
+        protection = (
+            base_ref.get("branchProtectionRule")
+            if isinstance(base_ref.get("branchProtectionRule"), dict)
+            else None
+        )
+        ci_failures, actions_run, observed = verify_ci_commit(
+            commit,
+            protection,
+            self.local_head,
+            self.required_checks,
+        )
+        self.failures.extend(ci_failures)
+        self.required_check_names = observed
+        if actions_run:
+            self.ci_run_id = str(actions_run["databaseId"])
+            self.ci_run_url = actions_run.get("url")
         self.merge_state = pr.get("mergeStateStatus")
 
         print(f"\nGitHub truth:")
@@ -387,20 +661,6 @@ class RemoteClosureFinalizer:
         if self.ci_run_id:
             print(f"  Run:    {self.ci_run_url or self.ci_run_id}")
         print(f"  Merge:  {self.merge_state}")
-
-    def _find_actions_run(self, suites: list[dict[str, Any]]) -> None:
-        for suite in suites:
-            app = suite.get("app") or {}
-            if app.get("name") != "GitHub Actions":
-                continue
-            run = suite.get("workflowRun")
-            if run and run.get("databaseId"):
-                self.ci_run_id = str(run["databaseId"])
-                self.ci_run_url = run.get("url")
-                return
-            if suite.get("databaseId"):
-                self.ci_run_id = str(suite["databaseId"])
-                return
 
     def _check_pr_head_agrees(self) -> None:
         pr_head = self.pr.get("headRefOid", "")
@@ -415,13 +675,6 @@ class RemoteClosureFinalizer:
         body = self.pr.get("body") or ""
         marked = extract_marked_heads(body)
         self.proof_head = marked.get("proof_head")
-
-        if self.local_head in body:
-            self.pr_final_head = self.local_head
-            if self.verbose:
-                print("  ✓ PR body references current HEAD")
-            return
-
         final_head = marked.get("final_pr_head")
         if final_head and final_head == self.local_head:
             self.pr_final_head = self.local_head
@@ -430,24 +683,13 @@ class RemoteClosureFinalizer:
             return
 
         self.failures.append(
-            "PR body does not reference the current HEAD (use full SHA or explicit Proof head/Final PR head split)"
+            "PR body does not declare the exact current HEAD in an explicit Final PR head field"
         )
 
     def _check_ci_status(self) -> None:
-        if not self.ci_state:
-            self.failures.append("No CI check rollup found for current HEAD")
-            return
-        if self.ci_state == "SUCCESS":
-            if self.verbose:
-                print("  ✓ CI check rollup reports SUCCESS")
-        elif self.ci_state == "PENDING":
-            self.failures.append(f"CI is still pending on current HEAD ({self.ci_state})")
-        else:
-            self.failures.append(f"CI did not succeed on current HEAD ({self.ci_state})")
-
-        if not self.ci_run_id:
-            self.failures.append("No GitHub Actions run found for current HEAD")
-        elif self.verbose:
+        # Detailed CI failures are produced while parsing the exact commit and
+        # its required contexts. This method only reports the positive receipt.
+        if self.ci_state == "SUCCESS" and self.ci_run_id and self.verbose:
             print(f"  ✓ GitHub Actions run ID: {self.ci_run_id}")
 
     def _check_merge_state(self) -> None:
@@ -461,59 +703,39 @@ class RemoteClosureFinalizer:
         )
 
     def _check_evidence_heads(self) -> None:
-        self.evidence_folder = latest_evidence_folder(self.root)
-        if not self.evidence_folder:
-            self.warnings.append("No evidence folder found under docs/evidence/; skipping evidence head check")
+        folder, manifest_data, errors = select_evidence_manifest(
+            self.root,
+            head=self.local_head,
+            branch=self.branch,
+            slice_id=self.slice_id,
+            privacy_profile=self.privacy_profile,
+        )
+        self.failures.extend(errors)
+        self.evidence_folder = folder
+        if folder is None or manifest_data is None:
             return
 
-        manifest = self.evidence_folder / "manifest.json"
-        readme = self.evidence_folder / "README.md"
-        closure = self.evidence_folder / "closure.json"
+        if self.slice_id is None:
+            self.slice_id = str(manifest_data["slice_id"])
+        if self.verbose:
+            print(f"  ✓ evidence manifest matches slice/branch/exact head: {folder.relative_to(self.root)}")
 
-        checked = 0
-        for path in (manifest, readme, closure):
-            if not path.exists():
-                continue
-            checked += 1
-            text = path.read_text(encoding="utf-8")
-            if not self._evidence_file_has_current_head(text, path.name):
+        closure = folder / "closure.json"
+        if not closure.exists():
+            return
+        try:
+            data = json.loads(closure.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            self.failures.append(f"Evidence closure artifact is malformed: {exc}")
+            return
+        if not isinstance(data, dict):
+            self.failures.append("Evidence closure artifact is not a JSON object")
+            return
+        for field_name in ("local_head", "pr_head", "final_pr_head"):
+            if field_name in data and data.get(field_name) != self.local_head:
                 self.failures.append(
-                    f"Evidence file {path.relative_to(self.root)} does not reference current HEAD "
-                    f"({self.local_head})"
+                    f"Evidence closure field {field_name} ({data.get(field_name)}) does not match current HEAD ({self.local_head})"
                 )
-            elif self.verbose:
-                print(f"  ✓ evidence file agrees with closure HEAD: {path.relative_to(self.root)}")
-
-        if checked == 0:
-            self.warnings.append(
-                f"Evidence folder {self.evidence_folder.relative_to(self.root)} has no manifest.json, README.md, or closure.json"
-            )
-
-    def _evidence_file_has_current_head(self, text: str, filename: str) -> bool:
-        marked = extract_marked_heads(text)
-        if marked.get("final_pr_head") == self.local_head:
-            return True
-        if marked.get("head") == self.local_head:
-            return True
-        # Also allow a repo.head style JSON value.
-        if f'"head": "{self.local_head}"' in text or f'"head": "{self.local_head[:7]}' in text:
-            return True
-        sha_refs = extract_sha_refs(text)
-        if self.local_head in sha_refs or self.local_head[:7] in sha_refs:
-            return True
-        # If the PR body uses an explicit proof_head/final_head split, evidence
-        # may reference the proof head instead of the metadata-only final head.
-        if (
-            self.pr_final_head == self.local_head
-            and self.proof_head
-            and (self.proof_head in text or self.proof_head in sha_refs)
-        ):
-            return True
-        # If the file mentions any head-like SHA but not the current one, treat as stale.
-        if sha_refs:
-            return False
-        # No SHA references at all: not a head-bearing file.
-        return True
 
     def _set_closure_label(self) -> None:
         if self.merge_state == "MERGED":
@@ -543,7 +765,10 @@ class RemoteClosureFinalizer:
         print(f"- ci_run_url: {self.ci_run_url or 'not found'}")
         print(f"- ci_state: {self.ci_state or 'not found'}")
         print(f"- merge_state: {self.merge_state or 'not found'}")
-        print(f"- worktree_clean: {'yes' if not (self._git(['status', '--short'], '') or '').strip() else 'no'}")
+        print(f"- upstream_ref: {self.upstream_ref or 'not found'}")
+        print(f"- upstream_head: {self.upstream_head or 'not found'}")
+        print(f"- remote_head: {self.remote_head or 'not found'}")
+        print(f"- worktree_clean: {'yes' if self.worktree_clean else 'no'}")
         print(f"- closure_label: {self.closure_label}")
         print(f"- evidence_folder: {self.evidence_folder.relative_to(self.root) if self.evidence_folder else 'not found'}")
 
@@ -564,6 +789,9 @@ class RemoteClosureFinalizer:
             "branch": self.branch,
             "local_head": self.local_head,
             "remote_url": self.remote_url,
+            "upstream_ref": self.upstream_ref,
+            "upstream_head": self.upstream_head,
+            "remote_head": self.remote_head,
             "pr_head": self.pr.get("headRefOid") if self.pr else None,
             "pr_number": self.pr.get("number") if self.pr else None,
             "pr_url": self.pr.get("url") if self.pr else None,
@@ -571,8 +799,10 @@ class RemoteClosureFinalizer:
             "ci_run_url": self.ci_run_url,
             "ci_state": self.ci_state,
             "merge_state": self.merge_state,
-            "worktree_clean": not (self._git(["status", "--short"], "") or "").strip(),
+            "worktree_clean": self.worktree_clean,
             "closure_label": self.closure_label,
+            "slice_id": self.slice_id,
+            "required_checks_observed": self.required_check_names,
             "evidence_folder": str(self.evidence_folder) if self.evidence_folder else None,
             "failures": self.failures,
             "warnings": self.warnings,
@@ -588,6 +818,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--root", default=str(ROOT), help="Repository root to inspect")
     parser.add_argument("--pr-number", type=int, default=None, help="Explicit PR number")
+    parser.add_argument("--slice-id", default=None, help="Exact evidence slice_id to verify")
+    parser.add_argument(
+        "--privacy-profile",
+        choices=["public", "private", "local_only"],
+        default="public",
+        help="Required evidence privacy profile",
+    )
+    parser.add_argument(
+        "--required-check",
+        action="append",
+        default=[],
+        help="Required CI context when branch protection does not expose it (repeatable)",
+    )
     parser.add_argument("--github-token", default=None, help="GitHub token (fallback: GH_TOKEN / GITHUB_TOKEN env)")
     parser.add_argument("--output", "-o", type=Path, help="Write handoff JSON to this path")
     parser.add_argument("--verbose", "-v", action="store_true", help="Print passed checks")
@@ -602,6 +845,9 @@ def main(argv: list[str] | None = None) -> int:
         pr_number=args.pr_number,
         output=args.output,
         github_token=args.github_token,
+        slice_id=args.slice_id,
+        required_checks=args.required_check,
+        privacy_profile=args.privacy_profile,
     )
     return finalizer.run()
 

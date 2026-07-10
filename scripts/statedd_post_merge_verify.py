@@ -25,10 +25,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+from statedd_remote_closure_finalizer import select_evidence_manifest, verify_ci_commit
+
 
 ROOT = Path(__file__).resolve().parents[1]
-
-SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b")
 
 DEFAULT_BRANCH_QUERY = """
 query($owner: String!, $repo: String!) {
@@ -38,16 +38,26 @@ query($owner: String!, $repo: String!) {
       target {
         oid
       }
+      branchProtectionRule {
+        requiresStatusChecks
+        requiredStatusChecks {
+          context
+          app {
+            id
+          }
+        }
+      }
     }
   }
 }
 """
 
 PR_QUERY = """
-query($owner: String!, $repo: String!, $number: Int!) {
+query($owner: String!, $repo: String!, $number: Int!, $sha: String!) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $number) {
       number
+      headRefName
       headRefOid
       mergeCommit {
         oid
@@ -60,19 +70,40 @@ query($owner: String!, $repo: String!, $number: Int!) {
     }
     object(expression: $sha) {
       ... on Commit {
+        oid
         statusCheckRollup {
           state
-        }
-        checkSuites(first: 10) {
-          nodes {
-            databaseId
-            app {
-              name
+          contexts(first: 100) {
+            nodes {
+              __typename
+              ... on CheckRun {
+                name
+                status
+                conclusion
+                checkSuite {
+                  app {
+                    id
+                    databaseId
+                    name
+                    slug
+                  }
+                  commit {
+                    oid
+                  }
+                  workflowRun {
+                    databaseId
+                    runNumber
+                    url
+                  }
+                }
+              }
+              ... on StatusContext {
+                context
+                state
+              }
             }
-            workflowRun {
-              databaseId
-              runNumber
-              url
+            pageInfo {
+              hasNextPage
             }
           }
         }
@@ -168,6 +199,9 @@ class PostMergeVerifier:
     pr_number: int
     verbose: bool = False
     github_token: str | None = None
+    slice_id: str | None = None
+    required_checks: list[str] = field(default_factory=list)
+    privacy_profile: str = "public"
     run_command_fn: Callable[[list[str], Path], tuple[int, str, str]] = field(
         default_factory=lambda: run_command
     )
@@ -189,6 +223,12 @@ class PostMergeVerifier:
         self.ci_state: str | None = None
         self.ci_run_id: str | None = None
         self.ci_run_url: str | None = None
+        self.default_branch_protection: dict[str, Any] | None = None
+        self.upstream_ref: str | None = None
+        self.upstream_head: str | None = None
+        self.remote_head: str | None = None
+        self.worktree_clean = False
+        self.evidence_folder: Path | None = None
 
     def _git(self, args: list[str], fallback: str | None = None) -> str | None:
         code, stdout, _ = self.run_command_fn(["git", *args], self.root)
@@ -203,8 +243,10 @@ class PostMergeVerifier:
 
         try:
             self._collect_local_truth()
+            self._check_worktree_clean()
             self._resolve_owner_repo()
             self._fetch_default_branch()
+            self._check_local_default_equality()
             self._fetch_pr_state()
             self._check_pr_merged()
             self._check_main_contains_merge()
@@ -248,6 +290,17 @@ class PostMergeVerifier:
         print(f"  head:   {self.local_head}")
         print(f"  remote: {self.remote_url}")
 
+    def _check_worktree_clean(self) -> None:
+        code, status, err = self.run_command_fn(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            self.root,
+        )
+        self.worktree_clean = code == 0 and not status.strip()
+        if code != 0:
+            self.failures.append(f"Could not inspect worktree status: {err or 'git status failed'}")
+        elif status.strip():
+            self.failures.append(f"Worktree is dirty:\n{status}")
+
     def _resolve_owner_repo(self) -> None:
         parsed = parse_remote_url(self.remote_url)
         if not parsed:
@@ -269,6 +322,8 @@ class PostMergeVerifier:
         self.default_branch = default_ref.get("name", "")
         target = default_ref.get("target", {}) or {}
         self.default_branch_head = target.get("oid", "")
+        protection = default_ref.get("branchProtectionRule")
+        self.default_branch_protection = protection if isinstance(protection, dict) else None
 
         if not self.default_branch:
             raise RuntimeError("Could not determine default branch from GitHub")
@@ -278,6 +333,57 @@ class PostMergeVerifier:
         print(f"\nGitHub default branch:")
         print(f"  branch: {self.default_branch}")
         print(f"  head:   {self.default_branch_head}")
+
+    def _check_local_default_equality(self) -> None:
+        if self.branch != self.default_branch:
+            self.failures.append(
+                f"Local branch ({self.branch or 'detached'}) does not match default branch ({self.default_branch})"
+            )
+        if self.local_head.lower() != self.default_branch_head.lower():
+            self.failures.append(
+                f"Local HEAD ({self.local_head}) does not match GitHub default branch HEAD ({self.default_branch_head})"
+            )
+
+        code, upstream, err = self.run_command_fn(
+            ["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"],
+            self.root,
+        )
+        expected_upstream = f"origin/{self.default_branch}"
+        self.upstream_ref = upstream.strip() if code == 0 else None
+        if code != 0 or self.upstream_ref != expected_upstream:
+            self.failures.append(
+                "Local default branch has no matching upstream: "
+                + (err or f"expected {expected_upstream}, got {self.upstream_ref or 'missing'}")
+            )
+
+        code, upstream_head, err = self.run_command_fn(
+            ["git", "rev-parse", "@{upstream}"],
+            self.root,
+        )
+        self.upstream_head = upstream_head.strip().lower() if code == 0 else None
+        if code != 0 or self.upstream_head != self.default_branch_head.lower():
+            self.failures.append(
+                "Upstream default branch head does not match GitHub default branch HEAD: "
+                + (err or f"{self.upstream_head or 'missing'} != {self.default_branch_head}")
+            )
+
+        code, output, err = self.run_command_fn(
+            ["git", "ls-remote", "--heads", "origin", f"refs/heads/{self.default_branch}"],
+            self.root,
+        )
+        lines = [line.split("\t", 1) for line in output.splitlines() if "\t" in line]
+        matches = [parts[0].lower() for parts in lines if parts[1] == f"refs/heads/{self.default_branch}"]
+        self.remote_head = matches[0] if len(matches) == 1 else None
+        if (
+            code != 0
+            or self.remote_head != self.default_branch_head.lower()
+            or self.remote_head != self.upstream_head
+            or self.remote_head != self.local_head.lower()
+        ):
+            self.failures.append(
+                "Remote default branch head does not equal local, upstream, and GitHub heads: "
+                + (err or f"remote={self.remote_head or 'missing/ambiguous'}")
+            )
 
     def _fetch_pr_state(self) -> None:
         if not self.default_branch_head:
@@ -300,7 +406,16 @@ class PostMergeVerifier:
         commit = repository.get("object", {}) or {}
         rollup = commit.get("statusCheckRollup") or {}
         self.ci_state = rollup.get("state")
-        self._find_actions_run(commit.get("checkSuites", {}).get("nodes", []))
+        ci_failures, actions_run, _ = verify_ci_commit(
+            commit,
+            self.default_branch_protection,
+            self.default_branch_head,
+            self.required_checks,
+        )
+        self.failures.extend(ci_failures)
+        if actions_run:
+            self.ci_run_id = str(actions_run["databaseId"])
+            self.ci_run_url = actions_run.get("url")
 
         print(f"\nPR #{self.pr_number}:")
         print(f"  state:   {pr.get('state')}")
@@ -310,20 +425,6 @@ class PostMergeVerifier:
         print(f"  CI:      {self.ci_state or 'no checks'}")
         if self.ci_run_id:
             print(f"  Run:     {self.ci_run_url or self.ci_run_id}")
-
-    def _find_actions_run(self, suites: list[dict[str, Any]]) -> None:
-        for suite in suites:
-            app = suite.get("app") or {}
-            if app.get("name") != "GitHub Actions":
-                continue
-            run = suite.get("workflowRun")
-            if run and run.get("databaseId"):
-                self.ci_run_id = str(run["databaseId"])
-                self.ci_run_url = run.get("url")
-                return
-            if suite.get("databaseId"):
-                self.ci_run_id = str(suite["databaseId"])
-                return
 
     def _check_pr_merged(self) -> None:
         pr = self.pr
@@ -339,7 +440,8 @@ class PostMergeVerifier:
         merge_commit = (self.pr.get("mergeCommit") or {}).get("oid", "")
         if not merge_commit:
             return
-        # Check that the merge commit is an ancestor of default branch HEAD
+        # Local HEAD already equals the GitHub default head, so the ancestry
+        # query uses a locally present, exact commit without mutating refs.
         code, _, _ = self.run_command_fn(
             ["git", "merge-base", "--is-ancestor", merge_commit, self.default_branch_head],
             self.root,
@@ -352,57 +454,62 @@ class PostMergeVerifier:
             print(f"  ✓ merge commit is on default branch")
 
     def _check_ci_on_final_commit(self) -> None:
-        if not self.ci_state:
-            self.failures.append("No CI check rollup found for default branch HEAD")
-            return
-        if self.ci_state == "SUCCESS":
-            if self.verbose:
-                print("  ✓ CI check rollup reports SUCCESS on default branch HEAD")
-        elif self.ci_state == "PENDING":
-            self.failures.append(f"CI is still pending on default branch HEAD ({self.ci_state})")
-        else:
-            self.failures.append(f"CI did not succeed on default branch HEAD ({self.ci_state})")
-
-        if not self.ci_run_id:
-            self.failures.append("No GitHub Actions run found for default branch HEAD")
+        if self.ci_state == "SUCCESS" and self.ci_run_id and self.verbose:
+            print("  ✓ required GitHub Actions CI succeeded on exact default branch HEAD")
 
     def _check_closure_artifacts(self) -> None:
-        evidence_root = self.root / "docs" / "evidence"
-        candidates = [
-            entry
-            for entry in evidence_root.iterdir()
-            if entry.is_dir() and not entry.name.startswith(".")
-        ]
-        if not candidates:
-            self.warnings.append("No evidence folder found under docs/evidence/")
-            return
-        folder = max(candidates, key=lambda p: p.stat().st_mtime)
-
-        closure = folder / "closure.json"
-        readme = folder / "README.md"
-        manifest = folder / "manifest.json"
-
         merge_commit = (self.pr.get("mergeCommit") or {}).get("oid", "")
         pr_head = self.pr.get("headRefOid", "")
+        pr_branch = self.pr.get("headRefName", "")
+        folder, manifest_data, errors = select_evidence_manifest(
+            self.root,
+            head=pr_head,
+            branch=pr_branch,
+            slice_id=self.slice_id,
+            privacy_profile=self.privacy_profile,
+        )
+        self.failures.extend(errors)
+        self.evidence_folder = folder
+        if folder is None or manifest_data is None:
+            return
+        if self.slice_id is None:
+            self.slice_id = str(manifest_data["slice_id"])
 
-        checked = 0
-        for path in (closure, readme, manifest):
-            if not path.exists():
-                continue
-            checked += 1
-            text = path.read_text(encoding="utf-8")
-            sha_refs = set(SHA_RE.findall(text.lower()))
-            expected = {sha for sha in (merge_commit, pr_head) if sha}
-            missing = expected - sha_refs
-            if missing:
+        expected_manifest = {
+            "final_pr_head": pr_head,
+            "merge_commit_sha": merge_commit,
+            "main_head_after_merge": self.default_branch_head,
+        }
+        for field_name, expected in expected_manifest.items():
+            if manifest_data.get(field_name) != expected:
                 self.failures.append(
-                    f"{path.relative_to(self.root)} does not reference expected SHAs: {', '.join(sorted(missing))}"
+                    f"Evidence manifest field {field_name} ({manifest_data.get(field_name) or 'missing'}) "
+                    f"does not match GitHub truth ({expected})"
                 )
-            elif self.verbose:
-                print(f"  ✓ {path.relative_to(self.root)} agrees with PR merge commit/head")
 
-        if checked == 0:
-            self.warnings.append(f"Evidence folder {folder.relative_to(self.root)} has no closure.json, README.md, or manifest.json")
+        closure = folder / "closure.json"
+        if not closure.exists():
+            self.failures.append(f"Evidence folder {folder.relative_to(self.root)} has no closure.json")
+            return
+        try:
+            closure_data = json.loads(closure.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            self.failures.append(f"Evidence closure artifact is malformed: {exc}")
+            return
+        if not isinstance(closure_data, dict):
+            self.failures.append("Evidence closure artifact is not a JSON object")
+            return
+        expected_closure = {
+            "pr_head": pr_head,
+            "merge_commit_sha": merge_commit,
+            "main_head_after_merge": self.default_branch_head,
+        }
+        for field_name, expected in expected_closure.items():
+            if closure_data.get(field_name) != expected:
+                self.failures.append(
+                    f"Evidence closure field {field_name} ({closure_data.get(field_name) or 'missing'}) "
+                    f"does not match GitHub truth ({expected})"
+                )
 
     def _print_handoff(self) -> None:
         now = dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds")
@@ -420,6 +527,11 @@ class PostMergeVerifier:
         print(f"- merge_commit: {(self.pr.get('mergeCommit') or {}).get('oid')}")
         print(f"- ci_state: {self.ci_state or 'not found'}")
         print(f"- ci_run_id: {self.ci_run_id or 'not found'}")
+        print(f"- upstream_ref: {self.upstream_ref or 'not found'}")
+        print(f"- upstream_head: {self.upstream_head or 'not found'}")
+        print(f"- remote_head: {self.remote_head or 'not found'}")
+        print(f"- worktree_clean: {'yes' if self.worktree_clean else 'no'}")
+        print(f"- evidence_folder: {self.evidence_folder.relative_to(self.root) if self.evidence_folder else 'not found'}")
 
         risks = list(self.warnings)
         if self.failures:
@@ -437,6 +549,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--root", default=str(ROOT), help="Repository root to inspect")
     parser.add_argument("--pr-number", type=int, required=True, help="Merged PR number")
+    parser.add_argument("--slice-id", default=None, help="Exact evidence slice_id to verify")
+    parser.add_argument(
+        "--privacy-profile",
+        choices=["public", "private", "local_only"],
+        default="public",
+        help="Required evidence privacy profile",
+    )
+    parser.add_argument(
+        "--required-check",
+        action="append",
+        default=[],
+        help="Required CI context when branch protection does not expose it (repeatable)",
+    )
     parser.add_argument("--github-token", default=None, help="GitHub token (fallback: GH_TOKEN / GITHUB_TOKEN env)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Print passed checks")
     return parser.parse_args(argv[1:])
@@ -449,6 +574,9 @@ def main(argv: list[str] | None = None) -> int:
         pr_number=args.pr_number,
         verbose=args.verbose,
         github_token=args.github_token,
+        slice_id=args.slice_id,
+        required_checks=args.required_check,
+        privacy_profile=args.privacy_profile,
     )
     return verifier.run()
 

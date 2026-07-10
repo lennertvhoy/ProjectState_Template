@@ -1,20 +1,23 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-06-29
+**Updated At:** 2026-07-10
 **Execution Mode:** template-maintenance
-**Max Items:** 10
+**Delivery State:** stabilization
+**Max Items:** 5
 
 ## Active Work
 
-### P0 [BL-BROWSER-002] Integrate a concrete browser automation provider
-Owner: coding agent
-Next: choose an available provider (Kimi WebBridge, Playwright, agent-native, existing E2E, manual, or custom) and implement a closure-grade verification path using the provider-agnostic contract
-Exit: at least one concrete provider path is documented, tested, and can produce a valid browser_verification.json artifact
+### P0 [BL-CORE-001] Eliminate false closure and generator corruption
+Owner: one coding agent in an isolated worktree; independent read-only reviewer before closure
+Next: review the integrated diff, create exact-head evidence after final edits, commit/push the isolated branch, and open one focused PR
+Scope: remote-truth, handoff exit, configured gate semantics, runtime/evidence contract alignment, duplicate-key rejection, version detection/changelog alignment, public runtime-evidence privacy, upgrade-report truth, and directly required CI failure-injection coverage
+Non-goals: parallel-agent orchestration, browser-provider integration, broad instruction rewrites, managed updater/toolpacks/model routing, or the full package migration
+Exit: all BL-CORE-001 acceptance criteria in `BACKLOG.md` pass on the exact pushed head; current-head CI, PR state, remote equality, and post-merge verification agree
+Closure label until exit: `NOT CLOSURE-GRADE - LOCAL OR UNVERIFIED CLAIM`
 
 ## Queue Rules
 
-- Keep this file short.
-- List only active, open work.
-- Remove completed items immediately.
-- Every active item must reference a backlog ID like `[BL-001]`.
-- Include owner, next action, and exit criteria when items exist.
+- Keep this file short and list only active work.
+- Every active item must reference a stable backlog ID.
+- Do not start later work while BL-CORE-001 is open.
+- A green command is evidence only for the condition it actually proves.

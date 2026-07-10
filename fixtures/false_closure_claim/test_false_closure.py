@@ -39,10 +39,10 @@ def test_false_closure_detection():
         run_cmd(["git", "commit", "-m", "initial"], repo)
 
         # Create a fake "remote" (bare repo)
-        remote_dir = repo / "remote"
-        run_cmd(["git", "init", "--bare", "remote"], repo)
+        remote_dir = Path(tmpdir).parent / f"remote-{Path(tmpdir).name}.git"
+        run_cmd(["git", "init", "--bare", str(remote_dir)], repo)
         run_cmd(["git", "remote", "add", "origin", str(remote_dir)], repo)
-        run_cmd(["git", "push", "origin", "main"], repo)
+        run_cmd(["git", "push", "--set-upstream", "origin", "main"], repo)
 
         # Create untracked claimed file
         (repo / "claimed_deliverable.py").write_text("# fake deliverable\n")
@@ -87,10 +87,10 @@ def test_true_closure_passes():
         run_cmd(["git", "add", "README.md"], repo)
         run_cmd(["git", "commit", "-m", "initial"], repo)
 
-        remote_dir = repo / "remote"
-        run_cmd(["git", "init", "--bare", "remote"], repo)
+        remote_dir = Path(tmpdir).parent / f"remote-{Path(tmpdir).name}.git"
+        run_cmd(["git", "init", "--bare", str(remote_dir)], repo)
         run_cmd(["git", "remote", "add", "origin", str(remote_dir)], repo)
-        run_cmd(["git", "push", "origin", "main"], repo)
+        run_cmd(["git", "push", "--set-upstream", "origin", "main"], repo)
 
         # Create AND TRACK a real deliverable
         (repo / "real_deliverable.py").write_text("# real deliverable\n")

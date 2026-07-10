@@ -32,10 +32,17 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("scripts/init_template.py"),
     Path("scripts/check_state_docs.py"),
     Path("scripts/statedd_version_check.py"),
+    Path("scripts/test_version_check.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
+    Path("scripts/statedd_remote_truth_check.py"),
+    Path("scripts/statedd_closure_check.py"),
+    Path("scripts/statedd_post_merge_verify.py"),
+    Path("scripts/statedd_quality_gate.py"),
     Path("scripts/statedd_doctor.py"),
     Path("scripts/statedd_runtime_proof.py"),
+    Path("scripts/statedd_runtime_truth_check.py"),
+    Path("scripts/statedd_evidence_type_check.py"),
     Path("scripts/statedd_validate_schema.py"),
     Path("scripts/statedd_evidence_pack.py"),
     Path("scripts/test_init_template.py"),
@@ -44,6 +51,13 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("scripts/test_evidence_pack.py"),
     Path("scripts/statedd_remote_closure_finalizer.py"),
     Path("scripts/test_remote_closure_finalizer.py"),
+    Path("scripts/test_remote_truth_check.py"),
+    Path("scripts/test_closure_check.py"),
+    Path("scripts/test_audit_closure.py"),
+    Path("scripts/test_handoff.py"),
+    Path("scripts/test_quality_gate.py"),
+    Path("scripts/test_runtime_evidence_contract.py"),
+    Path("scripts/test_post_merge_verify.py"),
     Path("schemas/project_state.schema.json"),
     Path("schemas/project_dna.schema.json"),
     Path("schemas/project_adapter.schema.json"),
@@ -271,7 +285,15 @@ def execute_plan(plan: dict[str, Any], target: Path) -> None:
         print(f"Modified {info['relpath']}")
 
 
-def write_report(path: Path, plan: dict[str, Any], target: Path, template_version: str, target_version: str | None) -> None:
+def write_report(
+    path: Path,
+    plan: dict[str, Any],
+    target: Path,
+    template_version: str,
+    target_version: str | None,
+    *,
+    dry_run: bool,
+) -> None:
     report = {
         "schema": "statedd.upgrade_report.v1",
         "generated_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -279,7 +301,7 @@ def write_report(path: Path, plan: dict[str, Any], target: Path, template_versio
         "target": str(target),
         "template_version": template_version,
         "target_version": target_version,
-        "dry_run": True,
+        "dry_run": dry_run,
         "summary": {
             "will_add": len(plan["will_add"]),
             "will_modify": len(plan["will_modify"]),
@@ -351,7 +373,14 @@ def main(argv: list[str] | None = None) -> int:
         print("\nUpgrade applied.")
 
     if args.report:
-        write_report(Path(args.report).resolve(), plan, target, template_version, target_version)
+        write_report(
+            Path(args.report).resolve(),
+            plan,
+            target,
+            template_version,
+            target_version,
+            dry_run=not args.apply,
+        )
 
     return 0
 

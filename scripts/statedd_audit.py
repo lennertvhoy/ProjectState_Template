@@ -255,17 +255,22 @@ def check_state_files_fresh(root: Path, result: AuditResult, strict: bool) -> No
 
 
 def latest_evidence_folder(root: Path) -> Path | None:
-    evidence_root = root / "docs" / "evidence"
-    if not evidence_root.exists():
+    """Return the unique evidence folder bound to current branch and HEAD."""
+    branch_code, branch, _ = run_command(["git", "branch", "--show-current"], root)
+    head_code, head, _ = run_command(["git", "rev-parse", "HEAD"], root)
+    if branch_code != 0 or head_code != 0 or not branch or not head:
         return None
-    candidates = [
-        entry
-        for entry in evidence_root.iterdir()
-        if entry.is_dir() and not entry.name.startswith(".")
-    ]
-    if not candidates:
+    try:
+        from statedd_remote_closure_finalizer import select_evidence_manifest
+    except ImportError:
         return None
-    return max(candidates, key=lambda p: p.stat().st_mtime)
+    folder, _, _ = select_evidence_manifest(
+        root,
+        head=head,
+        branch=branch,
+        slice_id=None,
+    )
+    return folder
 
 
 def evidence_files(folder: Path) -> list[Path]:
@@ -308,7 +313,10 @@ def check_evidence_folder(root: Path, result: AuditResult) -> None:
 
 
 def git_changed_files(repo: Path) -> tuple[bool, list[str]]:
-    code, status, _ = run_command(["git", "status", "--short"], repo)
+    code, status, _ = run_command(
+        ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+        repo,
+    )
     if code != 0:
         return False, []
     return True, [line.strip() for line in status.splitlines() if line.strip()]
@@ -325,7 +333,7 @@ def check_worktree_clean(repo: Path, result: AuditResult) -> None:
     if not is_git_repo:
         result.add(
             "worktree_clean",
-            "warn",
+            "fail",
             "Not a git repository; cannot verify worktree cleanliness",
         )
         return
@@ -343,48 +351,17 @@ def check_branch_head_recorded(repo: Path, result: AuditResult) -> None:
     branch, head = git_branch_and_head(repo)
     folder = latest_evidence_folder(repo)
     if folder is None:
-        result.add("branch_head_recorded", "warn", "Cannot verify branch/head recording without evidence folder")
-        return
-    readme = folder / "README.md"
-    if not readme.exists():
-        result.add("branch_head_recorded", "fail", "Evidence folder README missing; cannot verify branch/head recording")
-        return
-
-    code, _, _ = run_command(["git", "rev-parse", "HEAD"], repo)
-    if code != 0:
-        result.add(
-            "branch_head_recorded",
-            "warn",
-            "Not a git repository; cannot verify branch/head recording",
-        )
-        return
-
-    text = readme.read_text(encoding="utf-8")
-    head_like = re.search(r"\b[0-9a-f]{7,40}\b", text, re.IGNORECASE)
-    if head_like:
-        recorded = head_like.group(0)
-        if recorded == head[:7] or recorded == head:
-            result.add("branch_head_recorded", "pass", f"HEAD {head[:7]} recorded in evidence README")
-        else:
-            result.add(
-                "branch_head_recorded",
-                "pass",
-                f"HEAD {head[:7]} recorded in git; evidence README records {recorded[:7]} (acceptable if README was written before the final commit)",
-            )
-    else:
         result.add(
             "branch_head_recorded",
             "fail",
-            f"HEAD {head[:7]} not found in evidence README; record current HEAD before closure",
+            "Cannot verify branch/head recording without a manifest bound to the current branch and exact HEAD",
         )
-    if branch in text:
-        result.add("branch_head_recorded", "pass", f"Branch '{branch}' recorded in evidence README")
-    else:
-        result.add(
-            "branch_head_recorded",
-            "fail",
-            f"Branch '{branch}' not found in evidence README",
-        )
+        return
+    result.add(
+        "branch_head_recorded",
+        "pass",
+        f"Evidence manifest is bound to branch '{branch}' and exact HEAD {head}",
+    )
 
 
 def changed_files_in_slice(repo: Path) -> list[str]:

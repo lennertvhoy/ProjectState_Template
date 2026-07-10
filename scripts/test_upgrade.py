@@ -163,7 +163,7 @@ def test_force_managed_never_overwrites_truth_files() -> None:
             raise AssertionError("--force-managed unexpectedly overwrote a project-truth file")
 
 
-def test_report_writes_json() -> None:
+def test_dry_run_report_records_true() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "older"
         report = Path(tmp) / "report.json"
@@ -174,6 +174,28 @@ def test_report_writes_json() -> None:
         data = json.loads(report.read_text(encoding="utf-8"))
         if data.get("schema") != "statedd.upgrade_report.v1":
             raise AssertionError("Report has unexpected schema")
+        if data.get("dry_run") is not True:
+            raise AssertionError(f"Dry-run report did not record dry_run true: {data.get('dry_run')!r}")
+
+
+def test_applied_report_records_false() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "older"
+        report = Path(tmp) / "report.json"
+        run_init(["new", "--name", "Older Demo", "--target", str(target)])
+        missing_asset = target / "scripts" / "statedd_evidence_pack.py"
+        missing_asset.unlink()
+
+        run_upgrade(
+            [str(target), "--apply", "--report", str(report)],
+            expect_success=True,
+        )
+
+        if not missing_asset.exists():
+            raise AssertionError("Applied upgrade did not restore the planned asset")
+        data = json.loads(report.read_text(encoding="utf-8"))
+        if data.get("dry_run") is not False:
+            raise AssertionError(f"Applied report did not record dry_run false: {data.get('dry_run')!r}")
 
 
 def main() -> int:
@@ -186,7 +208,8 @@ def main() -> int:
         test_conflict_fixture_refuses_unsafe_overwrite,
         test_force_managed_replaces_outdated_safe_asset,
         test_force_managed_never_overwrites_truth_files,
-        test_report_writes_json,
+        test_dry_run_report_records_true,
+        test_applied_report_records_false,
     ]
     for test in tests:
         test()

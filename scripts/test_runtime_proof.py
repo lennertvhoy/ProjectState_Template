@@ -115,12 +115,28 @@ def test_remote_url_can_be_explicitly_treated_as_local() -> None:
         raise AssertionError("--expect-local process proof should be marked detected")
 
 
+def test_written_artifact_normalizes_public_machine_identity() -> None:
+    artifact, _ = build_with_fake_process("http://localhost:8123")
+    output = ROOT / ".runtime-proof-test.json"
+    try:
+        runtime_proof.write_artifact(output, artifact)
+        written = output.read_text(encoding="utf-8")
+        if "/home/" in written or '"pid"' in written or '"command"' in written or '"cwd"' in written:
+            raise AssertionError(f"Public runtime artifact retained machine identity:\n{written}")
+        parsed = runtime_proof.json.loads(written)
+        if parsed["privacy"]["machine_identity"] != "normalized":
+            raise AssertionError("Public runtime artifact did not declare normalized machine identity")
+    finally:
+        output.unlink(missing_ok=True)
+
+
 def main() -> int:
     tests = [
         test_localhost_attempts_process_detection,
         test_loopback_attempts_process_detection,
         test_remote_url_skips_local_port_detection,
         test_remote_url_can_be_explicitly_treated_as_local,
+        test_written_artifact_normalizes_public_machine_identity,
     ]
     for test in tests:
         test()

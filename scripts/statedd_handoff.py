@@ -115,6 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     repo = Path(args.repo).resolve()
     now = dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds")
+    handoff_exit = 0
 
     branch = git_value(repo, ["rev-parse", "--abbrev-ref", "HEAD"])
     head = git_value(repo, ["rev-parse", "HEAD"])
@@ -171,6 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         if failed:
             print()
             print("At least one verification command failed.")
+            handoff_exit = 1
 
     if args.run_audit:
         print()
@@ -182,8 +184,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- audit exit code: {code}")
             for line in trim_lines(output, args.max_output_lines):
                 print(f"  {line}")
+            if code != 0:
+                handoff_exit = 1
         else:
             print("- scripts/statedd_audit.py not found")
+            handoff_exit = 1
 
     print()
     print("## Handoff Reminder")
@@ -192,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
     print("- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.")
     print("- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.")
 
-    return 0
+    return handoff_exit
 
 
 if __name__ == "__main__":

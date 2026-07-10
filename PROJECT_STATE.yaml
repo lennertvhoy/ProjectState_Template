@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-06-29T11:00:00+02:00
+  updated_at: 2026-07-10T14:34:03+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -9,365 +9,249 @@ workflow:
   repo_role: template_repository
   statedd_mode: template-maintenance
   repo_mode: template-maintenance
+  delivery_state: stabilization
   template_maintenance:
     status: observed
-    purpose: maintain the reusable StateDD template repository
+    purpose: maintain and release the reusable StateDD template repository
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
-    unknowns_remaining:
-      - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - BL-BROWSER-002 concrete browser automation provider integration is now active
-      - downstream upgrade semantic merges of customized workflow files not yet supported
+    queued_slice: BL-CORE-001
+    feature_freeze: true
+    feature_freeze_exit: BL-CORE-001 merged and post-merge verified
 
 verification_labels:
-  observed: verified directly in the current session
-  unknown: not yet determined from currently available evidence
-  reported: supported by prior evidence, not re-verified
+  observed: verified directly in the named session and truth boundary
+  unknown: not yet determined from available evidence
+  reported: supplied by an audit or prior evidence but not reproduced locally
   blocked: verification attempted but prevented
-  assumed: temporary working assumption
-  stale: previously verified but no longer fresh
+  assumed: provisional working assumption
+  stale: previously verified but no longer fresh for the current head
   invalid: known false or superseded
 
 current_state:
   execution_mode:
     status: observed
     mode: template-maintenance
-    supported_downstream_modes:
-      - operating
-      - quality_freeze
-      - incident_response
-      - release_candidate
+    delivery_state: stabilization
     notes: |
-      The template root stays in template-maintenance. Downstream repos should
-      record operating, quality_freeze, incident_response, or release_candidate
-      according to product/runtime truth.
+      Repository mode remains template-maintenance. Stabilization is a delivery
+      posture, not a new repository mode. Feature work is held until BL-CORE-001
+      is merged and post-merge verified.
+
+  audit_intake:
+    id: upstream-audit-2026-07-10
+    source: user_supplied_upstream_audit
+    scope: origin main, draft PR 4, closure/generator/state/update/tooling contracts
+    source_claim_status: reported
+    planning_status: integrated
+    implementation_status: locally_implemented_preflight_passed_uncommitted
+    accepted_direction: stabilization_before_features
+    privacy_boundary: |
+      Personal StudyDD observations are accepted only as abstract failure
+      classes. No learner state, answers, targets, identifiers, private URLs,
+      or private evidence may enter this public repository.
+    directly_observed:
+      - id: OBS-MAIN-STATE-STALE
+        status: observed
+        claim: origin/main state still prioritizes BL-BROWSER-002 and reports no known P0/P1 failures
+        boundary: remote_branch_tree
+      - id: OBS-PR-BODY-STALE
+        status: observed
+        claim: draft PR 4 head is 976a3f0 while its body names 0c2a136 and dadf4ad as proof/final heads
+        boundary: github_pr
+      - id: OBS-PR-CI-LIMITED
+        status: observed
+        claim: current-head GitHub checks succeeded, but the visible workflow is documentation validation and does not prove every PR-body claim
+        boundary: github_ci
+      - id: OBS-VERSION-DRIFT
+        status: observed
+        claim: VERSION is statedd-template-v5 while CHANGELOG.md stops at v4
+        boundary: remote_branch_tree
+      - id: OBS-PUBLIC-MACHINE-IDENTITY
+        status: observed
+        claim: prior PROJECT_STATE tracked an absolute home path, kernel, and local runtime details
+        boundary: remote_branch_tree
+    reported_pending_reproduction:
+      - id: AUDIT-REMOTE-TRUTH
+        claim: remote-truth logic can treat a dirty worktree as clean and overstate GitHub verification
+      - id: AUDIT-HANDOFF-EXIT
+        claim: failed handoff test commands can still yield process exit zero
+      - id: AUDIT-GATE-CONFIG
+        claim: missing test or lint infrastructure can be classified as success
+      - id: AUDIT-RUNTIME-EVIDENCE
+        claim: runtime and evidence gates consume inconsistent artifact models and global history
+      - id: AUDIT-DUPLICATE-YAML
+        claim: downstream DNA generation emits duplicate top-level keys that validation silently overwrites
+      - id: AUDIT-VERSION-DETECTION
+        claim: template version validation depends on an obsolete exact README heading
+      - id: AUDIT-UPGRADE-REPORT
+        claim: applied upgrades can still emit dry_run true
+      - id: AUDIT-PRIVACY
+        claim: runtime evidence bypasses meaningful public machine-identity and PII scanning
+      - id: AUDIT-CLOSURE-SELF-REFERENCE
+        claim: tracked evidence and mutable PR prose create a self-referential final-head loop
+      - id: AUDIT-CONTROL-PLANE-DUPLICATION
+        claim: scripts, prompts, skills, commands, schemas, catalogs, and state independently encode drifting workflow rules
 
   quality_gates:
-    status: active
+    status: degraded_pending_stabilization
     product_quality_gate: not_applicable_for_template_root
-    runtime_truth_gate: not_applicable_for_template_root
+    runtime_truth_gate: audit_reported_conflict_pending_reproduction
     live_canary_gate: not_applicable_for_template_root
-    redteam_gate: passing_for_template_propagation_checks
-    known_bad_events_gate: not_applicable_for_template_root
+    redteam_gate: stale_prior_result_not_sufficient_for_current_claims
+    known_bad_events_gate: audit_reported_failure_classes_missing_full_regression_coverage
     remote_closure_gate:
-      status: active
-      script: scripts/statedd_remote_closure_finalizer.py
-      evidence: docs/evidence/2026-06-29-remote-closure/README.md
+      status: invalidated_for_current_closure_claims
+      current_script: scripts/statedd_remote_closure_finalizer.py
+      reason: current PR head, PR prose, tracked evidence, and claimed proof heads do not agree
+      policy: no existing closure script may elevate BL-CORE-001 without its corrected negative tests
+    validation_semantics:
+      required_results:
+        - PASS
+        - FAIL
+        - NOT_CONFIGURED
+        - NOT_APPLICABLE
+        - BLOCKED
+        - SKIPPED_BY_EXPLICIT_OVERRIDE
+      invariant: only PASS crosses a required local validation boundary
+      implementation_status: backlog_only
+
+  release_posture:
+    status: blocked_on_stabilization
+    release_type: stabilization_not_feature
+    blockers:
+      - BL-CORE-001 is not implemented
+      - draft PR 4 is not closure-grade at its current head
+      - reported false-pass conditions lack focused failure-injection proof
+    resume_features_when:
+      - BL-CORE-001 exact-head CI passes
+      - BL-CORE-001 is merged
+      - post-merge verification succeeds on main
+
+  repository:
+    canonical_path: "$REPO_ROOT"
+    path_status: unknown
+    path_representation: public_normalized
+    path_truth: intentionally_not_persisted_in_public_state
+    public_privacy_profile: public
+    git_snapshot:
+      status: observed
+      captured_at: 2026-07-10T14:34:03+02:00
+      capture_tools:
+        - git
+        - gh
+      default_branch: main
+      default_branch_head: 81257e6119877b200873585c0e4d71c62ef6d4ed
+      draft_pr:
+        number: 4
+        state: open_draft
+        branch: bl-workflow-002-worktree-brittleness
+        head: 976a3f0e2a38ba7bf096a300db16b95b65bd53f4
+        merge_state_at_capture: CLEAN
+        current_head_ci_at_capture: success_for_visible_docs_checks
+        body_proof_head: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
+        body_final_head: dadf4ad1afd6faa6aa91fd417a5e8f33d87b5f5e
+        body_alignment: invalid
+        closure_grade: false
       notes: |
-        Enforces the Remote Closure Invariant: local HEAD, pushed branch, PR head,
-        PR body, in-repo evidence, latest GitHub Actions result, and mergeStateStatus
-        must all agree before a slice is closure-grade.
-    efficiency_gate:
-      status: active
-      script: scripts/statedd_efficiency_check.py
-      budget: EFFICIENCY_BUDGET.yaml
-      notes: |
-        Enforces the Efficiency Invariant: instruction size, active queues,
-        evidence bundles, and gate-level metadata must stay within declared budgets.
-    evidence: docs/evidence/2026-06-28-quality-firewall-template/README.md
-    docs:
-      - QUALITY_FIREWALL.md
-      - FAILURE_TAXONOMY.md
-      - INCIDENT_RESPONSE.md
-      - docs/failure_scans/TEMPLATE.md
-      - docs/incidents/README.md
-      - docs/quality_gates/README.md
+        Git cleanliness and head equality are decision-time facts and are not
+        stored as timeless clean claims. Re-run Git and GitHub checks before any
+        transition across local, remote, PR, CI, or merge truth boundaries.
+
+  operating_mode:
+    status: observed
+    mode: template-maintenance
+    summary: maintain the upstream template while executing a stabilization-only queue
+
+  project:
+    name: StateDD_Template
+    type: documentation_and_workflow_template
+    lifecycle_stage: template-maintenance_stabilization
+    truth_summary: critical_correctness_repair_queued
 
   runtime_truth:
     status: not_applicable_for_template_root
-    repo_truth_is_not_runtime_truth_rule: active
+    downstream_contract_status: audit_reported_conflict_pending_reproduction
     notes: |
-      The template root has no deployed application runtime. Downstream repos
-      must prove runtime identity for user-facing or operator-facing acceptance.
+      The template root has no application runtime. Runtime proof remains
+      required for downstream user-facing closure, but the artifact contract
+      and its evidence discovery must be reconciled before reuse is trusted.
+
+  runtime_identity:
+    status: not_applicable_for_template_root
+    repo_path: "$REPO_ROOT"
+    public_representation: normalized
+    artifact_contract: audit_reported_conflict_pending_reproduction
+    helper: scripts/statedd_runtime_proof.py
+    process_or_container: no application runtime
+    port_or_base_url: not_applicable
+    notes: do not commit hostnames, PIDs, command lines, or absolute home paths in public evidence
+
+  environment:
+    status: intentionally_not_recorded_in_public_state
+    privacy_profile: public
+    local_details_location: ignored local or CI receipt when a gate requires them
 
   known_bad_events:
-    status: none_known_for_template_root
-    fixture_policy: |
-      Downstream projects should convert observed bad events into durable
-      incident notes, fixtures or equivalent artifacts, and regression gates.
+    status: audit_reported_failure_classes
+    reproduction_status: scoped_false_passes_reproduced_with_negative_regressions
+    fixture_policy: every reproduced false pass becomes a focused negative regression
 
-  open_p0_failures: []
+  open_p0_failures:
+    - BL-CORE-001 false closure and generator corruption
 
-  closure_blockers: []
+  closure_blockers:
+    - BL-CORE-001 not implemented, merged, or post-merge verified
+    - draft PR 4 proof metadata does not match its current head
+    - current CI does not reproduce every claimed runtime/evidence/privacy/closure condition
 
   last_live_canary:
     status: not_applicable_for_template_root
     evidence: null
 
   last_redteam_run:
-    status: passing_for_template_propagation_checks
-    evidence: docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
+    status: stale
+    reason: prior passing result predates the 2026-07-10 audit and does not cover its failure classes
 
   residual_risks:
-    - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
-
-  repository:
-    canonical_path: /home/ff/Documents/Projects/StateDD_Template
-    path_status: observed
-    git_snapshot:
-      status: observed
-      captured_at: 2026-06-29T12:05:00+02:00
-      last_verified_branch: main
-      last_verified_head: b884f3cef5da340942be3a130b548193bb7e2827
-      last_verified_worktree_status: clean
-      notes: |
-        BL-SANITY-001 merged directly to main and CI is green. Current truth
-        reflects the latest accepted commit. Use git, scripts/statedd_audit.py,
-        scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
-        artifacts for current branch, HEAD, and worktree status.
-
-  operating_mode:
-    status: observed
-    mode: template-maintenance
-    summary: |
-      This repository maintains the reusable StateDD template. Generated and
-      adopted downstream repositories still start in bootstrap mode; the root
-      template repo tracks template-maintenance truth.
-
-  project:
-    name: StateDD_Template
-    type: documentation_and_workflow_template
-    lifecycle_stage: template-maintenance
-    truth_summary: template_maintenance_active
-
-  runtime_identity:
-    status: not_applicable_for_template_root
-    repo_path: /home/ff/Documents/Projects/StateDD_Template
-    artifact_contract: runtime_identity.json
-    helper: scripts/statedd_runtime_proof.py
-    process_or_container: no application runtime
-    port_or_base_url: not_applicable
-    rebuilt_in_current_slice: false
-    duplicate_runtimes_checked: not_applicable
-    notes: |
-      The template root does not ship an application runtime. Downstream
-      projects use scripts/statedd_runtime_proof.py to record runtime identity
-      artifacts before accepting user-facing behavior.
-
-  environment:
-    status: observed
-    host:
-      os: Linux
-      kernel: 7.0.12-201.fc44.x86_64
-      shell: unknown
-      terminal: unknown
-    package_managers:
-      - unknown
-    language_runtimes:
-      python: 3.14.5
-      node: unknown
-    container_tooling:
-      docker: unknown
-      podman: unknown
-    browser_tooling:
-      chrome: unknown
-      playwright: unknown
-    ports:
-      listeners: unknown
-      notes: |
-        Capture active listeners directly during bootstrap when that matters.
-
-  repository_structure:
-    status: observed
-    top_level_entries:
-      - AGENTS.md
-      - BACKLOG.md
-      - CHANGELOG.md
-      - LICENSE
-      - LICENSE_FAQ.md
-      - NEXT_ACTIONS.md
-      - PROJECT_ADAPTER.yaml
-      - PROJECT_DNA.yaml
-      - PROJECT_STATE.yaml
-      - README.md
-      - STATUS.md
-      - VERSION
-      - WORKLOG.md
-      - docs
-      - fixtures
-      - prompts
-      - scripts
-    manifests:
-      - VERSION
-      - README.md
-      - scripts/init_template.py
-      - scripts/check_state_docs.py
-      - scripts/statedd_audit.py
-      - scripts/statedd_doctor.py
-      - scripts/statedd_runtime_proof.py
-      - scripts/statedd_evidence_pack.py
-      - scripts/statedd_upgrade.py
-      - scripts/statedd_bootstrap_wizard.py
-      - scripts/statedd_remote_closure_finalizer.py
-      - scripts/test_init_template.py
-      - scripts/test_runtime_proof.py
-      - scripts/test_evidence_pack.py
-      - scripts/test_upgrade.py
-      - scripts/test_adoption_profiles.py
-      - scripts/test_remote_closure_finalizer.py
-    entrypoints:
-      - scripts/init_template.py
-      - scripts/check_state_docs.py
-      - scripts/statedd_audit.py
-      - scripts/statedd_doctor.py
-      - scripts/statedd_handoff.py
-      - scripts/statedd_validate_schema.py
-      - scripts/statedd_version_check.py
-      - scripts/statedd_runtime_proof.py
-      - scripts/statedd_evidence_pack.py
-      - scripts/statedd_upgrade.py
-      - scripts/statedd_bootstrap_wizard.py
-      - scripts/statedd_remote_closure_finalizer.py
-      - scripts/test_init_template.py
-      - scripts/test_runtime_proof.py
-      - scripts/test_schema_validation.py
-      - scripts/test_evidence_pack.py
-      - scripts/test_upgrade.py
-      - scripts/test_adoption_profiles.py
-      - scripts/test_remote_closure_finalizer.py
-      - schemas
-    test_setup:
-      - python3 scripts/check_state_docs.py
-      - python3 scripts/statedd_validate_schema.py
-      - python3 scripts/test_init_template.py
-      - python3 scripts/test_runtime_proof.py
-      - python3 scripts/test_schema_validation.py
-      - python3 scripts/test_evidence_pack.py
-      - python3 scripts/test_upgrade.py
-      - python3 scripts/test_adoption_profiles.py
-      - python3 scripts/test_remote_closure_finalizer.py
-      - python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
-      - python3 scripts/statedd_audit.py
-      - python3 scripts/statedd_doctor.py
-    deployment_assumptions:
-      - distributed as a git-hosted workflow template
-      - no application deployment target
-    contradictions:
-      - not proven
+    - audit findings are not exhaustive and most still require local reproduction
+    - downstream repositories may continue consuming stale main until a corrected release propagates
+    - draft PR 4 mixes multiple concerns and should not be treated as a focused repair slice
+    - manual asset and instruction catalogs remain drift-prone until their backlog slices land
 
   evidence:
-    status: active
+    status: degraded_for_closure
     ledger: docs/EVIDENCE_LOG.md
-    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    standard: browser_or_test_output_plus_runtime_identity_for_user_facing_claims
+    current_rule: evidence must be bound to the active slice and exact head
+    current_limitation: existing historical bundles are not proof for draft PR 4 current head
 
   documentation:
-    status: observed
-    primary_user_guide: README.md
-    live_docs:
-      - README.md
-      - AGENTS.md
+    status: state_corrected_locally
+    canonical_live_state:
       - STATUS.md
-      - VERSION
-      - CHANGELOG.md
       - PROJECT_STATE.yaml
       - PROJECT_DNA.yaml
-      - PROJECT_ADAPTER.yaml
       - NEXT_ACTIONS.md
       - BACKLOG.md
+    history:
       - WORKLOG.md
-      - LICENSE
-      - LICENSE_FAQ.md
-      - docs/GETTING_STARTED_5_MIN.md
-      - docs/QUICK_COMMANDS.md
-      - docs/BROWSER_VERIFICATION.md
-      - QUALITY_FIREWALL.md
-      - FAILURE_TAXONOMY.md
-      - INCIDENT_RESPONSE.md
-      - docs/failure_scans/TEMPLATE.md
-      - docs/incidents/README.md
-      - docs/quality_gates/README.md
-      - docs/UPGRADING.md
-      - docs/ADOPTION_PROFILES.md
-      - docs/RELEASE_NOTES_statedd-template-v5.md
-      - docs/EVIDENCE_LOG.md
-      - docs/ACCEPTANCE_FREEZES.md
-      - prompts/OPENCODE_STARTUP_PROMPT.md
-      - prompts/TOOL_MODEL_ROUTING_GUIDE.md
-      - scripts/statedd_version_check.py
-      - scripts/statedd_handoff.py
-      - scripts/statedd_validate_schema.py
-      - scripts/statedd_runtime_proof.py
-      - schemas/examples/schema_prompt_loop/README.md
-    prompt_assets:
-      cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
-      coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
-      opencode_startup_prompt: prompts/OPENCODE_STARTUP_PROMPT.md
-      tool_model_routing_guide:
-        status: observed
-        path: prompts/TOOL_MODEL_ROUTING_GUIDE.md
-        summary: |
-          Guides the CTO lane to recommend tools, models, settings, context
-          strategy, and tailored prompts based on current user access, task
-          risk, budget, and verified provider facts.
-    workflow_helpers:
-      getting_started_5_min:
-        status: observed
-        path: docs/GETTING_STARTED_5_MIN.md
-      workflow_for_beginners:
-        status: observed
-        path: docs/WORKFLOW_FOR_BEGINNERS.md
-      handoff_snapshot:
-        status: observed
-        path: scripts/statedd_handoff.py
-      runtime_proof:
-        status: observed
-        path: scripts/statedd_runtime_proof.py
-        summary: Captures runtime_identity.json evidence artifacts and skips local process claims for remote endpoints unless explicitly overridden.
-      remote_closure_finalizer:
-        status: observed
-        path: scripts/statedd_remote_closure_finalizer.py
-        summary: Blocks closure-grade handoffs until local HEAD, pushed branch, PR head, PR body, evidence, GitHub Actions, and merge state all agree.
-      audit_command:
-        status: observed
-        path: scripts/statedd_audit.py
-        summary: Machine-checkable StateDD closure audit, including runtime identity artifact recognition and schema validation.
-      schema_validation:
-        status: observed
-        path: scripts/statedd_validate_schema.py
-        summary: Stdlib-only schema-backed validation for StateDD state, evidence README, runtime identity, and final handoff contracts.
-      version_check:
-        status: observed
-        path: scripts/statedd_version_check.py
-        summary: Fails when current version-bearing files disagree with VERSION.
-      doctor_command:
-        status: observed
-        path: scripts/statedd_doctor.py
-        summary: Fast human-readable StateDD health summary, including runtime identity status.
-      evidence_pack:
-        status: observed
-        path: scripts/statedd_evidence_pack.py
-        summary: Evidence folder manifest initialization, hash verification, and redaction scanning.
-      browser_verification:
-        status: observed
-        path: scripts/statedd_browser_verify.py
-        summary: Provider-agnostic browser verification artifact validation and recording; accepts Kimi WebBridge, Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling.
-      upgrade_helper:
-        status: observed
-        path: scripts/statedd_upgrade.py
-        summary: Non-destructive downstream upgrade helper with dry-run-by-default semantics.
-      bootstrap_wizard:
-        status: observed
-        path: scripts/statedd_bootstrap_wizard.py
-        summary: Interactive MVP that asks minimum strategic questions and runs the initializer.
-      slice_contract_template:
-        status: observed
-        path: prompts/SLICE_CONTRACT_TEMPLATE.md
-      evidence_readme_template:
-        status: observed
-        path: prompts/EVIDENCE_README_TEMPLATE.md
-      schema_ownership_template:
-        status: observed
-        path: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
-      subagent_review_template:
-        status: observed
-        path: prompts/SUBAGENT_REVIEW_TEMPLATE.md
-      cto_review_checklist:
-        status: observed
-        path: prompts/CTO_REVIEW_CHECKLIST.md
-      adr_template:
-        status: observed
-        path: docs/adr/0000-adr-template.md
+    dynamic_discovery_rule: use repository discovery until BL-UPSTREAM-001 creates the authoritative managed-asset manifest
 
-active_problems: []
+active_problems:
+  - id: BL-CORE-001
+    title: Eliminate false closure and generator corruption
+    severity: P0
+    state: active
+    implementation_status: locally_implemented_preflight_passed_uncommitted
+    source: upstream-audit-2026-07-10
+    acceptance_contract: BACKLOG.md NOW section
+    next_action_contract: NEXT_ACTIONS.md
+    non_goals:
+      - parallel-agent orchestration
+      - browser-provider integration
+      - broad instruction rewrites
+      - managed downstream updates
+      - toolpacks and model routing
+      - full package migration
+    closure_requirement: merged and post-merge verified on exact current head

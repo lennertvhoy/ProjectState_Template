@@ -172,6 +172,7 @@ def assert_version_assets_exist(root: Path) -> None:
         root / "VERSION",
         root / "docs" / "UPGRADING.md",
         root / "scripts" / "statedd_version_check.py",
+        root / "scripts" / "test_version_check.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -334,6 +335,46 @@ def test_new_includes_schema_validation_assets_and_passes_schema_validation() ->
             raise AssertionError(
                 f"Generated repo schema validation failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
             )
+
+
+def test_generated_project_dna_has_unique_top_level_keys_and_all_invariants() -> None:
+    expected_invariants = {
+        "STATUS.md stays short and current.",
+        "PROJECT_STATE.yaml stores structured live truth only.",
+        "PROJECT_DNA.yaml changes slowly.",
+        "NEXT_ACTIONS.md contains open work only.",
+        "BACKLOG.md assigns stable backlog IDs.",
+        "Accepted user-facing milestones are frozen to source, runtime, and evidence.",
+        "WORKLOG.md is append-only.",
+        "A slice cannot close only because its own checklist passed.",
+        "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed.",
+        "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence.",
+        "Implemented, validated, closure-grade, and accepted are four distinct states.",
+        "Human overrides are recorded, but they do not turn partial work into closure-grade work.",
+        "No schema may exist only in prose.",
+    }
+
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "demo"
+        run_init(["new", "--name", "DNA Demo", "--target", str(target)], expect_success=True)
+        dna = (target / "PROJECT_DNA.yaml").read_text(encoding="utf-8")
+
+    top_level_keys = [
+        line.split(":", 1)[0]
+        for line in dna.splitlines()
+        if line and not line[0].isspace() and not line.startswith("#") and ":" in line
+    ]
+    duplicates = sorted({key for key in top_level_keys if top_level_keys.count(key) > 1})
+    if duplicates:
+        raise AssertionError(f"Generated PROJECT_DNA.yaml has duplicate top-level keys: {duplicates}")
+
+    missing = sorted(
+        invariant
+        for invariant in expected_invariants
+        if f'  - "{invariant}"' not in dna
+    )
+    if missing:
+        raise AssertionError(f"Generated PROJECT_DNA.yaml dropped invariants: {missing}")
 
 
 def test_new_repo_still_fails_bootstrap_gate_until_investigated() -> None:
@@ -541,6 +582,7 @@ def main() -> int:
         test_new_includes_runtime_proof_asset,
         test_new_includes_quality_firewall_assets,
         test_new_includes_schema_validation_assets_and_passes_schema_validation,
+        test_generated_project_dna_has_unique_top_level_keys_and_all_invariants,
         test_new_repo_still_fails_bootstrap_gate_until_investigated,
         test_new_includes_v2_executable_workflow_assets,
         test_new_includes_license_faq,

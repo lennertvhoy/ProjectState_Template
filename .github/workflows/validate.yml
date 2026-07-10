@@ -23,11 +23,17 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install pyyaml
+          python3 -m pip install pyyaml pytest
 
-      - name: Compile Python scripts
+      - name: Compile every Python source file
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/statedd_browser_verify.py scripts/statedd_remote_closure_finalizer.py scripts/statedd_efficiency_check.py scripts/statedd_post_merge_verify.py scripts/test_init_template.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py scripts/test_browser_verification.py scripts/test_remote_closure_finalizer.py scripts/test_efficiency_check.py scripts/test_post_merge_verify.py scripts/test_check_state_docs.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+          mapfile -t python_files < <(find scripts schemas -type f -name '*.py' -print | sort)
+          test "${#python_files[@]}" -gt 0
+          python3 -m py_compile "${python_files[@]}"
+
+      - name: Run discovered regression suite
+        run: |
+          python3 -m pytest -q
 
       - name: Validate root docs
         run: |
@@ -130,3 +136,12 @@ jobs:
       - name: Validate remote closure finalizer
         run: |
           python3 scripts/test_remote_closure_finalizer.py
+
+      - name: Assert tests leave checkout clean
+        run: |
+          if test -n "$(git status --porcelain=v1)"; then
+            echo "Tests modified the checkout:"
+            git status --short
+            git diff -- .
+            exit 1
+          fi
