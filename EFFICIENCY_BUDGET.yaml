@@ -13,6 +13,46 @@ state_budgets:
   active_backlog_items_max: 12
   final_handoff_max_lines: 80
 
+context_budgets:
+  token_estimator: utf8_bytes_div_4_ceiling
+  startup_files:
+    - AGENTS.md
+    - STATUS.md
+    - PROJECT_STATE.yaml
+    - PROJECT_DNA.yaml
+    - NEXT_ACTIONS.md
+  profiles:
+    template_repository:
+      max_startup_files: 5
+      max_startup_bytes: 40000
+      max_startup_estimated_tokens: 10000
+      max_footprint_files: 330
+      max_footprint_bytes: 1800000
+    minimal:
+      max_startup_files: 5
+      max_startup_bytes: 12000
+      max_startup_estimated_tokens: 3000
+      max_footprint_files: 32
+      max_footprint_bytes: 180000
+    solo:
+      max_startup_files: 5
+      max_startup_bytes: 13000
+      max_startup_estimated_tokens: 3250
+      max_footprint_files: 64
+      max_footprint_bytes: 520000
+    team:
+      max_startup_files: 5
+      max_startup_bytes: 13500
+      max_startup_estimated_tokens: 3375
+      max_footprint_files: 72
+      max_footprint_bytes: 700000
+    regulated:
+      max_startup_files: 5
+      max_startup_bytes: 14000
+      max_startup_estimated_tokens: 3500
+      max_footprint_files: 75
+      max_footprint_bytes: 760000
+
 evidence_budgets:
   default_max_files: 15
   docs_only_max_files: 2

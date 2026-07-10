@@ -33,6 +33,10 @@ Smallest footprint:
 python3 scripts/init_template.py new --name "Your Project" --profile minimal
 ```
 
+Generated profiles use explicit runtime-asset allowlists. They exclude template
+tests, fixtures, maintenance history, and historical evidence; the exact installed
+surface is recorded in `STATEDD_ASSETS.json`, and each profile passes its own gate.
+
 Then paste this into your coding agent:
 
 ```text

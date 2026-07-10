@@ -40,33 +40,70 @@ class QualityGate:
     def check_tests(self) -> bool:
         """Run test suite."""
         print("🧪 Running tests...")
-        # Try common test commands
-        test_commands = [
-            ["python", "-m", "pytest", "-x", "-q"],
-            ["python", "-m", "pytest"],
-            ["make", "test"],
-            ["npm", "test"],
-            ["cargo", "test"],
+        ignored_parts = {".git", ".worktrees", ".pytest_cache", "__pycache__", "node_modules"}
+        pytest_tests = [
+            path
+            for pattern in ("test_*.py", "*_test.py")
+            for path in self.root.rglob(pattern)
+            if path.is_file() and not any(part in ignored_parts for part in path.relative_to(self.root).parts)
         ]
+        test_commands: List[List[str]] = []
+        pyproject = self.root / "pyproject.toml"
+        has_pytest_config = (self.root / "pytest.ini").exists() or (self.root / "tox.ini").exists()
+        if pyproject.exists():
+            has_pytest_config = has_pytest_config or "[tool.pytest" in pyproject.read_text(
+                encoding="utf-8", errors="ignore"
+            )
+        if pytest_tests or has_pytest_config:
+            test_commands.append([sys.executable, "-m", "pytest", "-x", "-q"])
+
+        makefile = self.root / "Makefile"
+        if makefile.exists() and "test:" in makefile.read_text(encoding="utf-8", errors="ignore"):
+            test_commands.append(["make", "test"])
+
+        package_json = self.root / "package.json"
+        if package_json.exists():
+            try:
+                package = json.loads(package_json.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                package = {}
+            scripts = package.get("scripts") if isinstance(package, dict) else None
+            if isinstance(scripts, dict) and isinstance(scripts.get("test"), str):
+                test_commands.append(["npm", "test"])
+
+        if (self.root / "Cargo.toml").exists():
+            test_commands.append(["cargo", "test"])
+
+        if not test_commands:
+            self.warnings.append("No project test command detected")
+            return True
+
         for cmd in test_commands:
             code, out, err = self.run_cmd(cmd)
             if code == 0:
                 print(f"  ✓ Tests passed ({' '.join(cmd[:2])})")
                 return True
-            elif code != -1:  # Command exists but failed
+            if code != -1:  # Command exists but failed
                 self.failures.append(f"Tests failed: {err or out}")
                 return False
-        self.warnings.append("No test command found (tried pytest, make, npm, cargo)")
-        return True  # Warn but don't fail if no test setup
+        self.warnings.append("Detected test commands were unavailable")
+        return True
 
     def check_static_analysis(self) -> bool:
         """Run static analysis/linting."""
         print("🔍 Running static analysis...")
-        lint_commands = [
-            ["ruff", "check", "."],
-            ["mypy", "."],
-            ["flake8", "."],
-        ]
+        pyproject = self.root / "pyproject.toml"
+        pyproject_text = pyproject.read_text(encoding="utf-8", errors="ignore") if pyproject.exists() else ""
+        lint_commands: List[List[str]] = []
+        if any((self.root / name).exists() for name in ("ruff.toml", ".ruff.toml")) or "[tool.ruff" in pyproject_text:
+            lint_commands.append(["ruff", "check", "."])
+        if any((self.root / name).exists() for name in ("mypy.ini", ".mypy.ini")) or "[tool.mypy" in pyproject_text:
+            lint_commands.append(["mypy", "."])
+        if any((self.root / name).exists() for name in (".flake8", "setup.cfg")):
+            lint_commands.append(["flake8", "."])
+        if not lint_commands:
+            self.warnings.append("No configured static-analysis command detected")
+            return True
         passed = True
         for cmd in lint_commands:
             code, out, err = self.run_cmd(cmd)

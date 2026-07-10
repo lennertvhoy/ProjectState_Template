@@ -12,13 +12,14 @@ practices.
 Use `minimal` if:
 
 - you want the smallest useful StateDD footprint
-- you are comfortable removing optional beginner docs and fixtures
+- you want core state/schema/hygiene/efficiency/quality gates without optional
+  runtime, audit, evidence-pack, team, or review helpers
 
 Use `solo` if:
 
 - you are one developer or one human + one coding agent
 - you are unsure which profile to choose
-- you want the full template surface without extra team-process weight
+- you want runtime/evidence/closure helpers without template-maintenance payload
 
 Use `team` if:
 
@@ -36,9 +37,9 @@ Use `regulated` if:
 
 Use when you want the smallest useful StateDD footprint.
 
-- Core state files, hygiene checks, audit, doctor, and schema validation remain.
-- Optional fixtures, `docs/BOOTSTRAP_QUALITY.md`, and `docs/WORKFLOW_FOR_BEGINNERS.md`
-  are removed.
+- Core state files plus schema, hygiene, efficiency, and quality gates remain.
+- Runtime, audit, evidence-pack, browser, team, and deep-reference helpers are
+  omitted until the project needs them.
 - The bootstrap gate remains intact; unknowns must still be explicit.
 - Does **not** relax evidence or runtime-proof requirements when a claim needs them.
 
@@ -46,8 +47,8 @@ Use when you want the smallest useful StateDD footprint.
 
 Default profile for a single developer.
 
-- Full template surface including evidence README template, runtime proof helper,
-  schema validation, handoff helpers, and beginner docs.
+- Curated downstream surface including runtime proof, evidence, browser, audit,
+  closure, schema, and handoff helpers.
 - Standard handoff and evidence defaults.
 - Good balance of discipline and low overhead.
 
@@ -55,7 +56,8 @@ Default profile for a single developer.
 
 Use when multiple people will read handoffs, review evidence, or open pull requests.
 
-- Same assets as `solo`.
+- `solo` assets plus isolated agent worktrees, remote closure, CTO/review prompts,
+  upgrade guidance, and ADR templates.
 - Generated `AGENTS.md` emphasizes slice contracts, claim ledgers, and CTO review.
 - Encourages stricter evidence and audit hygiene by default.
 
@@ -63,7 +65,7 @@ Use when multiple people will read handoffs, review evidence, or open pull reque
 
 Use when acceptance criteria, audit trails, or runtime proof are non-negotiable.
 
-- Same assets as `solo` and `team`.
+- `team` assets plus post-merge verification.
 - Generated `AGENTS.md` explicitly requires:
   - runtime identity proof for runtime/user-facing acceptance claims,
   - evidence-pack manifests with redaction status,
@@ -83,3 +85,9 @@ python3 scripts/init_template.py adopt --name "Your Project" --profile team
 ```
 
 The `--minimal` flag is a legacy alias for `--profile minimal`.
+
+Every profile is generated from an explicit allowlist and records its installed
+files in `STATEDD_ASSETS.json`. No profile receives template-maintenance tests,
+fixtures, historical evidence, incident records, changelog, or release history.
+CI runs each generated profile's own quality gate. `EFFICIENCY_BUDGET.yaml`
+enforces startup files/bytes/estimated tokens and managed footprint files/bytes.

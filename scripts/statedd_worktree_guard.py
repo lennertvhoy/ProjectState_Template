@@ -67,7 +67,10 @@ def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
         )
     except FileNotFoundError as exc:
         return 127, "", str(exc)
-    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
+    # Preserve leading spaces: `git status --porcelain` uses the first two
+    # columns as staged/unstaged state. Stripping the whole output corrupts the
+    # first entry and can also remove a leading dot from its path.
+    return completed.returncode, completed.stdout.rstrip(), completed.stderr.rstrip()
 
 
 def git_value(repo: Path, args: list[str], fallback: str = "not proven") -> str:

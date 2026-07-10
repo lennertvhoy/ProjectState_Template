@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.runtime_assets.v1",
+  "title": "StateDD generated runtime asset manifest",
+  "type": "object",
+  "required": [
+    "schema",
+    "template_version",
+    "profile",
+    "generation_mode",
+    "assets",
+    "excluded_classes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"type": "string", "const": "statedd.runtime_assets.v1"},
+    "template_version": {"type": "string", "const": "statedd-template-v5"},
+    "profile": {
+      "type": "string",
+      "enum": ["minimal", "solo", "team", "regulated"]
+    },
+    "generation_mode": {"type": "string", "enum": ["new", "adopt"]},
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "excluded_classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

@@ -507,3 +507,41 @@
 - Type: implementation
 - as_of: 2026-07-07T22:45:00+02:00
 - Notes: Local closure verified; remote push/PR/CI pending explicit approval.
+
+## EV-2026-07-10-001: Generated-repo correctness baseline and failure scan (BL-CONTEXT-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/failure_scans/BL-CONTEXT-001.md
+- Title: Fresh profile footprint and self-gate contradiction captured before repair
+- Source/System: test
+- Action: Generated all four profiles, measured their file/byte/startup payload, ran a fresh solo repo's own quality gate, and classified adjacent failure modes.
+- Shows:
+  - `minimal` starts at 212 files and 1,146,498 bytes
+  - `solo`, `team`, and `regulated` start at 286 files and about 1.2 MB
+  - fresh `solo` fails after 99 passing tests because copied template tests require `repo_role: template_repository`
+  - fresh `solo` also fails its copied efficiency budget because generated `AGENTS.md` has 270 lines against a limit of 110
+- Proves:
+  - broad template copying does not produce an internally self-validating downstream repo
+  - profile names are not sufficient without enforced context and footprint measurements
+- Type: known_bad_event
+- as_of: 2026-07-10T21:00:00+02:00
+- Notes: Baseline evidence only; repair and closure verification are pending.
+
+## EV-2026-07-10-002: Generated-repo correctness repair locally validated (BL-CONTEXT-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/README.md
+- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/manifest.json
+- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/runtime_identity.json
+- Title: Explicit downstream asset boundary, strict state, and measurable profile budgets
+- Source/System: test
+- Action: Replaced broad copying with profile manifests, removed template-only payload, added profile self-gates and budgets, rejected duplicate YAML, and enforced semantic lifecycle agreement.
+- Shows:
+  - every generated profile passes its own quality gate
+  - `minimal` is 29 files and 145,995 bytes versus `solo` at 62 files and 411,582 bytes
+  - generated startup context is about 2,100 estimated tokens instead of the roughly 6,700-token baseline
+  - duplicate-key, manifest, footprint, lifecycle, upgrade-exclusion, and hidden Git-path adversaries pass
+- Proves:
+  - downstream instances are internally self-validating without inheriting template-maintenance state
+  - context/footprint claims are executable budgets rather than profile labels
+- Type: test
+- as_of: 2026-07-10T22:03:00+02:00
+- Notes: Local validation only; remote branch, PR, and CI truth are pending.

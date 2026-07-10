@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-07T22:15:00+02:00
+  updated_at: 2026-07-10T22:03:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -18,7 +18,9 @@ workflow:
       - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
       - BL-SANITY-002 template logic-hole repair is closure-grade and CI-verified on PR #4; merge pending
       - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is closure-grade and CI-verified on PR #4; merge pending
-      - BL-BROWSER-002 concrete browser automation provider integration is now active
+      - BL-PARALLEL-001 is locally implemented and validated; remote closure is pending
+      - BL-CONTEXT-001 is implemented and locally validated; push, PR, CI, and remote closure are pending
+      - BL-BROWSER-002 concrete browser automation provider integration follows the generator repair
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -79,7 +81,7 @@ current_state:
       notes: |
         Requires non-trivial fix/feature slices to name the durable invariant
         and review brittle easy-way-out patterns.
-    evidence: docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+    evidence: docs/evidence/2026-07-10-context-generator-hygiene/README.md
     docs:
       - QUALITY_FIREWALL.md
       - FAILURE_TAXONOMY.md
@@ -105,7 +107,9 @@ current_state:
 
   open_p0_failures: []
 
-  closure_blockers: []
+  closure_blockers:
+    - id: BL-CONTEXT-001
+      reason: local repair is validated, but the final head is not yet pushed or CI-verified
 
   last_live_canary:
     status: not_applicable_for_template_root
@@ -113,10 +117,11 @@ current_state:
 
   last_redteam_run:
     status: passing_for_template_propagation_checks
-    evidence: docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
+    evidence: docs/evidence/2026-07-10-context-generator-hygiene/command_outputs/verification.txt
 
   residual_risks:
     - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
+    - ultra-terse model-facing context remains a benchmark variant and is not canonical state
 
   repository:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
@@ -431,27 +436,27 @@ current_state:
         path: docs/adr/0000-adr-template.md
 
 active_problems:
-  - id: BL-SANITY-002
-    title: Repair template logic holes discovered by 2026-07-07 ultra-critical sanity check
-    severity: P0
-    opened_at: 2026-07-07T19:25:00+02:00
+  - id: BL-CONTEXT-001
+    title: Repair generated-repo correctness and context hygiene
+    severity: P1
+    opened_at: 2026-07-10T20:36:25+02:00
     files:
-      - scripts/statedd_audit.py
-      - scripts/statedd_doctor.py
-      - scripts/statedd_handoff.py
-      - scripts/statedd_runtime_proof.py
-      - scripts/statedd_runtime_truth_check.py
-      - scripts/statedd_closure_check.py
-      - scripts/statedd_worktree_guard.py
-      - scripts/statedd_brittleness_check.py
       - scripts/init_template.py
+      - scripts/statedd_validate_schema.py
+      - scripts/statedd_efficiency_check.py
+      - scripts/statedd_quality_gate.py
       - scripts/statedd_upgrade.py
-      - scripts/statedd_browser_verify.py
-      - scripts/statedd_remote_closure_finalizer.py
-      - scripts/statedd_post_merge_verify.py
-      - scripts/statedd_probe_guidance.py
+      - scripts/statedd_worktree_guard.py
+      - scripts/check_state_docs.py
+      - scripts/test_init_template.py
+      - scripts/test_adoption_profiles.py
+      - scripts/test_schema_validation.py
+      - scripts/test_efficiency_check.py
+      - scripts/test_upgrade.py
+      - scripts/test_worktree_guard.py
+      - .github/workflows/validate.yml
     summary: |
-      The sanity check found critical false-positive closure-grade paths, incompatible
-      runtime_identity.json schemas, weak worktree/brittleness guards, and unsafe file
-      operations across the template scripts. These must be repaired before any
-      closure-grade handoff.
+      The repair is implemented and locally validated: all generated profiles pass
+      their own gate, manifest/footprint/YAML/lifecycle regressions pass, and the
+      worktree guard now preserves Git porcelain status columns. Remote CI and
+      closure agreement remain unproven.

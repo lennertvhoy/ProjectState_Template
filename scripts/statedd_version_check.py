@@ -17,10 +17,10 @@ REQUIRED_VERSION_FILES = (
     "PROJECT_STATE.yaml",
     "PROJECT_DNA.yaml",
     "PROJECT_ADAPTER.yaml",
-    "scripts/init_template.py",
 )
 
 TEMPLATE_MAINTENANCE_VERSION_FILES = (
+    "scripts/init_template.py",
     "README.md",
     "CHANGELOG.md",
     "docs/UPGRADING.md",

@@ -2,7 +2,7 @@
 
 **Product:** StateDD_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-07-07
+**Updated At:** 2026-07-10
 
 ## Purpose
 
@@ -11,7 +11,8 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-PARALLEL-001] Add first-class support for multiple coding agents working on the same repository via a managed agent worktree orchestrator, reservation refs, lock awareness, and agent-context-aware existing scripts.
+- [BL-CONTEXT-001] Repair generated-repo correctness and context hygiene: explicit profile asset manifests, generated self-gates, strict YAML keys, measurable footprint budgets, and semantic lifecycle checks.
+- [BL-PARALLEL-001] Complete remote push/PR/CI closure for the implemented parallel-agent worktree orchestrator; local implementation and gates are already recorded in WORKLOG.md.
 
 ## NEXT
 

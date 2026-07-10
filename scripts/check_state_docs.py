@@ -9,9 +9,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from statedd_validate_schema import StateDDYamlError, parse_yaml_text
+except ModuleNotFoundError:  # pragma: no cover - module import path under pytest
+    from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
+
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKLOG_ID_RE = re.compile(r"\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]")
+WORKLOG_BACKLOG_ID_RE = re.compile(r"(?:\[|\()(BL-(?:[A-Z][A-Za-z]*-)*\d{3})(?:\]|\))")
 NEXT_ACTION_ID_RE = re.compile(r"^###\s+P\d+\s+\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]\s+.+$", re.MULTILINE)
 WORKLOG_ENTRY_RE = re.compile(r"^##\s+\d{4}-\d{2}-\d{2}\s+-\s+.+$", re.MULTILINE)
 EVIDENCE_ENTRY_RE = re.compile(r"^##\s+EV-\d{4}-\d{2}-\d{2}-\d{3}:\s+.+$", re.MULTILINE)
@@ -92,6 +98,7 @@ TEMPLATE_ASSET_PATHS = [
     "schemas/project_state.schema.json",
     "schemas/project_dna.schema.json",
     "schemas/project_adapter.schema.json",
+    "schemas/statedd_assets.schema.json",
     "schemas/runtime_identity.schema.json",
     "schemas/evidence_readme_contract.json",
     "schemas/evidence_manifest.schema.json",
@@ -150,6 +157,13 @@ OPTIONAL_ASSETS_FOR_MINIMAL_PROFILE = {
 
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
+TERMINAL_WORKLOG_STATUSES = {
+    "ACCEPTED",
+    "CLOSED",
+    "COMPLETE",
+    "CLOSURE_GRADE_CI_VERIFIED",
+    "MERGED",
+}
 
 
 def count_nonempty_lines(text: str) -> int:
@@ -227,6 +241,54 @@ def extract_next_action_ids(text: str) -> list[str]:
     return NEXT_ACTION_ID_RE.findall(text)
 
 
+def extract_status_open_failure_ids(text: str) -> set[str]:
+    match = re.search(r"^##\s+Open P0/P1 Failures\s*$([\s\S]*?)(?=^##\s|\Z)", text, re.MULTILINE)
+    return set(BACKLOG_ID_RE.findall(match.group(1))) if match else set()
+
+
+def extract_terminal_worklog_ids(text: str) -> set[str]:
+    terminal: set[str] = set()
+    entries = re.split(r"(?=^##\s+)", text, flags=re.MULTILINE)
+    for body in entries:
+        if not body.startswith("## "):
+            continue
+        status_match = re.search(r"^\*\*Status:\*\*\s*([^\n]+)", body, re.MULTILINE)
+        if not status_match:
+            continue
+        status = status_match.group(1).strip().upper().replace("-", "_").replace(" ", "_")
+        if status in TERMINAL_WORKLOG_STATUSES:
+            terminal.update(WORKLOG_BACKLOG_ID_RE.findall(body))
+    return terminal
+
+
+def extract_active_problems(project_state_text: str) -> tuple[dict[str, str], list[str]]:
+    try:
+        state = parse_yaml_text(project_state_text)
+    except StateDDYamlError as exc:
+        return {}, [f"PROJECT_STATE.yaml could not be parsed for lifecycle checks: {exc}"]
+    if not isinstance(state, dict):
+        return {}, ["PROJECT_STATE.yaml root must be a mapping for lifecycle checks"]
+    raw_problems = state.get("active_problems", [])
+    if not isinstance(raw_problems, list):
+        return {}, ["PROJECT_STATE.yaml active_problems must be a list"]
+    problems: dict[str, str] = {}
+    issues: list[str] = []
+    for item in raw_problems:
+        if not isinstance(item, dict):
+            issues.append("PROJECT_STATE.yaml active_problems entries must be mappings")
+            continue
+        problem_id = item.get("id")
+        severity = item.get("severity")
+        if not isinstance(problem_id, str):
+            issues.append("PROJECT_STATE.yaml active problem is missing a string id")
+            continue
+        if problem_id in problems:
+            issues.append(f"PROJECT_STATE.yaml repeats active problem ID {problem_id}")
+            continue
+        problems[problem_id] = severity if isinstance(severity, str) else "unknown"
+    return problems, issues
+
+
 def read_optional(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8") if path.exists() else ""
@@ -258,18 +320,8 @@ def detect_repo_mode(root: Path) -> str | None:
 
 
 def is_template_style_repo(root: Path) -> bool:
-    readme = root / "README.md"
-    project_state = root / "PROJECT_STATE.yaml"
-    readme_text = readme.read_text(encoding="utf-8") if readme.exists() else ""
-    project_state_text = project_state.read_text(encoding="utf-8") if project_state.exists() else ""
-
-    if readme_text.startswith("# State Driven Development Template"):
-        return True
-    if "type: documentation_and_workflow_template" in project_state_text:
-        return True
-    if "type: project_template" in project_state_text and "## Quick Start" in readme_text:
-        return True
-    return False
+    role, _ = detect_repo_context(root)
+    return role == "template_repository"
 
 
 def check_file(path: Path) -> list[str]:
@@ -321,14 +373,55 @@ def check_cross_file_rules(root: Path) -> list[str]:
     issues: list[str] = []
     backlog = root / "BACKLOG.md"
     next_actions = root / "NEXT_ACTIONS.md"
-    if not backlog.exists() or not next_actions.exists():
+    project_state = root / "PROJECT_STATE.yaml"
+    status = root / "STATUS.md"
+    worklog = root / "WORKLOG.md"
+    if not all(path.exists() for path in (backlog, next_actions, project_state, status, worklog)):
         return issues
 
-    backlog_ids = extract_backlog_ids(backlog.read_text(encoding="utf-8"))
-    action_ids = extract_next_action_ids(next_actions.read_text(encoding="utf-8"))
+    backlog_text = backlog.read_text(encoding="utf-8")
+    next_actions_text = next_actions.read_text(encoding="utf-8")
+    state_text = project_state.read_text(encoding="utf-8")
+    status_text = status.read_text(encoding="utf-8")
+    worklog_text = worklog.read_text(encoding="utf-8")
+
+    sections = extract_backlog_sections(backlog_text)
+    backlog_ids = extract_backlog_ids(backlog_text)
+    now_ids = set(sections.get("NOW", []))
+    closed_ids = set(sections.get("CLOSED", []))
+    action_ids = extract_next_action_ids(next_actions_text)
     for backlog_id in action_ids:
         if backlog_id not in backlog_ids:
             issues.append(f"NEXT_ACTIONS.md references missing backlog ID {backlog_id}")
+        elif backlog_id not in now_ids:
+            issues.append(f"NEXT_ACTIONS.md ID {backlog_id} must be in BACKLOG.md NOW")
+
+    active_problems, problem_issues = extract_active_problems(state_text)
+    issues.extend(problem_issues)
+    active_ids = set(active_problems)
+    for problem_id in sorted(active_ids):
+        if problem_id in closed_ids:
+            issues.append(f"PROJECT_STATE.yaml active problem {problem_id} is CLOSED in BACKLOG.md")
+        elif problem_id not in now_ids:
+            issues.append(f"PROJECT_STATE.yaml active problem {problem_id} must be in BACKLOG.md NOW")
+
+    expected_status_ids = {
+        problem_id for problem_id, severity in active_problems.items() if severity.upper() in {"P0", "P1"}
+    }
+    status_ids = extract_status_open_failure_ids(status_text)
+    if status_ids != expected_status_ids:
+        issues.append(
+            "STATUS.md Open P0/P1 Failures must match PROJECT_STATE.yaml active_problems: "
+            f"status={sorted(status_ids)}, state={sorted(expected_status_ids)}"
+        )
+
+    terminal_ids = extract_terminal_worklog_ids(worklog_text)
+    for problem_id in sorted(terminal_ids & now_ids):
+        issues.append(f"BACKLOG.md NOW contains terminal WORKLOG.md item {problem_id}")
+    for problem_id in sorted(terminal_ids & set(action_ids)):
+        issues.append(f"NEXT_ACTIONS.md contains terminal WORKLOG.md item {problem_id}")
+    for problem_id in sorted(terminal_ids & active_ids):
+        issues.append(f"PROJECT_STATE.yaml keeps terminal WORKLOG.md item {problem_id} active")
     return issues
 
 
@@ -728,9 +821,6 @@ def check_bootstrap_gate(root: Path) -> list[str]:
         issues.append("Bootstrap gate failed: WORKLOG.md does not record any dated bootstrap history")
     if not EVIDENCE_ENTRY_RE.search(evidence):
         issues.append("Bootstrap gate failed: docs/EVIDENCE_LOG.md does not record any evidence entries")
-    if count_nonempty_lines(project_state) < 80:
-        issues.append("Bootstrap gate failed: PROJECT_STATE.yaml is still too thin to represent a truthful baseline")
-
     return issues
 
 

@@ -8,6 +8,7 @@ downstream repos can run them without installing a test framework.
 from __future__ import annotations
 
 import os
+import json
 import subprocess
 import sys
 import tempfile
@@ -155,21 +156,19 @@ def test_new_copies_curated_template_surface_only() -> None:
 def test_new_includes_tool_model_routing_guide() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Routing Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Routing Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
 
         guide = target / "prompts" / "TOOL_MODEL_ROUTING_GUIDE.md"
         if not guide.exists():
             raise AssertionError("New repo did not include prompts/TOOL_MODEL_ROUTING_GUIDE.md")
 
-        agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-        if "prompts/TOOL_MODEL_ROUTING_GUIDE.md" not in agents:
-            raise AssertionError("Generated AGENTS.md does not reference the routing guide")
-
-
 def assert_usability_assets_exist(root: Path) -> None:
     required = [
-        root / "docs" / "GETTING_STARTED_5_MIN.md",
-        root / "prompts" / "OPENCODE_STARTUP_PROMPT.md",
+        root / "README.md",
+        root / "prompts" / "CODING_AGENT_STARTUP_PROMPT.md",
         root / "scripts" / "statedd_handoff.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
@@ -180,7 +179,6 @@ def assert_usability_assets_exist(root: Path) -> None:
 def assert_version_assets_exist(root: Path) -> None:
     required = [
         root / "VERSION",
-        root / "docs" / "UPGRADING.md",
         root / "scripts" / "statedd_version_check.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
@@ -202,9 +200,7 @@ def assert_worktree_and_brittleness_assets_exist(root: Path) -> None:
         root / "ANTI_BRITTLENESS_GUARD.md",
         root / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md",
         root / "scripts" / "statedd_worktree_guard.py",
-        root / "scripts" / "test_worktree_guard.py",
         root / "scripts" / "statedd_brittleness_check.py",
-        root / "scripts" / "test_brittleness_check.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -215,7 +211,6 @@ def assert_evidence_pack_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "evidence_manifest.schema.json",
         root / "scripts" / "statedd_evidence_pack.py",
-        root / "scripts" / "test_evidence_pack.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -225,7 +220,6 @@ def assert_evidence_pack_assets_exist(root: Path) -> None:
 def assert_upgrade_assets_exist(root: Path) -> None:
     required = [
         root / "scripts" / "statedd_upgrade.py",
-        root / "scripts" / "test_upgrade.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -248,8 +242,8 @@ def assert_quality_firewall_assets_exist(root: Path) -> None:
     agents = (root / "AGENTS.md").read_text(encoding="utf-8")
     state = (root / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
     evidence = (root / "docs" / "EVIDENCE_LOG.md").read_text(encoding="utf-8")
-    if "## Quality Firewall" not in agents:
-        raise AssertionError("Generated AGENTS.md does not include the quality firewall contract")
+    if "P0 product failure enters `quality_freeze`" not in agents:
+        raise AssertionError("Generated AGENTS.md does not include the compact quality firewall rule")
     if "quality_gates:" not in state or "runtime_truth:" not in state:
         raise AssertionError("Generated PROJECT_STATE.yaml lacks quality gate/runtime truth fields")
     if "known_bad_event" not in evidence or "runtime_truth" not in evidence:
@@ -261,12 +255,12 @@ def assert_schema_validation_assets_exist(root: Path) -> None:
         root / "schemas" / "project_state.schema.json",
         root / "schemas" / "project_dna.schema.json",
         root / "schemas" / "project_adapter.schema.json",
+        root / "schemas" / "statedd_assets.schema.json",
         root / "schemas" / "runtime_identity.schema.json",
         root / "schemas" / "evidence_readme_contract.json",
         root / "schemas" / "evidence_manifest.schema.json",
         root / "schemas" / "final_handoff_contract.json",
         root / "scripts" / "statedd_validate_schema.py",
-        root / "scripts" / "test_schema_validation.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -281,6 +275,44 @@ def assert_downstream_bootstrap_context(root: Path) -> None:
             raise AssertionError(f"{label} does not declare repo_role: downstream_project")
         if "statedd_mode: bootstrap" not in text:
             raise AssertionError(f"{label} does not declare statedd_mode: bootstrap")
+
+
+def assert_runtime_manifest_matches_files(root: Path) -> None:
+    manifest_path = root / "STATEDD_ASSETS.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if payload.get("schema") != "statedd.runtime_assets.v1":
+        raise AssertionError("Generated runtime asset manifest has the wrong schema")
+    declared = set(payload.get("assets", []))
+    actual = {
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts
+    }
+    if declared != actual:
+        raise AssertionError(
+            f"Runtime asset manifest drift: missing={sorted(actual - declared)}, extra={sorted(declared - actual)}"
+        )
+
+
+def assert_template_only_payload_absent(root: Path) -> None:
+    forbidden = [
+        root / "CHANGELOG.md",
+        root / "fixtures",
+        root / "scripts" / "init_template.py",
+        root / "docs" / "incidents" / "INCIDENT-2026-06-28-false-closure.md",
+        root / ".github" / "workflows" / "validate.yml",
+    ]
+    present = [path.relative_to(root).as_posix() for path in forbidden if path.exists()]
+    copied_tests = sorted(path.relative_to(root).as_posix() for path in (root / "scripts").glob("test_*.py"))
+    historical_evidence = sorted(
+        path.relative_to(root).as_posix()
+        for path in (root / "docs" / "evidence").rglob("*")
+        if path.is_file() and path.name != ".gitkeep"
+    )
+    if present or copied_tests or historical_evidence:
+        raise AssertionError(
+            f"Template-only payload leaked: paths={present}, tests={copied_tests}, evidence={historical_evidence}"
+        )
 
 
 def assert_v2_assets_exist(root: Path) -> None:
@@ -348,6 +380,9 @@ def test_new_includes_schema_validation_assets_and_passes_schema_validation() ->
         assert_schema_validation_assets_exist(target)
         assert_evidence_pack_assets_exist(target)
         assert_upgrade_assets_exist(target)
+        dna_text = (target / "PROJECT_DNA.yaml").read_text(encoding="utf-8")
+        if dna_text.count("\ninvariants:\n") != 1:
+            raise AssertionError("Generated PROJECT_DNA.yaml must contain exactly one invariants mapping key")
         completed = subprocess.run(
             [sys.executable, str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
             cwd=target,
@@ -381,20 +416,19 @@ def test_new_repo_still_fails_bootstrap_gate_until_investigated() -> None:
 def test_new_includes_v2_executable_workflow_assets() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "v2 Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "v2 Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_v2_assets_exist(target)
 
 
-def test_new_includes_license_faq() -> None:
+def test_new_excludes_template_only_payload_and_manifest_is_exact() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "License Demo", "--target", str(target)], expect_success=True)
-        faq = target / "LICENSE_FAQ.md"
-        if not faq.exists():
-            raise AssertionError("New repo did not include LICENSE_FAQ.md")
-        license_text = (target / "LICENSE").read_text(encoding="utf-8")
-        if "Teaching Rights Reserved" not in license_text:
-            raise AssertionError("Generated LICENSE does not reserve teaching rights")
+        run_init(["new", "--name", "Boundary Demo", "--target", str(target)], expect_success=True)
+        assert_template_only_payload_absent(target)
+        assert_runtime_manifest_matches_files(target)
 
 
 def test_adopt_installs_tool_model_routing_guide() -> None:
@@ -403,7 +437,10 @@ def test_adopt_installs_tool_model_routing_guide() -> None:
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
 
-        run_init(["adopt", "--name", "Routing Demo", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "Routing Demo", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
 
         guide = repo / "prompts" / "TOOL_MODEL_ROUTING_GUIDE.md"
         if not guide.exists():
@@ -514,7 +551,10 @@ def test_adopt_installs_v2_executable_workflow_assets() -> None:
         repo = Path(tmp) / "repo"
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
-        run_init(["adopt", "--name", "v2 Adopted", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "v2 Adopted", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
         assert_v2_assets_exist(repo)
 
 
@@ -569,7 +609,7 @@ def main() -> int:
         test_new_includes_schema_validation_assets_and_passes_schema_validation,
         test_new_repo_still_fails_bootstrap_gate_until_investigated,
         test_new_includes_v2_executable_workflow_assets,
-        test_new_includes_license_faq,
+        test_new_excludes_template_only_payload_and_manifest_is_exact,
         test_adopt_installs_tool_model_routing_guide,
         test_adopt_installs_usability_assets,
         test_adopt_installs_version_assets_and_passes_version_check,

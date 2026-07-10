@@ -6,8 +6,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
-import platform
 import shutil
 import subprocess
 import sys
@@ -42,126 +40,112 @@ def profile_summary(profile: str) -> str:
 
 def profile_agents_note(profile: str) -> str:
     if profile == "minimal":
-        return """## Profile Note
+        return """## Profile
 
-This repo was initialized with the `minimal` profile. The footprint is intentionally
-small: fixtures and optional deep-reference docs are removed, but the bootstrap gate,
-state files, and core workflow helpers remain. Do not treat minimal as an excuse to
-skip evidence or runtime proof when they are required for a claim."""
+`minimal`: core truth, schema, hygiene, efficiency, and quality gates only. Add
+runtime/evidence helpers when the project needs them; claim requirements do not
+weaken because an optional helper is absent."""
     if profile == "team":
-        return """## Profile Note
+        return """## Profile
 
-This repo was initialized with the `team` profile. Expect stricter handoff and
-evidence defaults: every non-trivial slice should have a slice contract, a claim
-ledger, and a CTO review before acceptance. Keep the active queue short and review
-friendly."""
+`team`: non-trivial slices use isolated worktrees, a claim ledger, review, and
+remote CI agreement before closure-grade."""
     if profile == "regulated":
-        return """## Profile Note
+        return """## Profile
 
-This repo was initialized with the `regulated` profile. Strict audit defaults apply:
-- runtime identity proof is expected for any runtime/user-facing acceptance claim;
-- evidence folders should include a `manifest.json` with redaction status;
-- acceptance freezes should be recorded for accepted milestones;
-- human overrides must be explicit and recorded with remaining risk.
+`regulated`: runtime/user-facing acceptance requires runtime identity; evidence
+manifests record redaction; accepted milestones are frozen; overrides record scope,
+rationale, and residual risk."""
+    return """## Profile
 
-Do not claim closure-grade without satisfying these defaults."""
-    return """## Profile Note
-
-This repo was initialized with the `solo` profile. Use the standard StateDD workflow:
-short active queue, evidence-backed claims, runtime proof when user-facing behavior
-is verified, and schema/hygiene checks before handoff."""
+`solo`: keep one short queue and use evidence, runtime proof, and slice gates in
+proportion to the claim."""
 
 
-TEMPLATE_COPY_ROOT_FILES = {
+# Downstream repos receive only executable/runtime workflow assets. Template tests,
+# fixtures, evidence, incidents, changelogs, release notes, and maintenance history
+# are intentionally absent from every profile.
+CORE_RUNTIME_ASSET_PATHS = [
     Path(".gitignore"),
-    Path("AGENTS.md"),
-    Path("BACKLOG.md"),
-    Path("CHANGELOG.md"),
+    Path("VERSION"),
     Path("EFFICIENCY_BUDGET.yaml"),
+    Path("scripts/check_state_docs.py"),
+    Path("scripts/statedd_version_check.py"),
+    Path("scripts/statedd_validate_schema.py"),
+    Path("scripts/statedd_instruction_lint.py"),
+    Path("scripts/statedd_efficiency_check.py"),
+    Path("scripts/statedd_quality_gate.py"),
+    Path("schemas/project_state.schema.json"),
+    Path("schemas/project_dna.schema.json"),
+    Path("schemas/project_adapter.schema.json"),
+    Path("schemas/statedd_assets.schema.json"),
+]
+
+STANDARD_RUNTIME_ASSET_PATHS = [
+    Path("QUALITY_FIREWALL.md"),
     Path("FAILURE_TAXONOMY.md"),
     Path("INCIDENT_RESPONSE.md"),
     Path("ANTI_BRITTLENESS_GUARD.md"),
-    Path("LICENSE"),
-    Path("LICENSE_FAQ.md"),
-    Path("NEXT_ACTIONS.md"),
-    Path("PROJECT_ADAPTER.yaml"),
-    Path("PROJECT_DNA.yaml"),
-    Path("PROJECT_STATE.yaml"),
-    Path("QUALITY_FIREWALL.md"),
-    Path("README.md"),
-    Path("STATUS.md"),
-    Path("VERSION"),
-    Path("WORKLOG.md"),
-}
-
-TEMPLATE_COPY_DIR_NAMES = {".github", "docs", "fixtures", "prompts", "schemas", "scripts"}
-
-SUPPORT_ASSET_PATHS = [
-    Path("VERSION"),
-    Path("scripts/init_template.py"),
-    Path("scripts/check_state_docs.py"),
-    Path("scripts/statedd_version_check.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
     Path("scripts/statedd_worktree_guard.py"),
-    Path("scripts/statedd_agent_worktree.py"),
     Path("scripts/statedd_brittleness_check.py"),
     Path("scripts/statedd_runtime_proof.py"),
-    Path("scripts/statedd_validate_schema.py"),
     Path("scripts/statedd_evidence_pack.py"),
+    Path("scripts/statedd_browser_verify.py"),
+    Path("scripts/statedd_closure_check.py"),
+    Path("scripts/statedd_runtime_truth_check.py"),
+    Path("scripts/statedd_evidence_type_check.py"),
+    Path("scripts/statedd_remote_truth_check.py"),
     Path("scripts/statedd_upgrade.py"),
-    Path("scripts/test_init_template.py"),
-    Path("scripts/test_worktree_guard.py"),
-    Path("scripts/test_agent_worktree.py"),
-    Path("scripts/test_brittleness_check.py"),
-    Path("scripts/test_runtime_proof.py"),
-    Path("scripts/test_schema_validation.py"),
-    Path("scripts/test_evidence_pack.py"),
-    Path("scripts/test_upgrade.py"),
-    Path("scripts/statedd_remote_closure_finalizer.py"),
-    Path("scripts/test_remote_closure_finalizer.py"),
-    Path("schemas/project_state.schema.json"),
-    Path("schemas/project_dna.schema.json"),
-    Path("schemas/project_adapter.schema.json"),
     Path("schemas/runtime_identity.schema.json"),
     Path("schemas/evidence_readme_contract.json"),
     Path("schemas/evidence_manifest.schema.json"),
     Path("schemas/final_handoff_contract.json"),
-    Path("schemas/examples/runtime_identity_not_required.json"),
-    Path("schemas/tests/README.md"),
-    Path("prompts/CTO_SESSION_PROMPT.md"),
-    Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
-    Path("prompts/OPENCODE_STARTUP_PROMPT.md"),
-    Path("prompts/BOOTSTRAP_INTAKE_PROMPT.md"),
-    Path("prompts/TOOL_MODEL_ROUTING_GUIDE.md"),
+    Path("schemas/browser_verification.schema.json"),
     Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
     Path("prompts/RUNTIME_IDENTITY_CHECKLIST.md"),
     Path("prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"),
     Path("prompts/SLICE_CONTRACT_TEMPLATE.md"),
     Path("prompts/EVIDENCE_README_TEMPLATE.md"),
     Path("prompts/SCHEMA_OWNERSHIP_TEMPLATE.md"),
-    Path("prompts/SUBAGENT_REVIEW_TEMPLATE.md"),
-    Path("prompts/CTO_REVIEW_CHECKLIST.md"),
-    Path("QUALITY_FIREWALL.md"),
-    Path("FAILURE_TAXONOMY.md"),
-    Path("INCIDENT_RESPONSE.md"),
-    Path("ANTI_BRITTLENESS_GUARD.md"),
-    Path("docs/GETTING_STARTED_5_MIN.md"),
-    Path("docs/BOOTSTRAP_QUALITY.md"),
     Path("docs/failure_scans/TEMPLATE.md"),
     Path("docs/incidents/README.md"),
     Path("docs/quality_gates/README.md"),
     Path("docs/quality_gates/ANTI_BRITTLENESS_GATE.md"),
+    Path("docs/BROWSER_VERIFICATION.md"),
+]
+
+TEAM_RUNTIME_ASSET_PATHS = [
+    Path("scripts/statedd_agent_worktree.py"),
+    Path("scripts/statedd_remote_closure_finalizer.py"),
+    Path("prompts/CTO_SESSION_PROMPT.md"),
+    Path("prompts/TOOL_MODEL_ROUTING_GUIDE.md"),
+    Path("prompts/SUBAGENT_REVIEW_TEMPLATE.md"),
+    Path("prompts/CTO_REVIEW_CHECKLIST.md"),
     Path("docs/UPGRADING.md"),
-    Path("docs/ADOPTION_PROFILES.md"),
-    Path("docs/WORKFLOW_FOR_BEGINNERS.md"),
     Path("docs/adr/README.md"),
     Path("docs/adr/0000-adr-template.md"),
 ]
 
-GITHUB_ASSET_PATHS = [
-    Path(".github/workflows/validate.yml"),
+REGULATED_RUNTIME_ASSET_PATHS = [
+    Path("scripts/statedd_post_merge_verify.py"),
+]
+
+PROFILE_ASSET_PATHS = {
+    "minimal": CORE_RUNTIME_ASSET_PATHS,
+    "solo": [*CORE_RUNTIME_ASSET_PATHS, *STANDARD_RUNTIME_ASSET_PATHS],
+    "team": [*CORE_RUNTIME_ASSET_PATHS, *STANDARD_RUNTIME_ASSET_PATHS, *TEAM_RUNTIME_ASSET_PATHS],
+    "regulated": [
+        *CORE_RUNTIME_ASSET_PATHS,
+        *STANDARD_RUNTIME_ASSET_PATHS,
+        *TEAM_RUNTIME_ASSET_PATHS,
+        *REGULATED_RUNTIME_ASSET_PATHS,
+    ],
+}
+
+OPTIONAL_GITHUB_ASSET_PATHS = [
     Path(".github/pull_request_template.md"),
     Path(".github/ISSUE_TEMPLATE/config.yml"),
     Path(".github/ISSUE_TEMPLATE/bootstrap-init.md"),
@@ -169,6 +153,10 @@ GITHUB_ASSET_PATHS = [
     Path(".github/ISSUE_TEMPLATE/backlog-item.md"),
     Path(".github/ISSUE_TEMPLATE/architecture-change.md"),
 ]
+
+
+def assets_for_profile(profile: str) -> list[Path]:
+    return sorted(set(PROFILE_ASSET_PATHS[validate_profile(profile)]), key=lambda path: path.as_posix())
 
 
 @dataclass
@@ -198,261 +186,49 @@ last_updated: {today}
 
 # {CONTRACT_TITLE}
 
-**Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.
-
-This repository supports two modes:
-- `bootstrap` for discovery and baseline creation
-- `operating` for steady-state delivery
+**Purpose:** Small, stable truth contract for AI-assisted delivery.
 
 ## Read Order
 
-Coding agents should start every repo session by reading:
 1. `AGENTS.md`
 2. `STATUS.md`
 3. `PROJECT_STATE.yaml`
 4. `PROJECT_DNA.yaml`
 5. `NEXT_ACTIONS.md`
 
-Read `BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
+Read `BACKLOG.md`, `WORKLOG.md`, evidence, and inventory only when the task needs
+planning, history, proof, or repository detail.
 
-## Universal Rules
+## Rules
 
-These rules apply in all modes:
-- no fake completeness
-- no unverified claims presented as fact
-- user-facing behavior requires direct verification
-- user-facing acceptance requires runtime identity proof, not screenshots alone
-- StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider
-- Kimi WebBridge is a preferred provider when available, not a required dependency
-- fallback providers may include Playwright, agent-native browser tools, existing E2E tests, manual browser verification, or custom project tooling
-- negative searches stay negative: use `not found`, `not currently locatable`, or `not proven`
-- screenshots or evidence are required for user-visible changes
-- active queue stays short
-- history belongs in `WORKLOG.md`, not live state files
-- structured state must remain machine-checkable
-- end each implementation session with a handoff and hygiene check
-- `README.md` is the primary user guide for the project
-- implemented ≠ validated ≠ closure-grade ≠ accepted
-- evidence must prove product/runtime truth, not only command execution
-- closure requires global quality gates when user-facing or operator-facing behavior is involved
-- agent handoffs are claims until durable evidence or an independent gate verifies them
+- Unverified claims are false; negative searches mean `not found` or `not proven`.
+- `PROJECT_STATE.yaml` is canonical current truth; `STATUS.md` is its human view.
+- `NEXT_ACTIONS.md` contains open work only; history goes to `WORKLOG.md`.
+- Implemented, validated, closure-grade, and accepted are distinct states.
+- Repo, commit, remote, CI, runtime, and user-accepted truth require separate proof.
+- User-facing closure requires runtime identity plus browser verification; a
+  screenshot alone is insufficient and no browser provider is mandatory.
+- P0 product failure enters `quality_freeze` or `incident_response`.
+- Non-trivial work starts from classified, isolated worktree state and names the
+  invariant that prevents brittle example-only fixes.
+- End implementation sessions with state hygiene, relevant gates, and a handoff.
 
-## Current Mode
+## Current Mode: `{mode}`
 
-This repo currently operates in: `{mode}`
-
-## Quality Firewall
-
-StateDD is a failure-discovery workflow, not only a project-management or
-traceability workflow. Adapt the reusable quality firewall in
-`QUALITY_FIREWALL.md` to this project's domain.
-
-### Quality Firewall Rules
-
-- A slice cannot close merely because it satisfies acceptance criteria written
-  for that slice.
-- User-facing and operator-facing work must also pass applicable global
-  invariants and quality gates defined by this project.
-- If P0 product behavior is broken, set execution mode to `quality_freeze` or
-  `incident_response` and block feature work until the freeze condition is
-  directly addressed.
-- Bad observed events should become durable incidents, fixtures, failure scans,
-  and invariant checks, not one-off fixes.
-- Runtime truth and repo truth are separate: a clean worktree or passing tests
-  do not prove a live service, daemon, website, bot, or deployed artifact is
-  current.
-- Handoffs are claims. Treat them as unverified until they point to durable
-  evidence or an independent quality gate result.
-
-## Bootstrap Mode
-
-### When Bootstrap Mode Applies
-Use bootstrap mode when:
-- the repo is new
-- state files do not yet exist
-- project truth is unclear
-- the user explicitly asks for initialization or re-baselining
-
-### Bootstrap Goal
-Establish a truthful operating baseline for the project, including filled state
-files and a real backlog, and only then switch the repo to operating mode.
-
-### Bootstrap Procedure
-1. Investigate the host system and runtime
-2. Investigate the repo structure and implementation reality
-3. Ask the user only the minimum strategic questions needed
-4. Use the CTO lane for brainstorming, research, contradiction resolution, architecture framing, and backlog shaping
-5. Generate and fill the state and governance files truthfully
-6. Mark unknowns honestly
-7. Create the initial backlog and next-actions queue
-8. Update this file to operating mode only when bootstrap is complete
-9. Record bootstrap completion in `PROJECT_STATE.yaml` and `WORKLOG.md`
-
-### Required System Investigation
-Inspect and record, when relevant:
-- OS, distro, kernel
-- shell and terminal environment
-- package manager(s)
-- language/runtime versions
-- container/runtime tooling
-- browser/debug tooling
-- active ports and services
-- git branch, head, and worktree state
-
-### Required Repo Investigation
-Inspect and record:
-- top-level structure
-- app/service boundaries
-- main manifests and config files
-- likely entrypoints
-- test setup
-- deployment assumptions
-- contradictions between code and docs
-
-### Bootstrap Output Files
-Create or initialize:
-- `AGENTS.md`
-- `STATUS.md`
-- `PROJECT_STATE.yaml`
-- `PROJECT_DNA.yaml`
-- `PROJECT_ADAPTER.yaml`
-- `NEXT_ACTIONS.md`
-- `BACKLOG.md`
-- `WORKLOG.md`
-- `docs/EVIDENCE_LOG.md`
-- `docs/ACCEPTANCE_FREEZES.md`
-
-Bootstrap is not complete until these files are filled out enough to guide real
-implementation and `BACKLOG.md` is more than a placeholder.
-
-### Bootstrap Honesty Rules
-If something is not proven, label it as:
-- `observed`
-- `unknown`
-- `reported`
-- `assumed`
-- `blocked`
-- `stale`
-- `invalid`
-
-Do not invent architecture or maturity.
-
-## Operating Mode
-
-### Operating Model
-The repo now runs in a human-in-the-loop workflow:
-- CEO / human provides current state, requirements, priorities, and agent handoffs
-- CTO / product-architecture lead reconstructs truth from user-relayed handoffs and pasted context, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
-- coding agent implements one coherent step with verification and evidence, then ends with a final handoff for the CTO lane
-
-The CTO role can be handled by ChatGPT, Claude, Gemini, or another separate AI chat.
-Use `prompts/CTO_SESSION_PROMPT.md` as the startup prompt for that chat.
-Assume the CTO lane does not have direct repo access unless the human pastes
-state, screenshots, or other context into that chat.
-
-Use the CTO lane for all non-trivial work. Non-trivial means any task involving
-multiple files, architecture changes, user-facing behavior, integrations,
-migrations, state-structure changes, or work likely to take more than one prompt.
-Each non-trivial loop should normally start a fresh coding-agent session.
-During initial bootstrap, an initial coding-agent session may come first so it
-can read the repo contract, detect `bootstrap` mode, and ask the minimum
-strategic questions needed before the CTO loop fully takes over.
-Bootstrap should remain a joint CTO + coding-agent phase until the repo truth,
-architecture, backlog, and active queue are ready for implementation mode.
-
-A valid CTO handoff should define the verified current state, one coherent scope,
-required verification, and the exit condition for the implementation step. If
-important context is not preserved in repo state files, the CTO prompt must
-restate it explicitly for the next coding-agent session.
-In operating mode, the scope should usually be a backlog slice or a very small
-set of tightly related backlog items.
-
-When tool or model choice affects quality, cost, speed, context fit, or
-verification risk, the CTO lane should recommend a concrete route using
-`prompts/TOOL_MODEL_ROUTING_GUIDE.md`. The recommendation should be based on
-the user's available tools and the current slice, not a hard-coded vendor
-preference. Specific model capability, pricing, context-window, and
-availability claims must be verified from current primary sources or marked as
-`reported`, `assumed`, or `not proven`.
-
-### CTO Review Standard
-Every handoff must be reviewed for:
-- contradictions
-- overclaims
-- missing proof
-- brittle logic
-- wrong sequencing
-- architectural drift
-- weak product prioritization
-
-### Coding-Agent Standard
-Implementation prompts must:
-- require reading `AGENTS.md` first
-- anchor on current verified truth
-- define one coherent scope
-- include the recommended tool/model/settings when the CTO lane selected a route
-- forbid overclaiming
-- require direct verification
-- require runtime identity proof before accepting or investigating user-facing behavior
-- require state and doc updates when truth changes
-- require screenshots/evidence for user-facing work
-- require the coding agent to ask the user to provide a CTO agent if no CTO lane or CTO handoff exists yet for non-trivial work
-- require the coding agent to end with one final handoff message suitable for pasting into the CTO lane
-- require the coding agent, when starting in unclear bootstrap mode, to ask the minimum strategic questions needed before implementation
-
-If the tool supports subagents or parallel workers and the task clearly benefits,
-the CTO lane may encourage using them. This is optional guidance, not a baseline
-workflow requirement.
-
-## State Files
-
-- `STATUS.md` = short human truth snapshot
-- `PROJECT_STATE.yaml` = structured current truth
-- `PROJECT_DNA.yaml` = stable architecture contract
-- `PROJECT_ADAPTER.yaml` = optional project-specific vocabulary/runtime adapter
-- `NEXT_ACTIONS.md` = active queue only
-- `BACKLOG.md` = strategic roadmap with stable backlog IDs
-- `WORKLOG.md` = append-only history
-- `docs/EVIDENCE_LOG.md` = proof ledger
-- `docs/ACCEPTANCE_FREEZES.md` = accepted user-facing milestone ledger
-- `QUALITY_FIREWALL.md` = reusable failure-discovery and closure-gate contract
-- `FAILURE_TAXONOMY.md` = shared failure severity and class vocabulary
-- `INCIDENT_RESPONSE.md` = standard bad-event ingestion workflow
-- `docs/failure_scans/` = pre-mortems and adjacent-failure scans
-- `docs/incidents/` = observed bad-event records
-- `docs/quality_gates/` = project-specific invariants and gates
+In `bootstrap`, investigate system/repo truth, record unknowns, create a real
+backlog and queue, then run `python3 scripts/check_state_docs.py --bootstrap-gate`.
+Switch to `operating` only after that gate passes. In `operating`, execute one
+coherent backlog slice at a time and keep live state current.
 
 {profile_agents_note(profile)}
 
-## Handoff Requirements
+## Gates And Handoff
 
-Every implementation session ends with:
-- what changed
-- what was directly verified
-- repo path
-- branch
-- what remains partial or risky
-- git head
-- process or container serving the verified artifact
-- port or endpoint used for verification
-- whether the running artifact was rebuilt in this slice
-- clean worktree status
-- evidence references
-- absolute file paths for evidence artifacts when available
-- next recommended action
-- handoff wording suitable for direct paste into the CTO chat
-
-Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.
-Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics.
-Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone.
-
-## Hygiene Rules
-
-- `STATUS.md` <= 120 lines
-- `PROJECT_STATE.yaml` <= 900 lines
-- `NEXT_ACTIONS.md` active-only
-- no roadmap prose in structured state
-- no closed history in `STATUS.md`
+- Edit loop: relevant tests plus `python3 scripts/check_state_docs.py`.
+- Slice closure: `python3 scripts/statedd_quality_gate.py --gate-level 2` plus
+  runtime/evidence/remote gates applicable to the claim.
+- Report changes, verification, repo/branch/HEAD, runtime process/endpoint/rebuild,
+  worktree cleanliness, evidence paths, residual risk, and next action.
 """
 
 
@@ -520,25 +296,10 @@ def render_project_state(
     unknowns: list[str],
     profile: str = "solo",
 ) -> str:
-    branch = repo_scan.branch if repo_scan.branch is not None else "null"
-    head = repo_scan.head if repo_scan.head is not None else "null"
-    top_level_entries = "\n".join(f"      - {entry}" for entry in repo_scan.top_level_entries) or "      []"
-    entrypoints = "\n".join(f"      - {entry}" for entry in repo_scan.entrypoints) or "      []"
-    manifests = "\n".join(f"      - {entry}" for entry in repo_scan.manifests) or "      []"
-    test_setup = "\n".join(f"      - {entry}" for entry in repo_scan.test_setup) or "      []"
-    deployment = "\n".join(f"      - {entry}" for entry in repo_scan.deployment_assumptions) or "      []"
-    contradictions = "\n".join(f"      - {entry}" for entry in repo_scan.contradictions) or "      []"
-    unknowns_block = "\n".join(f"      - {entry}" for entry in unknowns) or "      []"
-
-    python_version = platform.python_version()
-    os_label = f"{platform.system()} {platform.release()}"
-    shell_name = os.environ.get("SHELL", sys.executable)
-    terminal = os.environ.get("TERM", "unknown")
-    podman_present = "present" if shutil.which("podman") else "absent"
-    docker_present = "present" if shutil.which("docker") else "absent"
-    chrome_present = "present" if any(
-        shutil.which(binary) for binary in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser")
-    ) else "absent"
+    branch = json.dumps(repo_scan.branch) if repo_scan.branch is not None else "null"
+    head = json.dumps(repo_scan.head) if repo_scan.head is not None else "null"
+    unknowns_block = "\n".join(f"      - {json.dumps(entry)}" for entry in unknowns) or "      []"
+    runtime_helper = "not_installed_in_minimal_profile" if profile == "minimal" else "scripts/statedd_runtime_proof.py"
 
     return f"""# PROJECT_STATE.yaml - Structured current truth
 
@@ -573,15 +334,6 @@ current_state:
   execution_mode:
     status: observed
     mode: bootstrap
-    allowed_values:
-      - operating
-      - quality_freeze
-      - incident_response
-      - release_candidate
-    notes: |
-      During bootstrap, determine whether the project can enter operating mode
-      or must start in quality_freeze or incident_response because product or
-      runtime truth is already failing.
 
   quality_gates:
     status: not_run
@@ -590,112 +342,43 @@ current_state:
     live_canary_gate: not_applicable
     redteam_gate: not_run
     known_bad_events_gate: not_run
-    notes: |
-      Replace these placeholders with project-specific commands, invariants,
-      fixtures, and evidence paths in docs/quality_gates/README.md or the
-      project test suite.
 
   runtime_truth:
     status: unknown
     repo_truth_is_not_runtime_truth_rule: active
-    running_service_head: unknown
-    active_processes_or_pollers: unknown
-    duplicate_runtimes_checked: false
-    notes: |
-      Repo cleanliness and tests do not prove a running artifact. Capture
-      runtime identity before user-facing or operator-facing acceptance.
 
   known_bad_events:
     status: none_recorded
-    fixture_root: project_specific
-    notes: |
-      When a bad live event is observed, create an incident note, a failure
-      scan, and a regression fixture or equivalent durable check.
 
   open_p0_failures: []
 
   closure_blockers: []
 
-  last_live_canary:
-    status: not_applicable
-    evidence: null
-
-  last_redteam_run:
-    status: not_run
-    evidence: null
-
   residual_risks: []
 
   repository:
-    canonical_path: {repo_scan.canonical_path}
+    canonical_path: {json.dumps(repo_scan.canonical_path)}
     path_status: observed
     branch: {branch}
     head: {head}
+    inventory: docs/BOOTSTRAP_INVENTORY.yaml
 
   operating_mode:
     status: observed
     mode: bootstrap
-    summary: |
-      This repository is currently in bootstrap mode. It should not flip to
-      operating mode until the baseline state, backlog, queue, and evidence are
-      truthfully established.
 
   project:
-    name: {project_name}
-    type: {repo_scan.project_type}
+    name: {json.dumps(project_name)}
+    type: {json.dumps(repo_scan.project_type)}
     lifecycle_stage: bootstrap
-    truth_summary: {repo_scan.project_summary}
+    truth_summary: {json.dumps(repo_scan.project_summary)}
     profile: {profile}
-    profile_summary: {profile_summary(profile)}
+    profile_summary: {json.dumps(profile_summary(profile))}
 
   runtime_identity:
     status: unknown
-    repo_path: {repo_scan.canonical_path}
-    branch: {branch}
-    head: {head}
-    process_or_container: unknown
-    port_or_base_url: unknown
-    rebuilt_in_current_slice: unknown
-    duplicate_runtimes_checked: false
-    notes: |
-      Fill this section before accepting user-facing behavior or investigating
-      a visual/runtime regression.
-
-  environment:
-    status: observed
-    host:
-      os: {os_label}
-      kernel: {platform.version()}
-      shell: {shell_name}
-      terminal: {terminal}
-    package_managers:
-      - unknown
-    language_runtimes:
-      python: {python_version}
-    container_tooling:
-      podman: {podman_present}
-      docker: {docker_present}
-    browser_tooling:
-      chrome: {chrome_present}
-    ports:
-      listeners: unknown
-      notes: |
-        Capture active listeners directly during bootstrap when that matters.
-
-  repository_structure:
-    status: observed
-    top_level_entries:
-{top_level_entries}
-    manifests:
-{manifests}
-    entrypoints:
-{entrypoints}
-    test_setup:
-{test_setup}
-    deployment_assumptions:
-{deployment}
-    contradictions:
-{contradictions}
+    artifact_contract: runtime_identity.json
+    helper: {runtime_helper}
 
   evidence:
     status: active
@@ -704,58 +387,29 @@ current_state:
     artifact_root: docs/evidence
     standard: browser_verification_or_test_output_for_user_facing_claims
 
-  documentation:
-    status: observed
-    primary_user_guide: README.md
-    live_docs:
-      - README.md
-      - AGENTS.md
-      - STATUS.md
-      - PROJECT_STATE.yaml
-      - PROJECT_DNA.yaml
-      - PROJECT_ADAPTER.yaml
-      - NEXT_ACTIONS.md
-      - BACKLOG.md
-      - WORKLOG.md
-      - LICENSE
-      - LICENSE_FAQ.md
-      - QUALITY_FIREWALL.md
-      - FAILURE_TAXONOMY.md
-      - INCIDENT_RESPONSE.md
-      - docs/GETTING_STARTED_5_MIN.md
-      - docs/EVIDENCE_LOG.md
-      - docs/ACCEPTANCE_FREEZES.md
-      - docs/failure_scans/TEMPLATE.md
-      - docs/incidents/README.md
-      - docs/quality_gates/README.md
-      - prompts/OPENCODE_STARTUP_PROMPT.md
-      - prompts/TOOL_MODEL_ROUTING_GUIDE.md
-      - scripts/statedd_handoff.py
-      - scripts/statedd_runtime_proof.py
-    prompt_assets:
-      cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
-      coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
-      opencode_startup_prompt: prompts/OPENCODE_STARTUP_PROMPT.md
-      tool_model_routing_guide:
-        status: observed
-        path: prompts/TOOL_MODEL_ROUTING_GUIDE.md
-        summary: |
-          Guides the CTO lane to recommend tools, models, settings, context
-          strategy, and tailored prompts based on current user access, task
-          risk, budget, and verified provider facts.
-    workflow_helpers:
-      getting_started_5_min:
-        status: observed
-        path: docs/GETTING_STARTED_5_MIN.md
-      handoff_snapshot:
-        status: observed
-        path: scripts/statedd_handoff.py
-      runtime_proof:
-        status: observed
-        path: scripts/statedd_runtime_proof.py
-        summary: Captures runtime_identity.json proof artifacts for evidence folders.
-
 active_problems: []
+"""
+
+
+def render_bootstrap_inventory(repo_scan: RepoScan, stamp: str) -> str:
+    def block(items: list[str]) -> str:
+        if not items:
+            return " []"
+        return "\n" + "\n".join(f"    - {json.dumps(item)}" for item in items)
+
+    return f"""# BOOTSTRAP_INVENTORY.yaml - Repo detail loaded only when needed
+
+metadata:
+  captured_at: {stamp}
+  status: observed
+
+repository:
+  top_level_entries:{block(repo_scan.top_level_entries)}
+  manifests:{block(repo_scan.manifests)}
+  entrypoints:{block(repo_scan.entrypoints)}
+  test_setup:{block(repo_scan.test_setup)}
+  deployment_assumptions:{block(repo_scan.deployment_assumptions)}
+  contradictions:{block(repo_scan.contradictions)}
 """
 
 
@@ -766,24 +420,8 @@ version: "{TEMPLATE_VERSION}"
 schema_version: "1.0"
 
 product:
-  name: "{project_name}"
+  name: {json.dumps(project_name)}
   one_sentence: "Project using the {TEMPLATE_NAME} workflow."
-  description: |
-    This repository defines a reusable operating system for technical projects:
-    stable rules, structured live state, concise status, active queue, roadmap,
-    history, and evidence-led verification.
-  is:
-    - truth_first
-    - evidence_backed
-    - failure_discovery_oriented
-    - machine_checkable
-    - history_separated_from_state
-    - active_queue_is_short
-  is_not:
-    - product_specific
-    - runtime_status_dump
-    - append_only_status_file
-    - proof_by_handoff_only
 
 truth_rules:
   contract_files:
@@ -791,15 +429,9 @@ truth_rules:
     status: STATUS.md
     project_state: PROJECT_STATE.yaml
     project_dna: PROJECT_DNA.yaml
-    project_adapter: PROJECT_ADAPTER.yaml
     next_actions: NEXT_ACTIONS.md
     backlog: BACKLOG.md
     worklog: WORKLOG.md
-    evidence_log: docs/EVIDENCE_LOG.md
-    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    quality_firewall: QUALITY_FIREWALL.md
-    failure_taxonomy: FAILURE_TAXONOMY.md
-    incident_response: INCIDENT_RESPONSE.md
 
   hard_rules:
     - no_fake_completeness
@@ -811,42 +443,12 @@ truth_rules:
     - repo_truth_and_runtime_truth_are_separate
     - handoffs_are_claims_not_verified_truth
     - negative_search_results_do_not_prove_nonexistence
-    - clean_worktree_required_at_handoff
     - active_queue_remains_short
 
-  claim_states:
-    observed: verified directly now
-    unknown: not yet determined from available evidence
-    reported: supported by prior evidence
-    blocked: verification currently prevented
-    assumed: provisional working assumption
-    stale: previously verified but aged out
-    invalid: known false or superseded
-
-  repo_modes:
-    template-maintenance:
-      purpose: maintain the StateDD template repository itself
-      exit_condition: not used by downstream projects
-    bootstrap:
-      purpose: discover truth and establish baseline state
-      exit_condition: baseline completed and mode flipped to operating
-    operating:
-      purpose: steady-state human-in-the-loop delivery
-      exit_condition: none
-
 architecture:
-  control_plane:
-    description: Human and agent workflow coordination.
-  state_plane:
-    description: Structured current truth in PROJECT_STATE.yaml.
-  evidence_plane:
-    description: Artifact-backed proof for claims and verification.
-  quality_plane:
-    description: Product/runtime/adversarial gates that can block closure independently of slice-local acceptance criteria.
-  history_plane:
-    description: Append-only record of completed work in WORKLOG.md.
-  routing_plane:
-    description: Dynamic CTO-lane selection of tools, models, settings, context strategy, and prompt shape.
+  state: PROJECT_STATE.yaml is canonical current truth
+  evidence: artifacts prove claims across truth boundaries
+  history: WORKLOG.md records completed work
 
 invariants:
   - "STATUS.md stays short and current."
@@ -856,53 +458,15 @@ invariants:
   - "BACKLOG.md assigns stable backlog IDs."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
+  - "Implemented, validated, closure-grade, and accepted are distinct states."
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
-  - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
+  - "Non-trivial fixes name and test a durable anti-brittleness invariant."
 
 governance:
-  evidence_standard: browser_verification_or_test_output
-  evidence_artifact_root: docs/evidence
-  acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
-  adr_root: docs/adr
-  license: LICENSE
-  license_faq: LICENSE_FAQ.md
-  getting_started_guide: docs/GETTING_STARTED_5_MIN.md
-  tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
-  handoff_snapshot_helper: scripts/statedd_handoff.py
-  runtime_proof_helper: scripts/statedd_runtime_proof.py
-  runtime_identity_artifact: runtime_identity.json
   hygiene_check: scripts/check_state_docs.py
-  bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
-  closure_audit: scripts/statedd_audit.py
-  health_summary: scripts/statedd_doctor.py
-  slice_contract_template: prompts/SLICE_CONTRACT_TEMPLATE.md
-  evidence_readme_template: prompts/EVIDENCE_README_TEMPLATE.md
-  schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
-  subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
-  cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
-  quality_firewall: QUALITY_FIREWALL.md
-  failure_taxonomy: FAILURE_TAXONOMY.md
-  incident_response: INCIDENT_RESPONSE.md
-  failure_scan_template: docs/failure_scans/TEMPLATE.md
-  quality_gates_directory: docs/quality_gates
-  update_policy:
-    status: when_current_truth_changes
-    project_state: when_structured_truth_changes
-    worklog: when_work_is_completed
-    evidence_log: when_user_facing_claims_are_verified
-
-invariants:
-  - "STATUS.md stays short and current."
-  - "PROJECT_STATE.yaml stores structured live truth only."
-  - "PROJECT_DNA.yaml changes slowly."
-  - "NEXT_ACTIONS.md contains open work only."
-  - "BACKLOG.md assigns stable backlog IDs."
-  - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
-  - "WORKLOG.md is append-only."
-  - "Implemented, validated, closure-grade, and accepted are four distinct states."
-  - "Human overrides are recorded, but they do not turn partial work into closure-grade work."
-  - "No schema may exist only in prose."
+  schema_validation: scripts/statedd_validate_schema.py
+  quality_gate: scripts/statedd_quality_gate.py
 """
 
 
@@ -912,10 +476,12 @@ def render_project_adapter(project_name: str, profile: str = "solo") -> str:
 version: "{TEMPLATE_VERSION}"
 
 project:
-  name: {project_name}
-  short_name: {project_name}
+  name: {json.dumps(project_name)}
+  short_name: {json.dumps(project_name)}
   description: "Optional adapter layer for project-specific vocabulary and runtime details."
   profile: {profile}
+  repo_role: downstream_project
+  statedd_mode: bootstrap
 
 vocabulary:
   control_plane_name: "control plane"
@@ -1211,6 +777,102 @@ and must be protected from quiet regression.
 """
 
 
+def render_downstream_readme(project_name: str, profile: str) -> str:
+    return f"""# {project_name}
+
+This repository uses StateDD `{TEMPLATE_VERSION}` with the `{profile}` profile.
+StateDD files coordinate current truth, a short queue, evidence, and executable
+gates; they do not define this project's product behavior.
+
+## Start
+
+1. Read `AGENTS.md`, then its five-file read order.
+2. Replace bootstrap unknowns with observed project/runtime truth.
+3. Create a real queue linked to `BACKLOG.md`.
+4. Run `python3 scripts/check_state_docs.py --bootstrap-gate` before switching
+   from `bootstrap` to `operating`.
+
+## Daily Checks
+
+```bash
+python3 scripts/check_state_docs.py
+python3 scripts/statedd_validate_schema.py
+python3 scripts/statedd_quality_gate.py --gate-level 1
+```
+
+`STATEDD_ASSETS.json` records the exact workflow files installed for this
+profile. Template-maintenance tests, fixtures, evidence, incidents, and release
+history are intentionally excluded.
+"""
+
+
+def render_coding_agent_startup_prompt() -> str:
+    return """# Coding Agent Start
+
+Read `AGENTS.md` and its declared read order. Treat `PROJECT_STATE.yaml` as
+canonical current truth, keep `NEXT_ACTIONS.md` open-only, and load backlog,
+history, inventory, or evidence only when the task needs them.
+
+In bootstrap, investigate before implementing and keep unknowns explicit. For
+implementation, take one coherent slice, verify the relevant truth boundary,
+update live state, and end with a precise handoff.
+"""
+
+
+def render_downstream_workflow() -> str:
+    return """name: StateDD
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.13"
+      - run: python3 scripts/statedd_quality_gate.py --gate-level 1
+"""
+
+
+def add_asset_manifest(
+    managed_files: dict[str, str],
+    asset_paths: list[Path],
+    *,
+    profile: str,
+    generation_mode: str,
+) -> None:
+    manifest_path = "STATEDD_ASSETS.json"
+    installed = sorted(
+        {path.as_posix() for path in asset_paths}
+        | set(managed_files)
+        | {manifest_path}
+    )
+    payload = {
+        "schema": "statedd.runtime_assets.v1",
+        "template_version": TEMPLATE_VERSION,
+        "profile": profile,
+        "generation_mode": generation_mode,
+        "assets": installed,
+        "excluded_classes": [
+            "template_tests",
+            "fixtures",
+            "template_evidence",
+            "incident_history",
+            "release_history",
+            "maintenance_changelog",
+        ],
+    }
+    managed_files[manifest_path] = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+
+
 def render_readme_section() -> str:
     return f"""
 ## StateDD Workflow
@@ -1288,14 +950,6 @@ def copy_file(source: Path, target: Path, relpath: Path) -> None:
 
 def should_ignore_path(path: Path) -> bool:
     return any(part in IGNORED_TEMPLATE_NAMES for part in path.parts)
-
-
-def should_copy_template_path(relpath: Path) -> bool:
-    if should_ignore_path(relpath):
-        return False
-    if relpath in TEMPLATE_COPY_ROOT_FILES:
-        return True
-    return bool(relpath.parts) and relpath.parts[0] in TEMPLATE_COPY_DIR_NAMES
 
 
 def run_git(args: list[str], cwd: Path) -> str | None:
@@ -1422,23 +1076,16 @@ def scan_repo(target: Path) -> RepoScan:
     )
 
 
-def find_conflicting_template_paths(template_root: Path, target: Path) -> list[Path]:
-    conflicts: list[Path] = []
-    for source_path in template_root.rglob("*"):
-        if source_path.is_dir():
-            continue
-        relpath = source_path.relative_to(template_root)
-        if not should_copy_template_path(relpath):
-            continue
-        if path_exists_for_write(target / relpath):
-            conflicts.append(relpath)
-    return sorted(conflicts)
+def find_conflicting_template_paths(target: Path, asset_paths: list[Path]) -> list[Path]:
+    return sorted(relpath for relpath in asset_paths if path_exists_for_write(target / relpath))
 
 
 def copy_template_tree(
     template_root: Path,
     target: Path,
+    asset_paths: list[Path],
     *,
+    managed_paths: list[Path],
     overwrite: bool,
     force_overwrite: bool,
     dry_run: bool,
@@ -1460,7 +1107,7 @@ def copy_template_tree(
         )
 
     if target.exists() and any(target.iterdir()) and target != template_root and overwrite and not force_overwrite:
-        conflicts = find_conflicting_template_paths(template_root, target)
+        conflicts = find_conflicting_template_paths(target, [*asset_paths, *managed_paths])
         if conflicts:
             preview = ", ".join(str(path) for path in conflicts[:8])
             if len(conflicts) > 8:
@@ -1473,16 +1120,11 @@ def copy_template_tree(
 
     if target != template_root and not dry_run:
         target.mkdir(parents=True, exist_ok=True)
-        for source_path in sorted(template_root.rglob("*")):
-            relpath = source_path.relative_to(template_root)
-            if not should_copy_template_path(relpath):
-                continue
-            if source_path.is_symlink():
+        for relpath in asset_paths:
+            source_path = template_root / relpath
+            if source_path.is_symlink() or not source_path.is_file():
                 raise SystemExit(f"Refusing to copy symlinked template source: {relpath}")
-            if source_path.is_dir():
-                ensure_directory(target, relpath)
-            elif source_path.is_file():
-                copy_file(template_root, target, relpath)
+            copy_file(template_root, target, relpath)
 
 
 def plan_asset_actions(
@@ -1510,11 +1152,20 @@ def copy_assets(
     relpaths: list[Path],
     target: Path,
     *,
+    managed_paths: list[Path] | None = None,
     overwrite: bool,
     force_overwrite: bool,
     dry_run: bool,
 ) -> None:
     actions, conflicts = plan_asset_actions(relpaths, target, overwrite=overwrite, force_overwrite=force_overwrite)
+    if managed_paths:
+        _, managed_conflicts = plan_asset_actions(
+            managed_paths,
+            target,
+            overwrite=overwrite,
+            force_overwrite=force_overwrite,
+        )
+        conflicts.extend(managed_conflicts)
     if conflicts and not (overwrite and force_overwrite):
         preview = ", ".join(conflicts[:8])
         if len(conflicts) > 8:
@@ -1604,89 +1255,42 @@ def validate_readme_link_target(target: Path) -> None:
         raise SystemExit("Refusing to append workflow section to symlinked README.md.")
 
 
-def minimal_cleanup(target: Path, *, dry_run: bool) -> None:
-    if dry_run:
-        print("Planned minimal cleanup:")
-        print("  - remove fixtures/")
-        print("  - remove docs/BOOTSTRAP_QUALITY.md")
-        print("  - remove docs/WORKFLOW_FOR_BEGINNERS.md")
-        return
-    shutil.rmtree(target / "fixtures", ignore_errors=True)
-    (target / "docs" / "BOOTSTRAP_QUALITY.md").unlink(missing_ok=True)
-    (target / "docs" / "WORKFLOW_FOR_BEGINNERS.md").unlink(missing_ok=True)
-
-
 def build_managed_files_for_new(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "solo") -> dict[str, str]:
-    repo_scan = RepoScan(
-        canonical_path=str(target),
-        branch=None,
-        head=None,
-        top_level_entries=[
+    asset_paths = assets_for_profile(profile)
+    top_level_entries = sorted(
+        {path.parts[0] for path in asset_paths}
+        | {
             ".github",
-            ".gitignore",
-            "docs",
-            "fixtures",
-            "prompts",
-            "schemas",
-            "scripts",
             "AGENTS.md",
             "BACKLOG.md",
-            "LICENSE",
             "NEXT_ACTIONS.md",
             "PROJECT_ADAPTER.yaml",
             "PROJECT_DNA.yaml",
             "PROJECT_STATE.yaml",
             "README.md",
             "STATUS.md",
+            "STATEDD_ASSETS.json",
             "WORKLOG.md",
-        ],
-        manifests=[
-            "README.md",
-            "docs/GETTING_STARTED_5_MIN.md",
-            "scripts/init_template.py",
-            "scripts/check_state_docs.py",
-            "scripts/statedd_version_check.py",
-            "scripts/statedd_handoff.py",
-            "scripts/statedd_worktree_guard.py",
-            "scripts/statedd_agent_worktree.py",
-            "scripts/statedd_brittleness_check.py",
-            "scripts/statedd_runtime_proof.py",
-            "scripts/statedd_validate_schema.py",
-            "scripts/test_init_template.py",
-            "scripts/test_worktree_guard.py",
-            "scripts/test_agent_worktree.py",
-            "scripts/test_brittleness_check.py",
-            "scripts/test_runtime_proof.py",
-            "scripts/test_schema_validation.py",
-        ],
+            "docs",
+            "prompts",
+        }
+    )
+    repo_scan = RepoScan(
+        canonical_path=str(target),
+        branch=None,
+        head=None,
+        top_level_entries=top_level_entries,
+        manifests=["README.md", "STATEDD_ASSETS.json", "VERSION"],
         entrypoints=[
-            "scripts/init_template.py",
             "scripts/check_state_docs.py",
             "scripts/statedd_version_check.py",
-            "scripts/statedd_handoff.py",
-            "scripts/statedd_worktree_guard.py",
-            "scripts/statedd_agent_worktree.py",
-            "scripts/statedd_brittleness_check.py",
-            "scripts/statedd_runtime_proof.py",
             "scripts/statedd_validate_schema.py",
-            "scripts/test_init_template.py",
-            "scripts/test_worktree_guard.py",
-            "scripts/test_agent_worktree.py",
-            "scripts/test_brittleness_check.py",
-            "scripts/test_runtime_proof.py",
-            "scripts/test_schema_validation.py",
+            "scripts/statedd_quality_gate.py",
         ],
         test_setup=[
-            "scripts/check_state_docs.py",
-            "scripts/statedd_validate_schema.py",
-            "scripts/test_init_template.py",
-            "scripts/test_worktree_guard.py",
-            "scripts/test_agent_worktree.py",
-            "scripts/test_brittleness_check.py",
-            "scripts/test_runtime_proof.py",
-            "scripts/test_schema_validation.py",
+            "project test setup not yet discovered",
         ],
-        deployment_assumptions=["distributed as a git-hosted workflow template"],
+        deployment_assumptions=["deployment target not yet proven"],
         contradictions=["project-specific contradictions not yet investigated"],
         project_summary="bootstrap_initializing",
         project_type="project_template",
@@ -1726,13 +1330,16 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         ),
         "PROJECT_DNA.yaml": render_project_dna(project_name),
         "PROJECT_ADAPTER.yaml": render_project_adapter(project_name, profile=profile),
+        "README.md": render_downstream_readme(project_name, profile),
         "NEXT_ACTIONS.md": render_new_next_actions(human_timestamp, profile=profile),
         "BACKLOG.md": render_new_backlog(project_name, today, profile=profile),
         "WORKLOG.md": render_worklog(today, "new"),
         "docs/EVIDENCE_LOG.md": render_evidence_log(today, "new"),
         "docs/ACCEPTANCE_FREEZES.md": render_acceptance_freezes(),
+        "docs/BOOTSTRAP_INVENTORY.yaml": render_bootstrap_inventory(repo_scan, stamp),
         "docs/evidence/.gitkeep": "",
-        "docs/adr/.gitkeep": "",
+        "prompts/CODING_AGENT_STARTUP_PROMPT.md": render_coding_agent_startup_prompt(),
+        ".github/workflows/statedd-validate.yml": render_downstream_workflow(),
     }
 
 
@@ -1776,8 +1383,9 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
         "WORKLOG.md": render_worklog(today, "adopt"),
         "docs/EVIDENCE_LOG.md": render_evidence_log(today, "adopt"),
         "docs/ACCEPTANCE_FREEZES.md": render_acceptance_freezes(),
+        "docs/BOOTSTRAP_INVENTORY.yaml": render_bootstrap_inventory(repo_scan, stamp),
         "docs/evidence/.gitkeep": "",
-        "docs/adr/.gitkeep": "",
+        "prompts/CODING_AGENT_STARTUP_PROMPT.md": render_coding_agent_startup_prompt(),
     }
 
 
@@ -1789,7 +1397,7 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
     new_parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     new_parser.add_argument("--target", default=".", help="Repo root to initialize")
     new_parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
-    new_parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples (legacy alias for --profile minimal)")
+    new_parser.add_argument("--minimal", action="store_true", help="Use the core-gates-only footprint (legacy alias for --profile minimal)")
     new_parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     new_parser.add_argument(
         "--overwrite",
@@ -1835,7 +1443,7 @@ def build_legacy_parser() -> argparse.ArgumentParser:
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
     parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
-    parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples")
+    parser.add_argument("--minimal", action="store_true", help="Use the core-gates-only footprint")
     parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     parser.add_argument(
         "--overwrite",
@@ -1878,23 +1486,25 @@ def main(argv: list[str] | None = None) -> int:
                 "Refusing to initialize into the template root itself. "
                 "Choose a different target directory."
             )
+        asset_paths = assets_for_profile(profile)
+        managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
+        add_asset_manifest(managed_files, asset_paths, profile=profile, generation_mode="new")
         copy_template_tree(
             TEMPLATE_ROOT,
             target,
+            asset_paths,
+            managed_paths=[Path(path) for path in managed_files],
             overwrite=args.overwrite,
             force_overwrite=args.force_overwrite,
             dry_run=args.dry_run,
         )
-        managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
         apply_managed_files(
             target,
             managed_files,
-            overwrite=True,
-            force_overwrite=True,
+            overwrite=args.overwrite,
+            force_overwrite=args.force_overwrite,
             dry_run=args.dry_run,
         )
-        if profile == "minimal":
-            minimal_cleanup(target, dry_run=args.dry_run)
 
         if args.dry_run:
             print("Dry run complete.")
@@ -1903,35 +1513,32 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Initialized {TEMPLATE_NAME} repo")
         print(f"Target: {target}")
         print("Mode: bootstrap")
+        print(f"Profile: {profile} ({len(asset_paths) + len(managed_files)} declared assets)")
         if (target / ".git").exists():
             print("Warning: target contains git metadata. Verify git remote -v before first push.")
         print("Next:")
-        print("1. Read docs/GETTING_STARTED_5_MIN.md, then README.md when you need the full guide")
-        print("2. Fix git ownership first if needed: remove .git, init your own repo, and verify git remote -v")
-        print("3. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with prompts/CODING_AGENT_STARTUP_PROMPT.md")
-        print("4. Let the coding agent read the repo files, detect bootstrap mode, and ask the minimum strategic questions")
-        print("5. Then create a CTO chat and paste prompts/CTO_SESSION_PROMPT.md")
-        print("6. Use bootstrap to fill the state files and prepare a real backlog before operating mode")
-        print(f"7. Run {Path(sys.executable).name} scripts/check_state_docs.py after bootstrap updates")
-        print(f"8. Run {Path(sys.executable).name} scripts/statedd_validate_schema.py after state/evidence updates")
-        print(f"9. Run {Path(sys.executable).name} scripts/statedd_audit.py before claiming closure-grade")
-        print(f"10. Run {Path(sys.executable).name} scripts/statedd_doctor.py for a quick health snapshot")
-        print(f"11. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
+        print("1. Read README.md and AGENTS.md")
+        print("2. Fill bootstrap truth and create a real backlog-linked queue")
+        print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 1")
+        print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before operating mode")
         return 0
 
     if not target.exists() or not target.is_dir():
         raise SystemExit("Adoption target must be an existing repo directory.")
 
     managed_files = build_managed_files_for_adopt(args.name, target, today, stamp, human_timestamp, profile=profile)
-    support_paths = list(SUPPORT_ASSET_PATHS)
+    support_paths = assets_for_profile(profile)
     if args.install_github_assets:
-        support_paths.extend(GITHUB_ASSET_PATHS)
+        support_paths.extend(OPTIONAL_GITHUB_ASSET_PATHS)
+        managed_files[".github/workflows/statedd-validate.yml"] = render_downstream_workflow()
+    add_asset_manifest(managed_files, support_paths, profile=profile, generation_mode="adopt")
     if args.readme_link:
         validate_readme_link_target(target)
 
     copy_assets(
         support_paths,
         target,
+        managed_paths=[Path(path) for path in managed_files],
         overwrite=args.overwrite,
         force_overwrite=args.force_overwrite,
         dry_run=args.dry_run,
@@ -1953,6 +1560,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Adopted repo into the {TEMPLATE_NAME} workflow")
     print(f"Target: {target}")
     print("Mode: bootstrap")
+    print(f"Profile: {profile} ({len(support_paths) + len(managed_files)} declared assets)")
     print("README behavior: existing README preserved")
     if args.readme_link:
         print("README behavior: appended workflow section")
@@ -1961,15 +1569,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("GitHub assets: skipped")
     print("Next:")
-    print("1. Read docs/GETTING_STARTED_5_MIN.md")
-    print("2. Review PROJECT_STATE.yaml, BACKLOG.md, and NEXT_ACTIONS.md against the real repo")
-    print("3. Resolve contradictions before treating inherited claims as current truth")
-    print("4. Start OpenCode with prompts/OPENCODE_STARTUP_PROMPT.md or another coding agent with the repo contract")
-    print("5. Use prompts/FINAL_HANDOFF_TEMPLATE.md or scripts/statedd_handoff.py for the first CTO handoff")
-    print(f"6. Run {Path(sys.executable).name} scripts/check_state_docs.py after edits")
-    print(f"7. Run {Path(sys.executable).name} scripts/statedd_audit.py before claiming closure-grade")
-    print(f"8. Run {Path(sys.executable).name} scripts/statedd_doctor.py for a quick health snapshot")
-    print(f"9. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before flipping to operating")
+    print("1. Read AGENTS.md and review PROJECT_STATE.yaml against the real repo")
+    print("2. Resolve inherited contradictions and fill the backlog-linked queue")
+    print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 1")
+    print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before operating mode")
     return 0
 
 

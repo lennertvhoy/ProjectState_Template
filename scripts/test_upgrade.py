@@ -175,6 +175,27 @@ def test_force_managed_never_overwrites_truth_files() -> None:
             raise AssertionError("--force-managed unexpectedly overwrote a project-truth file")
 
 
+def test_upgrade_never_installs_template_tests_or_history() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "legacy-downstream"
+        target.mkdir()
+        run_upgrade([str(target), "--apply"], expect_success=True)
+        leaked = [
+            path.relative_to(target).as_posix()
+            for path in target.rglob("*")
+            if path.is_file()
+            and (
+                path.name.startswith("test_")
+                or path.name == "init_template.py"
+                or "fixtures" in path.parts
+                or "evidence" in path.parts
+                or path.name == "CHANGELOG.md"
+            )
+        ]
+        if leaked:
+            raise AssertionError(f"Upgrade installed template-only payload: {sorted(leaked)}")
+
+
 def test_report_writes_json() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "older"
@@ -216,6 +237,7 @@ def main() -> int:
         test_conflict_fixture_refuses_unsafe_overwrite,
         test_force_managed_replaces_outdated_safe_asset,
         test_force_managed_never_overwrites_truth_files,
+        test_upgrade_never_installs_template_tests_or_history,
         test_report_writes_json,
         test_report_reflects_dry_run_value,
     ]
