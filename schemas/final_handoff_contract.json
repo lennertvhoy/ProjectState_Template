@@ -27,6 +27,16 @@
     "port/base URL",
     "rebuilt in this slice",
     "duplicate runtimes checked",
-    "worktree"
+    "worktree",
+    "worktree topology captured",
+    "current worktree path",
+    "linked worktrees",
+    "upstream branch",
+    "local HEAD",
+    "upstream HEAD",
+    "local HEAD equals upstream",
+    "dirty files classified",
+    "GitHub-visible deliverables",
+    "local-only files claimed"
   ]
 }

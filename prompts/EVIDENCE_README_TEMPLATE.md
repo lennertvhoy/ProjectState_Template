@@ -29,6 +29,25 @@ real values. The claim ledger is the core of executable StateDD.
 - Adjacent failures checked:
 - Known bad events covered:
 
+## Worktree Dirty File Classification
+
+| status | path | category | owner/notes |
+| --- | --- | --- | --- |
+| clean / ?? / M | `path` / not applicable | intended_slice_work / pre_existing_unrelated / generated_artifact / unknown_do_not_touch / safe_to_discard_after_proof | |
+
+## Anti-Brittleness Review
+
+| Question | Answer |
+| --- | --- |
+| What invariant prevents the failure class? | |
+| Is the fix typed/schema/state-machine/validator/contract-based? | |
+| Which behavior is centralized instead of scattered? | |
+| Which observed examples are covered by general rules rather than exact strings? | |
+| What adjacent cases were tested? | |
+| What brittle pattern was explicitly avoided? | |
+| Did the slice add keyword buckets, regex branches, exact prompt handling, fixture-only behavior, sleeps/timeouts, global mutable state, silent fallback, or provider-specific assumptions? | |
+| If yes, why is that not the authority path? | |
+
 ## Verification Log
 
 | Check | Command / Path | Result |
@@ -38,6 +57,8 @@ real values. The claim ledger is the core of executable StateDD.
 | build | `npm run build` | pass / fail |
 | schema validation | `python3 scripts/statedd_validate_schema.py` | pass / fail |
 | evidence manifest | `python3 scripts/statedd_evidence_pack.py check docs/evidence/<slice>` | pass / fail |
+| worktree guard | `python3 scripts/statedd_worktree_guard.py --mode start-slice` / `--mode closure` | pass / fail |
+| brittleness scan | `python3 scripts/statedd_brittleness_check.py` | warnings reviewed / not applicable |
 | audit | `python3 scripts/statedd_audit.py` | pass / fail |
 | runtime identity proof | `prompts/RUNTIME_IDENTITY_CHECKLIST.md` | yes / no |
 | schema ownership validation | `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` | yes / no / not applicable |

@@ -22,6 +22,8 @@
   ],
   "optional_markers": [
     "## Runtime Identity",
-    "runtime_identity.json"
+    "runtime_identity.json",
+    "## Anti-Brittleness Review",
+    "## Worktree Dirty File Classification"
   ]
 }

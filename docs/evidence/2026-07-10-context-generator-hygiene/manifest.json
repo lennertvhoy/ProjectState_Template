@@ -1,0 +1,106 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "0161929959d11fa91d2a69175f06d7f64516e008446b194e8299210d73243529"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked",
+      "sensitive_data": "none_found",
+      "sha256": "9f52650b12827377eb263c1051742897bc37f0d7b1ab34d415ec9fbef515948f"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/verification.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "1a1787b017e2826498108301b4aeb549b520605ecca90f8d6764623f233c6c1a"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "Every generated profile passes its own quality gate without template-maintenance tests",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "generated-self-gates",
+      "status": "validated"
+    },
+    {
+      "claim": "Profile output uses a schema-backed explicit asset manifest and excludes template history, tests, fixtures, incidents, and evidence",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "explicit-asset-boundary",
+      "status": "validated"
+    },
+    {
+      "claim": "Startup and profile footprint files, bytes, and estimated tokens are measured and budgeted, with minimal strictly smallest under normalized inputs",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "measured-footprint",
+      "status": "validated"
+    },
+    {
+      "claim": "Duplicate root and nested YAML mapping keys are rejected",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "strict-yaml",
+      "status": "validated"
+    },
+    {
+      "claim": "Active problems, status failures, backlog lifecycle, queue state, and terminal worklog state are checked semantically",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "semantic-lifecycle",
+      "status": "validated"
+    },
+    {
+      "claim": "Ephemeral StateDD agent context is ignored so isolated worktrees can reach closure-grade cleanliness",
+      "evidence": [
+        "README.md",
+        "command_outputs/verification.txt"
+      ],
+      "id": "ephemeral-context-cleanliness",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-10T21:47:58+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/verification.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/verification.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-context-001-code-a1daa",
+    "head": "8840a3c2bed468b6440705c031dcc0015df807d1",
+    "proof_head": "8840a3c2bed468b6440705c031dcc0015df807d1"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-CONTEXT-001"
+}

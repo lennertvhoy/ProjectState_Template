@@ -1,0 +1,26 @@
+BL-CONTEXT-001 verification summary (pre-final)
+
+- Baseline minimal: 212 files, 1,146,498 bytes; solo: 286 files, 1,202,682 bytes.
+- Baseline fresh solo quality gate: failed after 99 passing tests because copied template tests required template_repository; generated AGENTS.md also exceeded 110 lines.
+- Repaired minimal: 29 files, 145,977 bytes, 8,224 startup bytes, 2,056 estimated tokens.
+- Repaired solo: 62 files, 411,939 bytes, 8,260 startup bytes, 2,065 estimated tokens.
+- Repaired team: 71 files, 489,459 bytes, 8,257 startup bytes, 2,065 estimated tokens.
+- Repaired regulated: 72 files, 506,518 bytes, 8,411 startup bytes, 2,103 estimated tokens.
+- Profile context comparison uses identical project names and equal-length target
+  paths; `minimal` is now strictly the smallest startup payload.
+- Every profile's own quality gate passed.
+- `python3 -m pytest scripts/ -q`: 164 passed, 4 subtests passed.
+- `python3 scripts/test_agent_worktree.py`: 9 worktree/orchestrator regressions
+  passed; `.statedd/agent.context` is ignored and no longer dirties closure.
+- Final local Level 2 quality, state/bootstrap, and efficiency gates passed after
+  the ephemeral-context repair.
+- Strict StateDD audit passed all 37 checks with the five final-commit files
+  classified; brittleness scan reported zero heuristic warnings.
+- Initial GitHub CI found a fixture lifecycle contradiction: queued BL-004 was in
+  BACKLOG NEXT, not NOW. The fixture queue was corrected without weakening the gate.
+- GitHub Actions runs 29120524026 and 29120525510 passed on proof head
+  8840a3c2bed468b6440705c031dcc0015df807d1.
+
+Local StateDD quality, schema, state/bootstrap, version, runtime-truth,
+evidence-type, instruction, efficiency, brittleness, and evidence-pack gates passed.
+Final state-head CI and the remote closure finalizer remain authoritative.

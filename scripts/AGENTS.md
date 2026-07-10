@@ -11,26 +11,29 @@ This AGENTS.md applies to all work in `scripts/`. It defines how agents interact
 
 | Script | Purpose | Exit Codes |
 |--------|---------|------------|
-| `statedd_quality_gate.py` | Post-slice quality gate (tests, static analysis, state, evidence) | 0=pass, 1=fail, 2=error |
+| `statedd_quality_gate.py` | Post-slice quality gate with project-test/config detection (tests, analysis, state, evidence, efficiency) | 0=pass, 1=fail, 2=error |
 | `statedd_instruction_lint.py` | Lint AGENTS.md/skill/command files for config smells | 0=clean, 1=smells, 2=error |
 | `statedd_bad_event_ingest.py` | Ingest bad events into incidents/failure-scans | 0=ok, 1=failed, 2=error |
 | `statedd_probe_guidance.py` | Probe agent guidance with synthetic tasks | 0=pass, 1=gaps, 2=error |
 | `statedd_closure_check.py` | Verify closure-grade criteria met | 0=closure-grade, 1=not, 2=error |
 | `statedd_runtime_truth_check.py` | Verify runtime identity matches recorded truth | 0=match, 1=mismatch, 2=error |
 | `statedd_evidence_type_check.py` | Verify evidence type matches change type | 0=match, 1=mismatch, 2=error |
-| `statedd_validate_schema.py` | Validate YAML/JSON against schemas | 0=valid, 1=invalid, 2=error |
+| `statedd_validate_schema.py` | Strict duplicate-key YAML/JSON contract validation | 0=valid, 1=invalid, 2=error |
+| `statedd_efficiency_check.py` | Enforce instruction, startup-context, and managed-footprint budgets | 0=pass, 1=fail, 2=error |
 | `statedd_audit.py` | Machine-checkable closure audit | 0=pass, 1=fail, 2=error |
 | `statedd_handoff.py` | Generate session handoff snapshot | 0=ok, 1=incomplete, 2=error |
 | `statedd_runtime_proof.py` | Capture runtime identity proof | 0=captured, 1=failed, 2=error |
 | `statedd_browser_verify.py` | Browser verification (Kimi/Playwright) | 0=verified, 1=failed, 2=error |
 | `statedd_doctor.py` | Fast health summary | 0=healthy, 1=issues, 2=error |
 | `statedd_version_check.py` | Version compatibility check | 0=ok, 1=mismatch, 2=error |
-| `statedd_upgrade.py` | Upgrade downstream repos | 0=ok, 1=failed, 2=error |
+| `statedd_upgrade.py` | Upgrade manifest-declared downstream runtime assets | 0=ok, 1=failed, 2=error |
 | `statedd_bootstrap_wizard.py` | Interactive bootstrap | 0=ok, 1=failed, 2=error |
 | `statedd_evidence_pack.py` | Package evidence bundle | 0=ok, 1=failed, 2=error |
 | `statedd_remote_closure_finalizer.py` | Final remote CI/CD closure gate | 0=verified, 1=not closure-grade, 2=error |
-| `check_state_docs.py` | Doc hygiene & bootstrap gate | 0=clean, 1=dirty, 2=error |
-| `init_template.py` | Initialize downstream repo from template | 0=ok, 1=failed, 2=error |
+| `statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard | 0=pass/template, 1=unsafe, 2=error |
+| `statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scan | 0=scanned, 2=error |
+| `check_state_docs.py` | Doc hygiene, lifecycle consistency, and bootstrap gate | 0=clean, 1=dirty, 2=error |
+| `init_template.py` | Initialize/adopt explicit downstream profile asset manifests | 0=ok, 1=failed, 2=error |
 
 ## Agent Rules for Scripts
 

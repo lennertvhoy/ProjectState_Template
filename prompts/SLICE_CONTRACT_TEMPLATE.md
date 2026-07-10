@@ -37,10 +37,31 @@ slice:
     live_canary_gate: required | not_applicable
     redteam_gate: required | not_applicable
     known_bad_events_gate: required | not_applicable
+    anti_brittleness_gate: required | not_applicable
+  worktree_preflight:
+    required_for_non_trivial_work: true
+    command: python3 scripts/statedd_worktree_guard.py --mode start-slice
+    dirty_classification: python3 scripts/statedd_worktree_guard.py --mode classify-dirty
+    stop_rule: |
+      If the guard reports dirty or ambiguous state, stop implementation and
+      produce a worktree recovery handoff instead of editing.
+  anti_brittleness:
+    required_for_non_trivial_fix_or_feature: true
+    reference: ANTI_BRITTLENESS_GUARD.md
+    questions:
+      - What invariant prevents the failure class?
+      - Is the fix typed/schema/state-machine/validator/contract-based?
+      - Which behavior is centralized instead of scattered?
+      - Which observed examples are covered by general rules rather than exact strings?
+      - What adjacent cases were tested?
+      - What brittle pattern was explicitly avoided?
+      - Did the slice add keyword buckets, regex branches, exact prompt handling, fixture-only behavior, sleeps/timeouts, global mutable state, silent fallback, or provider-specific assumptions?
+      - If yes, why is that not the authority path?
   closure_rule: |
     This slice is not closure-grade merely because its own acceptance criteria
     pass. It must also pass applicable global quality gates and record residual
-    risk honestly.
+    risk honestly. A slice that only handles the observed failing input without
+    a durable invariant is not closure-grade.
   escalation_required_for:
     - Changing canonical schema or product truth.
     - Adding silent repair behavior.

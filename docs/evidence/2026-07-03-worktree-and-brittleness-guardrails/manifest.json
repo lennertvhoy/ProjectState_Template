@@ -1,0 +1,78 @@
+{
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-WORKFLOW-002",
+  "manifest_status": "complete",
+  "created_at": "2026-07-07T21:02:00+02:00",
+  "repo": {
+    "branch": "bl-workflow-002-worktree-brittleness",
+    "head": "0c2a13639894cd799506a9a5e94ecb1f3a070ffe",
+    "proof_head": "0c2a13639894cd799506a9a5e94ecb1f3a070ffe",
+    "final_pr_head": "0c2a13639894cd799506a9a5e94ecb1f3a070ffe"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "claims": [
+    {
+      "id": "worktree-guard",
+      "claim": "StateDD detects dirty or ambiguous worktree state before non-trivial slice implementation",
+      "status": "validated",
+      "evidence": ["scripts/statedd_worktree_guard.py", "scripts/test_worktree_guard.py"]
+    },
+    {
+      "id": "handoff-worktree-topology",
+      "claim": "StateDD handoffs expose worktree topology and upstream visibility",
+      "status": "validated",
+      "evidence": ["scripts/statedd_handoff.py", "prompts/FINAL_HANDOFF_TEMPLATE.md"]
+    },
+    {
+      "id": "anti-brittleness-gate",
+      "claim": "StateDD has a reusable anti-brittleness gate for non-trivial fix/feature slices",
+      "status": "validated",
+      "evidence": ["ANTI_BRITTLENESS_GUARD.md", "docs/quality_gates/ANTI_BRITTLENESS_GATE.md", "scripts/statedd_brittleness_check.py"]
+    },
+    {
+      "id": "downstream-propagation",
+      "claim": "Downstream adoption and upgrade include the new managed assets",
+      "status": "validated",
+      "evidence": ["scripts/init_template.py", "scripts/statedd_upgrade.py", "scripts/test_init_template.py", "scripts/test_upgrade.py"]
+    },
+    {
+      "id": "regression-tests",
+      "claim": "The new gates are validated by focused regression tests",
+      "status": "validated",
+      "evidence": ["scripts/test_worktree_guard.py", "scripts/test_brittleness_check.py"]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "README.md",
+      "kind": "doc",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "runtime_identity.json",
+      "kind": "runtime_identity",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "path": "command_outputs/verification_log.txt",
+      "kind": "command_output",
+      "sha256": null,
+      "redaction_status": "checked",
+      "sensitive_data": "none_found"
+    }
+  ],
+  "redaction": {
+    "status": "checked",
+    "automated_scan": "passed",
+    "manual_review": "completed",
+    "known_limits": []
+  }
+}

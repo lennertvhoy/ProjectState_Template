@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from dataclasses import dataclass
@@ -22,9 +23,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 try:
-    import yaml
-except ImportError:  # pragma: no cover - PyYAML is a project dependency
-    yaml = None
+    from statedd_validate_schema import StateDDYamlError, parse_yaml_text
+except ModuleNotFoundError:  # pragma: no cover - module import path under pytest
+    from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
 
 
 class Severity(Enum):
@@ -52,6 +53,7 @@ class EfficiencyCheck:
         self.verbose = verbose
         self.findings: list[Finding] = []
         self.budget: dict[str, Any] = {}
+        self.metrics: dict[str, Any] = {}
 
     def _log(self, severity: Severity, check: str, message: str, file: Optional[str] = None) -> None:
         finding = Finding(severity, check, message, file)
@@ -66,12 +68,12 @@ class EfficiencyCheck:
         if not path.exists():
             self._log(Severity.ERROR, "budget", f"{self.BUDGET_FILE} not found")
             return False
-        if yaml is None:
-            self._log(Severity.ERROR, "budget", "PyYAML not installed; cannot parse budget")
-            return False
         try:
-            self.budget = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-        except Exception as exc:
+            parsed = parse_yaml_text(path.read_text(encoding="utf-8"))
+            if not isinstance(parsed, dict):
+                raise StateDDYamlError("budget root must be a mapping")
+            self.budget = parsed
+        except (OSError, UnicodeDecodeError, StateDDYamlError) as exc:
             self._log(Severity.ERROR, "budget", f"Failed to parse {self.BUDGET_FILE}: {exc}")
             return False
         return True
@@ -214,11 +216,10 @@ class EfficiencyCheck:
         parts = text.split("---", 2)
         if len(parts) < 2:
             return {}
-        if yaml is None:
-            return {}
         try:
-            return yaml.safe_load(parts[1]) or {}
-        except Exception:
+            parsed = parse_yaml_text(parts[1])
+            return parsed if isinstance(parsed, dict) else {}
+        except StateDDYamlError:
             return {}
 
     def _reference_corpus(self, *extra: Path) -> str:
@@ -343,6 +344,132 @@ class EfficiencyCheck:
                         str(rel),
                     )
 
+    def _repo_profile_key(self) -> str | None:
+        state_path = self.root / "PROJECT_STATE.yaml"
+        if not state_path.exists():
+            return None
+        try:
+            state = parse_yaml_text(state_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, StateDDYamlError):
+            return None
+        if not isinstance(state, dict):
+            return None
+        workflow = state.get("workflow")
+        if isinstance(workflow, dict) and workflow.get("repo_role") == "template_repository":
+            return "template_repository"
+        current = state.get("current_state")
+        project = current.get("project") if isinstance(current, dict) else None
+        profile = project.get("profile") if isinstance(project, dict) else None
+        return profile if isinstance(profile, str) else None
+
+    def _tree_files(self) -> list[Path]:
+        files: list[Path] = []
+        for path in self.root.rglob("*"):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(self.root)
+            if self._skip_path(rel):
+                continue
+            files.append(path)
+        return files
+
+    def _manifest_files(self, path: Path) -> tuple[list[Path], str] | None:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            self._log(Severity.ERROR, "asset_manifest", f"Could not parse STATEDD_ASSETS.json: {exc}", path.name)
+            return None
+        if not isinstance(payload, dict) or payload.get("schema") != "statedd.runtime_assets.v1":
+            self._log(Severity.ERROR, "asset_manifest", "STATEDD_ASSETS.json has an unsupported schema", path.name)
+            return None
+        raw_assets = payload.get("assets")
+        if not isinstance(raw_assets, list) or not all(isinstance(item, str) for item in raw_assets):
+            self._log(Severity.ERROR, "asset_manifest", "STATEDD_ASSETS.json assets must be a string list", path.name)
+            return None
+        files: list[Path] = []
+        seen: set[Path] = set()
+        for raw in raw_assets:
+            rel = Path(raw)
+            if rel.is_absolute() or not rel.parts or any(part in {"", ".", ".."} for part in rel.parts):
+                self._log(Severity.ERROR, "asset_manifest", f"Unsafe managed asset path: {raw}", path.name)
+                continue
+            if rel in seen:
+                self._log(Severity.ERROR, "asset_manifest", f"Duplicate managed asset path: {raw}", path.name)
+                continue
+            seen.add(rel)
+            candidate = self.root / rel
+            if not candidate.is_file():
+                self._log(Severity.ERROR, "asset_manifest", f"Declared managed asset is missing: {raw}", path.name)
+                continue
+            files.append(candidate)
+        mode = payload.get("generation_mode")
+        scope = "total_instance" if mode == "new" else "managed_assets"
+        return files, scope
+
+    def check_context_footprint(self) -> None:
+        config = self._budget("context_budgets", default={})
+        if not isinstance(config, dict) or not config:
+            return
+        profile_key = self._repo_profile_key()
+        profiles = config.get("profiles")
+        limits = profiles.get(profile_key) if isinstance(profiles, dict) and profile_key else None
+        if not isinstance(limits, dict):
+            self._log(Severity.ERROR, "context_footprint", f"No context budget for profile {profile_key!r}")
+            return
+
+        startup_names = config.get("startup_files", [])
+        if not isinstance(startup_names, list) or not all(isinstance(name, str) for name in startup_names):
+            self._log(Severity.ERROR, "context_footprint", "context_budgets.startup_files must be a string list")
+            return
+        startup_paths = [self.root / name for name in startup_names]
+        missing_startup = [name for name, path in zip(startup_names, startup_paths) if not path.is_file()]
+        for name in missing_startup:
+            self._log(Severity.ERROR, "context_footprint", f"Mandatory startup file is missing: {name}", name)
+        startup_paths = [path for path in startup_paths if path.is_file()]
+        startup_bytes = sum(path.stat().st_size for path in startup_paths)
+        startup_tokens = math.ceil(startup_bytes / 4)
+
+        manifest = self.root / "STATEDD_ASSETS.json"
+        scope = "repository"
+        footprint_files: list[Path]
+        if manifest.exists():
+            result = self._manifest_files(manifest)
+            if result is None:
+                footprint_files = []
+            else:
+                footprint_files, scope = result
+        else:
+            footprint_files = self._tree_files()
+        footprint_bytes = sum(path.stat().st_size for path in footprint_files)
+
+        self.metrics = {
+            "profile": profile_key,
+            "startup_files": len(startup_paths),
+            "startup_bytes": startup_bytes,
+            "startup_estimated_tokens": startup_tokens,
+            "token_estimator": config.get("token_estimator", "utf8_bytes_div_4_ceiling"),
+            "footprint_scope": scope,
+            "footprint_files": len(footprint_files),
+            "footprint_bytes": footprint_bytes,
+        }
+
+        checks = (
+            ("startup_files", "max_startup_files"),
+            ("startup_bytes", "max_startup_bytes"),
+            ("startup_estimated_tokens", "max_startup_estimated_tokens"),
+            ("footprint_files", "max_footprint_files"),
+            ("footprint_bytes", "max_footprint_bytes"),
+        )
+        for metric, limit_name in checks:
+            limit = limits.get(limit_name)
+            value = self.metrics[metric]
+            if isinstance(limit, int) and value > limit:
+                self._log(
+                    Severity.ERROR,
+                    "context_footprint",
+                    f"{metric} is {value}, max {limit} for profile {profile_key}",
+                )
+
     def check_active_queues(self) -> None:
         state_budgets = self._budget("state_budgets", default={})
         next_actions = self.root / "NEXT_ACTIONS.md"
@@ -421,6 +548,7 @@ class EfficiencyCheck:
         self.check_duplicate_instructions()
         self.check_unreferenced_skills_commands()
         self.check_workflow_gate_levels()
+        self.check_context_footprint()
         self.check_active_queues()
         self.check_evidence_budget()
         self.check_single_file_edit_audit()
@@ -432,6 +560,11 @@ class EfficiencyCheck:
         lines.append(f"Gate level: {self.gate_level}")
         lines.append(f"Budget file: {self.BUDGET_FILE}")
         lines.append("")
+        if self.metrics:
+            lines.append("## measured_context_and_footprint")
+            for key, value in self.metrics.items():
+                lines.append(f"  {key}: {value}")
+            lines.append("")
         if not self.findings:
             lines.append("✅ All efficiency checks passed")
             return "\n".join(lines)
@@ -472,15 +605,18 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(
             json.dumps(
-                [
-                    {
-                        "severity": f.severity.value,
-                        "check": f.check,
-                        "message": f.message,
-                        "file": f.file,
-                    }
-                    for f in findings
-                ],
+                {
+                    "metrics": checker.metrics,
+                    "findings": [
+                        {
+                            "severity": f.severity.value,
+                            "check": f.check,
+                            "message": f.message,
+                            "file": f.file,
+                        }
+                        for f in findings
+                    ],
+                },
                 indent=2,
             )
         )

@@ -52,6 +52,17 @@ Repo and runtime identity
 - repo path: ...
 - branch: ...
 - head: ...
+- origin remote URL: ...
+- upstream branch: ...
+- local HEAD: ...
+- upstream HEAD: ...
+- local HEAD equals upstream: yes | no | not proven
+- worktree topology captured: yes | no
+- current worktree path: ...
+- linked worktrees: ...
+- dirty files classified: yes | no | not applicable
+- GitHub-visible deliverables: yes | no | not proven
+- local-only files claimed: yes | no
 - process/container: ...
 - port/base URL: ...
 - rebuilt in this slice: yes | no
@@ -92,6 +103,12 @@ What remains partial or risky
 Git state
 - head: <sha>
 - worktree: clean | dirty
+- worktree topology captured: yes | no
+- upstream branch: ...
+- upstream HEAD: ...
+- local HEAD equals upstream: yes | no | not proven
+- GitHub-visible deliverables: yes | no | not proven
+- local-only files claimed: yes | no
 
 Next recommended action
 - ...
@@ -107,6 +124,16 @@ Required fields:
 - what was directly verified
 - repo path
 - branch
+- worktree topology captured
+- current worktree path
+- linked worktrees
+- upstream branch
+- local HEAD
+- upstream HEAD
+- local HEAD equals upstream
+- dirty files classified
+- GitHub-visible deliverables
+- local-only files claimed
 - what remains partial or risky
 - git head
 - process or container serving the verified artifact

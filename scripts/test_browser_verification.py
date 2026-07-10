@@ -262,6 +262,20 @@ class TestBrowserVerification(unittest.TestCase):
         result = self.run_script("check", str(ev), "--strict")
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_path_traversal_rejected(self) -> None:
+        ev = self.evidence_dir("traversal")
+        self.write_runtime_identity(ev)
+        outside = self.tmp / "outside_secret.txt"
+        outside.write_text("secret", encoding="utf-8")
+        data = self.valid_data("playwright")
+        data["artifacts"] = [{"path": "../../../outside_secret.txt", "kind": "screenshot"}]
+        data["checks"] = []
+        self.write_browser_verification(ev, data)
+        result = self.run_script("check", str(ev), "--strict")
+        self.assertNotEqual(result.returncode, 0)
+        combined = f"{result.stdout}\n{result.stderr}".lower()
+        self.assertIn("invalid artifact path", combined)
+
     def test_no_single_provider_required(self) -> None:
         """Any recognized provider must be accepted in strict mode when valid."""
         for kind in ("kimi_webbridge", "playwright", "agent_native_browser", "existing_e2e"):

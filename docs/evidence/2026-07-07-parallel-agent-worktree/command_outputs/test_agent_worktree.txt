@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.6, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/ff/Documents/Projects/StateDD_Template
+plugins: langsmith-0.7.22, cov-7.1.0, anyio-4.13.0
+collecting ... collected 8 items
+
+scripts/test_agent_worktree.py::test_start_creates_worktree_and_reservation PASSED [ 12%]
+scripts/test_agent_worktree.py::test_double_reserve_same_branch_fails PASSED [ 25%]
+scripts/test_agent_worktree.py::test_guard_passes_in_agent_worktree_with_dirty_files PASSED [ 37%]
+scripts/test_agent_worktree.py::test_lock_detection_reports_concurrent_git_operation PASSED [ 50%]
+scripts/test_agent_worktree.py::test_handoff_includes_agent_context PASSED [ 62%]
+scripts/test_agent_worktree.py::test_close_removes_worktree_and_reservation PASSED [ 75%]
+scripts/test_agent_worktree.py::test_cleanup_removes_stale_worktree PASSED [ 87%]
+scripts/test_agent_worktree.py::test_existing_audit_passes_in_agent_context PASSED [100%]
+
+============================== 8 passed in 1.11s ===============================

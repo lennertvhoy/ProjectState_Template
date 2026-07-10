@@ -268,16 +268,46 @@ def evidence_manifest_status(repo: Path) -> str:
     return f"invalid ({first_line[:120]})"
 
 
+def count_yaml_list_items(text: str, key: str) -> int | None:
+    """Count top-level `- ` items under a YAML list key, ignoring nested lists.
+
+    Returns 0 for an empty inline list (`key: []`), None if the key is not found.
+    """
+    key_re = re.compile(rf"^({re.escape(key)}):\s*$", re.MULTILINE)
+    match = key_re.search(text)
+    if not match:
+        inline_match = re.search(rf"^\s*{re.escape(key)}:\s*\[\s*\]\s*$", text, re.MULTILINE)
+        return 0 if inline_match else None
+    key_indent = match.start(1) - match.start()
+    lines = text[match.end():].splitlines()
+    list_indent: int | None = None
+    count = 0
+    for raw_line in lines:
+        if not raw_line.strip() or raw_line.strip().startswith("#"):
+            continue
+        line_indent = len(raw_line) - len(raw_line.lstrip())
+        if line_indent <= key_indent:
+            break
+        if raw_line.lstrip().startswith("-"):
+            if list_indent is None:
+                list_indent = line_indent
+            if line_indent == list_indent:
+                count += 1
+    return count
+
+
 def open_blockers(repo: Path) -> str:
-    next_actions = repo / "NEXT_ACTIONS.md"
+    project_state = repo / "PROJECT_STATE.yaml"
     try:
-        if not next_actions.exists():
-            return "unknown"
-        text = next_actions.read_text(encoding="utf-8")
+        if not project_state.exists():
+            return "unknown (PROJECT_STATE.yaml missing)"
+        text = project_state.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
         return f"unreadable ({exc})"
-    active = [line.strip() for line in text.splitlines() if line.startswith("### ")]
-    return str(len(active))
+    active = count_yaml_list_items(text, "active_problems") or 0
+    closure = count_yaml_list_items(text, "closure_blockers") or 0
+    total = active + closure
+    return str(total)
 
 
 def next_recommended_slice(repo: Path) -> str:
