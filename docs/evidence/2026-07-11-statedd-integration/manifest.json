@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "1e66b8f646edd556f3206c53db05c00182977cc66d05b8ead62cd6cd80bdbcdc"
+      "sha256": "c7809b6aec4e2cf6c29620e39ab1bd90bb81671c7943d6fe834c870a6c99db60"
     },
     {
       "kind": "command_output",
@@ -175,7 +175,7 @@
   },
   "repo": {
     "branch": "bl-statedd-integration-001",
-    "head": "0fec221c8b3c69fccd0c02399e78c58a74d28e5a"
+    "head": "3bacef6880c82d5b188527bfac636147bfb895bf"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",

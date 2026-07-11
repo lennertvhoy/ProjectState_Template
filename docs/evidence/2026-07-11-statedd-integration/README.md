@@ -3,9 +3,9 @@
 **Date:** 2026-07-11
 **Agent:** integration-agent
 **Slice:** `BL-STATEDD-INTEGRATION-001`
-**HEAD:** 0fec221c8b3c69fccd0c02399e78c58a74d28e5a
+**HEAD:** 3bacef6880c82d5b188527bfac636147bfb895bf
 **Branch:** `bl-statedd-integration-001`
-**Proof head:** `437fc01b2b6c6fb2e19cf4f0b5fe53796a047fd8`
+**Proof head:** `437fc01d589a72a42aa75b12357ae49586302f34`
 **Final PR head:** intentionally not embedded in tracked evidence; the mutable PR body owns the final head.
 
 ## Claims
