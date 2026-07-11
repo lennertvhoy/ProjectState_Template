@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "d97114f816c21912635cf04638e2ff4c0989a11dc3004232458f8c9ab851c92d"
+      "sha256": "2c7bd0e5c66870a20a18b912cf5da28c275410550e0d2a39399addcc41e06402"
     },
     {
       "kind": "command_output",
@@ -19,7 +19,7 @@
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "89490741cc23c82593522395e7151c570684579b20c560e3e91d76a119f8a1a4"
+      "sha256": "5cc7054f3f1624e3dd6136a28b6400b84600969c08985e1dac2e47fd68a037fc"
     },
     {
       "kind": "command_output",
@@ -168,7 +168,7 @@
   },
   "repo": {
     "branch": "bl-okf-001",
-    "head": "98c53265c36649d3c58b0e61a8e8d7ecba8beb48"
+    "head": "d4127b11823c3b7e27a94ac6d8119717ad522fb6"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",

@@ -3,9 +3,9 @@
 **Date:** 2026-07-11
 **Agent:** integration-agent
 **Slice:** `BL-OKF-001`
-**HEAD:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48 (proof tree)
+**HEAD:** d4127b11823c3b7e27a94ac6d8119717ad522fb6 (proof tree)
 **Branch:** `bl-okf-001`
-**Proof head:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
+**Proof head:** d4127b11823c3b7e27a94ac6d8119717ad522fb6
 **Final PR head:** intentionally not embedded in tracked evidence; the mutable PR body owns the final head.
 
 ## Claims
