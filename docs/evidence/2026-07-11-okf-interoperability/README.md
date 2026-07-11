@@ -50,7 +50,12 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 
 ## Human Override
 
-- Human override used: yes — user explicitly directed proceeding with BL-OKF-001 while PR #8 remains a separate draft boundary.
+- Human override used: yes
+- rule overridden: feature work during the PR #8 quality-freeze boundary
+- requested by: user
+- reason accepted: proceed with BL-OKF-001 in a separate isolated branch without modifying PR #8
+- remaining risk: PR #8 remains draft; OKF value and remote closure are unproven
+- still closure-grade: no
 
 ## Risks / What Remains Partial
 
