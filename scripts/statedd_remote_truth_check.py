@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Tuple, Optional
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 @dataclass
 class TruthBoundary:
@@ -205,8 +207,18 @@ def main():
     exit_code = checker.run()
 
     if args.output:
+        output_path = Path(args.output).resolve()
+        try:
+            require_mutation_permit(
+                output_path,
+                "StateDD remote-truth evidence write",
+                allow_non_git=True,
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            sys.exit(1)
         evidence = checker.generate_evidence()
-        Path(args.output).write_text(json.dumps(evidence, indent=2))
+        output_path.write_text(json.dumps(evidence, indent=2))
 
     sys.exit(exit_code)
 

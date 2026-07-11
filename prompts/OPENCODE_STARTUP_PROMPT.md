@@ -17,7 +17,7 @@ Then follow the StateDD contract exactly.
 Operating rules:
 - Work from the current repo root.
 - Do not assume the git worktree is clean; inspect it before edits.
-- Before non-trivial implementation, run the worktree preflight below and stop for a recovery handoff if it reports dirty or ambiguous state.
+- Before non-trivial implementation, run the centralized Git safety preflight below and stop for a recovery handoff if it blocks mutation.
 - Preserve user changes you did not make.
 - Prefer `rg` for searching.
 - Keep implementation scope to one coherent slice.
@@ -43,20 +43,18 @@ If no CTO prompt was provided and the task is non-trivial:
 Mandatory non-trivial-work preflight:
 
 ```bash
-pwd
-git remote -v
-git branch --show-current
-git rev-parse HEAD
-git fetch origin --prune
-git status --short
-git worktree list --porcelain
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/statedd_git_safety_check.py --mode normal_branch
 ```
+
+The command must prove identity, common-directory ownership, real writability,
+fsck, and fetch in one transaction. Failure means read-only diagnosis until
+repair and explicit restart. Containers/independent agents use full clones;
+worktrees require explicit trusted-local same-identity opt-in.
 
 If dirty files exist, run
 `python3 scripts/statedd_worktree_guard.py --mode classify-dirty` and record the
-classification table in evidence before edits. If the guard reports unsafe state,
-do not implement; produce a worktree recovery handoff.
+classification table in evidence before edits. If Git safety blocks mutation,
+do not implement; produce a Git safety recovery handoff.
 
 If the repo is still in bootstrap or the project truth is unclear:
 - inspect the repo and runtime enough to separate observed facts from unknowns

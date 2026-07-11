@@ -4,7 +4,7 @@ statedd_mode: "template-maintenance"
 repo_mode: "template-maintenance"
 statedd_version: "statedd-template-v5"
 initialized_on: 2026-04-26
-last_updated: 2026-07-07
+last_updated: 2026-07-11
 project: "StateDD_Template"
 ---
 
@@ -42,8 +42,8 @@ project: "StateDD_Template"
   Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
 - **Remote Closure Invariant:** A slice is not done until the pushed PR head, PR body, in-repo evidence, closure handoff, and latest GitHub Actions run all agree on the same final head. Local tests are only preflight. Final closure requires GitHub-visible CI success or an explicit `NOT CI-VERIFIED` label.
 - **Efficiency Invariant:** StateDD exists to reduce agent confusion and false closure, not to create bureaucracy. Every required file, gate, command, and evidence artifact must justify its cost. Prefer the smallest proof that crosses the relevant truth boundary.
-- **Worktree Isolation Invariant:** No non-trivial coding-agent slice may start from an ambiguous or dirty shared worktree unless the dirt is classified and isolated first with `scripts/statedd_worktree_guard.py`.
-- **Parallel-Agent Invariant:** Multiple coding agents working concurrently must each use an isolated agent worktree provisioned by `scripts/statedd_agent_worktree.py`. Shared worktrees cannot prove "whose change is whose" at closure; worktree isolation is the default boundary for non-trivial parallel slices.
+- **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove repository/common-directory identity, effective UID/GID, critical metadata ownership and real writability, fsck, mandatory synchronization, and a permitted isolation mode. Failure latches `read_only` until repair and explicit restart.
+- **Isolation Invariant:** One trusted local agent uses `normal_branch`; containers and independent agents use full `clone`; `worktree` requires explicit same-machine/same-identity opt-in. Never automatically repair permissions or force-remove, prune, reset, clean, or garbage-collect affected Git state.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
 
 ## Gate Levels
@@ -81,9 +81,9 @@ Downstream repos **never** use `template-maintenance`.
 
 ## Subsystems (Load on Demand)
 - **Skills** → `skills/<name>/SKILL.md` — executable workflows (load via `/skill-name`):
-  close-slice, failure-scan, ingest-bad-event, quality-gate, release-gate, runtime-truth
+  close-slice, failure-scan, git-safety, ingest-bad-event, quality-gate, release-gate, runtime-truth
 - **Commands** → `commands/statedd-*.md` — slash-command playbooks (invoke via `/statedd-*`):
-  statedd-close-slice, statedd-failure-scan, statedd-ingest-bad-event, statedd-quality-freeze, statedd-release-gate, statedd-remote-closure
+  statedd-close-slice, statedd-failure-scan, statedd-git-safety, statedd-ingest-bad-event, statedd-quality-freeze, statedd-release-gate, statedd-remote-closure
 - **Gates** → `scripts/statedd_*_gate.py`, `scripts/statedd_*_check.py` — executable quality gates
 - **Docs** → `docs/` — reference (FAILURE_TAXONOMY, QUALITY_FIREWALL, INCIDENT_RESPONSE, failure_scans/, quality_gates/, adr/)
 - **Schemas** → `schemas/` — machine-checkable contracts (YAML/JSON schemas)

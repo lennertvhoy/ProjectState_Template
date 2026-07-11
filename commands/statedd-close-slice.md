@@ -17,14 +17,15 @@ description: "Execute the close-slice skill: run quality gates, update state, fr
 - Quality freeze initiated
 
 **Procedure (delegates to `skills/close-slice/SKILL.md`):**
-1. Run `skills/quality-gate/SKILL.md` — full quality gate pipeline
-2. If all gates pass:
+1. Require a schema-valid writable Git safety permit for the current isolation mode.
+2. Run `skills/quality-gate/SKILL.md` — full quality gate pipeline
+3. If all gates pass:
    - Update `PROJECT_STATE.yaml` with slice completion
    - Update `BACKLOG.md` — mark slice done
    - Append to `WORKLOG.md` — slice summary
    - Update `docs/ACCEPTANCE_FREEZES.md` if user-facing
    - Run `scripts/statedd_handoff.py` for final handoff
-3. If any gate fails:
+4. If any gate fails:
    - Report specific failure
    - Do not close slice
    - Return to implementation

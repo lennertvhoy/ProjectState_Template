@@ -42,3 +42,11 @@ agent, and there is no reservation system to prevent branch/worktree collisions.
 - Design spec: `docs/superpowers/specs/2026-07-07-parallel-agent-worktree-orchestrator-design.md`
 - Orchestrator: `scripts/statedd_agent_worktree.py`
 - Constitution: `AGENTS.md` Parallel-Agent Invariant
+
+## 2026-07-11 Supersession Note
+
+BL-GIT-ISOLATION-001 invalidated the worktree-default and automatic-cleanup
+mitigation above. Linked worktrees share their Git common directory/object database
+and are now explicit trusted-local same-identity opt-in only. Containers and
+independent agents use full clones. `cleanup` is report-only; the old `--force`
+instructions must not be followed. See ADR-0001 and the P0 incident.

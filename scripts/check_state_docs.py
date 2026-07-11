@@ -74,11 +74,13 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/statedd_audit.py",
     "scripts/statedd_doctor.py",
     "scripts/statedd_worktree_guard.py",
+    "scripts/statedd_git_safety_check.py",
     "scripts/statedd_brittleness_check.py",
     "scripts/statedd_runtime_proof.py",
     "scripts/statedd_validate_schema.py",
     "scripts/test_init_template.py",
     "scripts/test_worktree_guard.py",
+    "scripts/test_git_safety_check.py",
     "scripts/test_brittleness_check.py",
     "scripts/test_runtime_proof.py",
     "scripts/test_schema_validation.py",
@@ -104,6 +106,7 @@ TEMPLATE_ASSET_PATHS = [
     "schemas/evidence_manifest.schema.json",
     "schemas/final_handoff_contract.json",
     "schemas/browser_verification.schema.json",
+    "schemas/git_safety_report.schema.json",
     "schemas/examples/runtime_identity_not_required.json",
     "schemas/tests/README.md",
     "LICENSE",
@@ -481,6 +484,7 @@ def check_readme(path: Path) -> list[str]:
         "prompts/FINAL_HANDOFF_TEMPLATE.md",
         "docs/GETTING_STARTED_5_MIN.md",
         "scripts/statedd_handoff.py",
+        "scripts/statedd_git_safety_check.py",
         "scripts/statedd_worktree_guard.py",
         "ANTI_BRITTLENESS_GUARD.md",
         "scripts/statedd_runtime_proof.py",
@@ -490,8 +494,8 @@ def check_readme(path: Path) -> list[str]:
         "ChatGPT, Claude, Gemini",
         "Tool And Model Routing",
         "model capabilities, pricing, context windows, or tool support",
-        "rm -rf .git",
-        "git remote -v",
+        "--restart-session",
+        "--worktree-opt-in",
         "--force-overwrite",
         "--bootstrap-gate",
         "new",
@@ -666,7 +670,7 @@ def check_template_assets(root: Path) -> list[str]:
     cto_prompt = root / "prompts" / "CTO_SESSION_PROMPT.md"
     if cto_prompt.exists():
         cto_text = cto_prompt.read_text(encoding="utf-8")
-        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven", "statedd_worktree_guard.py", "ANTI_BRITTLENESS_GUARD.md"):
+        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven", "statedd_git_safety_check.py", "ANTI_BRITTLENESS_GUARD.md"):
             if phrase not in cto_text:
                 issues.append(f"CTO session prompt missing phrase: {phrase}")
 
@@ -694,7 +698,20 @@ def check_template_assets(root: Path) -> list[str]:
     handoff_helper = root / "scripts" / "statedd_handoff.py"
     if handoff_helper.exists():
         handoff_helper_text = handoff_helper.read_text(encoding="utf-8")
-        for phrase in ("StateDD Handoff Snapshot", "repo path", "not proven", "--test-command", "GitHub-visible deliverables", "local-only files claimed"):
+        for phrase in (
+            "StateDD Handoff Snapshot",
+            "repo path",
+            "not proven",
+            "--test-command",
+            "GitHub-visible deliverables",
+            "local-only files claimed",
+            "Git safety report",
+            "Git common directory",
+            "effective UID/GID",
+            "mandatory synchronization result",
+            "selected isolation mode",
+            "mutation permitted",
+        ):
             if phrase not in handoff_helper_text:
                 issues.append(f"Handoff helper missing phrase: {phrase}")
 
@@ -785,6 +802,8 @@ def check_template_assets(root: Path) -> list[str]:
             issues.append("GitHub workflow must run scripts/test_schema_validation.py")
         if "scripts/test_worktree_guard.py" not in workflow_text:
             issues.append("GitHub workflow must run scripts/test_worktree_guard.py")
+        if "scripts/test_git_safety_check.py" not in workflow_text:
+            issues.append("GitHub workflow must run scripts/test_git_safety_check.py")
         if "scripts/test_brittleness_check.py" not in workflow_text:
             issues.append("GitHub workflow must run scripts/test_brittleness_check.py")
 

@@ -41,29 +41,27 @@ Treat work as non-trivial if it involves any of:
 Before non-trivial implementation, run this preflight from the repo root:
 
 ```bash
-pwd
-git remote -v
-git branch --show-current
-git rev-parse HEAD
-git fetch origin --prune
-git status --short
-git worktree list --porcelain
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/statedd_git_safety_check.py --mode normal_branch
 ```
 
-For parallel-agent slices, prefer an isolated agent worktree:
+This one transaction proves the requested repo/common directory, effective
+identity, metadata ownership and real writability, fsck, and mandatory fetch.
+Any nonzero writable-mode result makes the session read-only until repaired and
+an explicit `--restart-session` succeeds.
+
+For containers or independent/parallel agents, use the default full-clone path:
 
 ```bash
 python3 scripts/statedd_agent_worktree.py start --slice-id <BL-XXX>
 ```
 
-This provisions a private branch, worktree, and reservation ref under
-`.worktrees/` and writes `.statedd/agent.context` so existing StateDD scripts
-recognize the agent context. Use `python3 scripts/statedd_agent_worktree.py list`
-to inspect active worktrees and reservations.
+This provisions an independent object database. Linked worktrees are available
+only with `--isolation-mode worktree --worktree-opt-in
+--trusted-local-machine`; never use them across containers or unknown UID/GID.
+Use `python3 scripts/statedd_agent_worktree.py list` to inspect retained state.
 
-If the guard reports dirty or ambiguous state, stop implementation and produce a
-worktree recovery handoff instead. If dirty files exist, run
+If the preflight blocks, stop implementation and produce a Git safety recovery
+handoff. If dirty files exist, run
 `python3 scripts/statedd_worktree_guard.py --mode classify-dirty` and record the
 classification table in the evidence folder before any non-trivial edits.
 

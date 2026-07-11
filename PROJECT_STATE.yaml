@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-10T22:18:00+02:00
+  updated_at: 2026-07-11T14:15:33+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -22,6 +22,7 @@ workflow:
       - BL-CONTEXT-001 implementation proof head 8840a3c is CI-verified on PR #5; the final state head is governed by the remote closure finalizer
       - BL-BROWSER-002 concrete browser automation provider integration follows the generator repair
       - downstream upgrade semantic merges of customized workflow files not yet supported
+      - BL-GIT-ISOLATION-001 is an open P0 and supersedes worktree-default safety claims until final-head CI and remote closure pass
 
 verification_labels:
   observed: verified directly in the current session
@@ -35,24 +36,24 @@ verification_labels:
 current_state:
   execution_mode:
     status: observed
-    mode: template-maintenance
+    mode: quality_freeze
     supported_downstream_modes:
       - operating
       - quality_freeze
       - incident_response
       - release_candidate
     notes: |
-      The template root stays in template-maintenance. Downstream repos should
-      record operating, quality_freeze, incident_response, or release_candidate
-      according to product/runtime truth.
+      The repository role and workflow mode remain template-maintenance, while
+      execution is frozen for P0 BL-GIT-ISOLATION-001. Feature work is blocked
+      until the Git metadata safety boundary is repaired and remotely proven.
 
   quality_gates:
     status: active
     product_quality_gate: not_applicable_for_template_root
     runtime_truth_gate: not_applicable_for_template_root
     live_canary_gate: not_applicable_for_template_root
-    redteam_gate: passing_for_template_propagation_checks
-    known_bad_events_gate: not_applicable_for_template_root
+    redteam_gate: stale_for_git_isolation_incident
+    known_bad_events_gate: failing_bl_git_isolation_001
     remote_closure_gate:
       status: active
       script: scripts/statedd_remote_closure_finalizer.py
@@ -69,11 +70,22 @@ current_state:
         Enforces the Efficiency Invariant: instruction size, active queues,
         evidence bundles, and gate-level metadata must stay within declared budgets.
     worktree_guard:
-      status: active
+      status: invalid_for_mutation_authorization
       script: scripts/statedd_worktree_guard.py
       notes: |
-        Enforces pre-slice worktree/source-of-truth inspection and closure-mode
-        clean-worktree checks without deleting files.
+        The current guard classifies dirt and topology but does not prove Git
+        common-directory ownership, actual writability, runtime identity, fsck,
+        or mandatory synchronization. It is not mutation authorization.
+    git_safety_preflight:
+      status: missing_p0_blocker
+      planned_script: scripts/statedd_git_safety_check.py
+      planned_schema: schemas/git_safety_report.schema.json
+      permitted_modes:
+        - normal_branch
+        - worktree
+        - clone
+        - read_only
+      policy: worktree creation disabled by default; clone required for containers and independent agents
     anti_brittleness_gate:
       status: active
       guide: ANTI_BRITTLENESS_GUARD.md
@@ -100,24 +112,44 @@ current_state:
       must prove runtime identity for user-facing or operator-facing acceptance.
 
   known_bad_events:
-    status: none_known_for_template_root
-    fixture_policy: |
-      Downstream projects should convert observed bad events into durable
-      incident notes, fixtures or equivalent artifacts, and regression gates.
+    status: active
+    active_incident: docs/incidents/20260711-141533-git-object-ownership-permission.md
+    failure_scan: docs/failure_scans/BL-GIT-ISOLATION-001.md
+    backlog_id: BL-GIT-ISOLATION-001
+    initiating_cause:
+      status: reported
+      boundary: external_runtime
+      summary: a surrounding runtime reportedly changed nested shared Git object ownership or permissions
+      actor_command_timestamp: not_proven
+    statedd_contribution:
+      status: observed
+      boundary: workflow_integrity
+      summary: missing identity, common-directory, ownership, writability, fsck, synchronization, clone-isolation, and read-only-latch controls
+    fixture_policy: convert the permission failure and adjacent metadata failures into executable regressions before mitigation is claimed
 
-  open_p0_failures: []
+  open_p0_failures:
+    - BL-GIT-ISOLATION-001
 
-  closure_blockers: []
+  closure_blockers:
+    - centralized Git safety preflight and schema are missing
+    - default worktree creation and automatic force cleanup paths remain reachable
+    - exact-event and adjacent regression suite is missing
+    - generated profiles do not carry the repaired isolation policy
+    - final pushed PR head and latest GitHub Actions run do not yet prove the repair
 
   last_live_canary:
     status: not_applicable_for_template_root
     evidence: null
 
   last_redteam_run:
-    status: passing_for_template_propagation_checks
+    status: stale
     evidence: docs/evidence/2026-07-10-context-generator-hygiene/command_outputs/verification.txt
+    notes: Prior propagation checks did not cover Git metadata ownership, active write probes, mandatory synchronization failure, or clone independence.
 
   residual_risks:
+    - current StateDD-managed worktree creation is disabled by policy while BL-GIT-ISOLATION-001 is open
+    - existing linked worktrees share the same common Git object database and must be reported, not automatically removed
+    - workflow read-only enforcement cannot constrain arbitrary external shell writes without an independently proven OS-level read-only boundary
     - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
     - ultra-terse model-facing context remains a benchmark variant and is not canonical state
 
@@ -126,30 +158,30 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-29T12:05:00+02:00
-      last_verified_branch: main
-      last_verified_head: b884f3cef5da340942be3a130b548193bb7e2827
+      captured_at: 2026-07-11T14:15:33+02:00
+      last_verified_branch: bl-git-isolation-001
+      last_verified_head: c2fe7b25625cc855a47deff721251cdb5d4141b2
       last_verified_worktree_status: clean
       notes: |
-        BL-SANITY-001 merged directly to main and CI is green. Current truth
-        reflects the latest accepted commit. Use git, scripts/statedd_audit.py,
-        scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
-        artifacts for current branch, HEAD, and worktree status.
+        The incident branch started clean from verified origin/main. The main
+        checkout and five existing linked worktrees share .git as their common
+        directory; current metadata ownership matched effective UID/GID at intake.
+        This manual observation predates the centralized executable preflight and
+        is not closure proof.
 
   parallel_agent_support:
-    status: observed
+    status: invalid_worktree_default_disabled
     orchestrator: scripts/statedd_agent_worktree.py
     reservation_ref_prefix: refs/statedd/reservations/
     worktree_dir: .worktrees
     agent_context_file: .statedd/agent.context
     agent_context_schema: statedd.agent_context.v1
     notes: |
-      First-class support for concurrent coding agents. Each non-trivial slice
-      defaults to an isolated branch + worktree + reservation ref. Existing
-      worktree guard, handoff, audit, closure check, and remote closure finalizer
-      are agent-context-aware. Lock detection reports contention instead of
-      corrupting state. Evidence selection prefers the folder whose manifest
-      slice_id matches the current agent context.
+      The prior worktree-default claim is superseded by BL-GIT-ISOLATION-001.
+      Linked worktrees separate working trees but share the common object database.
+      New managed worktree creation is disabled until explicit same-machine and
+      same-identity checks pass; containers and independent agents require separate
+      full clones. Existing worktrees are report-only and must not be force-cleaned.
 
   operating_mode:
     status: observed
@@ -231,6 +263,7 @@ current_state:
       - scripts/statedd_audit.py
       - scripts/statedd_doctor.py
       - scripts/statedd_worktree_guard.py
+      - scripts/statedd_git_safety_check.py
       - scripts/statedd_agent_worktree.py
       - scripts/statedd_brittleness_check.py
       - scripts/statedd_runtime_proof.py
@@ -240,6 +273,7 @@ current_state:
       - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
       - scripts/test_worktree_guard.py
+      - scripts/test_git_safety_check.py
       - scripts/test_agent_worktree.py
       - scripts/test_brittleness_check.py
       - scripts/test_runtime_proof.py
@@ -256,6 +290,7 @@ current_state:
       - scripts/statedd_validate_schema.py
       - scripts/statedd_version_check.py
       - scripts/statedd_worktree_guard.py
+      - scripts/statedd_git_safety_check.py
       - scripts/statedd_agent_worktree.py
       - scripts/statedd_brittleness_check.py
       - scripts/statedd_runtime_proof.py
@@ -265,6 +300,7 @@ current_state:
       - scripts/statedd_remote_closure_finalizer.py
       - scripts/test_init_template.py
       - scripts/test_worktree_guard.py
+      - scripts/test_git_safety_check.py
       - scripts/test_agent_worktree.py
       - scripts/test_brittleness_check.py
       - scripts/test_runtime_proof.py
@@ -279,6 +315,7 @@ current_state:
       - python3 scripts/statedd_validate_schema.py
       - python3 scripts/test_init_template.py
       - python3 scripts/test_worktree_guard.py
+      - python3 scripts/test_git_safety_check.py
       - python3 scripts/test_agent_worktree.py
       - python3 scripts/test_brittleness_check.py
       - python3 scripts/test_runtime_proof.py
@@ -363,13 +400,18 @@ current_state:
         status: observed
         path: scripts/statedd_handoff.py
       worktree_guard:
-        status: observed
+        status: superseded_as_mutation_authority
         path: scripts/statedd_worktree_guard.py
-        summary: Captures repo root, branch, upstream, worktree topology, dirty-file classification, and start/closure safety without deleting files.
+        summary: Retains dirty-file classification and closure reporting while delegating start-slice mutation authority to the centralized Git safety preflight.
+      git_safety_preflight:
+        status: implemented_unvalidated
+        path: scripts/statedd_git_safety_check.py
+        schema: schemas/git_safety_report.schema.json
+        summary: Proves requested/canonical repo identity, Git/common dirs, UID/GID, recursive metadata safety, real write probes, fsck, mandatory fetch, isolation policy, and external read-only latching.
       agent_worktree_orchestrator:
-        status: observed
+        status: implemented_unvalidated
         path: scripts/statedd_agent_worktree.py
-        summary: Provisions isolated per-agent worktrees, branches, and reservation refs; detects git locks; runs guard/handoff/close/cleanup/list in agent context.
+        summary: Defaults independent agents to full clones; requires explicit trusted-local opt-in for linked worktrees; retains stale/dirty isolation state for report-only human cleanup.
       brittleness_check:
         status: observed
         path: scripts/statedd_brittleness_check.py
@@ -433,4 +475,35 @@ current_state:
         status: observed
         path: docs/adr/0000-adr-template.md
 
-active_problems: []
+active_problems:
+  - id: BL-GIT-ISOLATION-001
+    title: Git metadata safety and isolation boundary can fail open
+    severity: P0
+    status: open
+    opened_at: 2026-07-11T14:15:33+02:00
+    incident: docs/incidents/20260711-141533-git-object-ownership-permission.md
+    failure_scan: docs/failure_scans/BL-GIT-ISOLATION-001.md
+    initiating_cause:
+      status: reported
+      boundary: external_runtime
+      summary: surrounding runtime reportedly changed nested shared Git metadata ownership or permissions
+      actor_command_timestamp: not_proven
+    statedd_causal_contribution:
+      status: observed
+      boundary: workflow_integrity
+      summary: StateDD did not detect, contain, or fail closed on the unsafe shared Git common directory
+    truth_boundaries:
+      local_worktree: observed_clean_at_intake
+      git_common_directory: observed_shared_by_six_worktrees
+      runtime_actor: not_proven
+      local_implementation: not_started
+      remote_branch: not_proven_for_repair
+      ci: not_proven_for_repair
+      user_accepted: false
+    acceptance_criteria:
+      - centralized schema-valid Git safety preflight proves identity, metadata safety, fsck, synchronization, and isolation mode
+      - worktree mode is explicit opt-in and blocked for containers, privileged runtimes, or unknown/mismatched identity
+      - clone mode proves an independent common directory without alternates or hardlinked objects
+      - mandatory Git failure latches StateDD-managed mutation read-only until repaired and explicitly restarted
+      - no automatic permission repair, destructive reset or clean, garbage collection, prune, or force cleanup production path remains
+      - exact-event and adjacent regressions pass on the same pushed head as final GitHub Actions and remote closure

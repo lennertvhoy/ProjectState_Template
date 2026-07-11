@@ -35,6 +35,23 @@ real values. The claim ledger is the core of executable StateDD.
 | --- | --- | --- | --- |
 | clean / ?? / M | `path` / not applicable | intended_slice_work / pre_existing_unrelated / generated_artifact / unknown_do_not_touch / safe_to_discard_after_proof | |
 
+## Git Safety
+
+- Report: `git_safety_report.json`
+- Requested path:
+- Canonical repo root:
+- Git directory / common directory:
+- Effective UID/GID:
+- Runtime/container classification:
+- Metadata ownership/writability result:
+- Write-probe result:
+- Git fsck result:
+- Mandatory synchronization result:
+- Selected isolation mode: normal_branch / worktree / clone / read_only
+- Mutation permitted: yes / no
+- Read-only latch/restart status:
+- Enforcement scope: StateDD-managed only / OS filesystem-enforced
+
 ## Anti-Brittleness Review
 
 | Question | Answer |
@@ -56,6 +73,7 @@ real values. The claim ledger is the core of executable StateDD.
 | lint | `npm run lint` | pass / fail |
 | build | `npm run build` | pass / fail |
 | schema validation | `python3 scripts/statedd_validate_schema.py` | pass / fail |
+| Git safety preflight | `python3 scripts/statedd_git_safety_check.py --mode <mode>` | pass / blocked read_only |
 | evidence manifest | `python3 scripts/statedd_evidence_pack.py check docs/evidence/<slice>` | pass / fail |
 | worktree guard | `python3 scripts/statedd_worktree_guard.py --mode start-slice` / `--mode closure` | pass / fail |
 | brittleness scan | `python3 scripts/statedd_brittleness_check.py` | warnings reviewed / not applicable |

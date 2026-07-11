@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,7 +37,7 @@ HEAD_LINE_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
 
 PR_FIELDS = """
@@ -688,6 +690,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     root = Path(args.root).resolve()
+    if args.output:
+        try:
+            require_mutation_permit(
+                args.output.resolve(),
+                "StateDD remote-closure handoff write",
+                allow_non_git=True,
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
     agent_context_path = find_agent_context(root, args.agent_context)
     agent_context = load_agent_context(agent_context_path) if agent_context_path else None
     finalizer = RemoteClosureFinalizer(

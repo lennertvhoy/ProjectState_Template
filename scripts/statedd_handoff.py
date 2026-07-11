@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 
@@ -70,6 +70,27 @@ def latest_evidence_readme(repo: Path) -> Path | None:
     if not candidates:
         return None
     return max(candidates, key=lambda path: path.stat().st_mtime)
+
+
+def latest_git_safety_report(repo: Path) -> tuple[Path | None, dict | None, str]:
+    evidence_root = repo / "docs" / "evidence"
+    candidates = sorted(evidence_root.glob("*/git_safety_report.json")) if evidence_root.exists() else []
+    if not candidates:
+        return None, None, "not found"
+    path = max(candidates, key=lambda item: item.stat().st_mtime)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        schema = json.loads((repo / "schemas" / "git_safety_report.schema.json").read_text(encoding="utf-8"))
+        try:
+            from statedd_validate_schema import validate_json_schema
+        except ModuleNotFoundError:
+            from scripts.statedd_validate_schema import validate_json_schema
+        issues = validate_json_schema(payload, schema)
+    except (OSError, json.JSONDecodeError) as exc:
+        return path, None, f"invalid: {exc}"
+    if issues:
+        return path, payload, f"invalid: {issues[0].path}: {issues[0].message}"
+    return path, payload, "valid"
 
 
 def worktree_topology(repo: Path) -> tuple[bool, str, list[str]]:
@@ -238,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
     topology_captured, topology_raw, linked_worktrees = worktree_topology(repo)
     dirty_classified = dirty_classification_status(repo, changed_files)
     github_visible = github_visible_deliverables(local_equals_upstream, changed_files)
+    git_safety_path, git_safety, git_safety_schema = latest_git_safety_report(repo)
     if changed_files or local_equals_upstream == "no":
         local_only_claimed = "yes"
     elif local_equals_upstream == "yes":
@@ -263,6 +285,68 @@ def main(argv: list[str] | None = None) -> int:
     print(f"- dirty files classified: {dirty_classified}")
     print(f"- GitHub-visible deliverables: {github_visible}")
     print(f"- local-only files claimed: {local_only_claimed}")
+    print()
+    print("## Git Safety")
+    print()
+    print(f"- Git safety report: {git_safety_path or 'not found'}")
+    print(f"- Git safety report schema: {git_safety_schema}")
+    if git_safety:
+        request = git_safety.get("request", {})
+        repository = git_safety.get("repository", {})
+        identity = git_safety.get("identity", {})
+        metadata = git_safety.get("metadata", {})
+        common = metadata.get("common_dir", {})
+        decision = git_safety.get("decision", {})
+        print(f"- requested path: {request.get('path', 'not proven')}")
+        print(f"- canonical repo root: {repository.get('canonical_root', 'not proven')}")
+        print(f"- Git directory: {repository.get('git_dir', 'not proven')}")
+        print(f"- Git common directory: {repository.get('git_common_dir', 'not proven')}")
+        print(
+            f"- effective UID/GID: {identity.get('effective_uid', 'not proven')}/"
+            f"{identity.get('effective_gid', 'not proven')}"
+        )
+        print(
+            "- common-directory owner/group/mode: "
+            f"{common.get('owner', 'not proven')}/{common.get('group', 'not proven')}/"
+            f"{common.get('mode_octal', 'not proven')}"
+        )
+        print(
+            "- critical metadata ownership/writability: "
+            f"mismatches={len(metadata.get('mismatches', []))}, "
+            f"unwritable={len(metadata.get('unwritable', []))}"
+        )
+        print(f"- write-probe result: {git_safety.get('write_probe', {}).get('result', 'not proven')}")
+        print(f"- git fsck result: {git_safety.get('fsck', {}).get('result', 'not proven')}")
+        print(
+            "- mandatory synchronization result: "
+            f"{git_safety.get('synchronization', {}).get('result', 'not proven')}"
+        )
+        print(f"- selected isolation mode: {decision.get('effective_mode', 'not proven')}")
+        print(f"- mutation permitted: {decision.get('mutation_permitted', 'not proven')}")
+        print(
+            "- read-only latch / restart required: "
+            f"{git_safety.get('latch', {}).get('active_after', 'not proven')}/"
+            f"{decision.get('restart_required', 'not proven')}"
+        )
+        print(f"- read-only enforcement scope: {decision.get('enforcement_scope', 'not proven')}")
+    else:
+        for label in (
+            "requested path",
+            "canonical repo root",
+            "Git directory",
+            "Git common directory",
+            "effective UID/GID",
+            "common-directory owner/group/mode",
+            "critical metadata ownership/writability",
+            "write-probe result",
+            "git fsck result",
+            "mandatory synchronization result",
+            "selected isolation mode",
+            "mutation permitted",
+            "read-only latch / restart required",
+            "read-only enforcement scope",
+        ):
+            print(f"- {label}: not proven")
     if agent_context:
         print()
         print("## Agent Context")

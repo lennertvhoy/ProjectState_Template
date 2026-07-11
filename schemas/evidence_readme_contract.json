@@ -24,6 +24,7 @@
     "## Runtime Identity",
     "runtime_identity.json",
     "## Anti-Brittleness Review",
-    "## Worktree Dirty File Classification"
+    "## Worktree Dirty File Classification",
+    "## Git Safety"
   ]
 }

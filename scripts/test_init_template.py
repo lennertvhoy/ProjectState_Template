@@ -199,6 +199,8 @@ def assert_worktree_and_brittleness_assets_exist(root: Path) -> None:
     required = [
         root / "ANTI_BRITTLENESS_GUARD.md",
         root / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md",
+        root / "scripts" / "statedd_git_safety_check.py",
+        root / "schemas" / "git_safety_report.schema.json",
         root / "scripts" / "statedd_worktree_guard.py",
         root / "scripts" / "statedd_brittleness_check.py",
     ]
@@ -260,6 +262,8 @@ def assert_schema_validation_assets_exist(root: Path) -> None:
         root / "schemas" / "evidence_readme_contract.json",
         root / "schemas" / "evidence_manifest.schema.json",
         root / "schemas" / "final_handoff_contract.json",
+        root / "schemas" / "git_safety_report.schema.json",
+        root / "scripts" / "statedd_git_safety_check.py",
         root / "scripts" / "statedd_validate_schema.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]

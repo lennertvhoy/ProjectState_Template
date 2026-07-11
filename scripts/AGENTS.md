@@ -13,7 +13,6 @@ This AGENTS.md applies to all work in `scripts/`. It defines how agents interact
 |--------|---------|------------|
 | `statedd_quality_gate.py` | Post-slice quality gate with project-test/config detection (tests, analysis, state, evidence, efficiency) | 0=pass, 1=fail, 2=error |
 | `statedd_instruction_lint.py` | Lint AGENTS.md/skill/command files for config smells | 0=clean, 1=smells, 2=error |
-| `statedd_bad_event_ingest.py` | Ingest bad events into incidents/failure-scans | 0=ok, 1=failed, 2=error |
 | `statedd_probe_guidance.py` | Probe agent guidance with synthetic tasks | 0=pass, 1=gaps, 2=error |
 | `statedd_closure_check.py` | Verify closure-grade criteria met | 0=closure-grade, 1=not, 2=error |
 | `statedd_runtime_truth_check.py` | Verify runtime identity matches recorded truth | 0=match, 1=mismatch, 2=error |
@@ -31,6 +30,9 @@ This AGENTS.md applies to all work in `scripts/`. It defines how agents interact
 | `statedd_evidence_pack.py` | Package evidence bundle | 0=ok, 1=failed, 2=error |
 | `statedd_remote_closure_finalizer.py` | Final remote CI/CD closure gate | 0=verified, 1=not closure-grade, 2=error |
 | `statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard | 0=pass/template, 1=unsafe, 2=error |
+| `statedd_git_safety_check.py` | Fail-closed Git identity/common-dir/ownership/write/fsck/sync/isolation preflight | 0=mode established, 1=read-only blocked, 2=error |
+| `statedd_git_safety_session.py` | Secure external latch/permit state consumed by StateDD-managed writers | import-only helper; failures block mutation |
+| `statedd_agent_worktree.py` | Full-clone-default agent isolation; worktree explicit opt-in; report-only cleanup | 0=ok, 1=blocked/failed, 2=error |
 | `statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scan | 0=scanned, 2=error |
 | `check_state_docs.py` | Doc hygiene, lifecycle consistency, and bootstrap gate | 0=clean, 1=dirty, 2=error |
 | `init_template.py` | Initialize/adopt explicit downstream profile asset manifests | 0=ok, 1=failed, 2=error |
@@ -41,7 +43,7 @@ This AGENTS.md applies to all work in `scripts/`. It defines how agents interact
 2. **Never modify scripts without updating this catalog** — Keep catalog in sync
 3. **Run quality gates after any script change** — `python scripts/statedd_quality_gate.py`
 4. **Lint instructions after any AGENTS.md/skill/command change** — `python scripts/statedd_instruction_lint.py`
-5. **Test scripts with `python -m pytest scripts/test_*.py`** before committing
+5. **Test scripts with `python -m pytest scripts/test_*.py`** before committing; Git safety changes must run `scripts/test_git_safety_check.py`
 6. **Scripts are executable gates, not suggestions** — Non-zero exit = block closure
 
 ## Script Development Workflow

@@ -12,6 +12,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".cache"}
@@ -46,8 +48,8 @@ def profile_agents_note(profile: str) -> str:
     if profile == "team":
         return """## Profile
 
-`team`: non-trivial slices use isolated worktrees, a claim ledger, review, and
-remote CI agreement before closure-grade."""
+`team`: independent agents default to full clones. Linked worktrees require an
+explicit trusted-local, same-identity opt-in. Review and remote CI must agree."""
     if profile == "regulated":
         return """## Profile
 
@@ -73,10 +75,13 @@ CORE_RUNTIME_ASSET_PATHS = [
     Path("scripts/statedd_instruction_lint.py"),
     Path("scripts/statedd_efficiency_check.py"),
     Path("scripts/statedd_quality_gate.py"),
+    Path("scripts/statedd_git_safety_check.py"),
+    Path("scripts/statedd_git_safety_session.py"),
     Path("schemas/project_state.schema.json"),
     Path("schemas/project_dna.schema.json"),
     Path("schemas/project_adapter.schema.json"),
     Path("schemas/statedd_assets.schema.json"),
+    Path("schemas/git_safety_report.schema.json"),
 ]
 
 STANDARD_RUNTIME_ASSET_PATHS = [
@@ -207,8 +212,11 @@ planning, history, proof, or repository detail.
 - User-facing closure requires runtime identity plus browser verification; a
   screenshot alone is insufficient and no browser provider is mandatory.
 - P0 product failure enters `quality_freeze` or `incident_response`.
-- Non-trivial work starts from classified, isolated worktree state and names the
-  invariant that prevents brittle example-only fixes.
+- Repository or StateDD mutation starts only after
+  `scripts/statedd_git_safety_check.py` permits `normal_branch`, `worktree`, or
+  `clone`; failure selects `read_only`. Containers/independent agents use clones,
+  while worktrees require explicit trusted-local same-identity opt-in.
+- Non-trivial fixes name the invariant that prevents brittle example-only behavior.
 - End implementation sessions with state hygiene, relevant gates, and a handoff.
 
 ## Current Mode: `{mode}`
@@ -340,6 +348,10 @@ current_state:
     live_canary_gate: not_applicable
     redteam_gate: not_run
     known_bad_events_gate: not_run
+    git_safety_gate:
+      status: not_run
+      script: scripts/statedd_git_safety_check.py
+      effective_mode: read_only_until_preflight
 
   runtime_truth:
     status: unknown
@@ -442,6 +454,9 @@ truth_rules:
     - handoffs_are_claims_not_verified_truth
     - negative_search_results_do_not_prove_nonexistence
     - active_queue_remains_short
+    - mutation_requires_central_git_safety_preflight
+    - clone_is_default_for_containers_and_independent_agents
+    - worktree_requires_explicit_same_identity_trusted_local_opt_in
 
 architecture:
   state: PROJECT_STATE.yaml is canonical current truth
@@ -459,12 +474,16 @@ invariants:
   - "Implemented, validated, closure-grade, and accepted are distinct states."
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
+  - "Repository or StateDD mutation requires a permitted centralized Git safety preflight."
+  - "Containers and independent agents use full clones; worktrees are explicit trusted-local same-identity opt-in."
+  - "A mandatory Git failure selects read-only until repair and explicit restart."
   - "Non-trivial fixes name and test a durable anti-brittleness invariant."
 
 governance:
   hygiene_check: scripts/check_state_docs.py
   schema_validation: scripts/statedd_validate_schema.py
   quality_gate: scripts/statedd_quality_gate.py
+  git_safety_preflight: scripts/statedd_git_safety_check.py
 """
 
 
@@ -798,6 +817,18 @@ python3 scripts/statedd_validate_schema.py
 python3 scripts/statedd_quality_gate.py --gate-level 1
 ```
 
+## Git Safety
+
+Before editing in an existing Git repo, run one fail-closed transaction:
+
+```bash
+python3 scripts/statedd_git_safety_check.py --mode normal_branch
+```
+
+Use full clones for containers or independent agents. Linked worktrees require
+explicit trusted-local same-identity opt-in. A nonzero writable-mode result means
+diagnosis only until repair and an explicit `--restart-session` succeeds.
+
 `STATEDD_ASSETS.json` records the exact workflow files installed for this
 profile. Template-maintenance tests, fixtures, evidence, incidents, and release
 history are intentionally excluded.
@@ -811,9 +842,16 @@ Read `AGENTS.md` and its declared read order. Treat `PROJECT_STATE.yaml` as
 canonical current truth, keep `NEXT_ACTIONS.md` open-only, and load backlog,
 history, inventory, or evidence only when the task needs them.
 
-In bootstrap, investigate before implementing and keep unknowns explicit. For
-implementation, take one coherent slice, verify the relevant truth boundary,
-update live state, and end with a precise handoff.
+In bootstrap, investigate before implementing and keep unknowns explicit. Before
+editing an existing Git repository, run:
+
+`python3 scripts/statedd_git_safety_check.py --mode normal_branch`
+
+That single transaction must pass its ownership, real-write, fsck, and fetch
+checks. Failure means read-only diagnosis until repair and explicit restart.
+Containers and independent agents use full clones. Worktrees are explicit
+trusted-local same-identity opt-in. Then take one coherent slice, verify the
+relevant truth boundary, update live state, and end with a precise handoff.
 """
 
 
@@ -1284,6 +1322,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "scripts/statedd_version_check.py",
             "scripts/statedd_validate_schema.py",
             "scripts/statedd_quality_gate.py",
+            "scripts/statedd_git_safety_check.py",
         ],
         test_setup=[
             "project test setup not yet discovered",
@@ -1487,6 +1526,15 @@ def main(argv: list[str] | None = None) -> int:
         asset_paths = assets_for_profile(profile)
         managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
         add_asset_manifest(managed_files, asset_paths, profile=profile, generation_mode="new")
+        if not args.dry_run:
+            try:
+                require_mutation_permit(
+                    target,
+                    "StateDD new-repository initialization",
+                    allow_non_git=True,
+                )
+            except MutationBlocked as exc:
+                raise SystemExit(str(exc)) from exc
         copy_template_tree(
             TEMPLATE_ROOT,
             target,
@@ -1532,6 +1580,16 @@ def main(argv: list[str] | None = None) -> int:
     add_asset_manifest(managed_files, support_paths, profile=profile, generation_mode="adopt")
     if args.readme_link:
         validate_readme_link_target(target)
+
+    if not args.dry_run:
+        try:
+            require_mutation_permit(
+                target,
+                "StateDD existing-repository adoption",
+                allow_non_git=True,
+            )
+        except MutationBlocked as exc:
+            raise SystemExit(str(exc)) from exc
 
     copy_assets(
         support_paths,

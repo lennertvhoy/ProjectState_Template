@@ -30,21 +30,21 @@ context_budgets:
       max_footprint_bytes: 1800000
     minimal:
       max_startup_files: 5
-      max_startup_bytes: 9000
-      max_startup_estimated_tokens: 2250
+      max_startup_bytes: 10000
+      max_startup_estimated_tokens: 2500
       max_footprint_files: 32
-      max_footprint_bytes: 180000
+      max_footprint_bytes: 230000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
-      max_footprint_files: 64
-      max_footprint_bytes: 520000
+      max_footprint_files: 66
+      max_footprint_bytes: 530000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
       max_startup_estimated_tokens: 2625
-      max_footprint_files: 72
+      max_footprint_files: 75
       max_footprint_bytes: 700000
     regulated:
       max_startup_files: 5

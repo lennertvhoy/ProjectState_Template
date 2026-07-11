@@ -16,10 +16,13 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from statedd_git_safety_session import sanitized_git_environment
+
 
 ROOT = Path(__file__).resolve().parents[1]
+GIT_SAFETY_SCRIPT = ROOT / "scripts" / "statedd_git_safety_check.py"
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 VALID_CATEGORIES = {
@@ -61,6 +64,7 @@ def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
         completed = subprocess.run(
             args,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,
@@ -78,6 +82,15 @@ def git_value(repo: Path, args: list[str], fallback: str = "not proven") -> str:
     if code != 0:
         return fallback if fallback != "" else ""
     return stdout or fallback
+
+
+def git_required(repo: Path, args: list[str]) -> str:
+    code, stdout, stderr = run_command(["git", *args], repo)
+    if code != 0:
+        raise RuntimeError(
+            f"required git {' '.join(args)} failed ({code}): {stderr or stdout or 'no diagnostic'}"
+        )
+    return stdout
 
 
 def resolve_repo(path: Path) -> tuple[int, Path, str]:
@@ -128,6 +141,16 @@ def load_agent_context(path: Path) -> dict | None:
         return None
     if data.get("schema") != AGENT_CONTEXT_SCHEMA:
         return None
+    if data.get("isolation_mode") not in {"clone", "worktree", "normal_branch"}:
+        return None
+    if data.get("isolation_mode") == "worktree":
+        attestations = data.get("attestations")
+        if not isinstance(attestations, dict):
+            return None
+        if attestations.get("worktree_opt_in") is not True:
+            return None
+        if attestations.get("trusted_local_machine") is not True:
+            return None
     return data
 
 
@@ -156,10 +179,10 @@ def parse_status(status: str) -> list[DirtyEntry]:
 
 
 def current_branch(repo: Path) -> tuple[str, bool]:
-    branch = git_value(repo, ["branch", "--show-current"], fallback="")
+    branch = git_required(repo, ["branch", "--show-current"])
     if branch:
         return branch, False
-    abbrev = git_value(repo, ["rev-parse", "--abbrev-ref", "HEAD"], fallback="not proven")
+    abbrev = git_required(repo, ["rev-parse", "--abbrev-ref", "HEAD"])
     if abbrev == "HEAD":
         return "not proven (detached HEAD)", True
     return abbrev, abbrev in {"not proven", ""}
@@ -174,7 +197,7 @@ def origin_default_branch(repo: Path) -> str:
 
 def collect_context(repo: Path) -> GitContext:
     branch, detached = current_branch(repo)
-    local_head = git_value(repo, ["rev-parse", "HEAD"])
+    local_head = git_required(repo, ["rev-parse", "HEAD"])
     origin_url = git_value(repo, ["remote", "get-url", "origin"])
     upstream_branch = git_value(repo, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])
     upstream_head = "not proven"
@@ -184,8 +207,11 @@ def collect_context(repo: Path) -> GitContext:
     same_name_origin_head = "not proven"
     if not detached and branch not in {"not proven", ""}:
         same_name_origin_head = git_value(repo, ["rev-parse", f"origin/{branch}"])
-    worktree_porcelain = git_value(repo, ["worktree", "list", "--porcelain"], fallback="")
-    status_porcelain = git_value(repo, ["status", "--porcelain=v1", "--untracked-files=all"], fallback="")
+    worktree_porcelain = git_required(repo, ["worktree", "list", "--porcelain"])
+    status_porcelain = git_required(
+        repo,
+        ["--no-optional-locks", "status", "--porcelain=v1", "--untracked-files=all"],
+    )
     dirty_entries = parse_status(status_porcelain)
     return GitContext(
         repo=repo,
@@ -201,6 +227,60 @@ def collect_context(repo: Path) -> GitContext:
         status_porcelain=status_porcelain,
         dirty_entries=dirty_entries,
     )
+
+
+def run_git_safety(
+    repo: Path,
+    isolation_mode: str,
+    *,
+    agent_context: dict | None,
+    worktree_opt_in: bool,
+    trusted_local_machine: bool,
+    restart_session: bool,
+) -> tuple[int, dict, str]:
+    command = [
+        sys.executable,
+        str(GIT_SAFETY_SCRIPT),
+        "--repo",
+        str(repo),
+        "--mode",
+        isolation_mode,
+        "--format",
+        "json",
+    ]
+    if isolation_mode == "worktree":
+        attestations = agent_context.get("attestations", {}) if agent_context else {}
+        if worktree_opt_in or attestations.get("worktree_opt_in") is True:
+            command.append("--worktree-opt-in")
+        if trusted_local_machine or attestations.get("trusted_local_machine") is True:
+            command.append("--trusted-local-machine")
+    if isolation_mode == "clone" and agent_context and agent_context.get("source_repo"):
+        command.extend(["--source-repo", str(agent_context["source_repo"])])
+    if restart_session:
+        command.append("--restart-session")
+    code, stdout, stderr = run_command(command, repo)
+    if not stdout:
+        return code, {}, stderr or "Git safety preflight emitted no JSON report"
+    try:
+        report = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        return 2, {}, f"invalid Git safety JSON: {exc}"
+    return code, report, stderr
+
+
+def print_git_safety_failure(report: dict, fallback: str) -> None:
+    print("StateDD Worktree Guard")
+    print("Mode: start-slice")
+    print()
+    print("Git safety preflight")
+    print(f"- effective mode: {report.get('decision', {}).get('effective_mode', 'read_only')}")
+    print("- mutation permitted: no")
+    print("- restart required: yes")
+    print()
+    print("Blocking problems")
+    blockers = report.get("decision", {}).get("blockers", []) if report else []
+    for blocker in blockers or [fallback or "Git safety preflight failed without a diagnostic"]:
+        print(f"- {blocker}")
 
 
 def latest_evidence_readme(repo: Path) -> Path | None:
@@ -463,10 +543,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Path to agent.context JSON file (default: .statedd/agent.context in repo root)",
     )
     parser.add_argument(
-        "--warn-only",
-        action="store_true",
-        help="Print unsafe state but exit 0; use only for diagnostics, not closure",
+        "--isolation-mode",
+        choices=("normal_branch", "worktree", "clone", "read_only"),
+        default="normal_branch",
+        help="Requested mutation/isolation mode when no agent context selects one",
     )
+    parser.add_argument(
+        "--worktree-opt-in",
+        action="store_true",
+        help="Explicitly opt into linked-worktree mode",
+    )
+    parser.add_argument("--trusted-local-machine", action="store_true")
+    parser.add_argument("--restart-session", action="store_true")
     return parser.parse_args(argv[1:])
 
 
@@ -483,7 +571,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {lock_msg}")
             return 1
 
-    ctx = collect_context(repo)
+    try:
+        ctx = collect_context(repo)
+    except RuntimeError as exc:
+        print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {exc}")
+        return 2
     if args.mode == "classify-dirty":
         print_classification_template(ctx)
         return 0
@@ -502,6 +594,24 @@ def main(argv: list[str] | None = None) -> int:
         if default_path.exists():
             agent_context = load_agent_context(default_path)
 
+    if args.mode == "start-slice":
+        isolation_mode = (
+            agent_context.get("isolation_mode", "worktree")
+            if agent_context is not None
+            else args.isolation_mode
+        )
+        safety_code, safety_report, safety_error = run_git_safety(
+            repo,
+            isolation_mode,
+            agent_context=agent_context,
+            worktree_opt_in=args.worktree_opt_in,
+            trusted_local_machine=args.trusted_local_machine,
+            restart_session=args.restart_session,
+        )
+        if safety_code != 0 or not safety_report.get("decision", {}).get("mutation_permitted"):
+            print_git_safety_failure(safety_report, safety_error)
+            return 1 if safety_code != 2 else 2
+
     source = classification_source(repo, args.classification_file)
     classifications = parse_classification_file(source) if source and source.exists() else {}
 
@@ -511,9 +621,7 @@ def main(argv: list[str] | None = None) -> int:
         safe, warnings, problems = evaluate_closure(ctx)
 
     print_report(args.mode, ctx, classifications, source, safe, warnings, problems, agent_context)
-    if safe or args.warn_only:
-        return 0
-    return 1
+    return 0 if safe else 1
 
 
 if __name__ == "__main__":

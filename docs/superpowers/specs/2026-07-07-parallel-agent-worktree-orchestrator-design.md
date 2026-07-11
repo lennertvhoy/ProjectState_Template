@@ -1,5 +1,9 @@
 # Design: StateDD Parallel-Agent Worktree Orchestrator
 
+> **Superseded on 2026-07-11 by ADR-0001 / BL-GIT-ISOLATION-001.** This document
+> is retained as design history. Its worktree-default and automatic-cleanup
+> decisions are no longer authoritative.
+
 **Date:** 2026-07-07  
 **Topic:** BL-PARALLEL-001 — first-class support for multiple coding agents working on the same repository without git-state panic.  
 **Decision:** Option C — managed agent worktree orchestrator.

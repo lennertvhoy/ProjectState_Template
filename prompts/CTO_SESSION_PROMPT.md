@@ -52,11 +52,9 @@ When you write a coding-agent prompt, include:
 - the recommended tool/model/settings when relevant
 - the files or systems that should be inspected first
 - this mandatory non-trivial-work preflight:
-  `pwd`, `git remote -v`, `git branch --show-current`, `git rev-parse HEAD`,
-  `git fetch origin --prune`, `git status --short`,
-  `git worktree list --porcelain`,
-  `python3 scripts/statedd_worktree_guard.py --mode start-slice`
-- instructions to stop implementation and produce a worktree recovery handoff if the guard reports dirty or ambiguous state
+  `python3 scripts/statedd_git_safety_check.py --mode normal_branch`
+- the isolation rule: full clones for containers/independent agents; linked worktrees only with explicit trusted-local same-identity opt-in
+- instructions to stop implementation and produce a Git safety recovery handoff when the transaction blocks; any failed mandatory Git operation means read-only until repair and explicit restart
 - the required verification or evidence
 - the condition for being done
 - a reminder to read and follow `AGENTS.md`

@@ -78,6 +78,8 @@ def test_dry_run_on_older_fixture_reports_missing_assets() -> None:
         (target / "schemas" / "evidence_manifest.schema.json").unlink(missing_ok=True)
         (target / "scripts" / "test_evidence_pack.py").unlink(missing_ok=True)
         (target / "scripts" / "statedd_worktree_guard.py").unlink(missing_ok=True)
+        (target / "scripts" / "statedd_git_safety_check.py").unlink(missing_ok=True)
+        (target / "schemas" / "git_safety_report.schema.json").unlink(missing_ok=True)
         (target / "ANTI_BRITTLENESS_GUARD.md").unlink(missing_ok=True)
 
         completed = run_upgrade([str(target)], expect_success=True)
@@ -114,6 +116,10 @@ def test_apply_adds_safe_missing_assets() -> None:
             raise AssertionError("Apply did not add missing quality gates README")
         if not (target / "scripts" / "statedd_worktree_guard.py").exists():
             raise AssertionError("Apply did not add missing worktree guard")
+        if not (target / "scripts" / "statedd_git_safety_check.py").exists():
+            raise AssertionError("Apply did not add missing Git safety preflight")
+        if not (target / "schemas" / "git_safety_report.schema.json").exists():
+            raise AssertionError("Apply did not add missing Git safety schema")
         if not (target / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md").exists():
             raise AssertionError("Apply did not add missing anti-brittleness gate")
 
@@ -131,6 +137,33 @@ def test_apply_preserves_readme_and_project_truth() -> None:
             raise AssertionError("Apply unexpectedly changed README.md")
         if (target / "PROJECT_STATE.yaml").read_text(encoding="utf-8") != original_state:
             raise AssertionError("Apply unexpectedly changed PROJECT_STATE.yaml")
+
+
+def test_upgrade_installs_mandatory_git_safety_assets_missing_from_old_manifest() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "legacy"
+        run_init(["new", "--name", "Legacy Safety", "--target", str(target), "--profile", "minimal"])
+        mandatory = {
+            "scripts/statedd_git_safety_check.py",
+            "schemas/git_safety_report.schema.json",
+        }
+        for relpath in mandatory:
+            (target / relpath).unlink()
+        manifest = target / "STATEDD_ASSETS.json"
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["assets"] = sorted(set(payload["assets"]) - mandatory)
+        manifest.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+        completed = run_upgrade([str(target)], expect_success=True)
+        for relpath in mandatory:
+            if relpath not in completed.stdout:
+                raise AssertionError(f"Mandatory safety migration did not report {relpath}")
+
+        run_upgrade([str(target), "--apply"], expect_success=True)
+        installed = set(json.loads(manifest.read_text(encoding="utf-8"))["assets"])
+        for relpath in mandatory:
+            if not (target / relpath).exists() or relpath not in installed:
+                raise AssertionError(f"Mandatory safety migration did not install/declare {relpath}")
 
 
 def test_conflict_fixture_refuses_unsafe_overwrite() -> None:
@@ -234,6 +267,7 @@ def main() -> int:
         test_dry_run_on_older_fixture_reports_missing_assets,
         test_apply_adds_safe_missing_assets,
         test_apply_preserves_readme_and_project_truth,
+        test_upgrade_installs_mandatory_git_safety_assets_missing_from_old_manifest,
         test_conflict_fixture_refuses_unsafe_overwrite,
         test_force_managed_replaces_outdated_safe_asset,
         test_force_managed_never_overwrites_truth_files,

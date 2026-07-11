@@ -11,8 +11,8 @@ global quality invariant fails.
 2. **Severity:** Classify as `P0`, `P1`, or `P2`.
 3. **Mode:** For P0, set `current_state.execution_mode` to `quality_freeze` or
    `incident_response` in `PROJECT_STATE.yaml`.
-4. **Failure scan:** Create `docs/failure_scans/<date>-<slug>.md`.
-5. **Incident note:** Create `docs/incidents/<date>-<slug>.md`.
+4. **Failure scan:** Create `docs/failure_scans/<backlog-id>.md`.
+5. **Incident note:** Create `docs/incidents/YYYYMMDD-HHMMSS-<slug>.md`.
 6. **Fixture:** Add a bad-event fixture under the project-appropriate test fixture path.
 7. **Invariant:** Define the project-level behavior that must never fail again.
 8. **Failing proof:** Add a failing test or quality check first where practical.
@@ -31,7 +31,7 @@ global quality invariant fails.
 **Severity:** P0 | P1 | P2
 **Status:** open | mitigated | fixed | closed | override-approved
 **Related backlog:** [BL-XXX]
-**Related failure scan:** docs/failure_scans/YYYY-MM-DD-slug.md
+**Related failure scan:** docs/failure_scans/BL-XXX.md
 **Evidence folder:** docs/evidence/YYYY-MM-DD-slug
 
 ## User/Operator Symptom
@@ -44,9 +44,21 @@ global quality invariant fails.
 - Timestamp:
 - Transcript/log/artifact:
 
+## Cause 1: Initiating Event
+
+- Boundary: product/runtime/external
+- Evidence status: observed | reported | not proven
+- Actor/mechanism/timestamp:
+
+## Cause 2: Workflow Or Containment Contribution
+
+- Boundary: StateDD/product control
+- Evidence status: observed | reported | not proven
+- Explain separately; do not attribute the initiating event without evidence.
+
 ## Suspected Failure Class
 
-- product_behavior | runtime_truth | integration_boundary | state_truth | regression | data_integrity | security_privacy | observability | workflow
+- product_behavior | runtime_truth | integration_boundary | state_truth | regression | data_integrity | security_privacy | observability | workflow | brittleness
 
 ## Missing Invariant
 

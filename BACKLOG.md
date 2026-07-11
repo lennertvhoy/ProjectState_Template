@@ -2,7 +2,7 @@
 
 **Product:** StateDD_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-07-10
+**Updated At:** 2026-07-11
 
 ## Purpose
 
@@ -11,10 +11,11 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-PARALLEL-001] Complete remote push/PR/CI closure for the implemented parallel-agent worktree orchestrator; local implementation and gates are already recorded in WORKLOG.md.
+- [BL-GIT-ISOLATION-001] P0: repair the Git metadata safety boundary with a centralized fail-closed preflight, explicit isolation modes, independent clone support, read-only latching, incident regressions, safe orchestration, and final-head remote CI proof. Incident: `docs/incidents/20260711-141533-git-object-ownership-permission.md`.
 
 ## NEXT
 
+- [BL-PARALLEL-001] Re-evaluate and complete remote closure only after BL-GIT-ISOLATION-001 supersedes the unsafe worktree-default and force-cleanup behavior.
 - [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## CLOSED

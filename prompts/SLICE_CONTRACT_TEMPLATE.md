@@ -38,13 +38,17 @@ slice:
     redteam_gate: required | not_applicable
     known_bad_events_gate: required | not_applicable
     anti_brittleness_gate: required | not_applicable
-  worktree_preflight:
+  git_safety_preflight:
     required_for_non_trivial_work: true
-    command: python3 scripts/statedd_worktree_guard.py --mode start-slice
+    command: python3 scripts/statedd_git_safety_check.py --mode normal_branch
+    report: docs/evidence/<slice>/git_safety_report.json
+    selected_mode: normal_branch | worktree | clone | read_only
+    isolation_rule: containers/independent agents use clone; worktree requires explicit trusted-local same-identity opt-in
     dirty_classification: python3 scripts/statedd_worktree_guard.py --mode classify-dirty
     stop_rule: |
-      If the guard reports dirty or ambiguous state, stop implementation and
-      produce a worktree recovery handoff instead of editing.
+      If any identity, metadata, write-probe, fsck, or synchronization check
+      fails, stop implementation. The session is read-only until repaired and
+      an explicit restart preflight succeeds.
   anti_brittleness:
     required_for_non_trivial_fix_or_feature: true
     reference: ANTI_BRITTLENESS_GUARD.md

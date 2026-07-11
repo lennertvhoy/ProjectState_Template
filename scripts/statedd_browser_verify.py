@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schemas" / "browser_verification.schema.json"
@@ -352,6 +354,17 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     evidence_dir = Path(args.evidence_dir).resolve()
+
+    if args.command in {"init", "hash"}:
+        try:
+            require_mutation_permit(
+                evidence_dir,
+                f"StateDD browser-verification {args.command}",
+                allow_non_git=True,
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
 
     if args.command == "init":
         return command_init(evidence_dir, args.slice_id, not_applicable=args.not_applicable)

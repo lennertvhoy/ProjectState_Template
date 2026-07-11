@@ -75,7 +75,7 @@ VALID_BROWSER_PROVIDERS = {
 }
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
 CLASSIFIED_DIRT_CATEGORIES = {"intended_slice_work", "generated_artifact"}
 ANTI_BRITTLENESS_MARKERS = [

@@ -392,6 +392,8 @@ def root_targets(root: Path) -> list[tuple[Path, Path, bool]]:
             targets.append((manifest, schema_path(root, "evidence_manifest.schema.json"), True))
         for browser in sorted(evidence_root.glob("*/browser_verification.json")):
             targets.append((browser, schema_path(root, "browser_verification.schema.json"), True))
+        for git_safety in sorted(evidence_root.glob("*/git_safety_report.json")):
+            targets.append((git_safety, schema_path(root, "git_safety_report.schema.json"), True))
     return targets
 
 

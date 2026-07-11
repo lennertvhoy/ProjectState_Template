@@ -116,7 +116,9 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
 | `scripts/statedd_audit.py` | Machine-checkable closure audit |
 | `scripts/statedd_doctor.py` | Fast StateDD health summary |
-| `scripts/statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard |
+| `scripts/statedd_git_safety_check.py` | Fail-closed Git identity, metadata, fsck, synchronization, and isolation permit |
+| `scripts/statedd_worktree_guard.py` | Dirty-file/closure frontend backed by the Git safety permit |
+| `scripts/statedd_agent_worktree.py` | Full-clone-default agent isolation; worktrees explicit opt-in; cleanup report-only |
 | `scripts/statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scanner |
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
@@ -124,6 +126,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
 | `scripts/test_worktree_guard.py` | Regression-check worktree guard behavior |
+| `scripts/test_git_safety_check.py` | Reproduce and block Git permission/identity/isolation failures |
 | `scripts/test_brittleness_check.py` | Regression-check brittleness scanner and audit marker behavior |
 | `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
 | `scripts/test_evidence_pack.py` | Regression-check evidence pack manifest and redaction behavior |
@@ -136,7 +139,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 1. `bootstrap`: establish a truthful baseline by separating observed facts from assumptions.
 2. plan: choose one small next backlog slice.
 3. contract: write a slice contract with scope, non-goals, and acceptance criteria.
-4. preflight: run `scripts/statedd_worktree_guard.py --mode start-slice` before non-trivial implementation.
+4. preflight: run `scripts/statedd_git_safety_check.py --mode <mode>` before repository/state mutation.
 5. execute: implement and verify directly.
 6. record: update state and evidence when truth changes.
 7. audit: run `statedd_audit.py` before claiming closure-grade.
@@ -194,17 +197,21 @@ python3 scripts/check_state_docs.py --bootstrap-gate
 
 ## Git Safety
 
-If you cloned this template directly, do not keep this repo's `.git` history for your own project. Reset it before any push:
+Before any source or StateDD-state mutation in an existing Git repository, run:
 
 ```bash
-rm -rf .git
-git init
-git add .
-git commit -m "Initialize project from template"
-git branch -M main
-git remote add origin <your-repo-url>
-git remote -v
+python3 scripts/statedd_git_safety_check.py --mode normal_branch
 ```
+
+The preflight performs real write probes, fsck, mandatory fetch, and a post-fetch
+metadata recheck. Failure selects and externally latches `read_only`; diagnose
+without permission repair or force cleanup, then use `--restart-session` only
+after repair.
+
+For a new project, prefer GitHub's template action or
+`python3 scripts/init_template.py new --target <new-directory>` so the new repo's
+history is initialized deliberately. Do not let an agent automatically delete a
+template clone's `.git` directory.
 
 ## Setup Paths
 
@@ -389,19 +396,22 @@ Treat work as non-trivial when it changes multiple files, changes workflow or st
 Before non-trivial implementation, run the worktree preflight from the repo root:
 
 ```bash
-pwd
-git remote -v
-git branch --show-current
-git rev-parse HEAD
-git fetch origin --prune
-git status --short
-git worktree list --porcelain
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/statedd_git_safety_check.py --mode normal_branch
 ```
 
-If the guard reports dirty or ambiguous state, stop implementation and produce a
-worktree recovery handoff. Use `python3 scripts/statedd_worktree_guard.py --mode classify-dirty`
-to record dirty-file classifications in evidence before editing.
+The preflight proves repository/common-directory identity, effective UID/GID,
+critical metadata ownership, real writability, fsck, and mandatory fetch in one
+transaction. A nonzero writable-mode result latches StateDD-managed mutation
+`read_only` until repair and explicit `--restart-session`.
+
+One trusted local agent uses a normal feature branch. Containers and independent
+agents use separate full clones through `statedd_agent_worktree.py start` (clone
+is the default). Linked worktrees require explicit `--isolation-mode worktree
+--worktree-opt-in --trusted-local-machine`. Permission anomalies and stale/dirty
+worktrees are reported; StateDD never automatically repairs or force-cleans them.
+
+Use `python3 scripts/statedd_worktree_guard.py --mode classify-dirty` to record
+dirty-file classifications in evidence before editing.
 
 ## Common Failure Modes
 
@@ -435,18 +445,19 @@ Run the full gate set before handoff, review, or release:
 python3 scripts/check_state_docs.py
 python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
+python3 scripts/test_git_safety_check.py
 python3 scripts/test_worktree_guard.py
 python3 scripts/test_brittleness_check.py
 python3 scripts/test_runtime_proof.py
 python3 scripts/test_schema_validation.py
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/statedd_worktree_guard.py --mode closure
 python3 scripts/statedd_doctor.py
 python3 scripts/statedd_audit.py
 ```
 
 ## Slice Contracts And Claim Ledgers
 
-Before coding, write a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`. It defines the scope, non-goals, acceptance criteria, worktree preflight, anti-brittleness gate, and escalation triggers so the agent does not wander into adjacent work.
+Before coding, write a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`. It defines scope, non-goals, acceptance criteria, the Git safety/isolation permit, dirty-file classification, anti-brittleness, and escalation triggers.
 
 Every evidence folder should contain a `README.md` claim ledger based on `prompts/EVIDENCE_README_TEMPLATE.md`. Each claim is tied to concrete proof.
 

@@ -12,12 +12,16 @@ All setup and usage instructions live in the repository root `README.md`.
 - `statedd_handoff.py` - prints a read-only handoff snapshot from local repo state
 - `statedd_audit.py` - machine-checkable closure audit (StateDD v2)
 - `statedd_doctor.py` - fast StateDD health summary (StateDD v2)
-- `statedd_worktree_guard.py` - pre-slice/closure worktree isolation and dirty-file classification guard
+- `statedd_git_safety_check.py` - fail-closed Git identity, common-directory, metadata writability, fsck, synchronization, and isolation gate
+- `statedd_git_safety_session.py` - secure external read-only latch and short-lived mutation permit consumed by managed writers
+- `statedd_worktree_guard.py` - dirty-file classification frontend backed by the centralized Git safety gate
+- `statedd_agent_worktree.py` - full-clone-default agent isolation; linked worktrees require explicit opt-in; cleanup is report-only
 - `statedd_brittleness_check.py` - advisory anti-brittleness heuristic scan
 - `statedd_runtime_proof.py` - captures `runtime_identity.json` proof artifacts
 - `statedd_validate_schema.py` - validates StateDD state, evidence, runtime, and handoff contracts
 - `test_init_template.py` - runs stdlib-only regression tests for initializer safety
 - `test_worktree_guard.py` - runs stdlib-only worktree guard regression tests
+- `test_git_safety_check.py` - reproduces and blocks Git metadata permission/identity/isolation failures
 - `test_brittleness_check.py` - runs stdlib-only brittleness scan and audit marker regression tests
 - `test_runtime_proof.py` - runs stdlib-only runtime proof regression tests
 - `test_schema_validation.py` - runs stdlib-only schema validation regression tests
@@ -31,12 +35,14 @@ python3 scripts/check_state_docs.py
 python3 scripts/statedd_handoff.py
 python3 scripts/statedd_doctor.py
 python3 scripts/statedd_audit.py
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/statedd_git_safety_check.py --mode normal_branch
+python3 scripts/statedd_worktree_guard.py --mode classify-dirty
 python3 scripts/statedd_brittleness_check.py
 python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>
 python3 scripts/statedd_validate_schema.py
 python3 scripts/test_init_template.py
 python3 scripts/test_worktree_guard.py
+python3 scripts/test_git_safety_check.py
 python3 scripts/test_brittleness_check.py
 python3 scripts/test_runtime_proof.py
 python3 scripts/test_schema_validation.py

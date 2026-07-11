@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
 CLASSIFIED_DIRT_CATEGORIES = {"intended_slice_work", "generated_artifact"}
 

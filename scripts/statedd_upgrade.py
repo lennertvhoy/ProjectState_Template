@@ -19,6 +19,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 
@@ -36,6 +38,8 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("scripts/statedd_instruction_lint.py"),
     Path("scripts/statedd_efficiency_check.py"),
     Path("scripts/statedd_quality_gate.py"),
+    Path("scripts/statedd_git_safety_check.py"),
+    Path("scripts/statedd_git_safety_session.py"),
     Path("scripts/statedd_handoff.py"),
     Path("scripts/statedd_audit.py"),
     Path("scripts/statedd_doctor.py"),
@@ -61,6 +65,7 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("schemas/evidence_manifest.schema.json"),
     Path("schemas/final_handoff_contract.json"),
     Path("schemas/browser_verification.schema.json"),
+    Path("schemas/git_safety_report.schema.json"),
     Path("prompts/CTO_SESSION_PROMPT.md"),
     Path("prompts/TOOL_MODEL_ROUTING_GUIDE.md"),
     Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
@@ -80,6 +85,12 @@ SAFE_TEMPLATE_ASSETS: list[Path] = [
     Path("docs/adr/README.md"),
     Path("docs/adr/0000-adr-template.md"),
 ]
+
+MANDATORY_SAFETY_ASSETS: set[Path] = {
+    Path("scripts/statedd_git_safety_check.py"),
+    Path("scripts/statedd_git_safety_session.py"),
+    Path("schemas/git_safety_report.schema.json"),
+}
 
 # Optional GitHub assets that are only upgraded when the downstream repo already
 # has a .github directory or when explicitly requested.
@@ -142,7 +153,11 @@ def managed_asset_list(target: Path, include_github: bool) -> list[Path]:
         declared = payload.get("assets") if isinstance(payload, dict) else None
         if isinstance(declared, list) and all(isinstance(item, str) for item in declared):
             declared_paths = {Path(item) for item in declared}
-            assets = [path for path in assets if path in declared_paths]
+            assets = [
+                path
+                for path in assets
+                if path in declared_paths or path in MANDATORY_SAFETY_ASSETS
+            ]
     if include_github or (target / ".github").exists():
         github_assets = GITHUB_ASSET_PATHS
         if declared_paths is not None:
@@ -306,6 +321,28 @@ def execute_plan(plan: dict[str, Any], target: Path) -> None:
         print(f"Modified {info['relpath']}")
 
 
+def update_manifest_for_mandatory_safety_assets(target: Path) -> None:
+    manifest = target / "STATEDD_ASSETS.json"
+    if not manifest.exists():
+        return
+    try:
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"Cannot update invalid STATEDD_ASSETS.json: {exc}") from exc
+    assets = payload.get("assets") if isinstance(payload, dict) else None
+    if not isinstance(assets, list) or not all(isinstance(item, str) for item in assets):
+        raise SystemExit("Cannot update STATEDD_ASSETS.json: assets must be a string list")
+    installed = set(assets)
+    installed.update(
+        path.as_posix()
+        for path in MANDATORY_SAFETY_ASSETS
+        if (target / path).is_file()
+    )
+    payload["assets"] = sorted(installed)
+    manifest.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print("Updated STATEDD_ASSETS.json with mandatory Git safety assets")
+
+
 def write_report(path: Path, plan: dict[str, Any], target: Path, template_version: str, target_version: str | None, *, dry_run: bool) -> None:
     report = {
         "schema": "statedd.upgrade_report.v1",
@@ -382,11 +419,31 @@ def main(argv: list[str] | None = None) -> int:
         if plan["conflicts"]:
             print("\nRefusing to apply: unresolved conflicts exist. Review or use --force-managed for safe assets.")
             return 1
+        try:
+            require_mutation_permit(
+                target,
+                "StateDD upgrade --apply",
+                allow_non_git=True,
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
         execute_plan(plan, target)
+        update_manifest_for_mandatory_safety_assets(target)
         print("\nUpgrade applied.")
 
     if args.report:
-        write_report(Path(args.report).resolve(), plan, target, template_version, target_version, dry_run=not args.apply)
+        report_path = Path(args.report).resolve()
+        try:
+            require_mutation_permit(
+                report_path,
+                "StateDD upgrade report write",
+                allow_non_git=True,
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        write_report(report_path, plan, target, template_version, target_version, dry_run=not args.apply)
 
     return 0
 

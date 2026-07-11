@@ -1,0 +1,432 @@
+{
+  "decision": {
+    "blockers": [],
+    "effective_mode": "worktree",
+    "enforcement_scope": "statedd_managed_session_permit",
+    "mutation_permitted": true,
+    "permitted": true,
+    "restart_required": false,
+    "warnings": []
+  },
+  "fsck": {
+    "command": [
+      "git",
+      "fsck",
+      "--no-dangling"
+    ],
+    "duration_ms": 54,
+    "exit_code": 0,
+    "result": "pass",
+    "stderr": ""
+  },
+  "generated_at": "2026-07-11T15:37:08+02:00",
+  "identity": {
+    "effective_gid": 1000,
+    "effective_uid": 1000,
+    "group": "ff",
+    "is_root": false,
+    "known": true,
+    "real_gid": 1000,
+    "real_uid": 1000,
+    "supplementary_gids": [
+      10,
+      39,
+      104,
+      968,
+      969,
+      988,
+      1000,
+      1001
+    ],
+    "user": "ff"
+  },
+  "isolation": {
+    "alternates_present": false,
+    "hardlinked_object_files": 0,
+    "independent_common_dir": false,
+    "requested_mode": "worktree",
+    "rules": [
+      "normal_branch requires a private feature branch in one unprivileged host clone",
+      "worktree requires explicit opt-in, trusted-local attestation, safe same identity, and a non-privileged host runtime",
+      "clone requires a distinct common directory, no alternates, no hardlinked object files, and one worktree",
+      "read_only never permits StateDD-managed mutation"
+    ],
+    "selected_mode": "worktree",
+    "source_common_dir": null
+  },
+  "latch": {
+    "active_after": false,
+    "active_before": false,
+    "cleared": false,
+    "error": null,
+    "global_path": "/tmp/statedd-git-safety-1000/global.latch.json",
+    "path": "/tmp/statedd-git-safety-1000/9a3258007f813a6497b7cf96f4aa3ea066d8d6c857998880ecdbf0f4991fb4ef.latch.json",
+    "permit_active_after": true,
+    "permit_active_before": true,
+    "permit_cleared": false,
+    "permit_path": "/tmp/statedd-git-safety-1000/9a3258007f813a6497b7cf96f4aa3ea066d8d6c857998880ecdbf0f4991fb4ef.permit.json",
+    "permit_written": true,
+    "written": false
+  },
+  "metadata": {
+    "common_dir": {
+      "gid": 1000,
+      "gid_matches": true,
+      "group": "ff",
+      "kind": "directory",
+      "mode_octal": "0755",
+      "mode_symbolic": "drwxr-xr-x",
+      "nlink": 1,
+      "owner": "ff",
+      "path": "/home/ff/Documents/Projects/StateDD_Template/.git",
+      "readable": true,
+      "searchable": true,
+      "uid": 1000,
+      "uid_matches": true,
+      "writable": true
+    },
+    "critical_trees": {
+      "logs": {
+        "entries_scanned": 31,
+        "hardlinked_regular_files": 0,
+        "label": "logs",
+        "mismatches": [],
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/logs",
+        "present": true,
+        "scan_complete": true,
+        "symlinks": [],
+        "unreadable": [],
+        "unwritable": []
+      },
+      "objects": {
+        "entries_scanned": 818,
+        "hardlinked_regular_files": 0,
+        "label": "objects",
+        "mismatches": [],
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/objects",
+        "present": true,
+        "scan_complete": true,
+        "symlinks": [],
+        "unreadable": [],
+        "unwritable": []
+      },
+      "refs": {
+        "entries_scanned": 17,
+        "hardlinked_regular_files": 0,
+        "label": "refs",
+        "mismatches": [],
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/refs",
+        "present": true,
+        "scan_complete": true,
+        "symlinks": [],
+        "unreadable": [],
+        "unwritable": []
+      },
+      "worktrees": {
+        "entries_scanned": 52,
+        "hardlinked_regular_files": 0,
+        "label": "worktrees",
+        "mismatches": [],
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/worktrees",
+        "present": true,
+        "scan_complete": true,
+        "symlinks": [],
+        "unreadable": [],
+        "unwritable": []
+      }
+    },
+    "entries_scanned": 924,
+    "git_dir": {
+      "gid": 1000,
+      "gid_matches": true,
+      "group": "ff",
+      "kind": "directory",
+      "mode_octal": "0755",
+      "mode_symbolic": "drwxr-xr-x",
+      "nlink": 1,
+      "owner": "ff",
+      "path": "/home/ff/Documents/Projects/StateDD_Template/.git",
+      "readable": true,
+      "searchable": true,
+      "uid": 1000,
+      "uid_matches": true,
+      "writable": true
+    },
+    "locks": [],
+    "mismatches": [],
+    "scan_complete": true,
+    "special_entries": [
+      {
+        "gid": 1000,
+        "gid_matches": true,
+        "group": "ff",
+        "kind": "file",
+        "mode_octal": "0644",
+        "mode_symbolic": "-rw-r--r--",
+        "nlink": 1,
+        "owner": "ff",
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/config",
+        "readable": true,
+        "searchable": null,
+        "uid": 1000,
+        "uid_matches": true,
+        "writable": true
+      },
+      {
+        "gid": 1000,
+        "gid_matches": true,
+        "group": "ff",
+        "kind": "file",
+        "mode_octal": "0644",
+        "mode_symbolic": "-rw-r--r--",
+        "nlink": 1,
+        "owner": "ff",
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/packed-refs",
+        "readable": true,
+        "searchable": null,
+        "uid": 1000,
+        "uid_matches": true,
+        "writable": true
+      },
+      {
+        "gid": 1000,
+        "gid_matches": true,
+        "group": "ff",
+        "kind": "file",
+        "mode_octal": "0644",
+        "mode_symbolic": "-rw-r--r--",
+        "nlink": 1,
+        "owner": "ff",
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/HEAD",
+        "readable": true,
+        "searchable": null,
+        "uid": 1000,
+        "uid_matches": true,
+        "writable": true
+      },
+      {
+        "gid": 1000,
+        "gid_matches": true,
+        "group": "ff",
+        "kind": "file",
+        "mode_octal": "0644",
+        "mode_symbolic": "-rw-r--r--",
+        "nlink": 1,
+        "owner": "ff",
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/index",
+        "readable": true,
+        "searchable": null,
+        "uid": 1000,
+        "uid_matches": true,
+        "writable": true
+      }
+    ],
+    "symlinks": [],
+    "unreadable": [],
+    "unwritable": []
+  },
+  "repository": {
+    "branch": "bl-git-isolation-001",
+    "canonical_root": "/home/ff/Documents/Projects/StateDD_Template",
+    "common_dir_inside_repo": true,
+    "default_branch": "main",
+    "git_common_dir": "/home/ff/Documents/Projects/StateDD_Template/.git",
+    "git_dir": "/home/ff/Documents/Projects/StateDD_Template/.git",
+    "git_dir_equals_common_dir": true,
+    "head": "b93caadec7e106716f2434d906ea143e2d47d858",
+    "origin_url": "https://github.com/lennertvhoy/StateDD_Template.git",
+    "worktree_clean": false
+  },
+  "request": {
+    "mode": "worktree",
+    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "remote": "origin",
+    "restart_session": true,
+    "source_repo": null,
+    "sync": "fetch",
+    "trusted_local_machine": true,
+    "worktree_opt_in": true
+  },
+  "runtime": {
+    "classification": "host",
+    "container_runtime": null,
+    "detection_errors": [],
+    "effective_capabilities_hex": "0000000000000000",
+    "git_environment_overrides": [],
+    "machine_fingerprint_sha256": "548189d9927a044a38699fff79d8dd1fb8755a8c21941e88cc54fa16bfae8844",
+    "privilege": "unprivileged",
+    "proof_complete": true,
+    "risky_capabilities": [],
+    "signals": []
+  },
+  "schema": "statedd.git_safety_report.v1",
+  "synchronization": {
+    "attempted": true,
+    "duration_ms": 432,
+    "exit_code": 0,
+    "operation": "fetch",
+    "remote": "origin",
+    "required": true,
+    "result": "pass",
+    "stderr": ""
+  },
+  "worktrees": {
+    "entries": [
+      {
+        "bare": false,
+        "branch": "refs/heads/bl-git-isolation-001",
+        "detached": false,
+        "dirty": true,
+        "head": "b93caadec7e106716f2434d906ea143e2d47d858",
+        "identity_status": "match",
+        "lock_reason": "",
+        "locked": false,
+        "missing": false,
+        "owner_gid": 1000,
+        "owner_uid": 1000,
+        "path": "/home/ff/Documents/Projects/StateDD_Template",
+        "prunable": false,
+        "prune_reason": "",
+        "status_result": "dirty"
+      },
+      {
+        "bare": false,
+        "branch": "refs/heads/bl-audit-001-state-integration",
+        "detached": false,
+        "dirty": false,
+        "head": "eeffbc135e89848caebe55e74e3a994e9219463e",
+        "identity_status": "match",
+        "lock_reason": "",
+        "locked": false,
+        "missing": false,
+        "owner_gid": 1000,
+        "owner_uid": 1000,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-audit-001-state-integration",
+        "prunable": false,
+        "prune_reason": "",
+        "status_result": "clean"
+      },
+      {
+        "bare": false,
+        "branch": "refs/heads/bl-bl-browser-002-code-g3trh",
+        "detached": false,
+        "dirty": true,
+        "head": "a0ac268d186d9ec71ffefab6970dc1d40add5b06",
+        "identity_status": "match",
+        "lock_reason": "",
+        "locked": false,
+        "missing": false,
+        "owner_gid": 1000,
+        "owner_uid": 1000,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-browser-002-code-g3trh",
+        "prunable": false,
+        "prune_reason": "",
+        "status_result": "dirty"
+      },
+      {
+        "bare": false,
+        "branch": "refs/heads/bl-bl-context-001-code-a1daa",
+        "detached": false,
+        "dirty": false,
+        "head": "267f76182c8e829b82f5984437c2a8b786337041",
+        "identity_status": "match",
+        "lock_reason": "",
+        "locked": false,
+        "missing": false,
+        "owner_gid": 1000,
+        "owner_uid": 1000,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa",
+        "prunable": false,
+        "prune_reason": "",
+        "status_result": "clean"
+      },
+      {
+        "bare": false,
+        "branch": "refs/heads/bl-max-value-001",
+        "detached": false,
+        "dirty": false,
+        "head": "84a67100fee324f6716a5c966500b0c0eeb59699",
+        "identity_status": "match",
+        "lock_reason": "",
+        "locked": false,
+        "missing": false,
+        "owner_gid": 1000,
+        "owner_uid": 1000,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-max-value-001",
+        "prunable": false,
+        "prune_reason": "",
+        "status_result": "clean"
+      },
+      {
+        "bare": false,
+        "branch": "refs/heads/efficiency-layer",
+        "detached": false,
+        "dirty": false,
+        "head": "20b446d6401fff3d74fe4beb64cc0c45aea90b5e",
+        "identity_status": "match",
+        "lock_reason": "",
+        "locked": false,
+        "missing": false,
+        "owner_gid": 1000,
+        "owner_uid": 1000,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer",
+        "prunable": false,
+        "prune_reason": "",
+        "status_result": "clean"
+      }
+    ],
+    "linked_count": 5,
+    "mismatched_identity_count": 0,
+    "total_count": 6,
+    "unknown_identity_count": 0
+  },
+  "write_probe": {
+    "required": true,
+    "residue": [],
+    "result": "pass",
+    "targets": [
+      {
+        "cleanup_error": null,
+        "error": null,
+        "path": "/home/ff/Documents/Projects/StateDD_Template",
+        "probe_path": "/home/ff/Documents/Projects/StateDD_Template/.statedd-write-probe-11e465b4d098791f7e8b8119",
+        "result": "pass"
+      },
+      {
+        "cleanup_error": null,
+        "error": null,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git",
+        "probe_path": "/home/ff/Documents/Projects/StateDD_Template/.git/.statedd-write-probe-36a925217c32920890221a80",
+        "result": "pass"
+      },
+      {
+        "cleanup_error": null,
+        "error": null,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/objects",
+        "probe_path": "/home/ff/Documents/Projects/StateDD_Template/.git/objects/.statedd-write-probe-9f9b1ce9363f3fa3289163d2",
+        "result": "pass"
+      },
+      {
+        "cleanup_error": null,
+        "error": null,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/refs",
+        "probe_path": "/home/ff/Documents/Projects/StateDD_Template/.git/refs/.statedd-write-probe-23f91916b3cf167464625c8c",
+        "result": "pass"
+      },
+      {
+        "cleanup_error": null,
+        "error": null,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/logs",
+        "probe_path": "/home/ff/Documents/Projects/StateDD_Template/.git/logs/.statedd-write-probe-efaada779a7d01b231d93881",
+        "result": "pass"
+      },
+      {
+        "cleanup_error": null,
+        "error": null,
+        "path": "/home/ff/Documents/Projects/StateDD_Template/.git/worktrees",
+        "probe_path": "/home/ff/Documents/Projects/StateDD_Template/.git/worktrees/.statedd-write-probe-613d783b301205161948f855",
+        "result": "pass"
+      }
+    ]
+  }
+}

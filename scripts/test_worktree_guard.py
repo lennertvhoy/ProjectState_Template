@@ -68,6 +68,7 @@ def assert_contains(output: str, expected: str) -> None:
 def test_clean_repo_passes_start_slice() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
+        git(repo, "checkout", "-b", "feature-clean")
         completed = run(["--repo", str(repo), "--mode", "start-slice"], cwd=repo, expect_code=0)
         assert_contains(completed.stdout, "safe to start: yes")
         assert_contains(completed.stdout, "dirty file count: 0")
@@ -77,23 +78,29 @@ def test_clean_repo_passes_start_slice() -> None:
 def test_dirty_repo_fails_start_slice_without_classification() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
+        git(repo, "checkout", "-b", "feature-dirty")
         (repo / "local.txt").write_text("dirty\n", encoding="utf-8")
         completed = run(["--repo", str(repo), "--mode", "start-slice"], cwd=repo, expect_code=1)
         assert_contains(completed.stdout, "safe to start: no")
         assert_contains(completed.stdout, "Dirty files are not fully classified")
 
 
-def test_dirty_repo_can_warn_only_for_diagnostics() -> None:
+def test_read_only_mode_cannot_authorize_start() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        (repo / "local.txt").write_text("dirty\n", encoding="utf-8")
-        completed = run(["--repo", str(repo), "--mode", "start-slice", "--warn-only"], cwd=repo, expect_code=0)
-        assert_contains(completed.stdout, "safe to start: no")
+        completed = run(
+            ["--repo", str(repo), "--mode", "start-slice", "--isolation-mode", "read_only"],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(completed.stdout, "effective mode: read_only")
+        assert_contains(completed.stdout, "mutation permitted: no")
 
 
 def test_dirty_repo_with_classification_reports_classified_state() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
+        git(repo, "checkout", "-b", "feature-classified")
         (repo / "local.txt").write_text("dirty\n", encoding="utf-8")
         evidence = repo / "docs" / "evidence" / "slice" / "README.md"
         evidence.parent.mkdir(parents=True)
@@ -133,9 +140,9 @@ def test_detached_head_and_missing_origin_are_reported_not_proven() -> None:
         head = git(repo, "rev-parse", "HEAD")
         git(repo, "checkout", "--detach", head)
         completed = run(["--repo", str(repo), "--mode", "start-slice"], cwd=repo, expect_code=1)
-        assert_contains(completed.stdout, "detached HEAD")
-        assert_contains(completed.stdout, "origin remote URL: not proven")
-        assert_contains(completed.stdout, "current branch is shared/default branch: not proven")
+        assert_contains(completed.stdout, "effective mode: read_only")
+        assert_contains(completed.stdout, "normal_branch requires an attached branch")
+        assert_contains(completed.stdout, "mandatory git fetch synchronization did not pass")
 
 
 def test_classify_dirty_prints_template_table() -> None:
@@ -154,7 +161,20 @@ def test_linked_worktrees_are_printed() -> None:
         repo = init_repo(root)
         linked = root / "linked"
         git(repo, "worktree", "add", "-b", "linked-branch", str(linked))
-        completed = run(["--repo", str(repo), "--mode", "start-slice"], cwd=repo, expect_code=0)
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "--mode",
+                "start-slice",
+                "--isolation-mode",
+                "worktree",
+                "--worktree-opt-in",
+                "--trusted-local-machine",
+            ],
+            cwd=repo,
+            expect_code=0,
+        )
         assert_contains(completed.stdout, "linked worktrees:")
         assert_contains(completed.stdout, str(linked))
 
@@ -162,6 +182,7 @@ def test_linked_worktrees_are_printed() -> None:
 def test_unknown_do_not_touch_blocks_start() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
+        git(repo, "checkout", "-b", "feature-do-not-touch")
         (repo / "local.txt").write_text("dirty\n", encoding="utf-8")
         evidence = repo / "docs" / "evidence" / "slice" / "README.md"
         evidence.parent.mkdir(parents=True)
@@ -204,6 +225,7 @@ def test_unstaged_hidden_path_preserves_porcelain_columns() -> None:
         hidden.write_text("before\n", encoding="utf-8")
         git(repo, "add", ".github/workflow.yml")
         git(repo, "commit", "-m", "add hidden path")
+        git(repo, "checkout", "-b", "feature-hidden")
         hidden.write_text("after\n", encoding="utf-8")
 
         evidence = repo / "evidence.md"
@@ -230,7 +252,7 @@ def main() -> int:
     tests = [
         test_clean_repo_passes_start_slice,
         test_dirty_repo_fails_start_slice_without_classification,
-        test_dirty_repo_can_warn_only_for_diagnostics,
+        test_read_only_mode_cannot_authorize_start,
         test_dirty_repo_with_classification_reports_classified_state,
         test_closure_mode_fails_dirty_worktree,
         test_detached_head_and_missing_origin_are_reported_not_proven,

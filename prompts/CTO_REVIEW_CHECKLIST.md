@@ -24,6 +24,13 @@ Worktree/source-of-truth:
 - GitHub-visible deliverables: yes / no / not proven
 - local-only files claimed: yes / no
 
+Git safety:
+- report schema-valid: yes / no
+- requested/canonical/common-directory identity agrees: yes / no
+- UID/GID, ownership, writability, write probe, fsck, and synchronization pass: yes / no
+- isolation mode permitted: normal_branch / explicit worktree / independent clone / read_only
+- failed mandatory operation correctly latched read-only: yes / no / not applicable
+
 Product value:
 - real / cosmetic / unclear
 
@@ -42,7 +49,7 @@ Next best slice:
 1. Read the handoff and evidence README first.
 2. Run or review `scripts/statedd_doctor.py` for a quick shared snapshot.
 3. Check `scripts/statedd_audit.py` output if available.
-4. Check `scripts/statedd_worktree_guard.py --mode closure` output when available.
+4. Check the schema-valid Git safety report and `scripts/statedd_worktree_guard.py --mode closure` output.
 5. Confirm runtime identity proof was captured for user-facing claims.
 6. Confirm schema ownership rules were followed if a schema changed in this slice.
 7. Confirm the anti-brittleness gate was answered for non-trivial fix or feature work.

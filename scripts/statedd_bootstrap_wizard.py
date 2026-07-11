@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
@@ -168,6 +170,15 @@ def main(argv: list[str] | None = None) -> int:
     if exit_code != 0:
         return exit_code
 
+    try:
+        require_mutation_permit(
+            target,
+            "StateDD bootstrap wizard notes write",
+            allow_non_git=True,
+        )
+    except MutationBlocked as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     write_bootstrap_notes(target, answers)
     print(f"\nBootstrap notes written to {target / 'docs' / 'bootstrap_wizard_notes.md'}")
     return 0

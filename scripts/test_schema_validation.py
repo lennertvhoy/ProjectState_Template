@@ -146,6 +146,8 @@ def assert_schema_assets_exist(root: Path) -> None:
         root / "schemas" / "runtime_identity.schema.json",
         root / "schemas" / "evidence_readme_contract.json",
         root / "schemas" / "final_handoff_contract.json",
+        root / "schemas" / "git_safety_report.schema.json",
+        root / "scripts" / "statedd_git_safety_check.py",
         root / "scripts" / "statedd_validate_schema.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]

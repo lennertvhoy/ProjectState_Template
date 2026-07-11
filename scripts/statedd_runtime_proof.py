@@ -24,6 +24,8 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = "statedd.runtime_identity.v1"
@@ -448,6 +450,15 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("Provide --url for runtime proof or --no-runtime-required for docs/scripts-only proof.")
 
     path = output_path(args)
+    try:
+        require_mutation_permit(
+            path,
+            "StateDD runtime identity artifact write",
+            allow_non_git=True,
+        )
+    except MutationBlocked as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     if args.no_runtime_required:
         artifact = build_not_applicable_artifact(repo, args.reason)
         write_artifact(path, artifact)

@@ -56,10 +56,12 @@ Default profile for a single developer.
 
 Use when multiple people will read handoffs, review evidence, or open pull requests.
 
-- `solo` assets plus isolated agent worktrees, remote closure, CTO/review prompts,
-  upgrade guidance, and ADR templates.
+- `solo` assets plus full-clone-default agent isolation, explicit-opt-in linked
+  worktrees, remote closure, CTO/review prompts, upgrade guidance, and ADR templates.
 - Generated `AGENTS.md` emphasizes slice contracts, claim ledgers, and CTO review.
 - Encourages stricter evidence and audit hygiene by default.
+- Containers and independent agents use separate clones/object databases; linked
+  worktrees are limited to a proven same-identity trusted local machine.
 
 ### `regulated`
 

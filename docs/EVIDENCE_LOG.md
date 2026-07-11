@@ -561,3 +561,21 @@
 - Type: post_deploy
 - as_of: 2026-07-10T22:18:00+02:00
 - Notes: The final closure label is not claimed by this entry; the remote closure finalizer remains authoritative for the final state head.
+
+## EV-2026-07-11-001: BL-GIT-ISOLATION-001 incident intake and causal classification
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/incidents/20260711-141533-git-object-ownership-permission.md
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-GIT-ISOLATION-001.md
+- Title: Shared Git object-database permission failure ingested as a P0 workflow-integrity incident
+- Source/System: known_bad_event
+- Action: Separated the reported external/runtime ownership mutation from the observed StateDD containment failure; entered quality freeze and superseded worktree-default safety claims pending repair.
+- Shows:
+  - the initiating ownership or permission mutation is reported, while its actor, command, and timestamp remain not proven
+  - StateDD's missing common-directory, identity, ownership, writability, fsck, synchronization, read-only latch, and clone-isolation controls are directly observable in the intake source
+  - BL-GIT-ISOLATION-001 is the sole active P0 queue item
+- Proves:
+  - the incident is durably recorded without attributing the initiating mutation to StateDD
+  - the workflow-integrity failure is no longer absent from canonical state
+- Type: known_bad_event
+- as_of: 2026-07-11T14:15:33+02:00
+- Notes: Intake evidence only. No implementation, validation, remote, CI, or acceptance claim is made by this entry.

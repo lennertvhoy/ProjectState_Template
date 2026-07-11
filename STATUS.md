@@ -1,18 +1,18 @@
 # StateDD Template Status
 
-**Updated At:** 2026-07-10 22:18 +02:00
-**Execution Mode:** template-maintenance
-**Project State:** template_maintenance_active
+**Updated At:** 2026-07-11 14:15 +02:00
+**Execution Mode:** quality_freeze
+**Project State:** p0_git_isolation_incident_open
 **Public URL:** https://github.com/lennertvhoy/StateDD_Template/releases/tag/v5
 
 ## Snapshot
 
 - Repo identifies as `repo_role: template_repository` with `statedd_mode: template-maintenance` and spec version `statedd-template-v5`; generated/adopted downstream repos still start as `repo_role: downstream_project` with `statedd_mode: bootstrap`.
 - `statedd-template-v5` is published as GitHub release `v5`; no further release steps are pending.
-- BL-007 public usability polish, BL-BROWSER-001 provider-agnostic browser verification, BL-QUALITY-001 quality firewall hardening, and BL-REMOTE-CLOSURE-001 remote CI/CD closure finalizer are accepted as template capabilities; browser verification is provider-agnostic with Kimi WebBridge preferred.
-- StateDD now treats handoffs as claims, separates repo truth from runtime truth, requires downstream quality gates, and requires GitHub-visible CI success plus a clean merge state before closure-grade handoffs.
-- Runtime proof, schema-backed validation, evidence pack manifests, downstream upgrade tooling, adoption profiles, the bootstrap wizard, provider-agnostic browser verification, the remote closure finalizer, worktree isolation guard, and anti-brittleness guard remain template capabilities.
-- BL-SANITY-002 and BL-WORKFLOW-002 are closed and CI-verified on PR #4. BL-PARALLEL-001 is locally implemented but still needs remote closure. BL-CONTEXT-001 implementation proof head `8840a3c` is CI-verified on PR #5; the final state head is governed by the remote closure finalizer.
+- A P0 workflow-integrity incident is open: StateDD's worktree workflow did not prove Git common-directory ownership, writability, runtime identity, repository integrity, or synchronization success before mutation.
+- The initiating ownership/permission mutation is reported at the external runtime boundary; the responsible actor, command, and timestamp are not proven. StateDD is not claimed to have executed that mutation.
+- The observed StateDD contribution is separate: linked worktrees shared the affected object database, default worktree creation remained enabled, mandatory Git failures did not latch read-only, no independent-clone mode existed, and automatic force cleanup remained reachable.
+- BL-GIT-ISOLATION-001 supersedes BL-PARALLEL-001 and all unrelated feature work until the safety boundary is repaired and proven on the final pushed head.
 
 ## Product Truth
 
@@ -26,30 +26,31 @@
 
 ## Current Quality Gate
 
-- Template quality gate: passing for BL-CONTEXT-001 (164 tests plus 4 subtests); GitHub Actions passed twice on proof head `8840a3c`.
-- Every generated profile passes its own gate. `minimal` is 29 files/145,995 bytes with about 2,082 estimated startup tokens; `solo` is 62 files/411,582 bytes with about 2,056.
+- Known-bad-event gate: failing for BL-GIT-ISOLATION-001.
+- Prior template/profile test results are stale for this incident because they did not exercise Git metadata ownership, real write probes, synchronization failure, or clone independence.
 
 ## Open P0/P1 Failures
 
-- None.
+- [BL-GIT-ISOLATION-001] P0 — unsafe Git metadata/isolation preflight and containment boundary; incident open in `docs/incidents/20260711-141533-git-object-ownership-permission.md`.
 
 ## What Is Not Proven
 
-- Whether the 2026-07-07 sanity-check findings were exhaustive.
-- PR #4 merge acceptance.
-- Downstream repos have not yet upgraded to the BL-WORKFLOW-002 guardrails.
-- BL-BROWSER-002 concrete provider integration is not yet implemented.
-- Human review/merge acceptance for PR #5; final-head CI/remote truth must be read from GitHub and the remote closure finalizer, not inferred from this file alone.
+- The actor and exact command that changed Git metadata ownership or permissions.
+- The verbatim originating Git error; only the reported failure class is currently available.
+- Whether any existing linked worktree is still active in another runtime.
+- The repair's local, remote, CI, and user-accepted truth boundaries; implementation has not started at this snapshot.
 
 ## Immediate Priorities
 
-1. Review and merge stacked PR #5 after parent-branch acceptance.
-2. Complete BL-PARALLEL-001 parent-branch merge acceptance.
-3. Resume BL-BROWSER-002 after the generator baseline is internally correct.
+1. Keep feature work frozen and ingest BL-GIT-ISOLATION-001 as a durable incident.
+2. Add the permission/ownership/synchronization regression suite and centralized fail-closed Git safety preflight.
+3. Replace default linked-worktree isolation with normal-branch, explicit worktree, independent-clone, and read-only policy; then obtain final-head CI/remote proof.
 
 ## Active Blockers
 
-- None for implementation; PR #5 acceptance/merge remains human-controlled.
+- Writable StateDD sessions are not safety-proven by the current executable gates.
+- New StateDD-managed worktree creation is disabled by policy until the P0 closes.
+- BL-PARALLEL-001 remote closure and all unrelated feature work are suspended.
 
 ## Notes
 

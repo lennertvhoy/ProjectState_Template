@@ -23,7 +23,7 @@ description: "Ingest a bad event as a durable incident with failure scan"
 4. Create failure scan in `docs/failure_scans/<incident-id>.md`
 5. Add to `BACKLOG.md` with `BL-<id>`
 6. Update `docs/EVIDENCE_LOG.md`
-7. If P0: set `quality_freeze` in `PROJECT_STATE.yaml`
+7. If P0: keep repo/workflow mode intact and set `current_state.execution_mode.mode: quality_freeze` in `PROJECT_STATE.yaml`
 8. Generate handoff with next steps
 
 **Required inputs:** Event description, symptoms, severity guess.

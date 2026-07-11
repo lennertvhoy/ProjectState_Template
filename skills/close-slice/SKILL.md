@@ -18,7 +18,7 @@ step_by_step:
     command: "python scripts/statedd_quality_gate.py"
     expected: "Exit 0 (all tests pass, static analysis clean, state updated, evidence recorded)"
     failure: "Fix failures, re-run. If blocked, record partial status in handoff."
-    notes: "For parallel-agent slices, provision the agent worktree first with `python scripts/statedd_agent_worktree.py start --slice-id <slice-id>`."
+    notes: "A schema-valid Git safety permit is required. Independent/parallel agents use the orchestrator's default full clone; worktrees require explicit trusted-local same-identity opt-in."
   - name: "Run closure check"
     command: "python scripts/statedd_closure_check.py"
     expected: "Exit 0 (closure criteria met)"
@@ -48,7 +48,7 @@ step_by_step:
     command: "python scripts/statedd_remote_closure_finalizer.py"
     expected: "Exit 0 (local HEAD, pushed branch, PR head, PR body, evidence, GitHub Actions, and merge state all agree)"
     failure: "Refresh PR body/evidence, wait for CI, fix failures, re-push, re-run. Do not hand off while the finalizer exits non-zero."
-    notes: "For parallel-agent slices, use `python scripts/statedd_agent_worktree.py close --pr <pr-number>` to push, finalize, and remove the worktree/reservation in one step."
+    notes: "For isolated-agent slices, `statedd_agent_worktree.py close --pr <pr-number>` pushes/finalizes but intentionally retains clone/worktree/reservation state for explicit human cleanup."
 expected_outputs:
   - "All quality gates pass (exit 0)"
   - "Remote closure finalizer passes (exit 0)"

@@ -13,6 +13,10 @@ required_inputs:
   - "Slice ID"
   - "Branch with changes"
 step_by_step:
+  - name: "Verify Git safety permit"
+    command: "python scripts/statedd_git_safety_check.py --mode <normal_branch|worktree|clone>"
+    expected: "Exit 0 with mutation_permitted=true and a schema-valid report"
+    failure: "Session remains read-only; repair and explicitly restart before state/source mutation"
   - name: "Run test suite"
     command: "python -m pytest (or project test command)"
     expected: "All tests pass"

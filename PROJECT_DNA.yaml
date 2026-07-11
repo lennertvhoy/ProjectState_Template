@@ -51,7 +51,10 @@ truth_rules:
     - negative_search_results_do_not_prove_nonexistence
     - clean_worktree_required_at_handoff
     - active_queue_remains_short
-    - non_trivial_slices_start_from_isolated_classified_worktree_state
+    - mutation_requires_central_git_safety_preflight
+    - clone_is_default_for_containers_and_independent_agents
+    - worktree_requires_explicit_same_identity_trusted_local_opt_in
+    - no_automatic_git_permission_repair_or_force_cleanup
     - non_trivial_fixes_require_anti_brittleness_review
 
   claim_states:
@@ -116,7 +119,10 @@ invariants:
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
   - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
-  - "No non-trivial coding-agent slice starts from ambiguous or dirty shared worktree state unless the dirt is classified and isolated first."
+  - "No repository or StateDD mutation starts until the centralized Git safety preflight permits the selected isolation mode."
+  - "Containers and independent agents use full clones; linked worktrees require explicit trusted-local same-identity opt-in."
+  - "A mandatory Git failure latches StateDD-managed mutation read-only until repair and explicit restart."
+  - "Git permission anomalies are diagnosed, never automatically repaired or force-cleaned."
   - "No non-trivial fix or feature slice closes by matching only observed examples without a durable invariant."
 
 governance:
@@ -136,6 +142,8 @@ governance:
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   closure_audit: scripts/statedd_audit.py
   worktree_guard: scripts/statedd_worktree_guard.py
+  git_safety_preflight: scripts/statedd_git_safety_check.py
+  git_safety_report_schema: schemas/git_safety_report.schema.json
   brittleness_check: scripts/statedd_brittleness_check.py
   health_summary: scripts/statedd_doctor.py
   schema_validation: scripts/statedd_validate_schema.py
