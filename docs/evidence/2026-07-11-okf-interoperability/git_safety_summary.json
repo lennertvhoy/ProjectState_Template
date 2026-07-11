@@ -1,0 +1,16 @@
+{
+  "schema": "statedd.git_safety_summary.v1",
+  "slice_id": "BL-OKF-001",
+  "isolation_mode": "clone",
+  "effective_uid": 1000,
+  "effective_gid": 1000,
+  "ownership_mismatches": 0,
+  "unwritable_metadata": 0,
+  "write_probe": "pass",
+  "fsck": "pass",
+  "synchronization": "pass",
+  "active_git_redirect_overrides": [],
+  "mutation_permitted": true,
+  "runtime": "not_applicable",
+  "notes": "Sanitized summary; checkout paths and process arguments intentionally omitted."
+}
