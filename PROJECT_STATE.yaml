@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T18:30:00+02:00
+  updated_at: 2026-07-11T19:00:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -296,3 +296,40 @@ active_problems:
       ci: not run for integration branch
       runtime: not applicable for template root
       human_acceptance: not proven
+
+  - id: BL-OKF-001
+    title: Add optional OKF v0.1 knowledge interoperability without replacing StateDD operational truth
+    severity: P1
+    opened_at: 2026-07-11T19:00:00+02:00
+    source:
+      base_branch: bl-statedd-integration-001
+      base_head: b9712a514d25b799a35a10bac35e00fc713a620e
+      architecture_decision: docs/adr/0001-okf-knowledge-layer.md
+      upstream_spec_commit: ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a
+    scope:
+      - add an optional knowledge_okf asset set and explicit selection path
+      - validate OKF v0.1 reserved files, concept frontmatter, and unknown-type tolerance
+      - add StateDD authority, owner, source-hash, citation, and staleness governance
+      - preserve canonical StateDD operational files and ordinary startup context
+      - keep real project concepts project-owned rather than template-owned
+    acceptance_criteria:
+      - minimal, solo, and team generated profiles remain unchanged unless knowledge_okf is explicitly selected
+      - the contained knowledge/index.md scaffold follows the pinned OKF v0.1 contract
+      - malformed frontmatter, duplicate keys, unsafe paths, symlink escapes, and stale derived sources fail with actionable output
+      - unknown concept types, unknown extension keys, broken links, and missing indexes remain base-format compatible
+      - canonical, derived, and reference StateDD authority classes are machine-checkable
+      - generated optional profiles remain within declared footprint budgets
+      - dependency-free validation works without external OKF tooling
+    truth_boundaries:
+      sandbox: observed
+      local_worktree: clean at slice opening
+      git_index: clean
+      local_commit: b9712a514d25b799a35a10bac35e00fc713a620e
+      remote_branch: not published
+      github_main: not changed by this slice
+      ci: not run for OKF slice
+      runtime: not applicable for template docs/scripts
+      human_acceptance: not proven
+    human_override:
+      status: override-approved
+      reason: user explicitly directed proceeding with BL-OKF-001 while PR #8 remains a separate draft boundary

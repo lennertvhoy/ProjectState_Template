@@ -6,6 +6,11 @@
 
 ## Active Work
 
+### P1 [BL-OKF-001] Optional OKF knowledge interoperability
+Owner: integration agent
+Next: implement the contained `knowledge_okf` module, validator, provenance extension, staleness checks, and conformance fixtures without changing ordinary profile startup.
+Exit: optional generated profile passes OKF/base-format and StateDD governance checks; minimal/solo/team footprints and startup context remain unchanged.
+
 ### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration
 Owner: integration agent
 Next: review draft PR #8 with the successful direct branch-head and synthetic merge-candidate CI results; resolve ownership and human-acceptance boundaries before any merge decision.

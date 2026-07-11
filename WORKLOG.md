@@ -864,3 +864,19 @@
 
 ### Next
 - Run remote-mutation safety preflight, push the branch, open one draft PR, and observe automatic CI without reruns.
+
+## 2026-07-11 - Open BL-OKF-001
+
+**Type:** architecture_slice_opening
+**Status:** OPEN
+**Git Head:** b9712a514d25b799a35a10bac35e00fc713a620e
+**Worktree:** clean before state-opening edit
+
+### What changed
+- Opened a separate OKF interoperability slice from the published PR #8 head.
+- Preserved StateDD as the canonical operational-state authority and kept PR #8 narrow.
+- Recorded OKF v0.1 as a pinned draft upstream specification and limited this slice to the optional contained knowledge layer.
+- Recorded the user-directed override to proceed while the PR #8 draft remains unsettled.
+
+### Next
+- Implement the optional `knowledge_okf` module, contained scaffold, validator, provenance extension, and staleness checks.
