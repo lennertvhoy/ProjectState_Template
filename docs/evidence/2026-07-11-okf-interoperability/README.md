@@ -5,7 +5,7 @@
 **Slice:** `BL-OKF-001`
 **HEAD:** 1e434d4e5b2dae2e91146d81c5eb430cc0d6e21d
 **Branch:** `bl-okf-001`
-**Proof head:** 1e434d4e5b2dae2e91146d81c5eb430cc0d6e21d
+**Proof head:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
 **Final PR head:** intentionally not embedded in tracked evidence; the mutable PR body owns the final head.
 
 ## Claims
