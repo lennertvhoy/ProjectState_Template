@@ -34,6 +34,7 @@ except ImportError:  # pragma: no cover - exercised by portable policy tests.
 LATCH_SCHEMA = "statedd.git_safety_latch.v1"
 PERMIT_SCHEMA = "statedd.git_safety_permit.v1"
 PERMIT_TTL_SECONDS = 8 * 60 * 60
+OPERATION_CLASSES = {"read_only", "local_mutation", "remote_mutation"}
 
 # These variables can redirect repository discovery or critical metadata away
 # from the paths that the preflight inspects. Trace/transport-only variables are
@@ -231,6 +232,13 @@ def latch_payload(
     canonical_root: Path | None,
     common_dir: Path | None,
     blockers: list[str],
+    branch: str | None = None,
+    head: str | None = None,
+    slice_id: str | None = None,
+    agent_id: str | None = None,
+    context_hash: str | None = None,
+    reservation_ref: str | None = None,
+    worktree_clean: bool | None = None,
 ) -> dict[str, Any]:
     return {
         "schema": LATCH_SCHEMA,
@@ -239,6 +247,14 @@ def latch_payload(
         "requested_path": str(requested_path.resolve()),
         "canonical_root": str(canonical_root.resolve()) if canonical_root else None,
         "git_common_dir": str(common_dir.resolve()) if common_dir else None,
+        "branch": branch,
+        "head": head,
+        "slice_id": slice_id,
+        "agent_id": agent_id,
+        "context_hash": context_hash,
+        "reservation_ref": reservation_ref,
+        "worktree_clean": worktree_clean,
+        "decision_schema": "statedd.git_safety_decision.v1",
         "effective_uid": effective_uid(),
         "effective_gid": effective_gid(),
         "machine_fingerprint_sha256": machine_fingerprint(),
@@ -262,6 +278,15 @@ def permit_payload(report: dict[str, Any]) -> dict[str, Any]:
         "effective_gid": report["identity"]["effective_gid"],
         "machine_fingerprint_sha256": report["runtime"]["machine_fingerprint_sha256"],
         "mode": report["decision"]["effective_mode"],
+        "operation_class": report["decision"]["operation_class"],
+        "authorized_operations": report["decision"]["authorized_operations"],
+        "slice_id": report["request"].get("slice_id"),
+        "agent_id": report["request"].get("agent_id"),
+        "context_hash": report["request"].get("context_hash"),
+        "reservation_ref": report["request"].get("reservation_ref"),
+        "expected_branch": report["request"].get("expected_branch"),
+        "expected_head": report["request"].get("expected_head"),
+        "worktree_clean": report["repository"].get("worktree_clean"),
         "mutation_permitted": True,
     }
 
@@ -309,7 +334,13 @@ def resolve_repository(target: Path) -> tuple[Path, Path, str] | None:
     return root, common.resolve(), head
 
 
-def record_required_git_failure(repo: Path, operation: str, diagnostic: str) -> str | None:
+def record_required_git_failure(
+    repo: Path,
+    operation: str,
+    diagnostic: str,
+    *,
+    binding: dict[str, Any] | None = None,
+) -> str | None:
     """Persist a failed mandatory Git operation as read-only session state."""
     requested = repo.expanduser().resolve()
     try:
@@ -322,6 +353,7 @@ def record_required_git_failure(repo: Path, operation: str, diagnostic: str) -> 
                     canonical_root=None,
                     common_dir=None,
                     blockers=[f"{operation} failed: {diagnostic or 'no diagnostic'}"],
+                    **(binding or {}),
                 )
             else:
                 canonical, common, _ = resolved
@@ -332,6 +364,7 @@ def record_required_git_failure(repo: Path, operation: str, diagnostic: str) -> 
                     canonical_root=canonical,
                     common_dir=common,
                     blockers=[f"{operation} failed: {diagnostic or 'no diagnostic'}"],
+                    **(binding or {}),
                 )
             write_state(latch, payload)
         return None
@@ -344,8 +377,12 @@ def require_mutation_permit(
     operation: str,
     *,
     allow_non_git: bool = False,
+    operation_class: str = "local_mutation",
+    authorization: dict[str, str | None] | None = None,
 ) -> dict[str, Any] | None:
     """Require a valid external permit before a StateDD-managed repository write."""
+    if operation_class not in {"local_mutation", "remote_mutation"}:
+        raise MutationBlocked(f"{operation} blocked: invalid mutation operation class {operation_class!r}")
     overrides = active_git_environment_overrides()
     if overrides:
         raise MutationBlocked(
@@ -393,6 +430,22 @@ def require_mutation_permit(
         ]
         if permit.get("mode") not in {"normal_branch", "worktree", "clone"}:
             mismatches.append("mode")
+        authorized_operations = permit.get("authorized_operations")
+        if not isinstance(authorized_operations, list) or operation_class not in authorized_operations:
+            mismatches.append("operation_class")
+        if authorization:
+            for key, value in authorization.items():
+                if permit.get(key) != value:
+                    mismatches.append(key)
+        if operation_class == "remote_mutation":
+            status_code, status_output, _ = _run_git(
+                canonical,
+                ["status", "--porcelain=v1", "--untracked-files=all"],
+            )
+            if status_code != 0:
+                mismatches.append("dirty_state_inspection")
+            elif bool(status_output) != (permit.get("worktree_clean") is False):
+                mismatches.append("dirty_state")
         try:
             expires_at = dt.datetime.fromisoformat(str(permit.get("expires_at", "")))
             if expires_at.tzinfo is None or expires_at <= dt.datetime.now(dt.timezone.utc):
@@ -404,4 +457,3 @@ def require_mutation_permit(
                 f"{operation} blocked: Git safety permit is stale or mismatched ({', '.join(sorted(set(mismatches)))})"
             )
         return permit
-

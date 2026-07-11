@@ -60,6 +60,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_ID = "statedd.git_safety_report.v1"
 SCHEMA_PATH = ROOT / "schemas" / "git_safety_report.schema.json"
 WRITABLE_MODES = {"normal_branch", "worktree", "clone"}
+OPERATION_CLASSES = {"read_only", "local_mutation", "remote_mutation"}
 RISKY_CAPABILITIES = {
     0: "CAP_CHOWN",
     1: "CAP_DAC_OVERRIDE",
@@ -778,6 +779,8 @@ def mode_policy(
     *,
     worktree_opt_in: bool,
     trusted_local_machine: bool,
+    operation_class: str = "local_mutation",
+    operator_authorized: bool = False,
 ) -> tuple[list[str], list[str]]:
     """Return deterministic blockers/warnings for an already-collected report."""
     blockers: list[str] = []
@@ -788,6 +791,14 @@ def mode_policy(
     repository = report["repository"]
     worktrees = report["worktrees"]
     isolation = report["isolation"]
+
+    if operation_class not in OPERATION_CLASSES:
+        blockers.append(f"unknown Git operation class: {operation_class}")
+    if operation_class == "remote_mutation":
+        if not operator_authorized:
+            blockers.append("remote mutation requires explicit operator authorization")
+        if not repository.get("worktree_clean"):
+            blockers.append("remote mutation requires a clean worktree")
 
     if mode == "read_only":
         if report["fsck"]["result"] != "pass":
@@ -939,6 +950,14 @@ def build_report(
             "trusted_local_machine": args.trusted_local_machine,
             "restart_session": args.restart_session,
             "source_repo": str(Path(args.source_repo).resolve()) if args.source_repo else None,
+            "operation_class": args.operation_class,
+            "operator_authorized": args.operator_authorized,
+            "slice_id": args.slice_id,
+            "agent_id": args.agent_id,
+            "context_hash": args.context_hash,
+            "reservation_ref": args.reservation_ref,
+            "expected_branch": args.expected_branch,
+            "expected_head": args.expected_head,
         },
         "repository": repository,
         "identity": identity,
@@ -969,6 +988,19 @@ def build_report(
             "effective_mode": "read_only",
             "restart_required": active_before,
             "enforcement_scope": "statedd_managed_session_permit",
+            "operation_class": args.operation_class,
+            "authorized_operations": ["read_only", "local_mutation"]
+            if args.operation_class != "remote_mutation"
+            else ["read_only", "local_mutation", "remote_mutation"],
+            "exact_authorization_boundary": {
+                "operator_authorized": args.operator_authorized,
+                "expected_branch": args.expected_branch,
+                "expected_head": args.expected_head,
+                "slice_id": args.slice_id,
+                "agent_id": args.agent_id,
+                "context_hash": args.context_hash,
+                "reservation_ref": args.reservation_ref,
+            },
             "blockers": [],
             "warnings": [],
         },
@@ -976,6 +1008,14 @@ def build_report(
 
     if source_error:
         report["decision"]["blockers"].append(source_error)
+    if args.expected_branch and repository.get("branch") != args.expected_branch:
+        report["decision"]["blockers"].append(
+            f"expected branch mismatch: wanted {args.expected_branch}, observed {repository.get('branch')}"
+        )
+    if args.expected_head and repository.get("head") != args.expected_head:
+        report["decision"]["blockers"].append(
+            f"expected HEAD mismatch: wanted {args.expected_head}, observed {repository.get('head')}"
+        )
 
     if args.mode == "read_only":
         blockers, warnings = mode_policy(
@@ -983,6 +1023,8 @@ def build_report(
             report,
             worktree_opt_in=args.worktree_opt_in,
             trusted_local_machine=args.trusted_local_machine,
+            operation_class=args.operation_class,
+            operator_authorized=args.operator_authorized,
         )
         report["decision"].update(
             {
@@ -1020,6 +1062,8 @@ def build_report(
             report,
             worktree_opt_in=args.worktree_opt_in,
             trusted_local_machine=args.trusted_local_machine,
+            operation_class=args.operation_class,
+            operator_authorized=args.operator_authorized,
         )
         if source_error:
             structural_blockers.append(source_error)
@@ -1085,6 +1129,13 @@ def _failure_payload_for_report(report: dict[str, Any], fallback: str | None = N
         canonical_root=Path(report["repository"]["canonical_root"]),
         common_dir=Path(report["repository"]["git_common_dir"]),
         blockers=blockers,
+        branch=report["repository"].get("branch"),
+        head=report["repository"].get("head"),
+        slice_id=report["request"].get("slice_id"),
+        agent_id=report["request"].get("agent_id"),
+        context_hash=report["request"].get("context_hash"),
+        reservation_ref=report["request"].get("reservation_ref"),
+        worktree_clean=report["repository"].get("worktree_clean"),
     )
 
 
@@ -1239,6 +1290,23 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Attest that worktree peers are on the same trusted local machine",
     )
     parser.add_argument("--source-repo", help="Source repository used to prove clone common-directory independence")
+    parser.add_argument(
+        "--operation-class",
+        choices=sorted(OPERATION_CLASSES),
+        default="local_mutation",
+        help="Exact authorization boundary for this decision",
+    )
+    parser.add_argument(
+        "--operator-authorized",
+        action="store_true",
+        help="Explicit operator authorization required for remote mutation",
+    )
+    parser.add_argument("--slice-id", help=argparse.SUPPRESS)
+    parser.add_argument("--agent-id", help=argparse.SUPPRESS)
+    parser.add_argument("--context-hash", help=argparse.SUPPRESS)
+    parser.add_argument("--reservation-ref", help=argparse.SUPPRESS)
+    parser.add_argument("--expected-branch", help=argparse.SUPPRESS)
+    parser.add_argument("--expected-head", help=argparse.SUPPRESS)
     parser.add_argument(
         "--restart-session",
         action="store_true",

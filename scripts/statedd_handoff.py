@@ -12,6 +12,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+from statedd_git_safety_session import sanitized_git_environment
+from statedd_agent_worktree import (
+    load_agent_context as load_strict_agent_context,
+    verify_agent_context_binding,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -20,10 +26,12 @@ AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
+    command = ["git", "--no-optional-locks", *args[1:]] if args and args[0] == "git" else args
     try:
         completed = subprocess.run(
-            args,
+            command,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,
@@ -41,6 +49,7 @@ def run_shell_command(command: str, cwd: Path) -> tuple[int, str]:
         text=True,
         shell=True,
         check=False,
+        env=sanitized_git_environment(),
     )
     output = "\n".join(part for part in (completed.stdout.strip(), completed.stderr.strip()) if part)
     return completed.returncode, output
@@ -112,26 +121,8 @@ def default_agent_context_path(repo: Path) -> Path:
 
 
 def load_agent_context(path: Path) -> dict | None:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if not isinstance(data, dict):
-        return None
-    required_keys = {
-        "schema",
-        "agent_id",
-        "slice_id",
-        "reservation_ref",
-        "worktree_path",
-        "branch",
-        "base_branch",
-    }
-    if not required_keys.issubset(data.keys()):
-        return None
-    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
-        return None
-    return data
+    code, data, _ = load_strict_agent_context(path)
+    return data if code == 0 else None
 
 
 def find_agent_contexts(repo: Path) -> tuple[dict | None, list[dict]]:
@@ -256,6 +247,12 @@ def main(argv: list[str] | None = None) -> int:
     worktree = "clean" if not short_status.strip() else "dirty"
     changed_files = git_changed_files(repo)
     agent_context, sibling_contexts = find_agent_contexts(repo)
+    if agent_context is not None:
+        try:
+            verify_agent_context_binding(repo, agent_context)
+        except Exception as exc:
+            print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
+            return 1
     topology_captured, topology_raw, linked_worktrees = worktree_topology(repo)
     dirty_classified = dirty_classification_status(repo, changed_files)
     github_visible = github_visible_deliverables(local_equals_upstream, changed_files)

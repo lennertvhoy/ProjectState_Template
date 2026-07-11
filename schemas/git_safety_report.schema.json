@@ -35,7 +35,15 @@
         "worktree_opt_in": {"type": "boolean"},
         "trusted_local_machine": {"type": "boolean"},
         "restart_session": {"type": "boolean"},
-        "source_repo": {"type": ["string", "null"]}
+        "source_repo": {"type": ["string", "null"]},
+        "operation_class": {"type": "string", "enum": ["read_only", "local_mutation", "remote_mutation"]},
+        "operator_authorized": {"type": "boolean"},
+        "slice_id": {"type": ["string", "null"]},
+        "agent_id": {"type": ["string", "null"]},
+        "context_hash": {"type": ["string", "null"]},
+        "reservation_ref": {"type": ["string", "null"]},
+        "expected_branch": {"type": ["string", "null"]},
+        "expected_head": {"type": ["string", "null"]}
       }
     },
     "repository": {
@@ -199,6 +207,22 @@
         "effective_mode": {"type": "string", "enum": ["normal_branch", "worktree", "clone", "read_only"]},
         "restart_required": {"type": "boolean"},
         "enforcement_scope": {"type": "string", "enum": ["statedd_managed_session_permit", "filesystem_enforced"]},
+        "operation_class": {"type": "string", "enum": ["read_only", "local_mutation", "remote_mutation"]},
+        "authorized_operations": {"type": "array", "items": {"type": "string", "enum": ["read_only", "local_mutation", "remote_mutation"]}},
+        "exact_authorization_boundary": {
+          "type": "object",
+          "required": ["operator_authorized", "expected_branch", "expected_head", "slice_id", "agent_id", "context_hash", "reservation_ref"],
+          "additionalProperties": false,
+          "properties": {
+            "operator_authorized": {"type": "boolean"},
+            "expected_branch": {"type": ["string", "null"]},
+            "expected_head": {"type": ["string", "null"]},
+            "slice_id": {"type": ["string", "null"]},
+            "agent_id": {"type": ["string", "null"]},
+            "context_hash": {"type": ["string", "null"]},
+            "reservation_ref": {"type": ["string", "null"]}
+          }
+        },
         "blockers": {"type": "array", "items": {"type": "string"}},
         "warnings": {"type": "array", "items": {"type": "string"}}
       }

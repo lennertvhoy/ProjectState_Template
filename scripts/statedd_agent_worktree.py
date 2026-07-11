@@ -16,15 +16,19 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 from typing import Any
 
 from statedd_git_safety_session import (
+    MutationBlocked,
+    require_mutation_permit,
     record_required_git_failure,
     sanitized_git_environment,
 )
@@ -188,6 +192,9 @@ def run_git_safety(
     worktree_opt_in: bool = False,
     trusted_local_machine: bool = False,
     restart_session: bool = False,
+    operation_class: str = "local_mutation",
+    operator_authorized: bool = False,
+    context: dict[str, Any] | None = None,
 ) -> tuple[int, dict[str, Any], str]:
     command = [
         sys.executable,
@@ -205,6 +212,20 @@ def run_git_safety(
         command.append("--worktree-opt-in")
     if trusted_local_machine:
         command.append("--trusted-local-machine")
+    command.extend(["--operation-class", operation_class])
+    if operator_authorized:
+        command.append("--operator-authorized")
+    if context:
+        command.extend(
+            [
+                "--slice-id", str(context["slice_id"]),
+                "--agent-id", str(context["agent_id"]),
+                "--context-hash", context_hash(context),
+                "--reservation-ref", str(context["reservation_ref"]),
+                "--expected-branch", str(context["branch"]),
+                "--expected-head", required_command(["git", "rev-parse", "HEAD"], repo, "context HEAD inspection"),
+            ]
+        )
     if restart_session:
         command.append("--restart-session")
     code, stdout, stderr = run_command(command, repo)
@@ -232,36 +253,139 @@ def print_safety_failure(report: dict[str, Any], fallback: str) -> None:
         )
 
 
+CONTEXT_KEYS = {
+    "schema", "agent_id", "slice_id", "reservation_ref", "worktree_path", "branch",
+    "base_branch", "created_at", "isolation_mode", "source_repo", "identity",
+    "attestations", "git_safety",
+}
+IDENTITY_KEYS = {"effective_uid", "effective_gid", "machine_fingerprint_sha256"}
+ATTESTATION_KEYS = {"worktree_opt_in", "trusted_local_machine", "effective_uid", "effective_gid", "machine_fingerprint_sha256"}
+SAFETY_KEYS = {"schema", "generated_at", "mode", "mutation_permitted"}
+
+
+def context_hash(context: dict[str, Any]) -> str:
+    return hashlib.sha256((json.dumps(context, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
+
+
+def reject_symlink_components(path: Path) -> None:
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current /= component
+        if current.is_symlink():
+            raise ValueError(f"symlinked context path component is not allowed: {current}")
+
+
+def strict_json_object(text: str, source: Path) -> dict[str, Any]:
+    def pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key {key!r} in {source}")
+            result[key] = value
+        return result
+
+    value = json.loads(text, object_pairs_hook=pairs)
+    if not isinstance(value, dict):
+        raise ValueError(f"agent context must be a JSON object: {source}")
+    return value
+
+
+def validate_context_shape(data: dict[str, Any], context_path: Path) -> str | None:
+    if set(data) != CONTEXT_KEYS:
+        unknown = sorted(set(data) - CONTEXT_KEYS)
+        missing = sorted(CONTEXT_KEYS - set(data))
+        return f"agent context fields are not closed-world (unknown={unknown}, missing={missing})"
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return f"unexpected agent context schema: {data.get('schema')}"
+    for key in ("agent_id", "slice_id", "reservation_ref", "worktree_path", "branch", "base_branch", "created_at", "isolation_mode", "source_repo"):
+        if not isinstance(data.get(key), str):
+            return f"agent context field {key!r} must be a string"
+    if not Path(data["worktree_path"]).is_absolute():
+        return "agent context worktree_path must be absolute"
+    for nested_key, nested_keys in (("identity", IDENTITY_KEYS), ("attestations", ATTESTATION_KEYS), ("git_safety", SAFETY_KEYS)):
+        nested = data.get(nested_key)
+        if not isinstance(nested, dict) or set(nested) != nested_keys:
+            return f"agent context {nested_key} fields are not closed-world"
+    if data["isolation_mode"] == "worktree":
+        if data["reservation_ref"] != reservation_ref(data["branch"]):
+            return "worktree reservation ref does not exactly match its branch"
+        if data["attestations"]["worktree_opt_in"] is not True or data["attestations"]["trusted_local_machine"] is not True:
+            return "worktree context lacks explicit trusted-local attestations"
+    elif data["reservation_ref"]:
+        return "clone/normal-branch context must not carry a reservation ref"
+    return None
+
+
 def load_agent_context(path: Path) -> tuple[int, dict[str, Any], str]:
     context_path = path / ".statedd" / "agent.context" if path.is_dir() else path
     try:
-        data = json.loads(context_path.read_text(encoding="utf-8"))
+        reject_symlink_components(context_path)
+        data = strict_json_object(context_path.read_text(encoding="utf-8"), context_path)
     except FileNotFoundError:
         return 2, {}, f"agent context not found: {context_path}"
-    except json.JSONDecodeError as exc:
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         return 2, {}, f"invalid agent context JSON: {exc}"
-    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
-        return 2, {}, f"unexpected agent context schema: {data.get('schema')}"
-    if data.get("isolation_mode") not in {"clone", "worktree", "normal_branch"}:
-        return 2, {}, f"invalid writable agent isolation mode: {data.get('isolation_mode')}"
-    if data.get("isolation_mode") == "worktree":
-        attestations = data.get("attestations")
-        if not isinstance(attestations, dict):
-            return 2, {}, "worktree agent context lacks recorded attestations"
-        if attestations.get("worktree_opt_in") is not True:
-            return 2, {}, "worktree agent context lacks explicit opt-in"
-        if attestations.get("trusted_local_machine") is not True:
-            return 2, {}, "worktree agent context lacks trusted-local attestation"
+    error = validate_context_shape(data, context_path)
+    if error:
+        return 2, {}, error
     return 0, data, ""
 
 
 def write_agent_context(target: Path, context: dict[str, Any]) -> None:
     statedd_dir = target / ".statedd"
     statedd_dir.mkdir(parents=True, exist_ok=True)
-    (statedd_dir / "agent.context").write_text(
-        json.dumps(context, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    context_path = statedd_dir / "agent.context"
+    descriptor, temporary_name = tempfile.mkstemp(prefix="agent.context.", dir=statedd_dir)
+    os.close(descriptor)
+    temporary = Path(temporary_name)
+    try:
+        temporary.write_text(json.dumps(context, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temporary, context_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def verify_agent_context_binding(worktree: Path, context: dict[str, Any]) -> None:
+    """Prove that context is owned by this exact repository and reservation."""
+    worktree = Path(os.path.abspath(worktree))
+    reject_symlink_components(worktree)
+    if context["worktree_path"] != str(worktree):
+        raise MutationBlocked("agent context worktree_path does not match the requested repository")
+    if resolve_repo(worktree) != worktree:
+        raise MutationBlocked("agent context does not resolve to the exact repository root")
+    if current_branch(worktree) != context["branch"]:
+        raise MutationBlocked("agent context branch does not match the checked-out branch")
+    if context["isolation_mode"] == "clone":
+        source_repo = Path(context["source_repo"])
+        if not source_repo.is_absolute():
+            raise MutationBlocked("clone agent context source_repo must be absolute")
+    if context["isolation_mode"] == "worktree":
+        topology = required_command(["git", "worktree", "list", "--porcelain"], worktree, "worktree ownership inspection")
+        registered = False
+        for block in topology.split("\n\n"):
+            lines = block.splitlines()
+            registered_path = next((line.removeprefix("worktree ") for line in lines if line.startswith("worktree ")), "")
+            registered_branch = next((line.removeprefix("branch ").removeprefix("refs/heads/") for line in lines if line.startswith("branch ")), "")
+            if registered_path == str(worktree) and registered_branch == context["branch"]:
+                registered = True
+                break
+        if not registered:
+            raise MutationBlocked("agent context is not bound to the registered Git worktree")
+        message_code, message, message_error = run_command(
+            ["git", "log", "-g", "-1", "--format=%gs", context["reservation_ref"]], worktree
+        )
+        expected_message = json.dumps(context, sort_keys=True)
+        if message_code != 0 or message != expected_message:
+            raise MutationBlocked(
+                "agent context reservation reflog payload does not match this context"
+                + (f": {message_error or message}" if message_error or message else "")
+            )
+    identity = context["identity"]
+    if identity["effective_uid"] != getattr(os, "geteuid", lambda: None)():
+        raise MutationBlocked("agent context effective UID does not match the current process")
+    if identity["effective_gid"] != getattr(os, "getegid", lambda: None)():
+        raise MutationBlocked("agent context effective GID does not match the current process")
 
 
 def context_payload(
@@ -566,7 +690,14 @@ def dirty_files(repo: Path) -> list[str]:
     return paths
 
 
-def safety_for_context(worktree: Path, context: dict[str, Any], restart_session: bool) -> tuple[int, dict[str, Any], str]:
+def safety_for_context(
+    worktree: Path,
+    context: dict[str, Any],
+    restart_session: bool,
+    *,
+    operation_class: str = "local_mutation",
+    operator_authorized: bool = False,
+) -> tuple[int, dict[str, Any], str]:
     mode = context.get("isolation_mode", "worktree")
     if mode not in {"clone", "worktree", "normal_branch"}:
         return 2, {}, f"agent context is not writable: isolation_mode={mode}"
@@ -580,6 +711,9 @@ def safety_for_context(worktree: Path, context: dict[str, Any], restart_session:
         worktree_opt_in=mode == "worktree" and attestations.get("worktree_opt_in") is True,
         trusted_local_machine=mode == "worktree" and attestations.get("trusted_local_machine") is True,
         restart_session=restart_session,
+        operation_class=operation_class,
+        operator_authorized=operator_authorized,
+        context=context,
     )
     if code == 0 and report:
         stored = context.get("identity", {})
@@ -604,11 +738,16 @@ def safety_for_context(worktree: Path, context: dict[str, Any], restart_session:
 
 
 def cmd_guard(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).resolve() if args.worktree else Path.cwd().resolve()
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
     code, context, error = load_agent_context(worktree)
     if code:
         print(error, file=sys.stderr)
         return 2
+    try:
+        verify_agent_context_binding(worktree, context)
+    except (MutationBlocked, RuntimeError) as exc:
+        print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
+        return 1
     safety_code, report, safety_error = safety_for_context(worktree, context, args.restart_session)
     if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
         print_safety_failure(report, safety_error)
@@ -631,11 +770,53 @@ def cmd_guard(args: argparse.Namespace) -> int:
 
 
 def cmd_handoff(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).resolve() if args.worktree else Path.cwd().resolve()
-    code, _, error = load_agent_context(worktree)
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
+    code, context, error = load_agent_context(worktree)
     if code:
         print(error, file=sys.stderr)
         return 2
+    try:
+        verify_agent_context_binding(worktree, context)
+    except (MutationBlocked, RuntimeError) as exc:
+        print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
+        return 1
+    if args.release:
+        if not args.validated:
+            print("Release refused: pass --validated only after the applicable local closure gate has passed.", file=sys.stderr)
+            return 1
+        changed = dirty_files(worktree)
+        if changed:
+            print("Release refused: worktree is dirty or unclassified; reservation retained.", file=sys.stderr)
+            return 1
+        safety_code, report, safety_error = safety_for_context(worktree, context, False)
+        if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+            print_safety_failure(report, safety_error)
+            return 1
+        try:
+            require_mutation_permit(
+                worktree,
+                "reservation release",
+                authorization={
+                    "slice_id": context["slice_id"],
+                    "agent_id": context["agent_id"],
+                    "context_hash": context_hash(context),
+                    "reservation_ref": context["reservation_ref"],
+                    "expected_branch": context["branch"],
+                },
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        if context["reservation_ref"]:
+            code, _, stderr = run_command(["git", "update-ref", "-d", context["reservation_ref"]], worktree)
+            if code != 0:
+                latch_error = record_required_git_failure(worktree, "reservation release", stderr)
+                print(f"Reservation release failed; state retained: {stderr}", file=sys.stderr)
+                if latch_error:
+                    print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+                return 1
+        print("Reservation released after clean, validated local closure; worktree retained for explicit cleanup.")
+        return 0
     handoff_script = ROOT / "scripts" / "statedd_handoff.py"
     code, output, stderr = run_command(
         [sys.executable, str(handoff_script), "--repo", str(worktree)], worktree
@@ -648,26 +829,81 @@ def cmd_handoff(args: argparse.Namespace) -> int:
 
 
 def cmd_close(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).resolve() if args.worktree else Path.cwd().resolve()
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
     code, context, error = load_agent_context(worktree)
     if code:
         print(error, file=sys.stderr)
         return 2
+    try:
+        verify_agent_context_binding(worktree, context)
+    except (MutationBlocked, RuntimeError) as exc:
+        print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
+        return 1
     if not args.pr or args.pr <= 0:
         print("--pr must be a positive integer", file=sys.stderr)
         return 1
     if args.dry_run:
-        print("DRY RUN: would run Git safety, push, and invoke remote closure finalizer")
+        print("DRY RUN: would require explicit remote-mutation authorization, then push and invoke remote closure finalizer")
         print("No worktree, clone, branch, or reservation cleanup would occur.")
         return 0
-    safety_code, report, safety_error = safety_for_context(worktree, context, args.restart_session)
+    if not args.remote_mutation or not args.operator_authorized:
+        print(
+            "Remote push is disabled by default; pass --remote-mutation and "
+            "--operator-authorized for this explicit remote-mutation path.",
+            file=sys.stderr,
+        )
+        return 1
+    if dirty_files(worktree):
+        print("Remote push blocked: remote mutation requires a clean worktree.", file=sys.stderr)
+        return 1
+    safety_code, report, safety_error = safety_for_context(
+        worktree,
+        context,
+        args.restart_session,
+        operation_class="remote_mutation",
+        operator_authorized=True,
+    )
     if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
         print_safety_failure(report, safety_error)
         return 1 if safety_code != 2 else 2
     branch = context.get("branch", "")
-    code, _, stderr = run_command(["git", "push", "origin", branch], worktree)
+    expected_head = required_command(["git", "rev-parse", "HEAD"], worktree, "exact push head inspection")
+    if report.get("repository", {}).get("branch") != branch or report.get("repository", {}).get("head") != expected_head:
+        print("Remote push blocked: branch or HEAD changed after the centralized safety decision.", file=sys.stderr)
+        return 1
+    try:
+        require_mutation_permit(
+            worktree,
+            "remote push",
+            operation_class="remote_mutation",
+            authorization={
+                "slice_id": context["slice_id"],
+                "agent_id": context["agent_id"],
+                "context_hash": context_hash(context),
+                "reservation_ref": context["reservation_ref"],
+                "expected_branch": branch,
+                "expected_head": expected_head,
+            },
+        )
+    except MutationBlocked as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    code, _, stderr = run_command(["git", "push", "origin", f"HEAD:refs/heads/{branch}"], worktree)
     if code != 0:
-        latch_error = record_required_git_failure(worktree, "git push", stderr)
+        latch_error = record_required_git_failure(
+            worktree,
+            "git push",
+            stderr,
+            binding={
+                "branch": branch,
+                "head": expected_head,
+                "slice_id": context["slice_id"],
+                "agent_id": context["agent_id"],
+                "context_hash": context_hash(context),
+                "reservation_ref": context["reservation_ref"],
+                "worktree_clean": True,
+            },
+        )
         print(f"Push failed; isolation path retained: {stderr}", file=sys.stderr)
         if latch_error:
             print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
@@ -820,11 +1056,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
     handoff = subparsers.add_parser("handoff", help="Generate a handoff without releasing/deleting isolation state")
     handoff.add_argument("--worktree")
+    handoff.add_argument("--release", action="store_true", help="Release only after a clean, validated session")
+    handoff.add_argument("--validated", action="store_true", help="Assert that the applicable local closure gate passed")
 
     close = subparsers.add_parser("close", help="Push and run remote closure without automatic cleanup")
     close.add_argument("--pr", type=int, required=True)
     close.add_argument("--worktree")
     close.add_argument("--restart-session", action="store_true")
+    close.add_argument("--remote-mutation", action="store_true", help="Explicitly select the remote-mutation path")
+    close.add_argument("--operator-authorized", action="store_true", help="Explicit operator authorization for push")
 
     subparsers.add_parser("cleanup", help="Report stale/dirty isolation state; never remove it")
     subparsers.add_parser("list", help="List isolation paths, reservations, and locks")

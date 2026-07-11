@@ -11,12 +11,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from statedd_git_safety_session import sanitized_git_environment
+from statedd_agent_worktree import (
+    load_agent_context as load_strict_agent_context,
+    verify_agent_context_binding,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -122,36 +127,8 @@ def default_agent_context_path(repo: Path) -> Path:
 
 
 def load_agent_context(path: Path) -> dict | None:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if not isinstance(data, dict):
-        return None
-    required_keys = {
-        "schema",
-        "agent_id",
-        "slice_id",
-        "reservation_ref",
-        "worktree_path",
-        "branch",
-        "base_branch",
-    }
-    if not required_keys.issubset(data.keys()):
-        return None
-    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
-        return None
-    if data.get("isolation_mode") not in {"clone", "worktree", "normal_branch"}:
-        return None
-    if data.get("isolation_mode") == "worktree":
-        attestations = data.get("attestations")
-        if not isinstance(attestations, dict):
-            return None
-        if attestations.get("worktree_opt_in") is not True:
-            return None
-        if attestations.get("trusted_local_machine") is not True:
-            return None
-    return data
+    code, data, _ = load_strict_agent_context(path)
+    return data if code == 0 else None
 
 
 def parse_status(status: str) -> list[DirtyEntry]:
@@ -582,7 +559,7 @@ def main(argv: list[str] | None = None) -> int:
 
     agent_context = None
     if args.agent_context:
-        agent_context = load_agent_context(Path(args.agent_context).resolve())
+        agent_context = load_agent_context(Path(os.path.abspath(args.agent_context)))
         if agent_context is None:
             print(
                 f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n"
@@ -593,6 +570,13 @@ def main(argv: list[str] | None = None) -> int:
         default_path = default_agent_context_path(repo)
         if default_path.exists():
             agent_context = load_agent_context(default_path)
+
+    if agent_context is not None:
+        try:
+            verify_agent_context_binding(repo, agent_context)
+        except Exception as exc:
+            print(f"- Agent context ownership verification failed: {exc}", file=sys.stderr)
+            return 1
 
     if args.mode == "start-slice":
         isolation_mode = (
