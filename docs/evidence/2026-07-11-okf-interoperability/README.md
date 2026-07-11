@@ -33,7 +33,7 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 | `python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance --verbose` | pass |
 | `python3 scripts/check_state_docs.py` | pass |
 | `python3 scripts/statedd_validate_schema.py` | pass |
-| Strict audit | not yet run after evidence creation |
+| Strict audit | pass |
 | Remote branch, PR, and CI | not yet proven |
 
 ## Closure State

@@ -1,1 +1,1 @@
-pending
+Manifest check passed.
