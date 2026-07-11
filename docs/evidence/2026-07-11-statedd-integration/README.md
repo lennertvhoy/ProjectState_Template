@@ -5,7 +5,7 @@
 **Slice:** `BL-STATEDD-INTEGRATION-001`
 **HEAD:** 3bacef6880c82d5b188527bfac636147bfb895bf
 **Branch:** `bl-statedd-integration-001`
-**Proof head:** `437fc01d589a72a42aa75b12357ae49586302f34`
+**Proof head:** `15aae0aa95cce21e602653ca9eae6b76267c4853`
 **Final PR head:** intentionally not embedded in tracked evidence; the mutable PR body owns the final head.
 
 ## Claims
