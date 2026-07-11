@@ -175,7 +175,7 @@
   },
   "repo": {
     "branch": "bl-statedd-integration-001",
-    "head": "3bacef6880c82d5b188527bfac636147bfb895bf"
+    "head": "15aae0aa95cce21e602653ca9eae6b76267c4853"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",
