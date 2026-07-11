@@ -5,6 +5,10 @@ the project's needs. They do not change the core StateDD rules; they change whic
 default assets are included and how strongly the generated docs emphasize certain
 practices.
 
+StateDD is agent-operated: humans choose intent, profiles, and permissions;
+coding agents read `AGENTS.md`, use the executable controls, maintain truth, and
+produce the handoff. Read `AGENTS.md` before using this reference page.
+
 ## Which profile should I choose?
 
 **Default recommendation: `solo`.**
@@ -94,4 +98,7 @@ fixtures, historical evidence, incident records, changelog, or release history.
 CI runs each generated profile's own quality gate. `EFFICIENCY_BUDGET.yaml`
 enforces startup files/bytes/estimated tokens and managed footprint files/bytes.
 Profile regressions use identical project names and equal-length target paths and
-require `minimal` to remain the smallest mandatory startup payload.
+require `minimal` to remain the smallest mandatory startup payload. The
+authoritative slice gate is `scripts/statedd_quality_gate.py --gate-level 2`;
+template-only development dependencies and Ruff configuration are not copied to
+downstream profiles.

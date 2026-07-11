@@ -34,30 +34,11 @@ RULES = {
 }
 
 README_REQUIRED_SECTIONS = [
-    "## Quick Start",
-    "## Git Safety",
-    "## Setup Paths",
-    "## Adopt An Existing Repo",
-    "## Agent Read Order",
-    "## Bootstrap Completion Gate",
-    "## Setting Up The AI CTO Agent",
-    "## Tool And Model Routing",
-    "## Prompt Files",
-    "## Final Handoff Template",
-    "## Runtime Identity Proof",
-    "## Acceptance Freezes",
-    "## Search Honesty",
-    "## Workflow Diagram",
-    "## Non-Trivial Work",
-    "## Common Failure Modes",
-    "## Validation",
-    "## Executable Audit And State Doctor",
-    "## Slice Contracts And Claim Ledgers",
-    "## Schema Ownership",
-    "## ADRs",
-    "## CTO Review Checklist",
-    "## Human Override Rule",
-    "## Publishing A Downstream Project",
+    "## Operator path",
+    "## Profiles",
+    "## Truth and safety",
+    "## License posture",
+    "## Useful entrypoints",
 ]
 
 TEMPLATE_ASSET_PATHS = [
@@ -477,53 +458,12 @@ def check_readme(path: Path) -> list[str]:
             issues.append(f"Missing required README section: {required}")
 
     required_phrases = [
-        "prompts/CTO_SESSION_PROMPT.md",
-        "prompts/CODING_AGENT_STARTUP_PROMPT.md",
-        "prompts/OPENCODE_STARTUP_PROMPT.md",
-        "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
-        "prompts/FINAL_HANDOFF_TEMPLATE.md",
-        "docs/GETTING_STARTED_5_MIN.md",
-        "scripts/statedd_handoff.py",
-        "scripts/statedd_git_safety_check.py",
-        "scripts/statedd_worktree_guard.py",
-        "ANTI_BRITTLENESS_GUARD.md",
-        "scripts/statedd_runtime_proof.py",
-        "scripts/statedd_validate_schema.py",
-        "LICENSE_FAQ.md",
-        "teaching/training rights are reserved",
-        "ChatGPT, Claude, Gemini",
-        "Tool And Model Routing",
-        "model capabilities, pricing, context windows, or tool support",
-        "--restart-session",
-        "--worktree-opt-in",
-        "--force-overwrite",
-        "--bootstrap-gate",
-        "new",
-        "adopt",
-        "does not have direct access to the repo or state files",
-        "fresh coding-agent session",
-        "real `BACKLOG.md`, not a placeholder",
-        "backlog slice",
-        "State Driven Development Template",
+        "AGENTS.md",
         "statedd-template-v5",
-        "scripts/statedd_version_check.py",
-        "repo_role",
-        "statedd_mode",
-        "docs/evidence/",
-        "scripts/test_init_template.py",
-        "existing README preserved",
+        "statedd_git_safety_check.py",
+        "statedd_quality_gate.py",
         "runtime identity",
-        "acceptance freeze",
-        "not currently locatable",
-        "process or container",
-        "statedd_audit.py",
-        "statedd_doctor.py",
-        "slice contract",
-        "claim ledger",
-        "schema ownership",
-        "Human override used: yes",
-        "implemented ≠ validated ≠ closure-grade ≠ accepted",
-        "anti-brittleness",
+        "not proven",
     ]
     for phrase in required_phrases:
         if phrase not in text:
@@ -926,7 +866,6 @@ def main(argv: list[str] | None = None) -> int:
     readme = root / "README.md"
     template_style_repo = is_template_style_repo(root)
     if readme.exists() and template_style_repo:
-        readme_text = readme.read_text(encoding="utf-8")
         issues = check_readme(readme)
         if issues:
             failures.append(("README.md", issues))

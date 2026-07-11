@@ -1,122 +1,58 @@
-# Getting Started In 5 Minutes
+# StateDD in Five Minutes
 
-Use this when you want the shortest safe path from an empty or inherited repo to a StateDD-guided coding-agent session.
+5 Minutes: choose a profile, initialize the workflow, start the coding agent,
+and review the handoff.
 
-You only need Python 3 and a terminal. No external dependencies are required.
+This is the five-minute operator path. OpenCode users may also start with
+`prompts/OPENCODE_STARTUP_PROMPT.md`.
 
-> **Tip:** If you are unsure which profile to choose, use `--profile solo`. It is the default recommendation. See `docs/ADOPTION_PROFILES.md` for the full decision tree.  
-> **Tip:** For a one-page command cheat sheet, see `docs/QUICK_COMMANDS.md`.
+StateDD is an agent-operated repository workflow. Humans choose intent, profile,
+and permissions; coding agents read `AGENTS.md`, operate the executable controls,
+maintain truth, and produce the handoff.
 
-## 1. Create or adopt a repo
+## 1. Choose a profile
+
+Read [`ADOPTION_PROFILES.md`](ADOPTION_PROFILES.md). `minimal` is the smallest
+workflow; `solo` is the default; `team` adds parallel-agent/review controls;
+`regulated` adds stricter evidence and acceptance guidance.
+
+## 2. Install the workflow
 
 For a new project:
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --profile solo
+python3 scripts/init_template.py new --name "My Project" --profile solo
 ```
 
-For an existing repo, preview first so you can see what will change:
+For an existing project, preview first:
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project" --dry-run
+python3 scripts/init_template.py adopt --name "My Project" --profile solo --dry-run
 ```
 
-Then adopt when the preview is acceptable:
+## 3. Start the coding agent
+
+Give it this instruction:
+
+```text
+Read AGENTS.md and follow its declared read order and controls.
+```
+
+The agent-facing constitution is the authority. It routes the agent to skills,
+commands, executable scripts, and reference docs only when needed.
+
+## 4. Validate honestly
+
+Before mutation, the agent runs the centralized Git safety preflight. At slice
+closure it runs:
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project" --profile solo
-```
-
-## 2. Paste the startup prompt into your coding agent
-
-For OpenCode:
-
-```text
-Read prompts/OPENCODE_STARTUP_PROMPT.md and follow it exactly.
-```
-
-For another terminal coding agent:
-
-```text
-Read prompts/CODING_AGENT_STARTUP_PROMPT.md and follow it exactly.
-```
-
-## 3. Let the agent read the state files
-
-The first agent session should read:
-
-1. `AGENTS.md`
-2. `STATUS.md`
-3. `PROJECT_STATE.yaml`
-4. `PROJECT_DNA.yaml`
-5. `NEXT_ACTIONS.md`
-
-If the repo is still unclear, the agent should inspect first and ask only the minimum strategic questions needed. It should not invent project truth.
-
-## 4. Use the CTO lane for non-trivial work
-
-For work that changes multiple files, architecture, runtime behavior, state structure, integrations, or user-facing behavior, open a separate planning chat and paste:
-
-```text
-Read prompts/CTO_SESSION_PROMPT.md and act as the CTO lane for this repo.
-```
-
-The CTO lane should produce one scoped coding-agent prompt, not a broad plan.
-
-## 5. Work in small slices
-
-Each implementation slice should:
-
-- define one coherent scope
-- verify directly with commands or runtime evidence
-- update state files only when truth changes
-- keep `NEXT_ACTIONS.md` active-only
-- end with a final handoff
-
-Use this helper near the end of a slice:
-
-```bash
+python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose
 python3 scripts/statedd_handoff.py
 ```
 
-For a concrete, tested example of a schema driving both validation and prompt generation, see `schemas/examples/schema_prompt_loop/`.
-
-If you want the helper to run validation and include the output:
-
-```bash
-python3 scripts/statedd_handoff.py --test-command "python3 scripts/check_state_docs.py"
-```
-
-## 6. Run the gates
-
-For normal hygiene:
-
-```bash
-python3 scripts/check_state_docs.py
-python3 scripts/statedd_validate_schema.py
-python3 scripts/test_init_template.py
-python3 scripts/test_schema_validation.py
-python3 scripts/statedd_doctor.py
-```
-
-Before claiming closure-grade:
-
-```bash
-python3 scripts/statedd_audit.py
-```
-
-Before leaving bootstrap:
-
-```bash
-python3 scripts/check_state_docs.py --bootstrap-gate
-```
-
-If the bootstrap gate fails, keep the repo in `bootstrap` and fix the reported baseline gaps instead of claiming operating mode.
-
-## What not to do
-
-- Do not treat chat memory as repo truth.
-- Do not accept screenshots without runtime identity proof.
-- Do not turn a failed search into "never existed".
-- Do not let `NEXT_ACTIONS.md` become a long backlog.
-- Do not switch to `operating` until the baseline is proven.
+The handoff must distinguish implemented, locally validated, remote, CI, runtime,
+closure-grade, and human-accepted truth. User-facing work also needs runtime
+identity and browser evidence. A local pass is not a remote or CI pass. Run
+`python3 scripts/check_state_docs.py --bootstrap-gate` before switching from
+bootstrap to operating.

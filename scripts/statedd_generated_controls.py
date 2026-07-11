@@ -1,4 +1,16 @@
-# Coding Agent Startup Prompt
+#!/usr/bin/env python3
+"""Render generated coding-agent controls from one canonical source.
+
+Downstream startup prompts are derived from this module.  The repository copy
+is checked for byte-for-byte equality so prompt drift cannot create a second
+coding-agent authority.
+"""
+
+from __future__ import annotations
+
+
+def render_coding_agent_startup_prompt() -> str:
+    return """# Coding Agent Startup Prompt
 
 StateDD is an agent-operated repository workflow. Humans provide project intent,
 select profiles and permissions, and review evidence. Coding agents read
@@ -31,3 +43,4 @@ every session with current state, verification results, risks, absolute evidence
 paths, and the next action using `scripts/statedd_handoff.py`. A remote push is
 never implied by a context file or a local permit; it requires the explicit
 remote-mutation path and operator authorization.
+"""

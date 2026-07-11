@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+from statedd_generated_controls import render_coding_agent_startup_prompt
 
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
@@ -803,7 +804,7 @@ gates; they do not define this project's product behavior.
 
 ## Start
 
-1. Read `AGENTS.md`, then its five-file read order.
+1. Read `AGENTS.md` and follow its declared read order.
 2. Replace bootstrap unknowns with observed project/runtime truth.
 3. Create a real queue linked to `BACKLOG.md`.
 4. Run `python3 scripts/check_state_docs.py --bootstrap-gate` before switching
@@ -814,7 +815,7 @@ gates; they do not define this project's product behavior.
 ```bash
 python3 scripts/check_state_docs.py
 python3 scripts/statedd_validate_schema.py
-python3 scripts/statedd_quality_gate.py --gate-level 1
+python3 scripts/statedd_quality_gate.py --gate-level 2
 ```
 
 ## Git Safety
@@ -832,26 +833,6 @@ diagnosis only until repair and an explicit `--restart-session` succeeds.
 `STATEDD_ASSETS.json` records the exact workflow files installed for this
 profile. Template-maintenance tests, fixtures, evidence, incidents, and release
 history are intentionally excluded.
-"""
-
-
-def render_coding_agent_startup_prompt() -> str:
-    return """# Coding Agent Start
-
-Read `AGENTS.md` and its declared read order. Treat `PROJECT_STATE.yaml` as
-canonical current truth, keep `NEXT_ACTIONS.md` open-only, and load backlog,
-history, inventory, or evidence only when the task needs them.
-
-In bootstrap, investigate before implementing and keep unknowns explicit. Before
-editing an existing Git repository, run:
-
-`python3 scripts/statedd_git_safety_check.py --mode normal_branch`
-
-That single transaction must pass its ownership, real-write, fsck, and fetch
-checks. Failure means read-only diagnosis until repair and explicit restart.
-Containers and independent agents use full clones. Worktrees are explicit
-trusted-local same-identity opt-in. Then take one coherent slice, verify the
-relevant truth boundary, update live state, and end with a precise handoff.
 """
 
 
@@ -874,7 +855,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.13"
-      - run: python3 scripts/statedd_quality_gate.py --gate-level 1
+      - run: python3 scripts/statedd_quality_gate.py --gate-level 2
 """
 
 
@@ -1565,7 +1546,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Next:")
         print("1. Read README.md and AGENTS.md")
         print("2. Fill bootstrap truth and create a real backlog-linked queue")
-        print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 1")
+        print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 2")
         print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before operating mode")
         return 0
 
@@ -1627,7 +1608,7 @@ def main(argv: list[str] | None = None) -> int:
     print("Next:")
     print("1. Read AGENTS.md and review PROJECT_STATE.yaml against the real repo")
     print("2. Resolve inherited contradictions and fill the backlog-linked queue")
-    print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 1")
+    print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 2")
     print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before operating mode")
     return 0
 
