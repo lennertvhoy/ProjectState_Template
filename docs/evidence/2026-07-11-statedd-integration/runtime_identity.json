@@ -5,7 +5,7 @@
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "3bacef6880c82d5b188527bfac636147bfb895bf",
+  "git_head": "15aae0aa95cce21e602653ca9eae6b76267c4853",
   "in_container": false,
   "kernel": "7.1.3-200.fc44.x86_64",
   "limits": [],
@@ -14,7 +14,7 @@
   "python": "3.14.6",
   "repo": {
     "branch": "bl-statedd-integration-001",
-    "head": "3bacef6880c82d5b188527bfac636147bfb895bf",
+    "head": "15aae0aa95cce21e602653ca9eae6b76267c4853",
     "path": ".",
     "status_porcelain": "",
     "worktree_clean": true
