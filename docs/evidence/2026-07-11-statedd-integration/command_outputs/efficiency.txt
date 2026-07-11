@@ -12,10 +12,7 @@ Budget file: EFFICIENCY_BUDGET.yaml
   startup_estimated_tokens: 5755
   token_estimator: utf8_bytes_div_4_ceiling
   footprint_scope: repository
-  footprint_files: 282
-  footprint_bytes: 1868448
+  footprint_files: 281
+  footprint_bytes: 1919964
 
-## evidence_bundle
-  [ERROR] Evidence folder 2026-07-11-statedd-integration has 16 files, max 15  (docs/evidence/2026-07-11-statedd-integration)
-
-Summary: 1 error(s), 0 warning(s)
+✅ All efficiency checks passed

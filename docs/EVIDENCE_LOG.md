@@ -30,6 +30,25 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-07-11-003: Integrated lifecycle and Git-safety slice
+
+- File: docs/evidence/2026-07-11-statedd-integration/README.md
+- File: docs/evidence/2026-07-11-statedd-integration/manifest.json
+- File: docs/metrics/profile_metrics.json
+- Title: BL-STATEDD-INTEGRATION-001 local integration evidence
+- Source/System: test | log | state_update
+- Action: Integrated the PR #6 correctness architecture with the PR #7 Git-safety and coding-agent workflow, then ran the authoritative local gates and strict evidence checks.
+- Shows:
+  - declarative profile and v2 lifecycle authorities remain active
+  - centralized Git-safety and clone-default agent isolation are regression-covered
+  - structured bootstrap, isolated-agent integration, profile conformance, and strict evidence pass locally
+  - remote branch, GitHub PR, CI, license ownership, benchmark superiority, and human acceptance remain unproven
+- Proves:
+  - local implementation and validation truth for the integration slice
+- Type: test
+- as_of: 2026-07-11T18:30:00+02:00
+- Notes: Proof head is immutable in the evidence README; the final PR head is mutable remote handoff authority.
+
 ## EV-2026-07-07-001: Template logic-hole repair failure scan (BL-SANITY-002)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md

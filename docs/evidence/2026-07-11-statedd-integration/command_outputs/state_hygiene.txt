@@ -30,19 +30,7 @@ DOCUMENTATION HYGIENE CHECK
   ✅ All checks passed
 
 📄 schema validation
-  ❌ FAIL docs/evidence/2026-07-11-statedd-integration/README.md
-  ❌     - $: missing required heading '## Claims'
-  ❌     - $: missing required heading '## Verification Log'
-  ❌     - $: missing required heading '## Closure State'
-  ❌     - $: missing required heading '## Human Override'
-  ❌     - $: missing required heading '## Risks / What Remains Partial'
-  ❌     - $: missing required marker '**Date:**'
-  ❌     - $: missing required marker '**Agent:**'
-  ❌     - $: missing required marker '**HEAD:**'
-  ❌     - $: missing required marker 'Claim:'
-  ❌     - $: missing required marker 'Evidence:'
-  ❌     - $: missing required marker 'Human override used:'
-  ❌ FAILED: 11 schema issue(s) found
+  ✅ All checks passed
 
 📄 README.md
   ✅ All checks passed
@@ -54,19 +42,4 @@ DOCUMENTATION HYGIENE CHECK
   ✅ All checks passed
 
 ============================================================
-FAILED: 13 issue(s) found
-
-Summary:
-  - schema_validation: FAIL docs/evidence/2026-07-11-statedd-integration/README.md
-  - schema_validation:     - $: missing required heading '## Claims'
-  - schema_validation:     - $: missing required heading '## Verification Log'
-  - schema_validation:     - $: missing required heading '## Closure State'
-  - schema_validation:     - $: missing required heading '## Human Override'
-  - schema_validation:     - $: missing required heading '## Risks / What Remains Partial'
-  - schema_validation:     - $: missing required marker '**Date:**'
-  - schema_validation:     - $: missing required marker '**Agent:**'
-  - schema_validation:     - $: missing required marker '**HEAD:**'
-  - schema_validation:     - $: missing required marker 'Claim:'
-  - schema_validation:     - $: missing required marker 'Evidence:'
-  - schema_validation:     - $: missing required marker 'Human override used:'
-  - schema_validation: FAILED: 11 schema issue(s) found
+PASSED: All state documentation checks passed

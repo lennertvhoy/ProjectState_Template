@@ -8,7 +8,7 @@
 
 ### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration
 Owner: integration agent
-Next: port PR #7 Git-safety and golden-path capabilities onto PR #6's lifecycle/profile/gate/evidence base, then repair the confirmed P0 regressions and complete the bootstrap journey proof.
+Next: run the remote-mutation safety preflight, push the clean locally validated branch, open one draft PR, and observe branch-head versus merge-candidate CI separately.
 Exit: authoritative local gates, generated-profile conformance, strict evidence, clean pushed branch, and a draft PR exist with branch-head and merge-candidate CI reported separately.
 
 ## Source candidates

@@ -31,19 +31,19 @@ evidence_folder
 
 evidence_readme
   ✅ Evidence README exists: docs/evidence/2026-07-11-statedd-integration/README.md
-  ⚠️ Evidence README missing expected marker: Claims
+  ✅ Evidence README contains branch/head and claim markers
 
 evidence_size
-  ✅ Evidence folder has 16 files
+  ✅ Evidence folder has 15 files
 
 worktree_clean
-  ❌ Unclassified dirty files in agent context: docs/evidence/2026-07-11-statedd-integration/
+  ✅ Worktree is clean
 
 worktree_guard
   ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
 
 branch_head_recorded
-  ✅ HEAD b901418 recorded in evidence README
+  ✅ HEAD 2644f43 not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
   ✅ Branch 'bl-statedd-integration-001' recorded in evidence README
 
 user_facing_evidence
@@ -51,21 +51,10 @@ user_facing_evidence
 
 runtime_identity
   ✅ runtime_identity.json schema: statedd.runtime_identity.v2
-  ❌ runtime.required=false but user-facing changes or visual/browser evidence indicate runtime proof is required
+  ✅ Runtime marked not required for this evidence slice
 
 schema_validation
-  ❌ StateDD schema validation failed (1): FAIL docs/evidence/2026-07-11-statedd-integration/README.md
-    - $: missing required heading '## Claims'
-    - $: missing required heading '## Verification Log'
-    - $: missing required heading '## Closure State'
-    - $: missing required heading '## Human Override'
-    - $: missing required heading '## Risks / What Remains Partial'
-    - $: missing required marker '**Date:**'
-    - $: missing required marker '**Agent:**'
-    - $: missing required marker '**HEAD:**'
-    - $: missing required marker 'Claim:'
-    - $: missing required marker 'Evidence:'
-    - $: missing required marker 'Human 
+  ✅ StateDD schema validation passed
 
 schema_ownership
   ✅ No schema file changes detected
@@ -75,10 +64,10 @@ tests_recorded
 
 evidence_manifest
   ✅ manifest.json schema: statedd.evidence_manifest.v1
-  ❌ manifest.json redaction status is unchecked
+  ✅ manifest.json redaction status: checked_with_limits
 
 browser_verification
-  ❌ Browser verification required (visual or browser artifacts present in evidence folder) but browser_verification.json is missing
+  ✅ Browser verification not required for this slice
 
 anti_brittleness_review
   ✅ Anti-brittleness review not required by latest evidence markers
@@ -87,5 +76,5 @@ human_override
   ✅ No human override declared
 
 ============================================================
-Summary: 31 pass, 1 warn, 5 fail, 0 override
-AUDIT RESULT: FAIL — local readiness not met
+Summary: 37 pass, 0 warn, 0 fail, 0 override
+AUDIT RESULT: PASS — local readiness only; remote closure not checked

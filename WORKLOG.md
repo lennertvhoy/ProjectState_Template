@@ -830,3 +830,37 @@
 
 ### Next
 - Commit this state opening, then port PR #7 semantically without downgrading PR #6 architecture.
+
+## 2026-07-11 - Locally validate BL-STATEDD-INTEGRATION-001
+
+**Type:** integration_slice_local_validation
+**Status:** VALIDATED_LOCALLY_REMOTE_PENDING
+**Git Head:** 2644f438d40e38f87adc3ca52e678452233430d3
+**Proof Head:** 437fc01d589a72a42aa75b12357ae49586302f34
+**Worktree:** clean before publication
+
+### What changed
+- Ported PR #7 Git-safety, mutation permits, clone-default agent isolation,
+  agent-first startup workflow, delivery policy, and structured golden-path
+  regression onto PR #6's declarative profile/lifecycle/gate/evidence base.
+- Repaired the confirmed quality-gate aggregation, root-symlink, profile-lock,
+  CI-subject, and bootstrap-coverage regressions.
+- Added structured bootstrap application, complete isolation/integration proof,
+  v2 profile conformance, strict evidence, and local finalizer boundaries.
+
+### Verification
+- `python3 -m pytest scripts/ -q`: 289 tests passed.
+- `python3 -m pytest schemas/examples/ -q`: 5 tests passed.
+- `python3 scripts/test_golden_path.py`: passed.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose`: passed.
+- `python3 scripts/statedd_audit.py --strict --evidence-folder docs/evidence/2026-07-11-statedd-integration`: passed.
+- All profile metrics reproduce from the recorded proof head; strict evidence and runtime-not-applicable checks pass.
+
+### Evidence
+- `docs/evidence/2026-07-11-statedd-integration/README.md`
+- `docs/evidence/2026-07-11-statedd-integration/manifest.json`
+- `docs/metrics/profile_metrics.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-11-003`
+
+### Next
+- Run remote-mutation safety preflight, push the branch, open one draft PR, and observe automatic CI without reruns.

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T17:00:00+02:00
+  updated_at: 2026-07-11T18:30:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -81,7 +81,7 @@ current_state:
       notes: |
         Requires non-trivial fix/feature slices to name the durable invariant
         and review brittle easy-way-out patterns.
-    evidence: docs/evidence/2026-07-11-maximum-value-correctness/README.md
+    evidence: docs/evidence/2026-07-11-statedd-integration/README.md
     docs:
       - QUALITY_FIREWALL.md
       - FAILURE_TAXONOMY.md
@@ -133,10 +133,12 @@ current_state:
       - verified copyright owner is not proven
       - benchmark superiority is not proven
       - branch-head and PR merge-candidate CI are not yet proven for the integration branch
+      - remote branch and draft PR publication are not yet proven
+      - local level-2 quality gate, strict audit, and complete golden-path regression pass
 
   closure_blockers:
-    - finalization-only metrics, evidence, and state are not yet committed or pushed
-    - the repaired branch has no pull request or exact-head GitHub Actions result
+    - the integration branch has not yet been pushed or opened as a draft pull request
+    - the branch has no exact-head GitHub Actions result
     - the remote finalizer has not re-queried PR, CI, merge state, and remote branch agreement
     - human acceptance remains unproven
 
@@ -160,13 +162,13 @@ current_state:
       status: observed
       captured_at: 2026-07-11T17:00:00+02:00
       last_verified_branch: bl-statedd-integration-001
-      last_verified_head: 84a67100fee324f6716a5c966500b0c0eeb59699
-      last_verified_worktree_status: dirty_state_opening
+      last_verified_head: 2644f438d40e38f87adc3ca52e678452233430d3
+      last_verified_worktree_status: clean
       notes: |
-        The integration branch is a fresh full clone based on PR #6. State-opening
-        changes are intentionally local until the integration contract is reviewed
-        and committed. Remote branch, PR, CI, remote-finalizer, and human-acceptance
-        truth are not proven for this slice.
+        The integration branch is a fresh full clone based on PR #6. The integrated
+        implementation, metrics, evidence, and state are locally committed and the
+        level-2 quality gate and strict audit pass. Remote branch, PR, CI,
+        remote-finalizer, and human-acceptance truth are not proven for this slice.
 
   parallel_agent_support:
     status: observed
