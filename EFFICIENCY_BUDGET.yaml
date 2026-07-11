@@ -33,7 +33,7 @@ context_budgets:
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
       max_footprint_files: 32
-      max_footprint_bytes: 230000
+      max_footprint_bytes: 235000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000

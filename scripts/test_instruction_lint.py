@@ -2,12 +2,11 @@
 """Tests for statedd_instruction_lint.py"""
 
 import tempfile
-import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from statedd_instruction_lint import InstructionLinter, SmellType, Severity
+from statedd_instruction_lint import InstructionLinter, SmellType
 
 
 def test_context_bloat():

@@ -332,14 +332,11 @@ class ClosureCheck:
             ("Efficiency", self.check_efficiency),
         ]
 
-        all_passed = True
         for name, check in checks:
             try:
-                if not check():
-                    all_passed = False
+                check()
             except Exception as e:
                 self.failures.append(f"{name} check crashed: {e}")
-                all_passed = False
 
         print("\n" + "=" * 50)
         if self.warnings:

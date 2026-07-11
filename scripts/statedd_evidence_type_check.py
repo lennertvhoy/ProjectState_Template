@@ -11,12 +11,11 @@ Ensures each user-facing change has the appropriate evidence type:
 """
 
 import argparse
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
@@ -226,7 +225,6 @@ class EvidenceTypeCheck:
         required = REQUIRED_EVIDENCE.get(change.type, [EvidenceType.NONE])
         print(f"📋 Required evidence: {[e.value for e in required]}")
 
-        all_present = True
         for ev_type in required:
             if ev_type == EvidenceType.NONE:
                 continue
@@ -235,7 +233,6 @@ class EvidenceTypeCheck:
             print(f"  {status} {ev_type.value}")
             if not exists:
                 self.missing.append(ev_type.value)
-                all_present = False
 
         print("\n" + "=" * 50)
         if self.missing:

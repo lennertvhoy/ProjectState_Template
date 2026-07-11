@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from statedd_git_safety_session import sanitized_git_environment
+
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_IDENTITY_FILE = "runtime_identity.json"
@@ -24,10 +26,12 @@ BROWSER_VERIFICATION_SCHEMA = "statedd.browser_verification.v1"
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
+    command = ["git", "--no-optional-locks", *args[1:]] if args and args[0] == "git" else args
     try:
         completed = subprocess.run(
-            args,
+            command,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,

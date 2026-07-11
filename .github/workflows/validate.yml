@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
@@ -23,11 +25,14 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install pyyaml
+          python3 -m pip install -r requirements-dev.txt
 
       - name: Compile Python scripts
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_git_safety_check.py scripts/statedd_git_safety_session.py scripts/statedd_worktree_guard.py scripts/statedd_agent_worktree.py scripts/statedd_brittleness_check.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/statedd_browser_verify.py scripts/statedd_remote_closure_finalizer.py scripts/statedd_efficiency_check.py scripts/statedd_post_merge_verify.py scripts/test_init_template.py scripts/test_git_safety_check.py scripts/test_worktree_guard.py scripts/test_agent_worktree.py scripts/test_brittleness_check.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py scripts/test_browser_verification.py scripts/test_remote_closure_finalizer.py scripts/test_efficiency_check.py scripts/test_post_merge_verify.py scripts/test_check_state_docs.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+          python3 -m compileall -q scripts schemas/examples
+
+      - name: Run static analysis
+        run: ruff check scripts
 
       - name: Validate root docs
         run: |

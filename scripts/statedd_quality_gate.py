@@ -109,7 +109,10 @@ class QualityGate:
             code, out, err = self.run_cmd(cmd)
             if code == 0:
                 print(f"  ✓ {cmd[0]} passed")
-            elif code != -1:
+            elif code == -1:
+                self.failures.append(f"{cmd[0]} is declared but unavailable: {err or 'runner not found'}")
+                passed = False
+            else:
                 self.failures.append(f"{cmd[0]} failed: {err or out}")
                 passed = False
         return passed
@@ -206,14 +209,11 @@ class QualityGate:
             ("Efficiency", self.check_efficiency),
         ]
 
-        all_passed = True
         for name, check in checks:
             try:
-                if not check():
-                    all_passed = False
+                check()
             except Exception as e:
                 self.failures.append(f"{name} check crashed: {e}")
-                all_passed = False
 
         print("\n" + "=" * 50)
         if self.warnings:

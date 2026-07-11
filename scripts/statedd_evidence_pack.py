@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from statedd_git_safety_session import MutationBlocked, require_mutation_permit
+from statedd_git_safety_session import MutationBlocked, require_mutation_permit, sanitized_git_environment
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -94,10 +94,12 @@ SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
+    command = ["git", "--no-optional-locks", *args[1:]] if args and args[0] == "git" else args
     try:
         completed = subprocess.run(
-            args,
+            command,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,

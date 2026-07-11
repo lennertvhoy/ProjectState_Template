@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T14:15:33+02:00
+  updated_at: 2026-07-11T16:10:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -15,14 +15,10 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - BL-SANITY-002 template logic-hole repair is closure-grade and CI-verified on PR #4; merge pending
-      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is closure-grade and CI-verified on PR #4; merge pending
-      - BL-PARALLEL-001 is locally implemented and validated; remote closure is pending
-      - BL-CONTEXT-001 implementation proof head 8840a3c is CI-verified on PR #5; the final state head is governed by the remote closure finalizer
-      - BL-BROWSER-002 concrete browser automation provider integration follows the generator repair
-      - downstream upgrade semantic merges of customized workflow files not yet supported
-      - BL-GIT-ISOLATION-001 is an open P0 and supersedes worktree-default safety claims until final-head CI and remote closure pass
+      - exact-head CI for the current local slice is intentionally skipped because GitHub Actions quota is exhausted
+      - human acceptance and comparative benchmark superiority remain unproven
+      - verified legal copyright owner is not known; the license placeholder must not be guessed
+      - downstream upgrade semantic merges of customized workflow files are not yet supported
 
 verification_labels:
   observed: verified directly in the current session
@@ -70,22 +66,23 @@ current_state:
         Enforces the Efficiency Invariant: instruction size, active queues,
         evidence bundles, and gate-level metadata must stay within declared budgets.
     worktree_guard:
-      status: invalid_for_mutation_authorization
+      status: frontend_only
       script: scripts/statedd_worktree_guard.py
       notes: |
         The current guard classifies dirt and topology but does not prove Git
         common-directory ownership, actual writability, runtime identity, fsck,
-        or mandatory synchronization. It is not mutation authorization.
+        and mandatory synchronization to the centralized safety decision. It is
+        not mutation authorization by itself.
     git_safety_preflight:
-      status: missing_p0_blocker
-      planned_script: scripts/statedd_git_safety_check.py
-      planned_schema: schemas/git_safety_report.schema.json
+      status: implemented_local_unverified
+      script: scripts/statedd_git_safety_check.py
+      schema: schemas/git_safety_report.schema.json
       permitted_modes:
         - normal_branch
         - worktree
         - clone
         - read_only
-      policy: worktree creation disabled by default; clone required for containers and independent agents
+      policy: worktree creation disabled by default; clone required for containers and independent agents; remote mutation requires an explicit operation class and operator authorization
     anti_brittleness_gate:
       status: active
       guide: ANTI_BRITTLENESS_GUARD.md
@@ -131,11 +128,28 @@ current_state:
     - BL-GIT-ISOLATION-001
 
   closure_blockers:
-    - centralized Git safety preflight and schema are missing
-    - default worktree creation and automatic force cleanup paths remain reachable
-    - exact-event and adjacent regression suite is missing
-    - generated profiles do not carry the repaired isolation policy
-    - final pushed PR head and latest GitHub Actions run do not yet prove the repair
+    - this local slice is not pushed and has no exact-head CI result
+    - PR #6 remains a separate reported draft at remote head 84a67100fee324f6716a5c966500b0c0eeb59699
+    - local validation and generated-profile conformance are still pending for the current uncommitted edits
+    - verified legal copyright owner is missing from LICENSE
+    - benchmark superiority and human acceptance are not proven
+
+  candidate_claim_boundary:
+    implemented: true
+    validated_locally: yes_local_level_2_proof
+    pushed: false
+    pr_updated: false
+    ci_verified: false
+    ci_override: human-approved-actions-quota-exhausted
+    closure_grade: false
+    human_accepted: false
+    benchmark_superiority: not_proven
+    remote_pr_last_observed:
+      number: 6
+      status: open_draft
+      head: 84a67100fee324f6716a5c966500b0c0eeb59699
+      source: user_supplied_review_report
+    license_owner: not_verified
 
   last_live_canary:
     status: not_applicable_for_template_root
@@ -158,30 +172,38 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-07-11T14:15:33+02:00
+      captured_at: 2026-07-11T16:10:00+02:00
       last_verified_branch: bl-git-isolation-001
-      last_verified_head: c2fe7b25625cc855a47deff721251cdb5d4141b2
-      last_verified_worktree_status: clean
+      last_verified_head: 114897bc4662748bb20f3ca568e4d3015d87353d
+      last_verified_worktree_status: dirty_uncommitted_slice
+      remote_branch: bl-git-isolation-001
+      remote_head_last_observed: 114897bc4662748bb20f3ca568e4d3015d87353d
+      local_ahead_count: 4
+      local_behind_count: 0
+      remote_truth_status: observed_for_current_branch
+      local_commit_sequence: scoped_local_only_commits_after_proof_head
+      final_local_head: recorded_by_handoff_not_embedded_in_self_describing_state
       notes: |
         The incident branch started clean from verified origin/main. The main
         checkout and five existing linked worktrees share .git as their common
         directory; current metadata ownership matched effective UID/GID at intake.
-        This manual observation predates the centralized executable preflight and
-        is not closure proof.
+        This snapshot is local repository truth only. It is not pushed closure,
+        GitHub-visible truth, CI proof, or human acceptance.
 
   parallel_agent_support:
-    status: invalid_worktree_default_disabled
+    status: hardened_local_unverified
     orchestrator: scripts/statedd_agent_worktree.py
     reservation_ref_prefix: refs/statedd/reservations/
     worktree_dir: .worktrees
     agent_context_file: .statedd/agent.context
-    agent_context_schema: statedd.agent_context.v1
+    agent_context_schema: statedd.agent_context.v2
     notes: |
-      The prior worktree-default claim is superseded by BL-GIT-ISOLATION-001.
       Linked worktrees separate working trees but share the common object database.
       New managed worktree creation is disabled until explicit same-machine and
       same-identity checks pass; containers and independent agents require separate
-      full clones. Existing worktrees are report-only and must not be force-cleaned.
+      full clones. Context ownership is closed-world and reservation-bound. Remote
+      mutation is a separate explicit authorization path. Existing worktrees are
+      report-only and must not be force-cleaned.
 
   operating_mode:
     status: observed
@@ -404,14 +426,14 @@ current_state:
         path: scripts/statedd_worktree_guard.py
         summary: Retains dirty-file classification and closure reporting while delegating start-slice mutation authority to the centralized Git safety preflight.
       git_safety_preflight:
-        status: implemented_unvalidated
+        status: implemented_local_unverified
         path: scripts/statedd_git_safety_check.py
         schema: schemas/git_safety_report.schema.json
-        summary: Proves requested/canonical repo identity, Git/common dirs, UID/GID, recursive metadata safety, real write probes, fsck, mandatory fetch, isolation policy, and external read-only latching.
+        summary: Proves requested/canonical repo identity, Git/common dirs, UID/GID, recursive metadata safety, real write probes, fsck, mandatory fetch, isolation policy, typed operation class, and external read-only latching.
       agent_worktree_orchestrator:
-        status: implemented_unvalidated
+        status: implemented_local_unverified
         path: scripts/statedd_agent_worktree.py
-        summary: Defaults independent agents to full clones; requires explicit trusted-local opt-in for linked worktrees; retains stale/dirty isolation state for report-only human cleanup.
+        summary: Defaults independent agents to full clones; requires explicit trusted-local opt-in for linked worktrees; validates closed-world context ownership; blocks remote push without explicit authorization; retains stale/dirty isolation state for report-only human cleanup.
       brittleness_check:
         status: observed
         path: scripts/statedd_brittleness_check.py
@@ -496,9 +518,9 @@ active_problems:
       local_worktree: observed_clean_at_intake
       git_common_directory: observed_shared_by_six_worktrees
       runtime_actor: not_proven
-      local_implementation: not_started
-      remote_branch: not_proven_for_repair
-      ci: not_proven_for_repair
+      local_implementation: implemented_uncommitted
+      remote_branch: not_pushed_for_current_slice
+      ci: intentionally_skipped_actions_quota_exhausted
       user_accepted: false
     acceptance_criteria:
       - centralized schema-valid Git safety preflight proves identity, metadata safety, fsck, synchronization, and isolation mode

@@ -361,7 +361,7 @@ class RemoteClosureFinalizer:
         if not self.remote_url:
             raise RuntimeError("Could not determine origin remote URL")
 
-        print(f"\nLocal truth:")
+        print("\nLocal truth:")
         print(f"  branch: {self.branch}")
         print(f"  head:   {self.local_head}")
         print(f"  remote: {self.remote_url}")
@@ -384,7 +384,7 @@ class RemoteClosureFinalizer:
                 f"Remote branch head ({remote_sha}) does not match local HEAD ({self.local_head})"
             )
         elif self.verbose:
-            print(f"  ✓ remote branch contains local HEAD")
+            print("  ✓ remote branch contains local HEAD")
 
     def _resolve_owner_repo(self) -> None:
         parsed = parse_remote_url(self.remote_url)
@@ -434,7 +434,7 @@ class RemoteClosureFinalizer:
         self._find_actions_run(commit.get("checkSuites", {}).get("nodes", []))
         self.merge_state = pr.get("mergeStateStatus")
 
-        print(f"\nGitHub truth:")
+        print("\nGitHub truth:")
         print(f"  PR:     #{pr.get('number')} — {pr.get('url')}")
         print(f"  PR head: {pr.get('headRefOid')}")
         print(f"  CI:     {self.ci_state or 'no checks'}")
