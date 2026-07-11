@@ -47,7 +47,7 @@ HEAD_LINE_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
 AUTHORITATIVE_WORKFLOW_CANDIDATES = (
     Path(".github/workflows/validate.yml"),
@@ -203,10 +203,14 @@ def load_agent_context(path: Path) -> dict:
     data = load_json_file(path)
     if not isinstance(data, dict) or data.get("schema") != AGENT_CONTEXT_SCHEMA:
         raise ContractError("Agent context has an unsupported schema")
-    required = ("agent_id", "slice_id", "reservation_ref", "worktree_path", "branch", "base_branch")
+    required = ("agent_id", "slice_id", "worktree_path", "branch", "base_branch", "isolation_mode")
     for field_name in required:
         if not isinstance(data.get(field_name), str) or not data[field_name]:
             raise ContractError(f"Agent context field {field_name!r} must be a non-empty string")
+    if not isinstance(data.get("reservation_ref"), str):
+        raise ContractError("Agent context reservation_ref must be a string")
+    if data.get("isolation_mode") == "worktree" and not data["reservation_ref"]:
+        raise ContractError("Worktree agent context requires a reservation ref")
     return data
 
 

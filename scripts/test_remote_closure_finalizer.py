@@ -482,6 +482,29 @@ def test_malformed_agent_context_fails_closed() -> None:
             finalizer.load_agent_context(path)
 
 
+def test_clone_v2_agent_context_is_accepted() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "agent.context"
+        path.write_text(
+            json.dumps(
+                {
+                    "schema": "statedd.agent_context.v2",
+                    "agent_id": "integration-agent",
+                    "slice_id": "BL-STATEDD-INTEGRATION-001",
+                    "reservation_ref": "",
+                    "worktree_path": "/tmp/integration",
+                    "branch": "bl-statedd-integration-001",
+                    "base_branch": "bl-statedd-integration-001",
+                    "isolation_mode": "clone",
+                }
+            ),
+            encoding="utf-8",
+        )
+        context = finalizer.load_agent_context(path)
+        assert context["schema"] == "statedd.agent_context.v2"
+        assert context["reservation_ref"] == ""
+
+
 def test_ci_pending_fails() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
