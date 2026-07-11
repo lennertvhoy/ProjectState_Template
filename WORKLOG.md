@@ -810,3 +810,23 @@
 ### Notes
 - This is local implementation/evidence truth only. Remote branch, PR, exact-head
   CI, finalizer agreement, merge, and human acceptance remain unproven.
+## 2026-07-11 - Open BL-STATEDD-INTEGRATION-001
+
+**Type:** integration_slice_opening
+**Status:** OPEN
+**Git Head:** 84a67100fee324f6716a5c966500b0c0eeb59699
+**Worktree:** clean before state-opening edit
+
+### What changed
+- Opened one superseding integration slice from PR #6's exact head.
+- Recorded PR #6 as the lifecycle/profile/gate/evidence authority and PR #7 as the Git-safety and coding-agent golden-path source candidate.
+- Preserved the original checkout outside this clone and recorded its local repair as reported, not closure-grade truth.
+- Added the mandatory integration failure scan and kept license ownership and benchmark superiority unproven.
+
+### Verification
+- Fresh full clone has an independent Git common directory.
+- Clone-mode Git-safety preflight passed with zero ownership mismatches, fsck pass, synchronization pass, and write probe pass.
+- Branch `bl-statedd-integration-001` points to PR #6 head before state-opening edits.
+
+### Next
+- Commit this state opening, then port PR #7 semantically without downgrading PR #6 architecture.

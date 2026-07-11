@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T14:50:00+02:00
+  updated_at: 2026-07-11T17:00:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -106,7 +106,33 @@ current_state:
       incident notes, fixtures or equivalent artifacts, and regression gates.
 
   open_p0_failures:
-    - BL-MAX-VALUE-001
+    - BL-STATEDD-INTEGRATION-001
+
+  integration_slice:
+    id: BL-STATEDD-INTEGRATION-001
+    status: active
+    branch: bl-statedd-integration-001
+    base_head: 84a67100fee324f6716a5c966500b0c0eeb59699
+    source_candidates:
+      pr_6:
+        branch: bl-max-value-001
+        head: 84a67100fee324f6716a5c966500b0c0eeb59699
+        role: lifecycle_profile_gate_evidence_authority
+        merge_independently: false
+      pr_7:
+        branch: bl-git-isolation-001
+        head: 99f401110d9c5d130e8524d1cca4873649a84cbe
+        role: git_safety_and_coding_agent_golden_path_candidate
+        merge_independently: false
+    original_checkout:
+      path: /home/ff/Documents/Projects/StateDD_Template
+      local_repair: reported
+      read_only_verification: completed_on_current_source_worktree
+      existing_local_changes: preserved_untouched
+    unresolved_boundaries:
+      - verified copyright owner is not proven
+      - benchmark superiority is not proven
+      - branch-head and PR merge-candidate CI are not yet proven for the integration branch
 
   closure_blockers:
     - finalization-only metrics, evidence, and state are not yet committed or pushed
@@ -132,15 +158,15 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-07-11T14:50:00+02:00
-      last_verified_branch: bl-max-value-001
-      last_verified_head: ae851d05aa8113c3cde90d122d1723be123d9e37
-      last_verified_worktree_status: dirty_finalization_only
+      captured_at: 2026-07-11T17:00:00+02:00
+      last_verified_branch: bl-statedd-integration-001
+      last_verified_head: 84a67100fee324f6716a5c966500b0c0eeb59699
+      last_verified_worktree_status: dirty_state_opening
       notes: |
-        The isolated branch contains locally validated implementation proof
-        ae851d05. Canonical metrics and typed evidence reference that proof head
-        and are the only current dirt. The branch is not yet published; PR, CI,
-        merge, remote-finalizer, and human-acceptance truth are not proven.
+        The integration branch is a fresh full clone based on PR #6. State-opening
+        changes are intentionally local until the integration contract is reviewed
+        and committed. Remote branch, PR, CI, remote-finalizer, and human-acceptance
+        truth are not proven for this slice.
 
   parallel_agent_support:
     status: observed
@@ -238,40 +264,35 @@ current_state:
       and managed-asset membership in profiles/catalog.json.
 
 active_problems:
-  - id: BL-MAX-VALUE-001
-    title: Repair merged lifecycle and closure failures; maximize StateDD value per unit of process
+  - id: BL-STATEDD-INTEGRATION-001
+    title: Integrate lifecycle correctness with Git safety and the coding-agent golden path
     severity: P0
-    opened_at: 2026-07-11T09:13:22+02:00
+    opened_at: 2026-07-11T17:00:00+02:00
     source:
-      pull_request: 5
-      review_commit: ace4f3af70d9322d50c5f5b86f8a876bda4b537d
-      merged_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
+      pull_request_candidates:
+        - number: 6
+          head: 84a67100fee324f6716a5c966500b0c0eeb59699
+        - number: 7
+          head: 99f401110d9c5d130e8524d1cca4873649a84cbe
     scope:
-      - upgrade lifecycle and managed-asset ownership
-      - test-suite discovery and aggregation
-      - authoritative local and CI validation entrypoint
-      - initializer and upgrade path confinement
-      - canonical profile and context metrics
-      - exact-head evidence and closure truth
-      - concise whole-template architecture review
-      - controlled benchmark specification and next-slice decision
+      - preserve PR #6 declarative profiles, v2 lifecycle locks, transactional upgrades, confinement, test aggregation, metrics, evidence, and remote closure
+      - port PR #7 Git safety, clone isolation, agent-first docs, standing policy, integration ownership, and golden-path coverage
+      - repair quality-gate, root-symlink, declarative-profile, CI-subject, and bootstrap-coverage regressions
     acceptance_criteria:
-      - current profile definitions determine desired future assets while old manifests remain historical ownership evidence
-      - malformed manifests fail closed; local modifications and removals are reported; apply is transactional and idempotent
-      - every applicable declared test suite runs; failures aggregate; unavailable declared runners fail with actionable output
-      - CI and documented local validation use one authoritative automatically discovered Python suite
-      - symlinked target roots, nested symlinks, absolute managed paths, traversal, unsafe source symlinks, and outside-root writes fail closed
-      - one machine-readable artifact is authoritative for profile and context metrics
-      - exact repaired head, evidence, PR body, remote branch, and GitHub Actions agree before closure-grade is claimed
-      - architecture review records verified strengths, weaknesses, simplifications, decisions, benchmark gaps, dependency order, and non-goals only
-      - exactly one next slice is selected by expected impact, cost, risk reduction, readiness, and measurability
+      - PR #6 lifecycle/profile/gate/evidence invariants remain authoritative
+      - PR #7 Git-safety and golden-path capabilities are ported semantically
+      - all applicable suites execute and unavailable declared runners fail
+      - root and nested symlink escapes fail closed
+      - generated profiles conform to their v2 locks and declared gate levels
+      - complete bootstrap and integration journey is covered by a durable regression
+      - branch, PR, evidence, CI subject, and final handoff use separate truth labels
     truth_boundaries:
       sandbox: observed
-      local_worktree: dirty only with finalization metadata; implementation proof locally validated
+      local_worktree: dirty with state-opening changes before the opening commit
       git_index: clean at slice start
-      local_commit: implementation proof ae851d05aa8113c3cde90d122d1723be123d9e37 exists
+      local_commit: PR #6 base 84a67100fee324f6716a5c966500b0c0eeb59699
       remote_branch: not published
       github_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
-      ci: success on merged main but insufficient for the reopened claims
+      ci: not run for integration branch
       runtime: not applicable for template root
       human_acceptance: not proven

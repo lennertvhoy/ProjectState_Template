@@ -11,7 +11,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-MAX-VALUE-001] Repair the unresolved correctness failures merged through PR #5, align exact-head closure truth, produce one canonical metrics artifact, complete a concise whole-template maximum-value review, specify controlled benchmarks, and select exactly one evidence-backed next slice.
+- [BL-STATEDD-INTEGRATION-001] Integrate PR #6's lifecycle/profile/gate/evidence correctness with PR #7's Git-safety and coding-agent golden path without downgrading either branch's strongest invariants.
 
 ## NEXT
 

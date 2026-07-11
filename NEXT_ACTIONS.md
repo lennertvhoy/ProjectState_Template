@@ -1,15 +1,21 @@
 # NEXT_ACTIONS - Active Execution Queue
 
 **Updated At:** 2026-07-11
-**Execution Mode:** template-maintenance
+**Execution Mode:** quality_freeze
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-MAX-VALUE-001] Maximum-Value Correctness and Lifecycle Repair
-Owner: principal implementation agent; independent reviewers are read-only
-Next: commit finalization-only metrics/evidence/state, push the isolated branch, open or update a draft PR, then require exact-head GitHub Actions and the remote finalizer before any closure claim.
-Exit: all acceptance criteria in PROJECT_STATE.yaml pass on one pushed PR head with GitHub-visible CI; no merge or human acceptance is implied
+### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration
+Owner: integration agent
+Next: port PR #7 Git-safety and golden-path capabilities onto PR #6's lifecycle/profile/gate/evidence base, then repair the confirmed P0 regressions and complete the bootstrap journey proof.
+Exit: authoritative local gates, generated-profile conformance, strict evidence, clean pushed branch, and a draft PR exist with branch-head and merge-candidate CI reported separately.
+
+## Source candidates
+
+- PR #6 / `bl-max-value-001`: `84a67100fee324f6716a5c966500b0c0eeb59699`; lifecycle/profile/gate/evidence authority.
+- PR #7 / `bl-git-isolation-001`: `99f401110d9c5d130e8524d1cca4873649a84cbe`; Git-safety and coding-agent golden-path candidate.
+- Neither source PR is independently merge-ready; license ownership and benchmark superiority remain unproven.
 
 ## Queue Rules
 
