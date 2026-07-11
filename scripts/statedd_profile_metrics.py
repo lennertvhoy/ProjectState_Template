@@ -112,7 +112,11 @@ def normalized_bytes(path: Path, target: Path) -> bytes:
     return text.replace(str(target), "<TARGET_ROOT>").encode("utf-8")
 
 
-def normalized_file_blobs(files: list[Path], target: Path) -> dict[str, bytes]:
+def normalized_file_blobs(
+    files: list[Path],
+    target: Path,
+    template_commit: str,
+) -> dict[str, bytes]:
     """Normalize path-bearing content and its lifecycle hashes as one unit."""
     blobs = {
         path.relative_to(target).as_posix(): normalized_bytes(path, target)
@@ -122,6 +126,10 @@ def normalized_file_blobs(files: list[Path], target: Path) -> dict[str, bytes]:
     if manifest_blob is None:
         return blobs
     manifest = json.loads(manifest_blob.decode("utf-8"))
+    # Profile generation intentionally refuses to label a dirty source tree with
+    # HEAD. Metrics are different: they measure a caller-proven commit and must
+    # not drift when unrelated finalization artifacts make the worktree dirty.
+    manifest["template_commit"] = template_commit
     for record in manifest.get("managed_assets", []):
         rel = record.get("path") if isinstance(record, dict) else None
         if not isinstance(rel, str) or rel == "STATEDD_ASSETS.json" or rel not in blobs:
@@ -198,6 +206,7 @@ def measure_profile(
     policies: dict[str, list[str]],
     epoch: int,
     encoding: Any | None,
+    template_commit: str,
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="statedd-profile-metrics-") as raw_tmp:
         target = Path(raw_tmp) / profile
@@ -238,7 +247,7 @@ def measure_profile(
             raise MetricsError(f"Generated profile {profile} failed its required gate: {detail}")
 
         files = counted_files(target)
-        blob_map = normalized_file_blobs(files, target)
+        blob_map = normalized_file_blobs(files, target, template_commit)
         blobs = [blob_map[path.relative_to(target).as_posix()] for path in files]
         estimated, actual = token_metrics(blobs, encoding)
         contexts: dict[str, Any] = {}
@@ -294,7 +303,7 @@ def build_metrics(root: Path, *, template_commit: str, epoch: int) -> dict[str, 
     tree_hash, source_inputs = source_tree_digest(root, catalog)
     provenance = prove_source_commit(root, template_commit, source_inputs)
     profiles = [
-        measure_profile(root, profile, policies, epoch, encoding)
+        measure_profile(root, profile, policies, epoch, encoding, template_commit)
         for profile in catalog["profiles"]
     ]
     generated_at = __import__("datetime").datetime.fromtimestamp(

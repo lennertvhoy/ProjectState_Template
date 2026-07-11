@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from statedd_profile_metrics import DEFAULT_SOURCE_DATE_EPOCH, build_metrics
+import json
+from pathlib import Path
+
+from statedd_profile_metrics import (
+    DEFAULT_SOURCE_DATE_EPOCH,
+    build_metrics,
+    normalized_file_blobs,
+)
 from statedd_contracts import load_profile_catalog
 
 
 def test_profile_metrics_are_deterministic_and_validate_every_profile() -> None:
-    from pathlib import Path
-
     root = Path(__file__).resolve().parents[1]
     import subprocess
 
@@ -25,3 +30,31 @@ def test_profile_metrics_are_deterministic_and_validate_every_profile() -> None:
     assert all(item["quality_gate"]["result"] == "pass" for item in first["profiles"])
     assert all("initial_orientation" in item["contexts"] for item in first["profiles"])
     assert all(item["startup_file_count"] == 4 for item in first["profiles"])
+
+
+def test_profile_metrics_normalize_dirty_generated_lock_to_proof_commit(tmp_path: Path) -> None:
+    target = tmp_path / "profile"
+    target.mkdir()
+    managed = target / "AGENTS.md"
+    managed.write_text("# Agent contract\n", encoding="utf-8")
+    lock = target / "STATEDD_ASSETS.json"
+    lock.write_text(
+        json.dumps(
+            {
+                "template_commit": None,
+                "managed_assets": [
+                    {
+                        "path": "AGENTS.md",
+                        "base_sha256": "0" * 64,
+                        "installed_sha256": "0" * 64,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    proof_commit = "a" * 40
+    blobs = normalized_file_blobs([managed, lock], target, proof_commit)
+    normalized_lock = json.loads(blobs["STATEDD_ASSETS.json"].decode("utf-8"))
+    assert normalized_lock["template_commit"] == proof_commit
