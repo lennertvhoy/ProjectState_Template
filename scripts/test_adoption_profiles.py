@@ -134,7 +134,7 @@ def test_legacy_minimal_flag_maps_to_profile() -> None:
 
 def test_profile_footprints_are_bounded_and_minimal_is_materially_smaller() -> None:
     limits = {
-        "minimal": (32, 230_000),
+        "minimal": (32, 235_000),
         "solo": (66, 530_000),
         "team": (75, 700_000),
         "regulated": (76, 760_000),

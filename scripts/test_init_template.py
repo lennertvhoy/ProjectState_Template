@@ -17,6 +17,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
+sys.path.insert(0, str(ROOT / "scripts"))
+from statedd_generated_controls import render_coding_agent_startup_prompt  # noqa: E402
+from init_template import render_coding_agent_startup_prompt as init_render_coding_agent_startup_prompt  # noqa: E402
 
 
 def run_init(args: list[str], *, expect_success: bool) -> subprocess.CompletedProcess[str]:
@@ -548,6 +551,15 @@ def test_template_root_bootstrap_gate_passes() -> None:
         raise AssertionError(
             f"Template-maintenance root should pass bootstrap gate\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
+
+
+def test_coding_agent_startup_prompt_has_one_generated_authority() -> None:
+    expected = render_coding_agent_startup_prompt()
+    if init_render_coding_agent_startup_prompt() != expected:
+        raise AssertionError("init_template does not use the generated-controls renderer")
+    actual = (ROOT / "prompts" / "CODING_AGENT_STARTUP_PROMPT.md").read_text(encoding="utf-8")
+    if actual != expected:
+        raise AssertionError("checked-in coding-agent startup prompt drifted from generated controls")
 
 
 def test_adopt_installs_v2_executable_workflow_assets() -> None:

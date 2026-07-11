@@ -366,6 +366,66 @@ Claims: isolated clone
         assert "Worktree is dirty" not in completed.stdout, completed.stdout
 
 
+def test_forged_context_unknown_field_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-012", "agent-a1b2")
+        context_path = clone / ".statedd" / "agent.context"
+        context = json.loads(context_path.read_text(encoding="utf-8"))
+        context["forged"] = True
+        context_path.write_text(json.dumps(context), encoding="utf-8")
+        completed = run(["--repo", str(repo), "guard", "--worktree", str(clone)], cwd=repo, expect_code=2)
+        assert_contains(completed.stderr, "closed-world")
+
+
+def test_copied_context_from_another_clone_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        first = start_clone(repo, "BL-TEST-013", "agent-a1b2")
+        second = start_clone(repo, "BL-TEST-014", "agent-c3d4")
+        source_context = (first / ".statedd" / "agent.context").read_text(encoding="utf-8")
+        (second / ".statedd" / "agent.context").write_text(source_context, encoding="utf-8")
+        completed = run(["--repo", str(repo), "guard", "--worktree", str(second)], cwd=repo, expect_code=1)
+        assert_contains(completed.stderr, "worktree_path")
+
+
+def test_symlinked_context_path_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-015", "agent-a1b2")
+        link = Path(tmp) / "clone-link"
+        link.symlink_to(clone, target_is_directory=True)
+        completed = run(["--repo", str(repo), "guard", "--worktree", str(link)], cwd=repo, expect_code=2)
+        assert_contains(completed.stderr, "symlink")
+
+
+def test_close_requires_explicit_remote_mutation_authorization() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-016", "agent-a1b2")
+        completed = run(["--repo", str(repo), "close", "--worktree", str(clone), "--pr", "1"], cwd=repo, expect_code=1)
+        assert_contains(completed.stderr, "Remote push is disabled by default")
+        assert clone.exists()
+
+
+def test_dirty_close_cannot_reach_push_path() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-017", "agent-a1b2")
+        (clone / "dirty.txt").write_text("preserve\n", encoding="utf-8")
+        completed = run(
+            [
+                "--repo", str(repo), "close", "--worktree", str(clone), "--pr", "1",
+                "--remote-mutation", "--operator-authorized",
+            ],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert "clean worktree" in completed.stderr.lower() or "write probes" in completed.stderr.lower()
+        assert clone.exists()
+        assert (clone / "dirty.txt").exists()
+
+
 def main() -> int:
     tests = [
         test_default_start_creates_independent_clone,
