@@ -8,7 +8,7 @@
 
 ### P1 [BL-OKF-001] Optional OKF knowledge interoperability
 Owner: integration agent
-Next: run remote-mutation safety preflight, push `bl-okf-001`, open one separate draft PR, and observe branch-head versus merge-candidate CI.
+Next: keep draft PR #9 open for human review; do not merge until scope, ownership, and evidence-gated promotion are accepted.
 Exit: optional generated profile passes OKF/base-format and StateDD governance checks; minimal/solo/team footprints and startup context remain unchanged.
 
 ### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration

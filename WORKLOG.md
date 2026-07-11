@@ -911,3 +911,26 @@
 
 ### Next
 - Run remote-mutation safety preflight, push the branch, open one separate draft PR, and observe automatic CI without reruns.
+
+## 2026-07-11 - Publish and remotely validate BL-OKF-001
+
+**Type:** architecture_slice_remote_validation
+**Status:** PUSHED_DRAFT_PR_CI_PASSING
+**Proof Head:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
+**Final PR Head:** e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
+**Branch:** bl-okf-001
+**PR:** https://github.com/lennertvhoy/StateDD_Template/pull/9
+
+### What changed
+- Corrected the template footprint budget after CI measured the final committed tree at 2,173,706 bytes.
+- Refreshed reproducible profile metrics and advanced the proof head after the source/configuration correction.
+- Published one separate draft PR; PR #8, PR #6, and PR #7 remain unchanged and unmerged.
+
+### Verification
+- Direct branch-head CI passed for final head; run `29164232824`.
+- Synthetic PR merge-candidate CI passed; run `29164234097`.
+- Remote closure finalizer proved local/remote/PR/CI/merge agreement and stopped only because PR #9 remains draft.
+- Worktree clean and remote branch contains local HEAD `e8500374dbcdf4518f1ee420fdc79c366fc3ac3b`.
+
+### Next
+- Human review of draft PR #9; keep unmerged until scope, ownership, and evidence-gated promotion are accepted.

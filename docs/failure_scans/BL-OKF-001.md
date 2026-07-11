@@ -66,4 +66,4 @@
 
 - Optional profile value and context-efficiency improvement are not benchmark-proven.
 - Upstream OKF v0.1 remains draft and non-authoritative.
-- Human acceptance and remote closure remain unproven until the separate PR is published.
+- Human acceptance remains unproven; the separate draft PR is published and both CI subjects pass, but remote closure remains intentionally blocked while the PR is draft.

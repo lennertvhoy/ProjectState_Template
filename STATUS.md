@@ -16,20 +16,21 @@
 
 - The template root has no application runtime; runtime truth is not applicable here.
 - PR #8 remains open/draft and unchanged by this slice; its direct branch-head and synthetic merge-candidate CI passed at its published head.
-- OKF work is isolated and locally validated on `bl-okf-001`; no remote branch, PR, or CI truth exists for this slice yet.
+- OKF work is isolated, locally validated, pushed on `bl-okf-001`, and open as draft PR #9 at `e8500374dbcdf4518f1ee420fdc79c366fc3ac3b`.
+- Direct branch-head CI and synthetic PR merge-candidate CI both pass for the final PR head; the remote closure finalizer remains non-closure-grade because PR #9 is still draft.
 - Neither PR #6 nor PR #7 is being merged independently.
 - Verified copyright owner: not proven. Benchmark superiority: not proven.
 
 ## Open P0/P1 Failures
 
-- [BL-OKF-001] Publish the locally validated optional OKF layer as a separate draft PR and observe its CI subjects.
+- [BL-OKF-001] Keep PR #9 in draft for human review; do not merge until the optional/evidence-gated scope and ownership boundaries are accepted.
 - [BL-STATEDD-INTEGRATION-001] PR #8 still requires human acceptance and ownership-boundary resolution before merge.
 
 ## Immediate Priorities
 
-1. Run remote-mutation safety preflight and push `bl-okf-001`.
-2. Open a separate draft PR; keep PR #8, PR #6, and PR #7 unchanged.
-3. Observe branch-head versus merge-candidate CI separately.
+1. Review draft PR #9 and its remote closure evidence; keep it unmerged.
+2. Keep PR #8, PR #6, and PR #7 unchanged and unmerged.
+3. Decide whether measured OKF value justifies a future BL-OKF-002 retrieval slice.
 
 ## Notes
 

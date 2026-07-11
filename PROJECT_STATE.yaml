@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T20:45:00+02:00
+  updated_at: 2026-07-11T20:54:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -324,19 +324,22 @@ active_problems:
       sandbox: observed
       local_worktree: clean at slice opening
       git_index: clean
-      local_commit: b9712a514d25b799a35a10bac35e00fc713a620e
-      remote_branch: not published
+      local_commit: e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
+      remote_branch: bl-okf-001 at e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
       github_main: not changed by this slice
-      ci: not run for OKF slice
+      ci: branch-head and PR merge-candidate passed; run 29164234097
       runtime: not applicable for template docs/scripts
       human_acceptance: not proven
     human_override:
       status: override-approved
       reason: user explicitly directed proceeding with BL-OKF-001 while PR #8 remains a separate draft boundary
-    status: validated_locally_remote_pending
+    status: validated_locally_pushed_draft_pr
     evidence: docs/evidence/2026-07-11-okf-interoperability/README.md
-    local_head: 1210947c1ed551e47fd700318f4e9254ba42f0a5
-    remote_branch: not published
-    pull_request: not opened
-    branch_head_ci: not proven
-    merge_candidate_ci: not proven
+    proof_head: 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
+    local_head: e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
+    remote_branch: bl-okf-001 at e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
+    pull_request: 9
+    pull_request_url: https://github.com/lennertvhoy/StateDD_Template/pull/9
+    branch_head_ci: verified run 29164232824
+    merge_candidate_ci: verified run 29164234097
+    closure_grade: no_pr_is_still_draft

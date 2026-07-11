@@ -3,7 +3,7 @@
 **Date:** 2026-07-11
 **Agent:** integration-agent
 **Slice:** `BL-OKF-001`
-**HEAD:** 1e434d4e5b2dae2e91146d81c5eb430cc0d6e21d
+**HEAD:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48 (proof tree)
 **Branch:** `bl-okf-001`
 **Proof head:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
 **Final PR head:** intentionally not embedded in tracked evidence; the mutable PR body owns the final head.
@@ -34,16 +34,16 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 | `python3 scripts/check_state_docs.py` | pass |
 | `python3 scripts/statedd_validate_schema.py` | pass |
 | Strict audit | pass |
-| Remote branch, PR, and CI | not yet proven |
+| Remote branch, PR, and CI | verified for final PR head; branch-head run 29164232824 and merge-candidate run 29164234097 |
 
 ## Closure State
 
 - Implemented: yes
 - Validated locally: yes
-- Pushed: not yet
-- PR opened: not yet
-- Branch-head CI verified: no
-- PR merge-candidate CI verified: no
+- Pushed: yes
+- PR opened: yes — draft PR #9
+- Branch-head CI verified: yes — run 29164232824
+- PR merge-candidate CI verified: yes — run 29164234097
 - Closure-grade: no
 - Human accepted: no
 - Runtime: not applicable for this template docs/scripts slice
@@ -54,7 +54,7 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 - rule overridden: feature work during the PR #8 quality-freeze boundary
 - requested by: user
 - reason accepted: proceed with BL-OKF-001 in a separate isolated branch without modifying PR #8
-- remaining risk: PR #8 remains draft; OKF value and remote closure are unproven
+- remaining risk: PR #8 and PR #9 remain draft; OKF value and human acceptance are unproven
 - still closure-grade: no
 
 ## Risks / What Remains Partial
@@ -62,7 +62,7 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 - OKF v0.1 remains a draft upstream specification pinned to commit `ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a`.
 - Optional knowledge value, startup-context impact, and promotion to any default profile are not benchmark-proven.
 - Real project concepts remain project-owned; this bundle contains only a generic scaffold.
-- Remote branch, PR, CI, human acceptance, and benchmark superiority remain unproven.
+- Human acceptance, OKF value, promotion to a default profile, and benchmark superiority remain unproven; remote closure is intentionally blocked while PR #9 remains draft.
 
 ## Anti-Brittleness Review
 
