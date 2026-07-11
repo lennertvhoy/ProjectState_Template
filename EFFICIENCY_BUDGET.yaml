@@ -64,32 +64,33 @@ context_budgets:
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
       max_footprint_files: 330
-      max_footprint_bytes: 1800000
+      max_footprint_bytes: 2000000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
       max_startup_estimated_tokens: 2250
-      max_footprint_files: 36
-      max_footprint_bytes: 250000
+      max_footprint_files: 42
+      max_footprint_bytes: 360000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
-      max_footprint_files: 70
-      max_footprint_bytes: 600000
+      max_footprint_files: 76
+      max_footprint_bytes: 730000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
       max_startup_estimated_tokens: 2625
-      max_footprint_files: 80
-      # Includes strict runtime-truth re-probing and exact-head collaboration controls.
-      max_footprint_bytes: 725000
+      # Includes strict runtime-truth, Git-safety, structured bootstrap, and
+      # exact-head collaboration controls required by the agent-first contract.
+      max_footprint_files: 90
+      max_footprint_bytes: 850000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
       max_startup_estimated_tokens: 2750
-      max_footprint_files: 82
-      max_footprint_bytes: 760000
+      max_footprint_files: 92
+      max_footprint_bytes: 900000
 
 evidence_budgets:
   default_max_files: 15

@@ -1,141 +1,110 @@
 #!/usr/bin/env python3
-"""StateDD Parallel-Agent Worktree Orchestrator.
+"""StateDD strong-isolation orchestrator for independent coding agents.
 
-Creates, guards, hands off, and closes isolated git worktrees for concurrent
-agent slices. Each agent gets its own branch and worktree under
-<repo-root>/.worktrees/, tracked by a reservation ref under
-refs/statedd/reservations/ and a .statedd/agent.context file inside the
-worktree.
-
-Subcommands:
-  start   Create a branch, worktree, reservation ref, and agent.context.
-  guard   Run worktree-guard checks in agent context.
-  handoff Run statedd_handoff.py from inside the agent worktree.
-  close   Push branch, run remote closure finalizer, then remove worktree.
-  cleanup Remove stale or explicitly-forced agent worktrees and reservations.
-  list    Show active agent worktrees, branches, reservations, and lock files.
+``start`` defaults to a full clone with an independent object database. Linked
+worktrees remain available only through explicit same-machine opt-in after the
+central Git safety preflight passes. ``cleanup`` is intentionally report-only:
+this tool never force-removes, prunes, resets, or deletes affected Git state.
 
 Exit codes:
-  0 = success / guard passed
-  1 = guard/runtime failure (recoverable, usually user-facing)
-  2 = unexpected runtime error
+  0 = requested diagnostic/operation succeeded
+  1 = safety or operational failure; leave repository state intact
+  2 = invalid context or unexpected runtime error
 """
 
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import uuid
 from pathlib import Path
+from typing import Any
 
-try:
-    from statedd_contracts import (
-        ContractError,
-        reject_symlink_components,
-        safe_root_path,
-        strict_json_loads,
-    )
-except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts.statedd_contracts import (
-        ContractError,
-        reject_symlink_components,
-        safe_root_path,
-        strict_json_loads,
-    )
+from statedd_git_safety_session import (
+    MutationBlocked,
+    require_mutation_permit,
+    record_required_git_failure,
+    sanitized_git_environment,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-VALID_SLICE_CATEGORIES = {"intended_slice_work", "generated_artifact"}
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+GIT_SAFETY_SCRIPT = ROOT / "scripts" / "statedd_git_safety_check.py"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 RESERVATION_REF_PREFIX = "refs/statedd/reservations/"
 WORKTREE_DIR = ".worktrees"
-LOCK_FILES = ("index.lock", "config.lock")
-AGENT_CONTEXT_FIELDS = {
-    "schema",
-    "agent_id",
-    "slice_id",
-    "reservation_ref",
-    "worktree_path",
-    "branch",
-    "base_branch",
-    "created_at",
-}
+LOCK_FILES = ("index.lock", "config.lock", "packed-refs.lock", "shallow.lock")
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
-    """Run a subprocess command and return (code, stdout, stderr)."""
     try:
         completed = subprocess.run(
             args,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,
         )
     except FileNotFoundError as exc:
         return 127, "", str(exc)
-    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
+    return completed.returncode, completed.stdout.rstrip(), completed.stderr.rstrip()
 
 
-def git_value(repo: Path, args: list[str], fallback: str = "not proven") -> str:
-    code, stdout, _ = run_command(["git", *args], repo)
+def required_command(args: list[str], cwd: Path, label: str) -> str:
+    code, stdout, stderr = run_command(args, cwd)
     if code != 0:
-        return fallback
-    return stdout or fallback
+        raise RuntimeError(f"{label} failed ({code}): {stderr or stdout or 'no diagnostic'}")
+    return stdout
 
 
-def resolve_repo(path: Path) -> tuple[int, Path, str]:
-    code, stdout, stderr = run_command(["git", "rev-parse", "--show-toplevel"], path)
-    if code != 0:
-        return 2, path.resolve(), stderr or "not a git repository"
-    return 0, Path(stdout).resolve(), ""
+def resolve_repo(path: Path) -> Path:
+    output = required_command(["git", "rev-parse", "--show-toplevel"], path, "repository resolution")
+    return Path(output).resolve()
 
 
-def git_common_dir(repo: Path) -> Path | None:
-    code, stdout, _ = run_command(["git", "rev-parse", "--git-common-dir"], repo)
-    if code != 0 or not stdout:
-        return None
-    return (repo / stdout).resolve() if not os.path.isabs(stdout) else Path(stdout).resolve()
+def git_path(repo: Path, selector: str) -> Path:
+    output = required_command(["git", "rev-parse", selector], repo, f"git {selector}")
+    path = Path(output)
+    return path.resolve() if path.is_absolute() else (repo / path).resolve()
+
+
+def git_common_dir(repo: Path) -> Path:
+    return git_path(repo, "--git-common-dir")
 
 
 def detect_git_locks(repo: Path) -> list[Path]:
-    """Return list of existing git lock files in the common git directory."""
-    locks: list[Path] = []
     common = git_common_dir(repo)
-    if not common:
-        return locks
+    locks: list[Path] = []
     for name in LOCK_FILES:
-        lock = common / name
-        if lock.exists():
-            locks.append(lock)
-    return locks
+        candidate = common / name
+        if candidate.exists():
+            locks.append(candidate)
+    refs = common / "refs"
+    if refs.exists():
+        locks.extend(path for path in refs.rglob("*.lock") if path.is_file())
+    return sorted(set(locks))
 
 
-def wait_for_git_locks(repo: Path, max_seconds: float = 10.0) -> list[Path]:
-    """Poll until git locks are released or timeout expires."""
-    deadline = time.time() + max_seconds
-    interval = 0.2
-    while time.time() < deadline:
-        locks = detect_git_locks(repo)
-        if not locks:
-            return []
-        time.sleep(interval)
-    return detect_git_locks(repo)
+def check_locks_or_fail(repo: Path) -> int:
+    locks = detect_git_locks(repo)
+    if not locks:
+        return 0
+    for lock in locks:
+        print(f"Another git operation holds {lock}; diagnose and retry.", file=sys.stderr)
+    return 1
 
 
 def base36_encode(value: int, width: int = 5) -> str:
-    """Encode a non-negative integer as zero-padded base36 lowercase."""
     if value < 0:
         raise ValueError("value must be non-negative")
-    chars = []
+    chars: list[str] = []
     while value or not chars:
         value, remainder = divmod(value, 36)
         chars.append("0123456789abcdefghijklmnopqrstuvwxyz"[remainder])
@@ -143,273 +112,576 @@ def base36_encode(value: int, width: int = 5) -> str:
 
 
 def generate_agent_id() -> tuple[str, str]:
-    """Return (agent_id, agent_short_id)."""
     env_id = os.environ.get("STATEDD_AGENT_ID", "").strip()
     if env_id:
-        short = env_id[:4].lower()
-        return env_id, short
+        return env_id, env_id[:4].lower()
     short = uuid.uuid4().hex[:4].lower()
     return f"agent-{short}", short
 
 
 def compute_branch_name(slice_id: str, agent_short_id: str) -> str:
-    """Compute deterministic branch name with a timestamp nonce."""
-    # Use a fragment of the current timestamp so simultaneous starts for the
-    # same slice by the same agent still collide rarely.
-    nonce_value = int(time.time() * 1000) % (36 ** 5)
-    nonce = base36_encode(nonce_value, 5)
-    clean_slice = "".join(c if c.isalnum() else "-" for c in slice_id.lower()).strip("-")
+    # A UUID-derived nonce avoids timing/sleep-based coordination.
+    nonce = base36_encode(int(uuid.uuid4().hex[:8], 16) % (36**5), 5)
+    clean_slice = "".join(char if char.isalnum() else "-" for char in slice_id.lower()).strip("-")
     return f"bl-{clean_slice}-{agent_short_id}-{nonce}"
-
-
-def worktree_path_for_branch(repo: Path, branch: str) -> Path:
-    return (repo / WORKTREE_DIR / branch).resolve()
 
 
 def reservation_ref(branch: str) -> str:
     return f"{RESERVATION_REF_PREFIX}{branch}"
 
 
-def load_agent_context(path: Path) -> tuple[int, dict, str]:
-    """Load a closed-world agent.context JSON contract without following links."""
-    if path.is_dir():
-        context_path = path / ".statedd" / "agent.context"
-    else:
-        context_path = path
-    try:
-        reject_symlink_components(context_path, label="agent context")
-        if not context_path.is_file():
-            return 2, {}, f"agent context is not a regular file: {context_path}"
-        data = strict_json_loads(context_path.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        return 2, {}, f"agent context not found: {context_path}"
-    except (ContractError, OSError, UnicodeDecodeError) as exc:
-        return 2, {}, f"invalid agent context JSON: {exc}"
-    if not isinstance(data, dict):
-        return 2, {}, "agent context must be a JSON object"
-    missing = AGENT_CONTEXT_FIELDS - set(data)
-    unknown = set(data) - AGENT_CONTEXT_FIELDS
-    if missing or unknown:
-        return 2, {}, f"agent context fields are invalid (missing={sorted(missing)}, unknown={sorted(unknown)})"
-    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
-        return 2, {}, f"unexpected agent context schema: {data.get('schema')}"
-    for field in AGENT_CONTEXT_FIELDS - {"schema"}:
-        if not isinstance(data.get(field), str) or not data[field].strip():
-            return 2, {}, f"agent context field {field!r} must be a non-empty string"
-    branch = data["branch"]
-    if data["reservation_ref"] != reservation_ref(branch):
-        return 2, {}, "agent context reservation_ref does not match its branch"
-    if not Path(data["worktree_path"]).is_absolute():
-        return 2, {}, "agent context worktree_path must be absolute"
-    return 0, data, ""
+def worktree_path_for_branch(repo: Path, branch: str) -> Path:
+    return (repo / WORKTREE_DIR / branch).resolve()
 
 
-def atomic_write_context(path: Path, context: dict) -> None:
-    """Write context atomically so interruption cannot leave a partial contract."""
-    payload = json.dumps(context, indent=2, sort_keys=True) + "\n"
-    descriptor, tmp_name = tempfile.mkstemp(prefix=".agent.context.", dir=path.parent)
-    tmp_path = Path(tmp_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.chmod(tmp_path, 0o600)
-        os.replace(tmp_path, path)
-    finally:
-        tmp_path.unlink(missing_ok=True)
+def clone_path_for_branch(repo: Path, branch: str) -> Path:
+    return (repo.parent / ".statedd-clones" / repo.name / branch).resolve()
 
 
-def _strict_context_message(text: str) -> dict | None:
-    try:
-        payload = strict_json_loads(text)
-    except ContractError:
-        return None
-    return payload if isinstance(payload, dict) else None
-
-
-def verify_agent_ownership(worktree: Path, context: dict) -> tuple[int, Path, str]:
-    """Bind a context to its exact registered worktree, branch, and reservation."""
-    try:
-        requested = safe_root_path(worktree, must_exist=True)
-        declared = safe_root_path(context["worktree_path"], must_exist=True)
-    except (ContractError, OSError) as exc:
-        return 2, worktree, str(exc)
-    code, repo, error = resolve_repo(requested)
-    if code != 0:
-        return code, repo, error
-    if requested != repo or declared != repo:
-        return 2, repo, (
-            f"agent context worktree mismatch: requested={requested}, "
-            f"declared={declared}, git_root={repo}"
-        )
-
-    branch = current_branch(repo)
-    declared_branch = context["branch"]
-    if branch != declared_branch:
-        return 2, repo, (
-            f"agent context branch {declared_branch!r} does not match current branch {branch!r}"
-        )
-
-    repo_root = main_worktree_root(repo)
-    worktrees = list_worktrees(repo_root)
-    record = worktrees.get(f"refs/heads/{declared_branch}")
-    if not isinstance(record, dict):
-        return 2, repo, f"branch {declared_branch!r} is not registered to a worktree"
-    try:
-        registered = safe_root_path(record.get("path", ""), must_exist=True)
-    except (ContractError, OSError) as exc:
-        return 2, repo, f"registered worktree path is unsafe: {exc}"
-    if registered != repo:
-        return 2, repo, (
-            f"branch {declared_branch!r} is registered at {registered}, not {repo}"
-        )
-
-    ref = context["reservation_ref"]
-    if ref != reservation_ref(declared_branch):
-        return 2, repo, "reservation ref does not match the current branch"
-    code, _, stderr = run_command(["git", "rev-parse", "--verify", ref], repo_root)
-    if code != 0:
-        return 2, repo, f"reservation ref is missing: {ref}: {stderr}"
-    code, message, stderr = run_command(
-        ["git", "log", "-g", "-1", "--format=%gs", ref], repo_root
+def main_worktree_root(repo: Path) -> Path:
+    output = required_command(
+        ["git", "worktree", "list", "--porcelain"],
+        repo,
+        "worktree topology inspection",
     )
-    if code != 0:
-        return 2, repo, f"reservation reflog is unavailable for {ref}: {stderr}"
-    reserved_context = _strict_context_message(message)
-    if reserved_context != context:
-        return 2, repo, "agent context does not match the reservation reflog payload"
-    return 0, repo, ""
-
-
-def load_and_verify_agent(worktree: Path) -> tuple[int, dict, Path, str]:
-    code, context, error = load_agent_context(worktree)
-    if code != 0:
-        return code, {}, worktree, error
-    code, repo, error = verify_agent_ownership(worktree, context)
-    return code, context, repo, error
-
-
-def normalize_cell(cell: str) -> str:
-    return cell.strip().strip("`").strip()
-
-
-def parse_classification_file(path: Path) -> dict[str, str]:
-    """Parse a markdown classification table into {path: category}."""
-    try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return {}
-    classifications: dict[str, str] = {}
-    for raw in text.splitlines():
-        stripped = raw.strip()
-        if not stripped.startswith("|"):
-            continue
-        cells = [normalize_cell(cell) for cell in stripped.strip("|").split("|")]
-        if not cells or set(cells[0]) <= {"-", ":"}:
-            continue
-        lower = [cell.lower() for cell in cells]
-        if "path" in lower and "category" in lower:
-            continue
-        file_path = ""
-        category = ""
-        if len(cells) >= 3 and cells[2] in {
-            "intended_slice_work",
-            "pre_existing_unrelated",
-            "generated_artifact",
-            "unknown_do_not_touch",
-            "safe_to_discard_after_proof",
-        }:
-            file_path = cells[1]
-            category = cells[2]
-        elif len(cells) >= 2 and cells[1] in {
-            "intended_slice_work",
-            "pre_existing_unrelated",
-            "generated_artifact",
-            "unknown_do_not_touch",
-            "safe_to_discard_after_proof",
-        }:
-            file_path = cells[0]
-            category = cells[1]
-        if file_path and category:
-            classifications[file_path] = category
-    return classifications
-
-
-def with_agent_classifications(classifications: dict[str, str]) -> dict[str, str]:
-    """Return a copy that classifies orchestrator-managed files as generated artifacts."""
-    result = dict(classifications)
-    result.setdefault(".statedd/", "generated_artifact")
-    result.setdefault(".statedd/agent.context", "generated_artifact")
-    return result
-
-
-def latest_evidence_readme(repo: Path) -> Path | None:
-    evidence_root = repo / "docs" / "evidence"
-    if not evidence_root.exists():
-        return None
-    candidates = [
-        entry / "README.md"
-        for entry in evidence_root.iterdir()
-        if entry.is_dir() and not entry.name.startswith(".") and (entry / "README.md").exists()
-    ]
-    if not candidates:
-        return None
-    return max(candidates, key=lambda path: path.stat().st_mtime)
+    for line in output.splitlines():
+        if line.startswith("worktree "):
+            return Path(line.removeprefix("worktree ")).resolve()
+    raise RuntimeError("worktree topology inspection returned no main worktree")
 
 
 def current_branch(repo: Path) -> str:
-    branch = git_value(repo, ["branch", "show-current"], fallback="")
-    if branch:
-        return branch
-    return git_value(repo, ["rev-parse", "--abbrev-ref", "HEAD"], fallback="not proven")
+    branch = required_command(["git", "branch", "--show-current"], repo, "current branch inspection")
+    if not branch:
+        raise RuntimeError("detached HEAD cannot be used for agent isolation")
+    return branch
 
 
 def origin_default_branch(repo: Path) -> str:
-    ref = git_value(repo, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"], fallback="")
-    if ref.startswith("origin/"):
-        return ref.removeprefix("origin/")
+    code, stdout, _ = run_command(
+        ["git", "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"], repo
+    )
+    if code == 0 and stdout.startswith("origin/"):
+        return stdout.removeprefix("origin/")
+    for candidate in ("main", "master"):
+        code, _, _ = run_command(
+            ["git", "show-ref", "--verify", "--quiet", f"refs/remotes/origin/{candidate}"], repo
+        )
+        if code == 0:
+            return candidate
     return ""
 
 
-def resolve_base_ref(repo: Path, explicit_base: str | None) -> tuple[str, str]:
-    """Resolve the base ref for a new agent worktree.
-
-    Fresh CI checkouts often contain only the checked-out branch, so a hard-coded
-    local ``main`` default is not reliable. Explicit --base remains strict; the
-    implicit default tries default-branch refs first, then the current branch,
-    then HEAD as a last resort.
-    """
+def resolve_base_ref(repo: Path, explicit_base: str | None, safety_report: dict[str, Any]) -> tuple[str, str]:
     if explicit_base:
         base = explicit_base.strip()
-        return base, git_value(repo, ["rev-parse", base], fallback="")
+    else:
+        default = safety_report.get("repository", {}).get("default_branch", "")
+        base = f"origin/{default}" if default and default != "not proven" else current_branch(repo)
+    code, stdout, _ = run_command(["git", "rev-parse", "--verify", base], repo)
+    if code != 0 or not stdout:
+        raise RuntimeError(f"base ref could not be resolved after mandatory synchronization: {base}")
+    return base, stdout
 
-    candidates: list[str] = []
-    default_branch = origin_default_branch(repo)
-    if default_branch:
-        candidates.extend([default_branch, f"origin/{default_branch}"])
-    candidates.extend(["main", "origin/main", "master", "origin/master"])
-    branch = current_branch(repo)
-    if branch and branch != "not proven":
-        candidates.append(branch)
-    candidates.append("HEAD")
 
-    seen: set[str] = set()
-    for candidate in candidates:
-        if not candidate or candidate in seen:
-            continue
-        seen.add(candidate)
-        commit = git_value(repo, ["rev-parse", candidate], fallback="")
-        if commit:
-            return candidate, commit
-    return "", ""
+def run_git_safety(
+    repo: Path,
+    mode: str,
+    *,
+    source_repo: Path | None = None,
+    worktree_opt_in: bool = False,
+    trusted_local_machine: bool = False,
+    restart_session: bool = False,
+    operation_class: str = "local_mutation",
+    operator_authorized: bool = False,
+    context: dict[str, Any] | None = None,
+) -> tuple[int, dict[str, Any], str]:
+    command = [
+        sys.executable,
+        str(GIT_SAFETY_SCRIPT),
+        "--repo",
+        str(repo),
+        "--mode",
+        mode,
+        "--format",
+        "json",
+    ]
+    if source_repo is not None:
+        command.extend(["--source-repo", str(source_repo)])
+    if worktree_opt_in:
+        command.append("--worktree-opt-in")
+    if trusted_local_machine:
+        command.append("--trusted-local-machine")
+    command.extend(["--operation-class", operation_class])
+    if operator_authorized:
+        command.append("--operator-authorized")
+    if context:
+        command.extend(
+            [
+                "--slice-id", str(context["slice_id"]),
+                "--agent-id", str(context["agent_id"]),
+                "--context-hash", context_hash(context),
+                "--reservation-ref", str(context["reservation_ref"]),
+                "--expected-branch", str(context["branch"]),
+                "--expected-head", required_command(["git", "rev-parse", "HEAD"], repo, "context HEAD inspection"),
+            ]
+        )
+    if restart_session:
+        command.append("--restart-session")
+    code, stdout, stderr = run_command(command, repo)
+    if not stdout:
+        return code, {}, stderr or "Git safety preflight emitted no JSON report"
+    try:
+        report = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        return 2, {}, f"invalid Git safety JSON: {exc}; stderr={stderr}"
+    return code, report, stderr
+
+
+def print_safety_failure(report: dict[str, Any], fallback: str) -> None:
+    print("Git safety preflight blocked writable isolation.", file=sys.stderr)
+    blockers = report.get("decision", {}).get("blockers", []) if report else []
+    for blocker in blockers:
+        print(f"- {blocker}", file=sys.stderr)
+    if not blockers and fallback:
+        print(f"- {fallback}", file=sys.stderr)
+    if report:
+        print(
+            f"Effective mode: {report.get('decision', {}).get('effective_mode', 'read_only')}; "
+            "diagnosis only until repaired and explicitly restarted.",
+            file=sys.stderr,
+        )
+
+
+CONTEXT_KEYS = {
+    "schema", "agent_id", "slice_id", "reservation_ref", "worktree_path", "branch",
+    "base_branch", "created_at", "isolation_mode", "source_repo", "identity",
+    "attestations", "git_safety",
+}
+IDENTITY_KEYS = {"effective_uid", "effective_gid", "machine_fingerprint_sha256"}
+ATTESTATION_KEYS = {"worktree_opt_in", "trusted_local_machine", "effective_uid", "effective_gid", "machine_fingerprint_sha256"}
+SAFETY_KEYS = {"schema", "generated_at", "mode", "mutation_permitted"}
+
+
+def context_hash(context: dict[str, Any]) -> str:
+    return hashlib.sha256((json.dumps(context, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
+
+
+def reject_symlink_components(path: Path) -> None:
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current /= component
+        if current.is_symlink():
+            raise ValueError(f"symlinked context path component is not allowed: {current}")
+
+
+def strict_json_object(text: str, source: Path) -> dict[str, Any]:
+    def pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key {key!r} in {source}")
+            result[key] = value
+        return result
+
+    value = json.loads(text, object_pairs_hook=pairs)
+    if not isinstance(value, dict):
+        raise ValueError(f"agent context must be a JSON object: {source}")
+    return value
+
+
+def validate_context_shape(data: dict[str, Any], context_path: Path) -> str | None:
+    if set(data) != CONTEXT_KEYS:
+        unknown = sorted(set(data) - CONTEXT_KEYS)
+        missing = sorted(CONTEXT_KEYS - set(data))
+        return f"agent context fields are not closed-world (unknown={unknown}, missing={missing})"
+    if data.get("schema") != AGENT_CONTEXT_SCHEMA:
+        return f"unexpected agent context schema: {data.get('schema')}"
+    for key in ("agent_id", "slice_id", "reservation_ref", "worktree_path", "branch", "base_branch", "created_at", "isolation_mode", "source_repo"):
+        if not isinstance(data.get(key), str):
+            return f"agent context field {key!r} must be a string"
+    if not Path(data["worktree_path"]).is_absolute():
+        return "agent context worktree_path must be absolute"
+    for nested_key, nested_keys in (("identity", IDENTITY_KEYS), ("attestations", ATTESTATION_KEYS), ("git_safety", SAFETY_KEYS)):
+        nested = data.get(nested_key)
+        if not isinstance(nested, dict) or set(nested) != nested_keys:
+            return f"agent context {nested_key} fields are not closed-world"
+    if data["isolation_mode"] == "worktree":
+        if data["reservation_ref"] != reservation_ref(data["branch"]):
+            return "worktree reservation ref does not exactly match its branch"
+        if data["attestations"]["worktree_opt_in"] is not True or data["attestations"]["trusted_local_machine"] is not True:
+            return "worktree context lacks explicit trusted-local attestations"
+    elif data["reservation_ref"]:
+        return "clone/normal-branch context must not carry a reservation ref"
+    return None
+
+
+def load_agent_context(path: Path) -> tuple[int, dict[str, Any], str]:
+    context_path = path / ".statedd" / "agent.context" if path.is_dir() else path
+    try:
+        reject_symlink_components(context_path)
+        data = strict_json_object(context_path.read_text(encoding="utf-8"), context_path)
+    except FileNotFoundError:
+        return 2, {}, f"agent context not found: {context_path}"
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        return 2, {}, f"invalid agent context JSON: {exc}"
+    error = validate_context_shape(data, context_path)
+    if error:
+        return 2, {}, error
+    return 0, data, ""
+
+
+def write_agent_context(target: Path, context: dict[str, Any]) -> None:
+    statedd_dir = target / ".statedd"
+    statedd_dir.mkdir(parents=True, exist_ok=True)
+    context_path = statedd_dir / "agent.context"
+    descriptor, temporary_name = tempfile.mkstemp(prefix="agent.context.", dir=statedd_dir)
+    os.close(descriptor)
+    temporary = Path(temporary_name)
+    try:
+        temporary.write_text(json.dumps(context, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temporary, context_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def verify_agent_context_binding(worktree: Path, context: dict[str, Any]) -> None:
+    """Prove that context is owned by this exact repository and reservation."""
+    worktree = Path(os.path.abspath(worktree))
+    reject_symlink_components(worktree)
+    if context["worktree_path"] != str(worktree):
+        raise MutationBlocked("agent context worktree_path does not match the requested repository")
+    if resolve_repo(worktree) != worktree:
+        raise MutationBlocked("agent context does not resolve to the exact repository root")
+    if current_branch(worktree) != context["branch"]:
+        raise MutationBlocked("agent context branch does not match the checked-out branch")
+    if context["isolation_mode"] == "clone":
+        source_repo = Path(context["source_repo"])
+        if not source_repo.is_absolute():
+            raise MutationBlocked("clone agent context source_repo must be absolute")
+    if context["isolation_mode"] == "worktree":
+        topology = required_command(["git", "worktree", "list", "--porcelain"], worktree, "worktree ownership inspection")
+        registered = False
+        for block in topology.split("\n\n"):
+            lines = block.splitlines()
+            registered_path = next((line.removeprefix("worktree ") for line in lines if line.startswith("worktree ")), "")
+            registered_branch = next((line.removeprefix("branch ").removeprefix("refs/heads/") for line in lines if line.startswith("branch ")), "")
+            if registered_path == str(worktree) and registered_branch == context["branch"]:
+                registered = True
+                break
+        if not registered:
+            raise MutationBlocked("agent context is not bound to the registered Git worktree")
+        message_code, message, message_error = run_command(
+            ["git", "log", "-g", "-1", "--format=%gs", context["reservation_ref"]], worktree
+        )
+        expected_message = json.dumps(context, sort_keys=True)
+        if message_code != 0 or message != expected_message:
+            raise MutationBlocked(
+                "agent context reservation reflog payload does not match this context"
+                + (f": {message_error or message}" if message_error or message else "")
+            )
+    identity = context["identity"]
+    if identity["effective_uid"] != getattr(os, "geteuid", lambda: None)():
+        raise MutationBlocked("agent context effective UID does not match the current process")
+    if identity["effective_gid"] != getattr(os, "getegid", lambda: None)():
+        raise MutationBlocked("agent context effective GID does not match the current process")
+
+
+def context_payload(
+    *,
+    agent_id: str,
+    slice_id: str,
+    target: Path,
+    branch: str,
+    base: str,
+    isolation_mode: str,
+    reservation: str,
+    source_repo: Path,
+    safety_report: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema": AGENT_CONTEXT_SCHEMA,
+        "agent_id": agent_id,
+        "slice_id": slice_id,
+        "reservation_ref": reservation,
+        "worktree_path": str(target),
+        "branch": branch,
+        "base_branch": base,
+        "created_at": dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds"),
+        "isolation_mode": isolation_mode,
+        "source_repo": str(source_repo),
+        "identity": {
+            "effective_uid": safety_report.get("identity", {}).get("effective_uid"),
+            "effective_gid": safety_report.get("identity", {}).get("effective_gid"),
+            "machine_fingerprint_sha256": safety_report.get("runtime", {}).get(
+                "machine_fingerprint_sha256"
+            ),
+        },
+        "attestations": {
+            "worktree_opt_in": isolation_mode == "worktree",
+            "trusted_local_machine": isolation_mode == "worktree",
+            "effective_uid": safety_report.get("identity", {}).get("effective_uid"),
+            "effective_gid": safety_report.get("identity", {}).get("effective_gid"),
+            "machine_fingerprint_sha256": safety_report.get("runtime", {}).get(
+                "machine_fingerprint_sha256"
+            ),
+        },
+        "git_safety": {
+            "schema": safety_report.get("schema"),
+            "generated_at": safety_report.get("generated_at"),
+            "mode": safety_report.get("decision", {}).get("effective_mode"),
+            "mutation_permitted": safety_report.get("decision", {}).get("mutation_permitted"),
+        },
+    }
+
+
+def cmd_start_worktree(args: argparse.Namespace, source: Path, slice_id: str, agent_id: str, short_id: str) -> int:
+    if not args.worktree_opt_in or not args.trusted_local_machine:
+        print(
+            "Managed worktree creation is disabled by default; both --worktree-opt-in "
+            "and --trusted-local-machine are required.",
+            file=sys.stderr,
+        )
+        return 1
+    source = main_worktree_root(source)
+    if check_locks_or_fail(source):
+        return 1
+    code, report, error = run_git_safety(
+        source,
+        "worktree",
+        worktree_opt_in=True,
+        trusted_local_machine=True,
+        restart_session=args.restart_session,
+    )
+    if code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+        print_safety_failure(report, error)
+        return 1 if code != 2 else 2
+
+    branch = args.branch or compute_branch_name(slice_id, short_id)
+    target = Path(args.target).resolve() if args.target else worktree_path_for_branch(source, branch)
+    ref = reservation_ref(branch)
+    base, base_commit = resolve_base_ref(source, args.base, report)
+    code, existing, _ = run_command(["git", "rev-parse", "--verify", "--quiet", ref], source)
+    if code == 0 and existing:
+        print(f"Reservation ref already exists: {ref}", file=sys.stderr)
+        return 1
+    code, existing, _ = run_command(["git", "rev-parse", "--verify", "--quiet", branch], source)
+    if code == 0 and existing:
+        print(f"Branch already exists: {branch}", file=sys.stderr)
+        return 1
+    if target.exists():
+        print(f"Worktree path already exists: {target}", file=sys.stderr)
+        return 1
+
+    code, _, stderr = run_command(
+        ["git", "worktree", "add", "-b", branch, str(target), base],
+        source,
+    )
+    if code != 0:
+        latch_error = record_required_git_failure(source, "git worktree add", stderr)
+        print(f"Failed to create worktree {target}: {stderr}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        print("No automatic rollback was attempted; inspect the reported topology read-only.", file=sys.stderr)
+        return 1
+
+    context = context_payload(
+        agent_id=agent_id,
+        slice_id=slice_id,
+        target=target,
+        branch=branch,
+        base=base,
+        isolation_mode="worktree",
+        reservation=ref,
+        source_repo=source,
+        safety_report=report,
+    )
+    try:
+        write_agent_context(target, context)
+    except OSError as exc:
+        latch_error = record_required_git_failure(target, "agent context write", str(exc))
+        print(f"Worktree was created but agent context write failed: {exc}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        print(f"Left intact for diagnosis: {target}", file=sys.stderr)
+        return 2
+    context_json = json.dumps(context, sort_keys=True)
+    code, _, stderr = run_command(
+        ["git", "update-ref", "--create-reflog", "-m", context_json, ref, base_commit],
+        source,
+    )
+    if code != 0:
+        latch_error = record_required_git_failure(source, "git update-ref reservation", stderr)
+        print(f"Worktree was created but reservation ref failed: {stderr}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        print(f"Left intact for diagnosis: {target}", file=sys.stderr)
+        return 1
+    print(f"Agent worktree ready: {target}")
+    print(f"Branch: {branch}")
+    print("Isolation mode: worktree (explicit trusted-local opt-in; shared common directory)")
+    return 0
+
+
+def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent_id: str, short_id: str) -> int:
+    code, source_report, error = run_git_safety(source, "read_only")
+    if code != 0:
+        print_safety_failure(source_report, error)
+        return 2 if code == 2 else 1
+    if source_report.get("fsck", {}).get("result") != "pass":
+        print("Source repository fsck failed; clone provisioning is blocked.", file=sys.stderr)
+        return 1
+    if source_report.get("runtime", {}).get("git_environment_overrides"):
+        print("Redirecting Git environment blocks clone provisioning.", file=sys.stderr)
+        return 1
+    source_metadata = source_report.get("metadata", {})
+    if not source_metadata.get("scan_complete") or source_metadata.get("unreadable") or source_metadata.get("symlinks"):
+        print("Source repository cannot be read reliably enough to provision a clone.", file=sys.stderr)
+        return 1
+
+    branch = args.branch or compute_branch_name(slice_id, short_id)
+    default = source_report.get("repository", {}).get("default_branch", "")
+    base = (args.base or default).removeprefix("origin/")
+    if not base or base == "not proven":
+        print("Clone base branch is not proven; pass --base explicitly.", file=sys.stderr)
+        return 1
+    target = Path(args.target).resolve() if args.target else clone_path_for_branch(source, branch)
+    if target.exists():
+        print(f"Clone target already exists: {target}", file=sys.stderr)
+        return 1
+    source_url = source_report.get("repository", {}).get("origin_url", "")
+    if not source_url or source_url.startswith("not proven"):
+        source_url = str(source)
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    code, _, stderr = run_command(
+        [
+            "git",
+            "clone",
+            "--no-local",
+            "--no-hardlinks",
+            "--branch",
+            base,
+            source_url,
+            str(target),
+        ],
+        source,
+    )
+    if code != 0:
+        latch_error = record_required_git_failure(source, "git clone", stderr)
+        print(f"Full clone failed: {stderr}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        print(f"Any partial target is left intact for read-only diagnosis: {target}", file=sys.stderr)
+        return 1
+    code, _, stderr = run_command(["git", "switch", "-c", branch], target)
+    if code != 0:
+        latch_error = record_required_git_failure(target, "git switch feature branch", stderr)
+        print(f"Clone exists but feature branch creation failed: {stderr}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        print(f"Left intact for read-only diagnosis: {target}", file=sys.stderr)
+        return 1
+
+    code, report, error = run_git_safety(
+        target,
+        "clone",
+        source_repo=source,
+        restart_session=args.restart_session,
+    )
+    if code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+        print_safety_failure(report, error)
+        print(f"Clone left intact in read-only state: {target}", file=sys.stderr)
+        return 1 if code != 2 else 2
+
+    context = context_payload(
+        agent_id=agent_id,
+        slice_id=slice_id,
+        target=target,
+        branch=branch,
+        base=f"origin/{base}",
+        isolation_mode="clone",
+        reservation="",
+        source_repo=source,
+        safety_report=report,
+    )
+    try:
+        write_agent_context(target, context)
+    except OSError as exc:
+        latch_error = record_required_git_failure(target, "agent context write", str(exc))
+        print(f"Clone is safe but agent context write failed: {exc}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        print(f"Left intact for diagnosis: {target}", file=sys.stderr)
+        return 2
+    print(f"Agent clone ready: {target}")
+    print(f"Branch: {branch}")
+    print("Isolation mode: clone (independent Git common directory/object database)")
+    return 0
+
+
+def cmd_start(args: argparse.Namespace) -> int:
+    source = resolve_repo(Path(args.repo))
+    slice_id = (args.slice_id or "").strip()
+    if not slice_id:
+        print("--slice-id is required", file=sys.stderr)
+        return 1
+    agent_id, short_id = generate_agent_id()
+    if args.agent_id:
+        agent_id = args.agent_id.strip()
+        short_id = agent_id[:4].lower()
+    branch = args.branch or compute_branch_name(slice_id, short_id)
+    isolation_mode = args.isolation_mode
+
+    if args.dry_run:
+        target = (
+            Path(args.target).resolve()
+            if args.target
+            else worktree_path_for_branch(source, branch)
+            if isolation_mode == "worktree"
+            else clone_path_for_branch(source, branch)
+        )
+        print("DRY RUN: no Git or filesystem mutation performed")
+        print(f"  requested isolation mode: {isolation_mode}")
+        print(f"  branch: {branch}")
+        print(f"  target: {target}")
+        print("  execution will require the centralized Git safety preflight")
+        return 0
+
+    if isolation_mode == "read_only":
+        code, report, error = run_git_safety(source, "read_only")
+        if code == 2:
+            print_safety_failure(report, error)
+            return 2
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0
+    if isolation_mode == "normal_branch":
+        code, report, error = run_git_safety(
+            source,
+            "normal_branch",
+            restart_session=args.restart_session,
+        )
+        if code != 0:
+            print_safety_failure(report, error)
+            return 1 if code != 2 else 2
+        print(f"Normal feature branch ready: {source}")
+        print(f"Branch: {report['repository']['branch']}")
+        return 0
+    if isolation_mode == "worktree":
+        return cmd_start_worktree(args, source, slice_id, agent_id, short_id)
+    return cmd_start_clone(args, source, slice_id, agent_id, short_id)
 
 
 def dirty_files(repo: Path) -> list[str]:
-    status = git_value(repo, ["status", "--short"], fallback="")
+    output = required_command(
+        ["git", "--no-optional-locks", "status", "--porcelain=v1", "--untracked-files=all"],
+        repo,
+        "dirty-state inspection",
+    )
     paths: list[str] = []
-    for line in status.splitlines():
-        if not line.strip():
+    for line in output.splitlines():
+        if not line:
             continue
         path = line[3:] if len(line) > 3 else line
         if " -> " in path:
@@ -418,623 +690,384 @@ def dirty_files(repo: Path) -> list[str]:
     return paths
 
 
-def linked_worktree_paths(repo: Path) -> list[str]:
-    code, stdout, _ = run_command(["git", "worktree", "list", "--porcelain"], repo)
-    if code != 0:
-        return []
-    current = repo.resolve()
-    linked: list[str] = []
-    for line in stdout.splitlines():
-        if not line.startswith("worktree "):
-            continue
-        path = line.removeprefix("worktree ").strip()
-        if path and Path(path).resolve() != current:
-            linked.append(path)
-    return linked
-
-
-def main_worktree_root(repo: Path) -> Path:
-    """Return the main worktree root (first entry from git worktree list)."""
-    code, stdout, _ = run_command(["git", "worktree", "list", "--porcelain"], repo)
-    if code == 0:
-        for line in stdout.splitlines():
-            if line.startswith("worktree "):
-                return Path(line.removeprefix("worktree ").strip()).resolve()
-    return repo.resolve()
-
-
-def origin_default_branch(repo: Path) -> str:
-    ref = git_value(repo, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"], fallback="")
-    if ref.startswith("origin/"):
-        return ref.removeprefix("origin/")
-    return "main"
-
-
-def check_locks_or_fail(repo: Path, wait: bool = False) -> int:
-    locks = wait_for_git_locks(repo) if wait else detect_git_locks(repo)
-    if locks:
-        for lock in locks:
-            print(f"Another git operation holds {lock}; use --wait or retry.", file=sys.stderr)
-        return 1
-    return 0
-
-
-def rollback_started_worktree(repo: Path, worktree: Path, branch: str, ref: str) -> list[str]:
-    """Best-effort reverse-order rollback for a failed start transaction."""
-    errors: list[str] = []
-    code, _, stderr = run_command(["git", "update-ref", "-d", ref], repo)
-    if code != 0:
-        errors.append(f"reservation cleanup failed: {stderr}")
-    registered = list_worktrees(repo).get(f"refs/heads/{branch}")
-    if registered:
-        try:
-            remove_worktree_safe(repo, worktree)
-        except RuntimeError as exc:
-            errors.append(str(exc))
-    code, _, stderr = run_command(["git", "branch", "-D", branch], repo)
-    if code != 0:
-        errors.append(f"branch cleanup failed: {stderr}")
-    return errors
-
-
-def cmd_start(args: argparse.Namespace) -> int:
-    repo = Path(args.repo).resolve()
-    code, repo, error = resolve_repo(repo)
-    if code != 0:
-        print(f"StateDD Agent Worktree Orchestrator\n\nBlocking problems\n- {error}", file=sys.stderr)
-        return 2
-
-    # Operate from the main worktree so .worktrees/ is created in a predictable
-    # location relative to the repository root.
-    repo = main_worktree_root(repo)
-
-    slice_id = (args.slice_id or "").strip()
-    if not slice_id:
-        print("--slice-id is required for start", file=sys.stderr)
-        return 1
-
-    agent_id, agent_short_id = generate_agent_id()
-    if args.agent_id:
-        agent_id = args.agent_id.strip()
-        agent_short_id = agent_id[:4].lower()
-
-    branch = args.branch if args.branch else compute_branch_name(slice_id, agent_short_id)
-    wt_path = (repo / WORKTREE_DIR / branch).resolve()
-    ref = reservation_ref(branch)
-    # Verify git is available and base exists.
-    base, base_commit = resolve_base_ref(repo, args.base)
-    if not base_commit:
-        requested = args.base if args.base else "auto"
-        print(f"Base branch/ref '{requested}' could not be resolved", file=sys.stderr)
-        return 1
-
-    # Fail fast if reservation already exists.
-    existing_ref = git_value(repo, ["rev-parse", "--quiet", ref], fallback="")
-    if existing_ref:
-        print(f"Reservation ref already exists: {ref}", file=sys.stderr)
-        return 1
-
-    # Fail fast if branch or worktree path already exists.
-    if (repo / ".git" / "refs" / "heads" / branch).exists() or git_value(repo, ["rev-parse", "--quiet", branch], fallback=""):
-        print(f"Branch already exists: {branch}", file=sys.stderr)
-        return 1
-    if wt_path.exists():
-        print(f"Worktree path already exists: {wt_path}", file=sys.stderr)
-        return 1
-
-    lock_code = check_locks_or_fail(repo, wait=args.wait)
-    if lock_code != 0:
-        return lock_code
-
-    if args.dry_run:
-        print("DRY RUN: would create branch, worktree, agent.context, and reservation ref")
-        print(f"  branch: {branch}")
-        print(f"  worktree: {wt_path}")
-        print(f"  base: {base} ({base_commit})")
-        print(f"  reservation: {ref}")
-        print(f"  agent_id: {agent_id}")
-        return 0
-
-    # Create branch.
-    code, _, stderr = run_command(["git", "branch", branch, base], repo)
-    if code != 0:
-        print(f"Failed to create branch '{branch}': {stderr}", file=sys.stderr)
-        return 2
-
-    # Create worktree (use absolute path so it is registered consistently).
-    code, _, stderr = run_command(["git", "worktree", "add", str(wt_path), branch], repo)
-    if code != 0:
-        # Roll back branch if worktree creation failed.
-        run_command(["git", "branch", "-D", branch], repo)
-        print(f"Failed to create worktree '{wt_path}': {stderr}", file=sys.stderr)
-        return 2
-
-    try:
-        # Ensure .statedd directory exists inside worktree.
-        statedd_dir = wt_path / ".statedd"
-        statedd_dir.mkdir(parents=True, exist_ok=True)
-
-        created_at = dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds")
-        context = {
-            "schema": AGENT_CONTEXT_SCHEMA,
-            "agent_id": agent_id,
-            "slice_id": slice_id,
-            "reservation_ref": ref,
-            "worktree_path": str(wt_path),
-            "branch": branch,
-            "base_branch": base,
-            "created_at": created_at,
+def safety_for_context(
+    worktree: Path,
+    context: dict[str, Any],
+    restart_session: bool,
+    *,
+    operation_class: str = "local_mutation",
+    operator_authorized: bool = False,
+) -> tuple[int, dict[str, Any], str]:
+    mode = context.get("isolation_mode", "worktree")
+    if mode not in {"clone", "worktree", "normal_branch"}:
+        return 2, {}, f"agent context is not writable: isolation_mode={mode}"
+    attestations = context.get("attestations", {})
+    source_value = context.get("source_repo")
+    source = Path(source_value).resolve() if source_value and mode == "clone" else None
+    code, report, error = run_git_safety(
+        worktree,
+        mode,
+        source_repo=source,
+        worktree_opt_in=mode == "worktree" and attestations.get("worktree_opt_in") is True,
+        trusted_local_machine=mode == "worktree" and attestations.get("trusted_local_machine") is True,
+        restart_session=restart_session,
+        operation_class=operation_class,
+        operator_authorized=operator_authorized,
+        context=context,
+    )
+    if code == 0 and report:
+        stored = context.get("identity", {})
+        fresh_identity = report.get("identity", {})
+        fresh_runtime = report.get("runtime", {})
+        comparisons = {
+            "effective_uid": fresh_identity.get("effective_uid"),
+            "effective_gid": fresh_identity.get("effective_gid"),
+            "machine_fingerprint_sha256": fresh_runtime.get("machine_fingerprint_sha256"),
         }
-        context_path = statedd_dir / "agent.context"
-        atomic_write_context(context_path, context)
-
-        # Create reservation ref with context JSON as reflog message.
-        # --create-reflog is required so custom refs under refs/statedd/ keep a
-        # reflog that `git log -g` can later retrieve.
-        context_json = json.dumps(context, sort_keys=True)
-        code, _, stderr = run_command(
-            ["git", "update-ref", "--create-reflog", "-m", context_json, ref, base_commit],
-            repo,
-        )
-        if code != 0:
-            raise RuntimeError(f"Failed to create reservation ref '{ref}': {stderr}")
-    except (OSError, RuntimeError) as exc:
-        cleanup_errors = rollback_started_worktree(repo, wt_path, branch, ref)
-        suffix = f"; rollback errors: {cleanup_errors}" if cleanup_errors else ""
-        print(f"Failed to complete worktree start: {exc}{suffix}", file=sys.stderr)
-        return 2
-
-    print(f"Agent worktree ready: {wt_path}")
-    print(f"Branch: {branch}")
-    return 0
+        mismatches = [key for key, value in comparisons.items() if stored.get(key) != value]
+        if mismatches:
+            report.setdefault("decision", {}).setdefault("blockers", []).append(
+                "agent context identity/host mismatch: " + ", ".join(mismatches)
+            )
+            report["decision"]["permitted"] = False
+            report["decision"]["mutation_permitted"] = False
+            report["decision"]["effective_mode"] = "read_only"
+            report["decision"]["restart_required"] = True
+            return 1, report, "agent context identity/host mismatch"
+    return code, report, error
 
 
 def cmd_guard(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).absolute() if args.worktree else Path.cwd().absolute()
-    code, context, repo, error = load_and_verify_agent(worktree)
-    if code != 0:
-        print(f"StateDD Agent Worktree Guard\n\nBlocking problems\n- {error}", file=sys.stderr)
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
+    code, context, error = load_agent_context(worktree)
+    if code:
+        print(error, file=sys.stderr)
         return 2
-
-    env = os.environ.copy()
-    env["GIT_OPTIONAL_LOCKS"] = "0"
-
-    branch = current_branch(repo)
-    local_head = git_value(repo, ["rev-parse", "HEAD"])
-    origin_url = git_value(repo, ["remote", "get-url", "origin"])
-    upstream_branch = git_value(repo, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])
-    upstream_head = "not proven"
-    if upstream_branch != "not proven":
-        upstream_head = git_value(repo, ["rev-parse", "@{u}"])
-    default_branch = origin_default_branch(repo)
-    changed = dirty_files(repo)
-    linked = linked_worktree_paths(repo)
-
-    source = latest_evidence_readme(repo)
-    classifications = with_agent_classifications(parse_classification_file(source) if source else {})
-    classified = all(path in classifications for path in changed) if changed else True
-
-    warnings: list[str] = []
-    problems: list[str] = []
-
-    if args.mode == "closure":
-        if changed:
-            problems.append("Closure mode requires a clean worktree.")
-    else:
-        if changed and not classified:
-            missing = [p for p in changed if p not in classifications]
-            warnings.append(
-                f"Dirty files are not classified; record a classification table in evidence: {', '.join(missing)}"
-            )
-        elif changed:
-            warnings.append("Dirty files are classified as expected slice work.")
-
-    if origin_url == "not proven":
-        warnings.append("origin remote URL is not proven; remote visibility cannot be checked yet.")
-    if upstream_branch == "not proven":
-        warnings.append("upstream branch is not proven; local HEAD versus upstream is not comparable yet.")
-
-    safe = not problems
-
-    print("StateDD Agent Worktree Guard")
+    try:
+        verify_agent_context_binding(worktree, context)
+    except (MutationBlocked, RuntimeError) as exc:
+        print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
+        return 1
+    safety_code, report, safety_error = safety_for_context(worktree, context, args.restart_session)
+    if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+        print_safety_failure(report, safety_error)
+        return 1 if safety_code != 2 else 2
+    changed = dirty_files(worktree)
+    if args.mode == "closure" and changed:
+        print("Closure mode requires a clean worktree.", file=sys.stderr)
+        return 1
+    print("StateDD Agent Isolation Guard")
     print(f"Mode: {args.mode}")
     print(f"Agent context: {context.get('agent_id')} / {context.get('slice_id')}")
-    print()
-    print("Repo truth")
-    print(f"- repo root: {repo}")
-    print(f"- current branch: {branch}")
-    print(f"- local HEAD: {local_head}")
-    print(f"- origin remote URL: {origin_url}")
-    print(f"- upstream branch: {upstream_branch}")
-    print(f"- upstream HEAD: {upstream_head}")
-    print(f"- default branch: {default_branch}")
-    print(f"- agent branch is private: yes")
-    print(f"- local HEAD equals upstream: {'yes' if local_head == upstream_head else 'no' if upstream_head != 'not proven' else 'not proven'}")
-    print(f"- safe to start: {'yes' if safe else 'no'}")
-    print()
-    print("Worktree topology")
-    print("- worktree topology captured: yes")
-    print(f"- current worktree path: {repo}")
-    if linked:
-        print("- linked worktrees:")
-        for path in linked:
-            print(f"  - {path}")
-    else:
-        print("- linked worktrees: none")
-    print()
-    print("Dirty state")
-    print(f"- dirty files classified: {'yes' if classified else 'no'}")
-    print(f"- classification file: {source if source else 'not found'}")
-    print(f"- dirty file count: {len(changed)}")
-    print("- dirty files:")
-    if changed:
-        for path in changed:
-            category = classifications.get(path, "not classified")
-            print(f"  - {path} [{category}]")
-    else:
-        print("  - none")
-    print()
-    print("Warnings")
-    if warnings:
-        for warning in warnings:
-            print(f"- {warning}")
-    else:
-        print("- none")
-    print()
-    print("Blocking problems")
-    if problems:
-        for problem in problems:
-            print(f"- {problem}")
-    else:
-        print("- none")
-
-    return 0 if safe else 1
+    print(f"Isolation mode: {context.get('isolation_mode', 'worktree')}")
+    print(f"Git safety mutation permit: {report['decision']['mutation_permitted']}")
+    print(f"Git common dir: {report['repository']['git_common_dir']}")
+    print(f"Linked worktree count: {report['worktrees']['linked_count']}")
+    print("Dirty files:")
+    for path in changed or ["none"]:
+        print(f"- {path}")
+    return 0
 
 
 def cmd_handoff(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).absolute() if args.worktree else Path.cwd().absolute()
-    code, context, repo, error = load_and_verify_agent(worktree)
-    if code != 0:
-        print(f"StateDD Agent Worktree Handoff\n\nBlocking problems\n- {error}", file=sys.stderr)
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
+    code, context, error = load_agent_context(worktree)
+    if code:
+        print(error, file=sys.stderr)
         return 2
-    worktree = repo
-
+    try:
+        verify_agent_context_binding(worktree, context)
+    except (MutationBlocked, RuntimeError) as exc:
+        print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
+        return 1
+    if args.release:
+        if not args.validated:
+            print("Release refused: pass --validated only after the applicable local closure gate has passed.", file=sys.stderr)
+            return 1
+        changed = dirty_files(worktree)
+        if changed:
+            print("Release refused: worktree is dirty or unclassified; reservation retained.", file=sys.stderr)
+            return 1
+        safety_code, report, safety_error = safety_for_context(worktree, context, False)
+        if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+            print_safety_failure(report, safety_error)
+            return 1
+        try:
+            require_mutation_permit(
+                worktree,
+                "reservation release",
+                authorization={
+                    "slice_id": context["slice_id"],
+                    "agent_id": context["agent_id"],
+                    "context_hash": context_hash(context),
+                    "reservation_ref": context["reservation_ref"],
+                    "expected_branch": context["branch"],
+                },
+            )
+        except MutationBlocked as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        if context["reservation_ref"]:
+            code, _, stderr = run_command(["git", "update-ref", "-d", context["reservation_ref"]], worktree)
+            if code != 0:
+                latch_error = record_required_git_failure(worktree, "reservation release", stderr)
+                print(f"Reservation release failed; state retained: {stderr}", file=sys.stderr)
+                if latch_error:
+                    print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+                return 1
+        print("Reservation released after clean, validated local closure; worktree retained for explicit cleanup.")
+        return 0
     handoff_script = ROOT / "scripts" / "statedd_handoff.py"
-    if not handoff_script.exists():
-        print(f"Handoff script not found: {handoff_script}", file=sys.stderr)
-        return 2
-
-    code, output, stderr = run_command([sys.executable, str(handoff_script), "--repo", str(worktree)], worktree)
-    print(output)
+    code, output, stderr = run_command(
+        [sys.executable, str(handoff_script), "--repo", str(worktree)], worktree
+    )
+    if output:
+        print(output)
     if stderr:
         print(stderr, file=sys.stderr)
-    if code != 0:
-        return code
-
-    changed = dirty_files(worktree)
-    if changed:
-        source = latest_evidence_readme(worktree)
-        classifications = with_agent_classifications(parse_classification_file(source) if source else {})
-        unclassified = [p for p in changed if p not in classifications]
-        if unclassified:
-            print()
-            print("Warnings")
-            print(f"- Unclassified dirty files (expected intended_slice_work or generated_artifact): {', '.join(unclassified)}")
-        else:
-            miscategorized = [
-                p for p in changed
-                if classifications.get(p) not in VALID_SLICE_CATEGORIES
-            ]
-            if miscategorized:
-                print()
-                print("Warnings")
-                cats = [classifications.get(p, "not classified") for p in miscategorized]
-                print(f"- Dirty files not classified as intended_slice_work or generated_artifact: {', '.join(f'{p}[{c}]' for p, c in zip(miscategorized, cats))}")
-
-    if args.release:
-        ref = context.get("reservation_ref", "")
-        if ref:
-            repo_root = main_worktree_root(worktree)
-            delete_code, _, delete_error = run_command(["git", "update-ref", "-d", ref], repo_root)
-            if delete_code != 0:
-                print(f"Failed to release reservation {ref}: {delete_error}", file=sys.stderr)
-                return 1
-            print(f"Released reservation: {ref}")
-
-    return 0
+    return code
 
 
 def cmd_close(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).absolute() if args.worktree else Path.cwd().absolute()
-    code, context, repo, error = load_and_verify_agent(worktree)
-    if code != 0:
-        print(f"StateDD Agent Worktree Close\n\nBlocking problems\n- {error}", file=sys.stderr)
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
+    code, context, error = load_agent_context(worktree)
+    if code:
+        print(error, file=sys.stderr)
         return 2
-    worktree = repo
-
-    pr_number = args.pr
-    if not pr_number or pr_number <= 0:
-        print("--pr is required and must be a positive integer", file=sys.stderr)
+    try:
+        verify_agent_context_binding(worktree, context)
+    except (MutationBlocked, RuntimeError) as exc:
+        print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
         return 1
-
-    branch = context.get("branch", "")
-    ref = context.get("reservation_ref", "")
-    repo_root = main_worktree_root(worktree)
-
+    if not args.pr or args.pr <= 0:
+        print("--pr must be a positive integer", file=sys.stderr)
+        return 1
     if args.dry_run:
-        print("DRY RUN: would push branch and run remote closure finalizer")
-        print(f"  branch: {branch}")
-        print(f"  worktree: {worktree}")
-        print(f"  reservation: {ref}")
+        print("DRY RUN: would require explicit remote-mutation authorization, then push and invoke remote closure finalizer")
+        print("No worktree, clone, branch, or reservation cleanup would occur.")
         return 0
-
-    lock_code = check_locks_or_fail(repo_root, wait=args.wait)
-    if lock_code != 0:
-        return lock_code
-
-    # Push branch.
-    code, _, stderr = run_command(
-        ["git", "push", "origin", f"HEAD:refs/heads/{branch}"], worktree
-    )
-    if code != 0:
-        print(f"Failed to push branch '{branch}': {stderr}", file=sys.stderr)
-        print(f"Worktree left intact for debugging: {worktree}")
+    if not args.remote_mutation or not args.operator_authorized:
+        print(
+            "Remote push is disabled by default; pass --remote-mutation and "
+            "--operator-authorized for this explicit remote-mutation path.",
+            file=sys.stderr,
+        )
         return 1
-
-    # Run remote closure finalizer from inside the worktree.
-    finalizer_script = ROOT / "scripts" / "statedd_remote_closure_finalizer.py"
-    if not finalizer_script.exists():
-        print(f"Remote closure finalizer not found: {finalizer_script}", file=sys.stderr)
-        print(f"Worktree left intact for debugging: {worktree}")
-        return 2
-
+    if dirty_files(worktree):
+        print("Remote push blocked: remote mutation requires a clean worktree.", file=sys.stderr)
+        return 1
+    safety_code, report, safety_error = safety_for_context(
+        worktree,
+        context,
+        args.restart_session,
+        operation_class="remote_mutation",
+        operator_authorized=True,
+    )
+    if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+        print_safety_failure(report, safety_error)
+        return 1 if safety_code != 2 else 2
+    branch = context.get("branch", "")
+    expected_head = required_command(["git", "rev-parse", "HEAD"], worktree, "exact push head inspection")
+    if report.get("repository", {}).get("branch") != branch or report.get("repository", {}).get("head") != expected_head:
+        print("Remote push blocked: branch or HEAD changed after the centralized safety decision.", file=sys.stderr)
+        return 1
+    try:
+        require_mutation_permit(
+            worktree,
+            "remote push",
+            operation_class="remote_mutation",
+            authorization={
+                "slice_id": context["slice_id"],
+                "agent_id": context["agent_id"],
+                "context_hash": context_hash(context),
+                "reservation_ref": context["reservation_ref"],
+                "expected_branch": branch,
+                "expected_head": expected_head,
+            },
+        )
+    except MutationBlocked as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    code, _, stderr = run_command(["git", "push", "origin", f"HEAD:refs/heads/{branch}"], worktree)
+    if code != 0:
+        latch_error = record_required_git_failure(
+            worktree,
+            "git push",
+            stderr,
+            binding={
+                "branch": branch,
+                "head": expected_head,
+                "slice_id": context["slice_id"],
+                "agent_id": context["agent_id"],
+                "context_hash": context_hash(context),
+                "reservation_ref": context["reservation_ref"],
+                "worktree_clean": True,
+            },
+        )
+        print(f"Push failed; isolation path retained: {stderr}", file=sys.stderr)
+        if latch_error:
+            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+        return 1
+    finalizer = ROOT / "scripts" / "statedd_remote_closure_finalizer.py"
     code, output, stderr = run_command(
-        [sys.executable, str(finalizer_script), "--root", str(worktree), "--pr-number", str(pr_number)],
+        [sys.executable, str(finalizer), "--root", str(worktree), "--pr-number", str(args.pr)],
         worktree,
     )
-    print(output)
+    if output:
+        print(output)
     if stderr:
         print(stderr, file=sys.stderr)
     if code != 0:
-        print(f"\nRemote closure finalizer failed; worktree left intact: {worktree}", file=sys.stderr)
+        print(f"Remote closure failed; isolation path retained: {worktree}", file=sys.stderr)
         return code
-
-    # Remove the verified worktree first. Keep the reservation if removal fails
-    # so cleanup remains attributable and retryable.
-    cleanup_code, cleanup_error = remove_worktree_then_reservation(repo_root, worktree, ref)
-    if cleanup_code != 0:
-        print(cleanup_error, file=sys.stderr)
-        return 1
-    print(f"Closed agent worktree: {worktree}")
+    print(f"Remote closure verified; isolation path retained for explicit human cleanup: {worktree}")
     return 0
 
 
-def remove_worktree_safe(repo_root: Path, worktree_path: Path) -> None:
-    """Remove a worktree after verifying it lives under repo-root/.worktrees/."""
-    resolved = worktree_path.resolve()
-    allowed_root = (repo_root / WORKTREE_DIR).resolve()
-    if not str(resolved).startswith(str(allowed_root) + os.sep) and resolved != allowed_root:
-        raise RuntimeError(f"Refusing to remove path outside {allowed_root}: {resolved}")
-
-    code, _, stderr = run_command(["git", "worktree", "remove", "--force", str(resolved)], repo_root)
-    if code != 0:
-        raise RuntimeError(f"Failed to remove worktree {resolved}: {stderr}")
-
-    # Prune leftover registration.
-    run_command(["git", "worktree", "prune"], repo_root)
-
-
-def remove_worktree_then_reservation(repo_root: Path, worktree: Path, ref: str) -> tuple[int, str]:
-    """Close local ownership without discarding attribution on removal failure."""
-    try:
-        remove_worktree_safe(repo_root, worktree)
-    except RuntimeError as exc:
-        return 1, f"{exc}; reservation retained: {ref}"
-    code, _, error = run_command(["git", "update-ref", "-d", ref], repo_root)
-    if code != 0:
-        return 1, f"Worktree removed but reservation cleanup failed for {ref}: {error}"
-    return 0, ""
-
-
-def list_reservations(repo: Path) -> list[tuple[str, str, dict]]:
-    """Return list of (branch, sha, context) for reservation refs.
-
-    Reservation context is stored as the reflog message of the ref and
-    retrieved with git log -g.
-    """
-    code, stdout, _ = run_command(
+def list_reservations(repo: Path) -> list[tuple[str, str, dict[str, Any]]]:
+    output = required_command(
         ["git", "for-each-ref", "--format=%(refname) %(objectname)", RESERVATION_REF_PREFIX],
         repo,
+        "reservation inspection",
     )
-    if code != 0:
-        return []
-    results: list[tuple[str, str, dict]] = []
-    for line in stdout.splitlines():
-        parts = line.split(" ", 1)
-        if len(parts) < 2:
+    results: list[tuple[str, str, dict[str, Any]]] = []
+    for line in output.splitlines():
+        refname, _, sha = line.partition(" ")
+        if not refname or not sha:
             continue
-        refname, sha = parts[0], parts[1]
         branch = refname.removeprefix(RESERVATION_REF_PREFIX)
-        context_text = git_value(repo, ["log", "-g", "-1", "--format=%gs", refname], fallback="{}")
+        code, message, _ = run_command(["git", "log", "-g", "-1", "--format=%gs", refname], repo)
         try:
-            context = json.loads(context_text)
+            context = json.loads(message) if code == 0 and message else {}
         except json.JSONDecodeError:
             context = {}
         results.append((branch, sha, context))
     return results
 
 
-def list_worktrees(repo: Path) -> dict[str, dict]:
-    """Return {branch: {path, head, bare}} from git worktree list --porcelain."""
-    code, stdout, _ = run_command(["git", "worktree", "list", "--porcelain"], repo)
-    if code != 0:
-        return {}
-    worktrees: dict[str, dict] = {}
-    current: dict = {}
-    for line in stdout.splitlines():
+def list_worktrees(repo: Path) -> dict[str, dict[str, Any]]:
+    output = required_command(
+        ["git", "worktree", "list", "--porcelain"], repo, "worktree topology inspection"
+    )
+    worktrees: dict[str, dict[str, Any]] = {}
+    current: dict[str, Any] = {}
+    for line in [*output.splitlines(), ""]:
         if not line:
-            if current.get("branch"):
-                worktrees[current["branch"]] = current
+            key = current.get("branch") or current.get("path")
+            if key:
+                worktrees[str(key)] = current
             current = {}
-            continue
-        if line.startswith("worktree "):
-            current["path"] = line.removeprefix("worktree ").strip()
+        elif line.startswith("worktree "):
+            current["path"] = line.removeprefix("worktree ")
         elif line.startswith("HEAD "):
-            current["head"] = line.removeprefix("HEAD ").strip()
+            current["head"] = line.removeprefix("HEAD ")
         elif line.startswith("branch "):
-            current["branch"] = line.removeprefix("branch ").strip()
-        elif line == "bare":
-            current["bare"] = True
-    if current.get("branch"):
-        worktrees[current["branch"]] = current
+            current["branch"] = line.removeprefix("branch ")
+        elif line.startswith("locked"):
+            current["locked"] = line.removeprefix("locked").strip() or True
+        elif line.startswith("prunable"):
+            current["prunable"] = line.removeprefix("prunable").strip() or True
     return worktrees
 
 
-def is_merged(repo: Path, branch: str, default_branch: str) -> bool:
-    code, _, _ = run_command(["git", "merge-base", "--is-ancestor", branch, default_branch], repo)
+def is_merged(repo: Path, branch: str, default: str) -> bool:
+    code, _, _ = run_command(["git", "merge-base", "--is-ancestor", branch, default], repo)
     return code == 0
 
 
 def cmd_cleanup(args: argparse.Namespace) -> int:
-    repo = Path(args.repo).resolve()
-    code, repo, error = resolve_repo(repo)
-    if code != 0:
-        print(f"StateDD Agent Worktree Cleanup\n\nBlocking problems\n- {error}", file=sys.stderr)
-        return 2
-
-    default_branch = origin_default_branch(repo)
+    repo = resolve_repo(Path(args.repo))
     reservations = list_reservations(repo)
     worktrees = list_worktrees(repo)
-
-    if args.force:
-        branch = args.force.strip()
-        ref = reservation_ref(branch)
-        wt_path = worktree_path_for_branch(repo, branch)
-        if args.dry_run:
-            print(f"DRY RUN: would remove worktree and reservation for {branch}")
-            return 0
-        if f"refs/heads/{branch}" in worktrees:
-            try:
-                remove_worktree_safe(repo, wt_path)
-            except RuntimeError as exc:
-                print(str(exc), file=sys.stderr)
-                return 1
-        run_command(["git", "update-ref", "-d", ref], repo)
-        run_command(["git", "branch", "-D", branch], repo)
-        print(f"Removed reservation and branch: {branch}")
-        return 0
-
-    stale: list[tuple[str, Path | None, str]] = []
-    for branch, sha, context in reservations:
-        wt_path = worktree_path_for_branch(repo, branch)
-        info = worktrees.get(f"refs/heads/{branch}")
-        if info is None:
-            stale.append((branch, None, "no linked worktree"))
-        elif is_merged(repo, branch, default_branch):
-            stale.append((branch, Path(info["path"]), f"merged to {default_branch}"))
-
-    if args.stale_only:
-        print("StateDD Agent Worktree Cleanup (stale-only listing)")
-        if not stale:
-            print("No stale reservations found.")
-            return 0
-        print("The following reservations would be removed with --force <branch>:")
-        for branch, wt_path, reason in stale:
-            print(f"- {branch}: {reason} ({wt_path or 'no worktree'})")
-        return 0
-
-    # Default cleanup without flags: show status and exit.
-    print("StateDD Agent Worktree Cleanup")
-    print("Use --stale-only to list stale entries or --force <branch> to remove one.")
-    print()
-    print(f"Reservations found: {len(reservations)}")
-    for branch, sha, context in reservations:
-        agent_id = context.get("agent_id", "unknown")
-        slice_id = context.get("slice_id", "unknown")
-        print(f"- {branch} (agent={agent_id}, slice={slice_id})")
-    print()
-    print(f"Stale reservations: {len(stale)}")
-    for branch, wt_path, reason in stale:
-        print(f"- {branch}: {reason}")
+    default = origin_default_branch(repo) or "main"
+    print("StateDD Agent Isolation Cleanup Report (non-mutating)")
+    print("No automatic deletion, force removal, branch deletion, or pruning is available.")
+    print("Reservations:")
+    for branch, sha, context in reservations or [("none", "", {})]:
+        if branch == "none":
+            print("- none")
+            continue
+        key = f"refs/heads/{branch}"
+        worktree = worktrees.get(key)
+        reasons: list[str] = []
+        if worktree is None:
+            reasons.append("no registered worktree")
+        if is_merged(repo, branch, default):
+            reasons.append(f"merged to {default}")
+        print(
+            f"- {branch}: head={sha} agent={context.get('agent_id', 'unknown')} "
+            f"slice={context.get('slice_id', 'unknown')} status={', '.join(reasons) or 'active/not proven stale'}"
+        )
+    print("Worktrees:")
+    for key, info in worktrees.items():
+        print(
+            f"- {key}: {info.get('path')} HEAD={info.get('head', 'not proven')} "
+            f"locked={info.get('locked', False)} prunable={info.get('prunable', False)}"
+        )
     return 0
 
 
 def cmd_list(args: argparse.Namespace) -> int:
-    repo = Path(args.repo).resolve()
-    code, repo, error = resolve_repo(repo)
-    if code != 0:
-        print(f"StateDD Agent Worktree List\n\nBlocking problems\n- {error}", file=sys.stderr)
-        return 2
-
+    repo = resolve_repo(Path(args.repo))
     reservations = list_reservations(repo)
     worktrees = list_worktrees(repo)
     locks = detect_git_locks(repo)
-
-    print("StateDD Agent Worktrees")
-    print()
-    print("Reservations")
-    if reservations:
-        for branch, sha, context in reservations:
-            agent_id = context.get("agent_id", "unknown")
-            slice_id = context.get("slice_id", "unknown")
-            created = context.get("created_at", "unknown")
-            print(f"- {branch}")
-            print(f"  agent_id: {agent_id}")
-            print(f"  slice_id: {slice_id}")
-            print(f"  base_sha: {sha}")
-            print(f"  created_at: {created}")
-    else:
+    print("StateDD Agent Isolation Inventory")
+    print("Reservations:")
+    for branch, sha, context in reservations:
+        print(f"- {branch}: {sha} agent={context.get('agent_id', 'unknown')}")
+    if not reservations:
         print("- none")
-    print()
-    print("Worktrees")
-    if worktrees:
-        for branch, info in worktrees.items():
-            print(f"- {branch}: {info.get('path')} (HEAD {info.get('head', 'unknown')})")
-    else:
-        print("- none")
-    print()
-    print("Git lock files")
-    if locks:
-        for lock in locks:
-            print(f"- {lock}")
-    else:
-        print("- none")
+    print("Worktrees:")
+    for key, info in worktrees.items():
+        print(f"- {key}: {info.get('path')} HEAD={info.get('head', 'not proven')}")
+    print("Git lock files:")
+    for lock in locks or ["none"]:
+        print(f"- {lock}")
     return 0
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="StateDD Parallel-Agent Worktree Orchestrator")
-    parser.add_argument("--dry-run", action="store_true", help="Print actions without executing git mutations")
-    parser.add_argument("--repo", default=str(ROOT), help="Repo root (default: repository containing this script)")
-
+    parser = argparse.ArgumentParser(description="StateDD agent strong-isolation orchestrator")
+    parser.add_argument("--dry-run", action="store_true", help="Report intended action without preflight or mutation")
+    parser.add_argument("--repo", default=str(ROOT), help="Source repository")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    start = subparsers.add_parser("start", help="Create a new agent worktree")
-    start.add_argument("--slice-id", required=True, help="Backlog slice identifier")
-    start.add_argument("--agent-id", help="Agent identifier (default: env STATEDD_AGENT_ID or uuid4 fragment)")
-    start.add_argument("--base", help="Base branch/ref (default: repo default branch, then current branch)")
-    start.add_argument("--branch", help="Override computed branch name")
-    start.add_argument("--wait", action="store_true", help="Wait briefly if git locks are held")
+    start = subparsers.add_parser("start", help="Prepare an isolated agent session")
+    start.add_argument("--slice-id", required=True)
+    start.add_argument("--agent-id")
+    start.add_argument("--base")
+    start.add_argument("--branch")
+    start.add_argument("--target")
+    start.add_argument(
+        "--isolation-mode",
+        choices=("clone", "worktree", "normal_branch", "read_only"),
+        default="clone",
+        help="Default clone gives an independent object database; worktree is explicit opt-in",
+    )
+    start.add_argument("--worktree-opt-in", action="store_true")
+    start.add_argument("--trusted-local-machine", action="store_true")
+    start.add_argument("--restart-session", action="store_true")
 
-    guard = subparsers.add_parser("guard", help="Run worktree guard in agent context")
-    guard.add_argument("--mode", choices=("start-slice", "closure"), default="start-slice", help="Guard mode")
-    guard.add_argument("--worktree", help="Agent worktree path (default: current directory)")
+    guard = subparsers.add_parser("guard", help="Run the central safety gate in agent context")
+    guard.add_argument("--mode", choices=("start-slice", "closure"), default="start-slice")
+    guard.add_argument("--worktree")
+    guard.add_argument("--restart-session", action="store_true")
 
-    handoff = subparsers.add_parser("handoff", help="Generate handoff snapshot in agent context")
-    handoff.add_argument("--worktree", help="Agent worktree path (default: current directory)")
-    handoff.add_argument("--release", action="store_true", help="Also release the reservation ref")
+    handoff = subparsers.add_parser("handoff", help="Generate a handoff without releasing/deleting isolation state")
+    handoff.add_argument("--worktree")
+    handoff.add_argument("--release", action="store_true", help="Release only after a clean, validated session")
+    handoff.add_argument("--validated", action="store_true", help="Assert that the applicable local closure gate passed")
 
-    close = subparsers.add_parser("close", help="Push branch and finalize remote closure")
-    close.add_argument("--pr", type=int, required=True, help="Pull request number")
-    close.add_argument("--worktree", help="Agent worktree path (default: current directory)")
-    close.add_argument("--wait", action="store_true", help="Wait briefly if git locks are held")
+    close = subparsers.add_parser("close", help="Push and run remote closure without automatic cleanup")
+    close.add_argument("--pr", type=int, required=True)
+    close.add_argument("--worktree")
+    close.add_argument("--restart-session", action="store_true")
+    close.add_argument("--remote-mutation", action="store_true", help="Explicitly select the remote-mutation path")
+    close.add_argument("--operator-authorized", action="store_true", help="Explicit operator authorization for push")
 
-    cleanup = subparsers.add_parser("cleanup", help="Remove stale or forced agent worktrees")
-    cleanup.add_argument("--stale-only", action="store_true", help="List stale reservations without removing")
-    cleanup.add_argument("--force", help="Remove reservation and worktree for this branch")
-
-    list_cmd = subparsers.add_parser("list", help="List active agent worktrees and reservations")
-
+    subparsers.add_parser("cleanup", help="Report stale/dirty isolation state; never remove it")
+    subparsers.add_parser("list", help="List isolation paths, reservations, and locks")
     return parser.parse_args(argv[1:])
 
 
@@ -1053,8 +1086,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_cleanup(args)
         if args.command == "list":
             return cmd_list(args)
-        print(f"Unknown command: {args.command}", file=sys.stderr)
         return 2
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     except Exception as exc:
         print(f"Unexpected error: {exc}", file=sys.stderr)
         return 2

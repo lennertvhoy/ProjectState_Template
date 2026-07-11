@@ -49,7 +49,10 @@ non-authoritative task pack is available.
 - **Worktree Isolation Invariant:** No non-trivial coding-agent slice may start from an ambiguous or dirty shared worktree unless the dirt is classified and isolated first with `scripts/statedd_worktree_guard.py`.
 - **Parallel-Agent Invariant:** Multiple coding agents working concurrently must each use an isolated agent worktree provisioned by `scripts/statedd_agent_worktree.py`. Shared worktrees cannot prove "whose change is whose" at closure; worktree isolation is the default boundary for non-trivial parallel slices.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
-
+- **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove identity, common-directory ownership, metadata writability, fsck, synchronization, and the permitted isolation mode. A failed mandatory check latches the session read-only until repair and explicit restart.
+- **Isolation Invariant:** Containers and independent agents use full clones; linked worktrees require explicit trusted-local same-identity opt-in. No automatic permission repair, force cleanup, pruning, reset, or garbage collection.
+- **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones, return commits and verification summaries, do not edit global StateDD truth, and do not push the final slice.
+- **Standing Delivery Policy Invariant:** Routine branches, commits, slice pushes, conflict resolution, and PR preparation may be delegated once confirmed in downstream bootstrap; merge-to-main, force-push, history rewrite, and remote-branch deletion remain explicit human boundaries.
 ## Gate Levels
 Use the cheapest gate that honestly proves the current claim.
 
@@ -87,7 +90,7 @@ Downstream repos **never** use `template-maintenance`.
 - **Skills** → `skills/<name>/SKILL.md` — executable workflows (load via `/skill-name`):
   close-slice, failure-scan, ingest-bad-event, quality-gate, release-gate, runtime-truth
 - **Commands** → `commands/statedd-*.md` — slash-command playbooks (invoke via `/statedd-*`):
-  statedd-close-slice, statedd-failure-scan, statedd-ingest-bad-event, statedd-quality-freeze, statedd-release-gate, statedd-remote-closure
+  statedd-close-slice, statedd-failure-scan, statedd-git-safety, statedd-ingest-bad-event, statedd-quality-freeze, statedd-release-gate, statedd-remote-closure
 - **Gates** → `scripts/statedd_*_gate.py`, `scripts/statedd_*_check.py` — executable quality gates
 - **Docs** → `docs/` — reference (FAILURE_TAXONOMY, QUALITY_FIREWALL, INCIDENT_RESPONSE, failure_scans/, quality_gates/, adr/)
 - **Schemas** → `schemas/` — machine-checkable contracts (YAML/JSON schemas)

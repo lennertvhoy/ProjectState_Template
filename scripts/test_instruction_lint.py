@@ -2,7 +2,6 @@
 """Tests for statedd_instruction_lint.py"""
 
 import tempfile
-import os
 import sys
 from pathlib import Path
 

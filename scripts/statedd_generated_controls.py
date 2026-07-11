@@ -13,7 +13,10 @@ history, inventory, or evidence only when the task needs them.
 
 In bootstrap, investigate before implementing and keep unknowns explicit. For
 implementation, take one coherent slice, verify the relevant truth boundary,
-update live state, and end with a precise handoff.
+update live state, and end with a precise handoff. Before repository or StateDD
+mutation, run `scripts/statedd_git_safety_check.py` and use a full clone for
+containers or independent agents. The integration agent owns the final slice
+branch; subagents return bounded commits and do not edit global StateDD truth.
 """
 
 

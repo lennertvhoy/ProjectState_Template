@@ -14,6 +14,13 @@ The template repository itself uses `repo_role: template_repository` and
 
 ## Start here
 
+StateDD is agent-operated. The human supplies intent, permissions, feedback,
+and acceptance; the coding agent inspects the repository, makes scoped changes,
+runs the executable gates, pushes a branch, and returns a remote-first handoff.
+For an empty folder, use the canonical URL startup prompt in
+`prompts/NEW_PROJECT_FROM_URL.md`; it explicitly selects the `team` profile,
+creates a fresh `main`, and enters truthful bootstrap mode.
+
 New project:
 
 ```bash
@@ -111,6 +118,9 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `docs/WORKFLOW_FOR_BEGINNERS.md` | Beginner-friendly diagram, prompt map, and quality checklist |
 | `docs/adr/` | Architecture decision records |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
+| `scripts/statedd_bootstrap_apply.py` | Apply a validated structured bootstrap answer document and integration result |
+| `scripts/statedd_git_safety_check.py` | Fail-closed repository identity, ownership, fsck, synchronization, and isolation preflight |
+| `scripts/statedd_git_safety_session.py` | External latch and context-bound mutation permit enforcement |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
 | `scripts/statedd_version_check.py` | Verify StateDD spec-version alignment |
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
@@ -154,6 +164,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 - executable schemas: `statedd_validate_schema.py` checks state, evidence README, runtime identity, and handoff contracts
 - `bootstrap vs operating`: discovery is a real phase, not a formality
 - `adopt` path for inherited repos: bring the workflow into existing codebases without blindly overwriting them
+- agent-first delivery: clone-default isolation, standing permissions, and remote-first handoffs keep routine work automatic while merge/acceptance remain human boundaries
 - short active queue: open work stays small and backlog-linked
 
 ## Quick Start

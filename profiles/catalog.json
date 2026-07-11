@@ -11,9 +11,10 @@
         "state_hygiene",
         "schema_validation",
         "efficiency_budget",
-        "project_test_detection"
+        "project_test_detection",
+        "git_safety"
       ],
-      "validation": ["quality_gate_level_1"],
+      "validation": ["quality_gate_level_1", "git_safety_contract"],
       "assets": [
         ".gitignore",
         "VERSION",
@@ -28,11 +29,16 @@
         "scripts/statedd_instruction_lint.py",
         "scripts/statedd_efficiency_check.py",
         "scripts/statedd_quality_gate.py",
+        "scripts/statedd_git_safety_check.py",
+        "scripts/statedd_git_safety_session.py",
+        "scripts/statedd_bootstrap_apply.py",
         "schemas/profile_catalog.schema.json",
         "schemas/project_state.schema.json",
         "schemas/project_dna.schema.json",
         "schemas/project_adapter.schema.json",
-        "schemas/statedd_assets.schema.json"
+        "schemas/statedd_assets.schema.json",
+        "schemas/git_safety_report.schema.json",
+        "schemas/bootstrap_answers.schema.json"
       ]
     },
     "proof": {
@@ -135,10 +141,10 @@
     }
   },
   "profiles": {
-    "minimal": {
+      "minimal": {
       "depends_on": [],
       "asset_sets": ["core"],
-      "required_capabilities": ["state_hygiene", "schema_validation", "project_test_detection"],
+      "required_capabilities": ["state_hygiene", "schema_validation", "project_test_detection", "git_safety"],
       "required_gate_level": 1
     },
     "solo": {

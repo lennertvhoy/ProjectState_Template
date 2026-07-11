@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from check_state_docs import check_backlog_structure, check_cross_file_rules, extract_backlog_sections
+from check_state_docs import check_backlog_structure, check_cross_file_rules, extract_backlog_sections  # noqa: E402
 
 
 def write_lifecycle_repo(

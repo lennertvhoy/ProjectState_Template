@@ -8,14 +8,13 @@ Creates fake issues/tasks and checks if agent follows correct workflow.
 
 import argparse
 import json
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from enum import Enum
 
 

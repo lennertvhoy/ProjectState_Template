@@ -7,7 +7,6 @@ and ensures they are ingested via the ingest-bad-event skill.
 """
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path

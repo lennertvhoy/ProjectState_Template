@@ -30,6 +30,21 @@ VALIDATION_REQUIREMENTS: dict[str, dict[str, Any]] = {
         "minimum_gate_level": 1,
         "required_paths": ("scripts/statedd_quality_gate.py",),
     },
+    "git_safety_contract": {
+        "minimum_gate_level": 1,
+        "required_paths": (
+            "scripts/statedd_git_safety_check.py",
+            "scripts/statedd_git_safety_session.py",
+            "schemas/git_safety_report.schema.json",
+        ),
+    },
+    "bootstrap_contract": {
+        "minimum_gate_level": 1,
+        "required_paths": (
+            "scripts/statedd_bootstrap_apply.py",
+            "schemas/bootstrap_answers.schema.json",
+        ),
+    },
     "runtime_contracts": {
         "required_paths": (
             "scripts/statedd_runtime_proof.py",

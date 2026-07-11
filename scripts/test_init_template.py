@@ -478,7 +478,7 @@ def assert_runtime_manifest_matches_files(root: Path) -> None:
     actual = {
         path.relative_to(root).as_posix()
         for path in root.rglob("*")
-        if path.is_file() and "__pycache__" not in path.parts
+        if path.is_file() and "__pycache__" not in path.parts and ".git" not in path.parts
     }
     if declared != actual:
         raise AssertionError(

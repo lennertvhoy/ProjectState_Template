@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import shlex
 import shutil
 import subprocess
@@ -16,11 +15,15 @@ try:
     from statedd_contracts import ContractError, UnsafePathError, load_json_file, safe_root_path
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
     from scripts.statedd_contracts import ContractError, UnsafePathError, load_json_file, safe_root_path
+try:
+    from statedd_git_safety_session import sanitized_git_environment
+except ModuleNotFoundError:  # pragma: no cover
+    from scripts.statedd_git_safety_session import sanitized_git_environment
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 
@@ -29,6 +32,7 @@ def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
         completed = subprocess.run(
             args,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,
@@ -111,14 +115,19 @@ def load_agent_context(path: Path) -> dict:
         "worktree_path",
         "branch",
         "base_branch",
+        "isolation_mode",
     }
     if not required_keys.issubset(data.keys()):
         raise ContractError("agent context is missing required fields")
     if data.get("schema") != AGENT_CONTEXT_SCHEMA:
         raise ContractError("agent context has an unsupported schema")
-    for key in required_keys - {"schema"}:
+    for key in required_keys - {"schema", "reservation_ref"}:
         if not isinstance(data.get(key), str) or not data[key]:
             raise ContractError(f"agent context field {key!r} must be a non-empty string")
+    if not isinstance(data.get("reservation_ref"), str):
+        raise ContractError("agent context reservation_ref must be a string")
+    if data.get("isolation_mode") == "worktree" and not data["reservation_ref"]:
+        raise ContractError("worktree agent context requires a reservation ref")
     return data
 
 
@@ -313,6 +322,30 @@ def main(argv: list[str] | None = None) -> int:
     print("# StateDD Handoff Snapshot")
     print()
     print(f"Generated: {now}")
+    print()
+    remote_contains_head = (
+        "yes"
+        if direct_remote_head == head
+        else "no"
+        if direct_remote_head != "not proven"
+        else "not proven"
+    )
+    if worktree == "clean" and remote_contains_head == "yes":
+        delivery_status = "pushed"
+    elif worktree == "clean":
+        delivery_status = "local-only"
+    else:
+        delivery_status = "local changes not ready to push"
+    print("## Remote-First Status")
+    print()
+    print(f"- repository URL: {origin_url}")
+    print(f"- branch: {branch}")
+    print(f"- exact local HEAD: {head}")
+    print(f"- remote branch HEAD: {direct_remote_head}")
+    print(f"- remote contains exact local HEAD: {remote_contains_head}")
+    print(f"- delivery status: {delivery_status}")
+    print("- PR URL: not currently locatable by this local helper")
+    print("- CI status: not verified by this local helper")
     print()
     print("## Repo Identity")
     print()

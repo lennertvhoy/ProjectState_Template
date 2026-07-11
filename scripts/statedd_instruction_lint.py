@@ -12,11 +12,10 @@ Detects configuration "smells" in AGENTS.md, SKILL.md, and command files:
 """
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -182,7 +181,7 @@ class InstructionLinter:
                 file=analysis.path,
                 line=analysis.line_count,
                 message=f"File has {analysis.line_count} lines (limit: {self.max_lines})",
-                suggestion=f"Split into smaller files or move procedures to skills/commands"
+                suggestion="Split into smaller files or move procedures to skills/commands"
             ))
         if analysis.word_count > self.max_words:
             self._add_smell(analysis, Smell(
@@ -241,7 +240,7 @@ class InstructionLinter:
                         file=analysis.path,
                         line=line,
                         message=f"Inline procedure detected (should be a skill): {m.group()[:80]}",
-                        suggestion=f"Create skill in skills/<name>/SKILL.md and invoke via /<name>"
+                        suggestion="Create skill in skills/<name>/SKILL.md and invoke via /<name>"
                     ))
 
     def _check_missing_failure_cases(self, analysis: FileAnalysis):

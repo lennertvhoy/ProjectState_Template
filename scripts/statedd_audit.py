@@ -21,7 +21,11 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
+
+try:
+    from statedd_git_safety_session import sanitized_git_environment
+except ModuleNotFoundError:  # pragma: no cover
+    from scripts.statedd_git_safety_session import sanitized_git_environment
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,7 +82,7 @@ VALID_BROWSER_PROVIDERS = {
 }
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
 VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_FILE = Path(".statedd/agent.context")
 CLASSIFIED_DIRT_CATEGORIES = {"intended_slice_work", "generated_artifact"}
 ANTI_BRITTLENESS_MARKERS = [
@@ -118,6 +122,7 @@ def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
         completed = subprocess.run(
             args,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,

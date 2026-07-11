@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Regression tests for scripts/statedd_agent_worktree.py."""
+"""Regression tests for the StateDD strong-isolation orchestrator."""
 
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from types import SimpleNamespace
-from unittest import mock
-
-import statedd_agent_worktree as orchestrator
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,15 +32,11 @@ def run(args: list[str], *, cwd: Path, expect_code: int | None = None) -> subpro
 
 
 def git(repo: Path, *args: str) -> str:
-    completed = subprocess.run(
-        ["git", *args],
-        cwd=repo,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    completed = subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=False)
     if completed.returncode != 0:
-        raise AssertionError(f"git {' '.join(args)} failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}")
+        raise AssertionError(
+            f"git {' '.join(args)} failed\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+        )
     return completed.stdout.strip()
 
 
@@ -61,6 +54,7 @@ def init_repo(root: Path) -> Path:
     git(root, "init", "--bare", str(origin))
     git(repo, "remote", "add", "origin", str(origin))
     git(repo, "push", "-u", "origin", "main")
+    git(origin, "symbolic-ref", "HEAD", "refs/heads/main")
     git(repo, "remote", "set-head", "origin", "main")
     return repo
 
@@ -71,302 +65,264 @@ def assert_contains(output: str, expected: str) -> None:
 
 
 def agent_branch_prefix(slice_id: str, agent_id: str) -> str:
-    """Return the expected branch prefix given the orchestrator's naming rules."""
-    clean_slice = "".join(c if c.isalnum() else "-" for c in slice_id.lower()).strip("-")
-    short = agent_id[:4].lower()
-    return f"bl-{clean_slice}-{short}-"
+    clean_slice = "".join(char if char.isalnum() else "-" for char in slice_id.lower()).strip("-")
+    return f"bl-{clean_slice}-{agent_id[:4].lower()}-"
 
 
-def test_start_creates_worktree_and_reservation() -> None:
+def start_clone(repo: Path, slice_id: str, agent_id: str) -> Path:
+    completed = run(
+        ["--repo", str(repo), "start", "--slice-id", slice_id, "--agent-id", agent_id],
+        cwd=repo,
+        expect_code=0,
+    )
+    line = next(line for line in completed.stdout.splitlines() if line.startswith("Agent clone ready:"))
+    return Path(line.split(":", 1)[1].strip())
+
+
+def start_worktree(repo: Path, slice_id: str, agent_id: str) -> Path:
+    completed = run(
+        [
+            "--repo",
+            str(repo),
+            "start",
+            "--slice-id",
+            slice_id,
+            "--agent-id",
+            agent_id,
+            "--isolation-mode",
+            "worktree",
+            "--worktree-opt-in",
+            "--trusted-local-machine",
+        ],
+        cwd=repo,
+        expect_code=0,
+    )
+    line = next(line for line in completed.stdout.splitlines() if line.startswith("Agent worktree ready:"))
+    return Path(line.split(":", 1)[1].strip())
+
+
+def test_default_start_creates_independent_clone() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         agent_id = "agent-a1b2"
-        completed = run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-001", "--agent-id", agent_id],
-            cwd=repo,
-            expect_code=0,
-        )
-        assert_contains(completed.stdout, "Agent worktree ready:")
-        assert_contains(completed.stdout, f"Branch: {agent_branch_prefix('BL-TEST-001', agent_id)}")
-
-        # Find the created worktree path from output.
-        worktree_line = [line for line in completed.stdout.splitlines() if line.startswith("Agent worktree ready:")][0]
-        worktree = Path(worktree_line.split("Agent worktree ready:", 1)[1].strip())
-
-        assert worktree.exists()
-        context_path = worktree / ".statedd" / "agent.context"
-        assert context_path.exists()
-        context = json.loads(context_path.read_text(encoding="utf-8"))
-        assert context["schema"] == "statedd.agent_context.v1"
-        assert context["agent_id"] == agent_id
-        assert context["slice_id"] == "BL-TEST-001"
+        clone = start_clone(repo, "BL-TEST-001", agent_id)
+        context = json.loads((clone / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        assert context["schema"] == "statedd.agent_context.v2"
+        assert context["isolation_mode"] == "clone"
+        assert context["reservation_ref"] == ""
         assert context["branch"].startswith(agent_branch_prefix("BL-TEST-001", agent_id))
-        assert context["worktree_path"] == str(worktree)
-
-        # The orchestrator's own context must not make closure-grade worktrees
-        # appear dirty. Generated repositories inherit this ignore contract.
-        assert git(worktree, "check-ignore", ".statedd/agent.context") == ".statedd/agent.context"
-        assert ".statedd/" not in git(worktree, "status", "--short", "--untracked-files=all")
-
-        # Reservation ref should exist and point to base commit.
-        ref = context["reservation_ref"]
-        assert ref.startswith("refs/statedd/reservations/")
-        sha = git(repo, "rev-parse", ref)
-        base_sha = git(repo, "rev-parse", "main")
-        assert sha == base_sha
+        assert context["git_safety"]["mutation_permitted"] is True
+        source_common = Path(git(repo, "rev-parse", "--git-common-dir")).resolve()
+        clone_common_raw = Path(git(clone, "rev-parse", "--git-common-dir"))
+        clone_common = clone_common_raw if clone_common_raw.is_absolute() else (clone / clone_common_raw).resolve()
+        assert clone_common != source_common
+        alternates = clone_common / "objects" / "info" / "alternates"
+        assert not alternates.exists() or not alternates.read_text(encoding="utf-8").strip()
 
 
-def test_double_reserve_same_branch_fails() -> None:
+def test_worktree_creation_is_blocked_without_explicit_opt_in() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "start",
+                "--slice-id",
+                "BL-TEST-002",
+                "--isolation-mode",
+                "worktree",
+            ],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(completed.stderr, "disabled by default")
+        assert ".worktrees" not in git(repo, "status", "--short", "--untracked-files=all")
+
+
+def test_explicit_same_user_worktree_creates_reservation() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         agent_id = "agent-a1b2"
-        completed = run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-002", "--agent-id", agent_id],
-            cwd=repo,
-            expect_code=0,
-        )
-        worktree_line = [line for line in completed.stdout.splitlines() if line.startswith("Agent worktree ready:")][0]
-        worktree = Path(worktree_line.split("Agent worktree ready:", 1)[1].strip())
+        worktree = start_worktree(repo, "BL-TEST-003", agent_id)
         context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        assert context["isolation_mode"] == "worktree"
+        assert context["reservation_ref"].startswith("refs/statedd/reservations/")
+        assert git(repo, "rev-parse", context["reservation_ref"])
+        assert git(worktree, "check-ignore", ".statedd/agent.context") == ".statedd/agent.context"
 
-        # Second start with explicit same branch must fail.
+
+def test_duplicate_worktree_reservation_fails_without_cleanup() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        worktree = start_worktree(repo, "BL-TEST-004", "agent-a1b2")
+        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
         completed = run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-002", "--agent-id", agent_id, "--branch", context["branch"]],
+            [
+                "--repo",
+                str(repo),
+                "start",
+                "--slice-id",
+                "BL-TEST-004",
+                "--agent-id",
+                "agent-a1b2",
+                "--branch",
+                context["branch"],
+                "--isolation-mode",
+                "worktree",
+                "--worktree-opt-in",
+                "--trusted-local-machine",
+            ],
             cwd=repo,
             expect_code=1,
         )
         assert_contains(completed.stderr, "Reservation ref already exists")
+        assert worktree.exists()
+        assert git(repo, "rev-parse", context["reservation_ref"])
 
 
-def test_start_auto_base_uses_current_branch_when_main_is_absent() -> None:
+def test_dry_run_does_not_create_isolation_path() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        git(repo, "checkout", "-b", "feature-ci-checkout")
-        git(repo, "branch", "-D", "main")
-        git(repo, "remote", "set-head", "origin", "-d")
-        git(repo, "update-ref", "-d", "refs/remotes/origin/main")
-
+        before = git(repo, "worktree", "list", "--porcelain")
         completed = run(
-            ["--repo", str(repo), "--dry-run", "start", "--slice-id", "CI-SMOKE-001", "--agent-id", "agent-a1b2"],
+            [
+                "--repo",
+                str(repo),
+                "--dry-run",
+                "start",
+                "--slice-id",
+                "CI-SMOKE-001",
+                "--agent-id",
+                "agent-a1b2",
+            ],
             cwd=repo,
             expect_code=0,
         )
-        assert_contains(completed.stdout, "DRY RUN: would create branch")
-        assert_contains(completed.stdout, "base: feature-ci-checkout")
+        assert_contains(completed.stdout, "no Git or filesystem mutation performed")
+        assert git(repo, "worktree", "list", "--porcelain") == before
 
 
-def test_guard_passes_in_agent_worktree_with_dirty_files() -> None:
+def test_guard_passes_in_independent_clone_with_dirty_slice_files() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        agent_id = "agent-a1b2"
-        run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-003", "--agent-id", agent_id],
+        clone = start_clone(repo, "BL-TEST-005", "agent-a1b2")
+        (clone / "feature.txt").write_text("new\n", encoding="utf-8")
+        completed = run(
+            ["--repo", str(repo), "guard", "--worktree", str(clone), "--mode", "start-slice"],
             cwd=repo,
             expect_code=0,
         )
-        worktree = list(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-003', agent_id)}*"))[0]
-
-        (worktree / "feature.txt").write_text("new\n", encoding="utf-8")
-        completed = run(["--repo", str(repo), "guard", "--worktree", str(worktree), "--mode", "start-slice"], cwd=repo, expect_code=0)
-        assert_contains(completed.stdout, f"Agent context: {agent_id} / BL-TEST-003")
-        assert_contains(completed.stdout, "agent branch is private: yes")
+        assert_contains(completed.stdout, "Isolation mode: clone")
+        assert_contains(completed.stdout, "Git safety mutation permit: True")
         assert_contains(completed.stdout, "feature.txt")
 
 
-def test_lock_detection_reports_concurrent_git_operation() -> None:
+def test_lock_detection_blocks_opt_in_worktree_without_wait_or_cleanup() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        common = Path(git(repo, "rev-parse", "--git-common-dir"))
-        if not common.is_absolute():
-            common = repo / common
+        common_raw = Path(git(repo, "rev-parse", "--git-common-dir"))
+        common = common_raw if common_raw.is_absolute() else (repo / common_raw).resolve()
         lock = common / "index.lock"
         lock.write_text("", encoding="utf-8")
         try:
             completed = run(
-                ["--repo", str(repo), "start", "--slice-id", "BL-TEST-004", "--agent-id", "agent-a1b2"],
+                [
+                    "--repo",
+                    str(repo),
+                    "start",
+                    "--slice-id",
+                    "BL-TEST-006",
+                    "--isolation-mode",
+                    "worktree",
+                    "--worktree-opt-in",
+                    "--trusted-local-machine",
+                ],
                 cwd=repo,
                 expect_code=1,
             )
             assert_contains(completed.stderr, "Another git operation holds")
-            assert_contains(completed.stderr, "index.lock")
+            assert lock.exists()
         finally:
-            lock.unlink(missing_ok=True)
+            lock.unlink()
 
 
-def test_handoff_includes_agent_context() -> None:
+def test_handoff_includes_clone_agent_context() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        agent_id = "agent-a1b2"
-        run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-005", "--agent-id", agent_id],
+        clone = start_clone(repo, "BL-TEST-007", "agent-a1b2")
+        completed = run(
+            ["--repo", str(repo), "handoff", "--worktree", str(clone)],
             cwd=repo,
             expect_code=0,
         )
-        worktree = list(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-005', agent_id)}*"))[0]
-
-        completed = run(["--repo", str(repo), "handoff", "--worktree", str(worktree)], cwd=repo, expect_code=0)
         assert_contains(completed.stdout, "# StateDD Handoff Snapshot")
-        assert_contains(completed.stdout, f"agent_id: {agent_id}")
-        assert_contains(completed.stdout, "slice_id: BL-TEST-005")
+        assert_contains(completed.stdout, "agent_id: agent-a1b2")
+        assert_contains(completed.stdout, "slice_id: BL-TEST-007")
 
 
-def test_close_removes_worktree_and_reservation() -> None:
+def test_close_dry_run_retains_clone() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        agent_id = "agent-a1b2"
-        run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-006", "--agent-id", agent_id],
-            cwd=repo,
-            expect_code=0,
-        )
-        worktree = list(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-006', agent_id)}*"))[0]
-        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
-        branch = context["branch"]
-
-        # Make a commit in the worktree so the branch can be pushed.
-        (worktree / "feature.txt").write_text("new\n", encoding="utf-8")
-        git(worktree, "add", "feature.txt")
-        git(worktree, "commit", "-m", "slice commit")
-
-        # Use --dry-run because we cannot actually open a PR in the bare repo.
+        clone = start_clone(repo, "BL-TEST-008", "agent-a1b2")
+        context_before = (clone / ".statedd" / "agent.context").read_bytes()
         completed = run(
-            ["--repo", str(repo), "--dry-run", "close", "--worktree", str(worktree), "--pr", "1"],
+            [
+                "--repo",
+                str(repo),
+                "--dry-run",
+                "close",
+                "--worktree",
+                str(clone),
+                "--pr",
+                "1",
+            ],
             cwd=repo,
             expect_code=0,
         )
-        assert_contains(completed.stdout, "DRY RUN: would push branch and run remote closure finalizer")
-
-        # Now actually run cleanup to verify removal works.
-        completed = run(["--repo", str(repo), "cleanup", "--force", branch], cwd=repo, expect_code=0)
-        assert_contains(completed.stdout, "Removed reservation and branch")
-        assert not worktree.exists()
+        assert_contains(completed.stdout, "No worktree, clone, branch, or reservation cleanup")
+        assert clone.exists()
+        assert (clone / ".statedd" / "agent.context").read_bytes() == context_before
 
 
-def test_close_rejects_context_from_another_worktree_before_push() -> None:
+def test_cleanup_is_report_only_for_stale_and_dirty_worktrees() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        for slice_id, agent_id in (("BL-TEST-A", "agent-a111"), ("BL-TEST-B", "agent-b222")):
-            run(
-                ["--repo", str(repo), "start", "--slice-id", slice_id, "--agent-id", agent_id],
-                cwd=repo,
-                expect_code=0,
-            )
-        worktree_a = next(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-A', 'agent-a111')}*"))
-        worktree_b = next(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-B', 'agent-b222')}*"))
-        context_a_path = worktree_a / ".statedd" / "agent.context"
-        context_b_path = worktree_b / ".statedd" / "agent.context"
-        context_a = json.loads(context_a_path.read_text(encoding="utf-8"))
-        context_b = json.loads(context_b_path.read_text(encoding="utf-8"))
-        before_a = git(repo, "ls-remote", "origin", context_a["branch"])
-        before_b = git(repo, "ls-remote", "origin", context_b["branch"])
-
-        context_a_path.write_bytes(context_b_path.read_bytes())
-        completed = run(
-            ["--repo", str(repo), "close", "--worktree", str(worktree_a), "--pr", "1"],
-            cwd=repo,
-            expect_code=2,
-        )
-
-        assert_contains(completed.stderr, "worktree mismatch")
-        assert git(repo, "ls-remote", "origin", context_a["branch"]) == before_a
-        assert git(repo, "ls-remote", "origin", context_b["branch"]) == before_b
+        worktree = start_worktree(repo, "BL-TEST-009", "agent-a1b2")
+        (worktree / "dirty.txt").write_text("preserve\n", encoding="utf-8")
+        topology_before = git(repo, "worktree", "list", "--porcelain")
+        completed = run(["--repo", str(repo), "cleanup"], cwd=repo, expect_code=0)
+        assert_contains(completed.stdout, "non-mutating")
+        assert_contains(completed.stdout, "No automatic deletion")
+        assert worktree.exists()
+        assert (worktree / "dirty.txt").exists()
+        assert git(repo, "worktree", "list", "--porcelain") == topology_before
 
 
-def test_start_rolls_back_when_reservation_creation_fails() -> None:
+def test_missing_worktree_is_reported_not_pruned() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        branch = "bl-rollback-test"
-        real_run = orchestrator.run_command
-
-        def fail_reservation(args: list[str], cwd: Path) -> tuple[int, str, str]:
-            if args[:4] == ["git", "update-ref", "--create-reflog", "-m"]:
-                return 1, "", "injected reservation failure"
-            return real_run(args, cwd)
-
-        args = SimpleNamespace(
-            repo=str(repo),
-            slice_id="BL-ROLLBACK",
-            agent_id="agent-rb01",
-            branch=branch,
-            base="main",
-            wait=False,
-            dry_run=False,
-        )
-        with mock.patch.object(orchestrator, "run_command", side_effect=fail_reservation):
-            assert orchestrator.cmd_start(args) == 2
-
-        assert git(repo, "branch", "--list", branch) == ""
-        assert not (repo / ".worktrees" / branch).exists()
-        assert git(repo, "for-each-ref", "--format=%(refname)", orchestrator.reservation_ref(branch)) == ""
-
-
-def test_close_preserves_reservation_when_worktree_removal_fails() -> None:
-    with tempfile.TemporaryDirectory() as tmp:
-        repo = init_repo(Path(tmp))
-        run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-REMOVE", "--agent-id", "agent-rm01"],
-            cwd=repo,
-            expect_code=0,
-        )
-        worktree = next(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-REMOVE', 'agent-rm01')}*"))
+        worktree = start_worktree(repo, "BL-TEST-010", "agent-a1b2")
         context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
-        ref = context["reservation_ref"]
-        with mock.patch.object(
-            orchestrator,
-            "remove_worktree_safe",
-            side_effect=RuntimeError("injected removal failure"),
-        ):
-            code, error = orchestrator.remove_worktree_then_reservation(repo, worktree, ref)
-        assert code == 1
-        assert "reservation retained" in error
-        assert git(repo, "rev-parse", "--verify", ref)
+        shutil.rmtree(worktree)
+        topology_before = git(repo, "worktree", "list", "--porcelain")
+        completed = run(["--repo", str(repo), "cleanup"], cwd=repo, expect_code=0)
+        assert_contains(completed.stdout, context["branch"])
+        assert git(repo, "worktree", "list", "--porcelain") == topology_before
 
 
-def test_cleanup_removes_stale_worktree() -> None:
+def test_existing_audit_does_not_treat_clone_context_dirt_as_shared_worktree_dirt() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
-        agent_id = "agent-a1b2"
-        run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-007", "--agent-id", agent_id],
-            cwd=repo,
-            expect_code=0,
-        )
-        worktree = list(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-007', agent_id)}*"))[0]
-        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
-        branch = context["branch"]
-
-        # Merge the agent branch to main so it becomes stale.
-        git(repo, "merge", "--no-ff", branch, "-m", "merge agent branch")
-
-        completed = run(["--repo", str(repo), "cleanup", "--stale-only"], cwd=repo, expect_code=0)
-        assert_contains(completed.stdout, branch)
-        assert_contains(completed.stdout, "merged to main")
-
-        completed = run(["--repo", str(repo), "cleanup", "--force", branch], cwd=repo, expect_code=0)
-        assert_contains(completed.stdout, "Removed reservation and branch")
-
-
-def test_existing_audit_passes_in_agent_context() -> None:
-    with tempfile.TemporaryDirectory() as tmp:
-        repo = init_repo(Path(tmp))
-        agent_id = "agent-a1b2"
-        run(
-            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-008", "--agent-id", agent_id],
-            cwd=repo,
-            expect_code=0,
-        )
-        worktree = list(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-008', agent_id)}*"))[0]
-
-        # Create evidence folder matching slice_id and a classification table.
-        evidence_dir = worktree / "docs" / "evidence" / "bl-test-008"
+        clone = start_clone(repo, "BL-TEST-011", "agent-a1b2")
+        evidence_dir = clone / "docs" / "evidence" / "bl-test-011"
         evidence_dir.mkdir(parents=True)
-        readme = evidence_dir / "README.md"
-        readme.write_text(
+        (evidence_dir / "README.md").write_text(
             """# Evidence
 
 branch: placeholder
 head: placeholder
-Claims: agent worktree
+Claims: isolated clone
 
 ## Worktree Dirty File Classification
 
@@ -376,14 +332,13 @@ Claims: agent worktree
 """,
             encoding="utf-8",
         )
-        manifest = evidence_dir / "manifest.json"
-        manifest.write_text(
+        (evidence_dir / "manifest.json").write_text(
             json.dumps(
                 {
                     "schema": "statedd.evidence_manifest.v1",
-                    "slice_id": "BL-TEST-008",
+                    "slice_id": "BL-TEST-011",
                     "manifest_status": "complete",
-                    "created_at": "2026-07-07T00:00:00+00:00",
+                    "created_at": "2026-07-11T00:00:00+00:00",
                     "repo": {"branch": "main", "head": "HEAD"},
                     "runtime_identity": {"required": False},
                     "claims": [],
@@ -394,35 +349,97 @@ Claims: agent worktree
             ),
             encoding="utf-8",
         )
-
-        (worktree / "feature.txt").write_text("new\n", encoding="utf-8")
-        audit_script = ROOT / "scripts" / "statedd_audit.py"
+        (clone / "feature.txt").write_text("new\n", encoding="utf-8")
         completed = subprocess.run(
-            [sys.executable, str(audit_script), str(worktree), "--agent-context", str(worktree)],
-            cwd=worktree,
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "statedd_audit.py"),
+                str(clone),
+                "--agent-context",
+                str(clone),
+            ],
+            cwd=clone,
             capture_output=True,
             text=True,
             check=False,
         )
-        # Audit may warn/fail about state files because this is a temp repo, but it
-        # should not fail on worktree_clean when agent context classifies the dirt.
         assert "Worktree is dirty" not in completed.stdout, completed.stdout
+
+
+def test_forged_context_unknown_field_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-012", "agent-a1b2")
+        context_path = clone / ".statedd" / "agent.context"
+        context = json.loads(context_path.read_text(encoding="utf-8"))
+        context["forged"] = True
+        context_path.write_text(json.dumps(context), encoding="utf-8")
+        completed = run(["--repo", str(repo), "guard", "--worktree", str(clone)], cwd=repo, expect_code=2)
+        assert_contains(completed.stderr, "closed-world")
+
+
+def test_copied_context_from_another_clone_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        first = start_clone(repo, "BL-TEST-013", "agent-a1b2")
+        second = start_clone(repo, "BL-TEST-014", "agent-c3d4")
+        source_context = (first / ".statedd" / "agent.context").read_text(encoding="utf-8")
+        (second / ".statedd" / "agent.context").write_text(source_context, encoding="utf-8")
+        completed = run(["--repo", str(repo), "guard", "--worktree", str(second)], cwd=repo, expect_code=1)
+        assert_contains(completed.stderr, "worktree_path")
+
+
+def test_symlinked_context_path_is_rejected() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-015", "agent-a1b2")
+        link = Path(tmp) / "clone-link"
+        link.symlink_to(clone, target_is_directory=True)
+        completed = run(["--repo", str(repo), "guard", "--worktree", str(link)], cwd=repo, expect_code=2)
+        assert_contains(completed.stderr, "symlink")
+
+
+def test_close_requires_explicit_remote_mutation_authorization() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-016", "agent-a1b2")
+        completed = run(["--repo", str(repo), "close", "--worktree", str(clone), "--pr", "1"], cwd=repo, expect_code=1)
+        assert_contains(completed.stderr, "Remote push is disabled by default")
+        assert clone.exists()
+
+
+def test_dirty_close_cannot_reach_push_path() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-017", "agent-a1b2")
+        (clone / "dirty.txt").write_text("preserve\n", encoding="utf-8")
+        completed = run(
+            [
+                "--repo", str(repo), "close", "--worktree", str(clone), "--pr", "1",
+                "--remote-mutation", "--operator-authorized",
+            ],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert "clean worktree" in completed.stderr.lower() or "write probes" in completed.stderr.lower()
+        assert clone.exists()
+        assert (clone / "dirty.txt").exists()
 
 
 def main() -> int:
     tests = [
-        test_start_creates_worktree_and_reservation,
-        test_double_reserve_same_branch_fails,
-        test_start_auto_base_uses_current_branch_when_main_is_absent,
-        test_guard_passes_in_agent_worktree_with_dirty_files,
-        test_lock_detection_reports_concurrent_git_operation,
-        test_handoff_includes_agent_context,
-        test_close_removes_worktree_and_reservation,
-        test_close_rejects_context_from_another_worktree_before_push,
-        test_start_rolls_back_when_reservation_creation_fails,
-        test_close_preserves_reservation_when_worktree_removal_fails,
-        test_cleanup_removes_stale_worktree,
-        test_existing_audit_passes_in_agent_context,
+        test_default_start_creates_independent_clone,
+        test_worktree_creation_is_blocked_without_explicit_opt_in,
+        test_explicit_same_user_worktree_creates_reservation,
+        test_duplicate_worktree_reservation_fails_without_cleanup,
+        test_dry_run_does_not_create_isolation_path,
+        test_guard_passes_in_independent_clone_with_dirty_slice_files,
+        test_lock_detection_blocks_opt_in_worktree_without_wait_or_cleanup,
+        test_handoff_includes_clone_agent_context,
+        test_close_dry_run_retains_clone,
+        test_cleanup_is_report_only_for_stale_and_dirty_worktrees,
+        test_missing_worktree_is_reported_not_pruned,
+        test_existing_audit_does_not_treat_clone_context_dirt_as_shared_worktree_dirt,
     ]
     failures = 0
     for test in tests:

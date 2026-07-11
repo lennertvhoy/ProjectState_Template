@@ -8,12 +8,24 @@ permissions:
   contents: read
 
 jobs:
-  docs:
+  branch-head:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Check out repo
+      - name: Check out the direct branch head
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Assert branch-head subject identity
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_HEAD"
+          echo "CI subject: branch-head"
+          echo "Checked out: $actual"
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
@@ -22,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install pytest==9.0.3 pyyaml==6.0.3 tiktoken==0.12.0
+          python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
 
       - name: Run authoritative Level 2 validation
         run: |
@@ -42,3 +54,33 @@ jobs:
         run: |
           git diff --check
           test -z "$(git status --porcelain --untracked-files=all)"
+
+  merge-candidate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the synthetic pull-request merge candidate
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Assert merge-candidate subject identity
+        env:
+          EXPECTED_MERGE: ${{ github.sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_MERGE"
+          echo "CI subject: PR merge-candidate"
+          echo "Checked out: $actual"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
+
+      - name: Run authoritative Level 2 validation for merge candidate
+        run: python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance --verbose

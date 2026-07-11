@@ -166,7 +166,7 @@ def test_profile_footprints_are_bounded_and_minimal_is_smallest() -> None:
                 ["new", "--name", "Profile footprint", "--target", str(target), "--profile", profile],
                 expect_success=True,
             )
-            files = [path for path in target.rglob("*") if path.is_file()]
+            files = [path for path in target.rglob("*") if path.is_file() and ".git" not in path.parts]
             file_count = len(files)
             byte_count = sum(path.stat().st_size for path in files)
             startup_bytes = sum((target / path).stat().st_size for path in STARTUP_FILES)

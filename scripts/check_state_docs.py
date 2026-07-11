@@ -907,7 +907,6 @@ def main(argv: list[str] | None = None) -> int:
     readme = root / "README.md"
     template_style_repo = is_template_style_repo(root)
     if readme.exists() and template_style_repo:
-        readme_text = readme.read_text(encoding="utf-8")
         issues = check_readme(readme)
         if issues:
             failures.append(("README.md", issues))

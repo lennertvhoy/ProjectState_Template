@@ -32,6 +32,10 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
         load_json_file,
     )
     from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
+try:
+    from statedd_git_safety_session import sanitized_git_environment
+except ModuleNotFoundError:  # pragma: no cover
+    from scripts.statedd_git_safety_session import sanitized_git_environment
 
 
 class QualityGate:
@@ -68,7 +72,12 @@ class QualityGate:
             print(f"$ {' '.join(cmd)}", file=sys.stderr)
         try:
             result = subprocess.run(
-                cmd, cwd=cwd or self.root, capture_output=True, text=True, timeout=120
+                cmd,
+                cwd=cwd or self.root,
+                env=sanitized_git_environment(),
+                capture_output=True,
+                text=True,
+                timeout=120,
             )
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
@@ -475,7 +484,9 @@ class QualityGate:
         if not (self.root / ".git").exists():
             self.warnings.append("Git diff check not applicable outside a Git worktree")
             return True
-        code, out, err = self.run_cmd(["git", "diff", "--check", "HEAD"])
+        head_code, _, _ = self.run_cmd(["git", "rev-parse", "--verify", "HEAD"])
+        diff_args = ["git", "diff", "--check", "HEAD"] if head_code == 0 else ["git", "diff", "--check"]
+        code, out, err = self.run_cmd(diff_args)
         if code == 0:
             print("  ✓ Git diff whitespace clean")
             return True
@@ -508,14 +519,11 @@ class QualityGate:
             ("Diff Whitespace", self.check_diff_whitespace),
         ]
 
-        all_passed = True
         for name, check in checks:
             try:
-                if not check():
-                    all_passed = False
+                check()
             except Exception as e:
                 self.failures.append(f"{name} check crashed: {e}")
-                all_passed = False
 
         print("\n" + "=" * 50)
         if self.warnings:
