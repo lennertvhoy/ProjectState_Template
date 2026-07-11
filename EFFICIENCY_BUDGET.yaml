@@ -70,7 +70,9 @@ context_budgets:
       max_startup_bytes: 9000
       max_startup_estimated_tokens: 2250
       max_footprint_files: 42
-      max_footprint_bytes: 360000
+      # Optional knowledge_okf adds the validator, extension schema, and one
+      # contained index without changing the startup file selection.
+      max_footprint_bytes: 380000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000

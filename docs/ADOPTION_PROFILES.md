@@ -76,6 +76,22 @@ Use when acceptance criteria, audit trails, or runtime proof are non-negotiable.
   - explicit human override records when defaults are overridden.
 - Do not claim closure-grade in this profile without satisfying those defaults.
 
+### Optional `knowledge_okf` module
+
+OKF knowledge is not part of any ordinary profile. Install it only when the
+project needs a contained `knowledge/` bundle for durable domain concepts,
+metrics, schema explanations, interfaces, or playbooks:
+
+```bash
+python3 scripts/init_template.py new --name "Your Project" --profile team --asset-set knowledge_okf
+python3 scripts/init_template.py adopt --name "Your Project" --profile team --asset-set knowledge_okf
+```
+
+The module installs the pinned OKF v0.1 validator, StateDD provenance and
+staleness contract, and a project-owned `knowledge/index.md` scaffold. It does
+not duplicate StateDD operational truth or add knowledge files to `minimal`,
+`solo`, or `team` unless explicitly selected.
+
 ## Usage
 
 ```bash

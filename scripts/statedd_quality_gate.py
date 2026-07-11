@@ -270,6 +270,7 @@ class QualityGate:
             return False
 
         passed = True
+        dispatched_okf = False
         for validation_id in validations:
             requirement = VALIDATION_REQUIREMENTS[validation_id]
             minimum = requirement.get("minimum_gate_level")
@@ -293,6 +294,18 @@ class QualityGate:
                         f"Validation {validation_id!r} requires regular asset {raw_path}"
                     )
                     passed = False
+            if validation_id == "okf_v0_1_conformance" and not dispatched_okf:
+                validator = self.root / "scripts" / "statedd_okf_validate.py"
+                command = [sys.executable, str(validator), str(self.root / "knowledge"), "--source-root", str(self.root), "--strict"]
+                code, out, err = self.run_cmd(command)
+                if code != 0:
+                    self.failures.append(
+                        f"Validation {validation_id!r} failed:\n{self.command_output(out, err)}"
+                    )
+                    passed = False
+                else:
+                    print("  ✓ OKF v0.1 bundle and StateDD governance validated")
+                dispatched_okf = True
         if passed:
             print(f"  ✓ Dispatched {len(validations)} profile validation contract(s)")
         return passed
