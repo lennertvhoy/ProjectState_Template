@@ -54,6 +54,8 @@ def start_agent(repo: Path, slice_id: str, agent_id: str) -> tuple[Path, str]:
     line = next(line for line in output.splitlines() if line.startswith("Agent clone ready:"))
     clone = Path(line.split(":", 1)[1].strip())
     context = json.loads((clone / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+    git(clone, "config", "user.email", f"{agent_id}@example.invalid")
+    git(clone, "config", "user.name", f"StateDD {agent_id}")
     return clone, context["branch"]
 
 
