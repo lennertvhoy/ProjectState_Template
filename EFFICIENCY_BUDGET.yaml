@@ -64,7 +64,8 @@ context_budgets:
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
       max_footprint_files: 330
-      max_footprint_bytes: 2000000
+      # Includes the optional OKF validator, extension schema, and contained scaffold.
+      max_footprint_bytes: 2100000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
