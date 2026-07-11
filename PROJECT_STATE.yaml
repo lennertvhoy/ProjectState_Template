@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T16:42:00+02:00
+  updated_at: 2026-07-11T16:50:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -161,8 +161,8 @@ current_state:
     remote_pr_last_observed:
       number: 7
       status: open_draft
-      head: 86e33a9
-      source: gh_pr_create
+      head: recorded_by_final_handoff
+      source: gh_pr_edit
     license_owner: not_verified
 
   last_live_canary:
@@ -196,7 +196,7 @@ current_state:
       local_behind_count: 0
       remote_truth_status: observed_for_current_branch
       local_commit_sequence: golden_path_commit_pushed_to_branch_and_draft_pr
-      final_local_head: 86e33a9f4f0f87bfa0cfacdba04afc5fec70d9ec
+      final_local_head: recorded_by_final_handoff_not_embedded_in_self_describing_state
       notes: |
         The incident branch started clean from verified origin/main. The main
         checkout and five existing linked worktrees share .git as their common
