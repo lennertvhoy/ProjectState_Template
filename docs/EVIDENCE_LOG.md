@@ -577,3 +577,26 @@
 - Type: known_bad_event
 - as_of: 2026-07-11T09:13:22+02:00
 - Notes: This is orientation and risk evidence only; no implementation or closure claim is made.
+
+## EV-2026-07-11-002: Maximum-value correctness repair locally validated (BL-MAX-VALUE-001)
+
+- File: docs/evidence/2026-07-11-maximum-value-correctness/README.md
+- File: docs/evidence/2026-07-11-maximum-value-correctness/manifest.json
+- File: docs/evidence/2026-07-11-maximum-value-correctness/runtime_identity.json
+- File: docs/metrics/profile_metrics.json
+- Title: Lifecycle, gate, path, metrics, runtime, and closure-truth repair
+- Source/System: test and local executable gates
+- Action: Repaired the reopened PR #5 correctness blockers, added adjacent-case
+  regressions, measured the immutable implementation proof, and built strict typed evidence.
+- Shows:
+  - 289 automatically discovered script tests plus 4 subtests pass
+  - 5 schema-example tests pass
+  - all generated profiles pass their required conformance gates
+  - canonical metrics reproduce against proof head `ae851d05aa8113c3cde90d122d1723be123d9e37`
+  - the level-2 quality gate, strict evidence pack, and runtime-not-applicable check pass locally
+- Proves:
+  - the repaired implementation and local proof artifacts satisfy the executable
+    slice contracts on Linux at the recorded proof head
+- Type: test
+- as_of: 2026-07-11T14:50:00+02:00
+- Notes: Remote branch, PR, exact-head CI, finalizer, merge, and human acceptance are not proven.

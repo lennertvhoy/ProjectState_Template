@@ -1,0 +1,173 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "3ce48244a20ec99fc098872cc649d50c3a6ec78e6d0906e2fc3fe1e85a111a76"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e768ebfe15b3f4dfbd8db0aa11194e995242073b561e6f51c560ad52038f51bc"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/pytest_scripts.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "630d14f742ca361fa346c36df8f574d73d3eff687cf6e0c8058f65ae96341805"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/pytest_schema_examples.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "bba54d0d911e4f4b3ff7099be56f23a579126dd0cbb36d88eb246b10ef320d5b"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/profile_metrics_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "1183608ed079c16e7ed389473add05c429a31c1f7fd2efaca83f43cc0791e2df"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/schema_validation.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f2f3d66a83a01ab4bcd7d8903387e3e46664f2ee70b8687212e819d717899c3f"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/runtime_truth_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "1409dd1e6137605944ec90accfb849e8ab3c8aab2e825081f816fdd18fcf7e4e"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/diff_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/brittleness_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "37fb5f711f27fd8060b3739e3560fa069632db8e245dde9d143748145c19a952"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/quality_gate_level_2.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "0e75a77d8a6a599fc22756cb7cee392dbb110e54f2a32ca7887ae8e2e8f31e67"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/state_hygiene.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b94ff4d9be7c33fb54ae7ea31293c2d13aab98b6f65978232b211980f847070d"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/local_audit.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "778289637ea7d6a919f836a5c6e99744e1cdf2747eb0a03d0b53eb3b68ae35fb"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "Lifecycle, path-confinement, automatic-suite, runtime-truth, and exact-head closure invariants pass the authoritative script suite",
+      "evidence": [
+        "README.md",
+        "command_outputs/pytest_scripts.txt",
+        "command_outputs/pytest_schema_examples.txt",
+        "command_outputs/quality_gate_level_2.txt"
+      ],
+      "id": "authoritative-regressions",
+      "status": "validated"
+    },
+    {
+      "claim": "Canonical profile and context metrics reproduce against the immutable implementation proof head",
+      "evidence": [
+        "README.md",
+        "command_outputs/profile_metrics_check.txt"
+      ],
+      "id": "canonical-metrics",
+      "status": "validated"
+    },
+    {
+      "claim": "State, profile, evidence, runtime, metrics, and handoff contracts validate together",
+      "evidence": [
+        "README.md",
+        "command_outputs/schema_validation.txt",
+        "command_outputs/state_hygiene.txt",
+        "command_outputs/local_audit.txt"
+      ],
+      "id": "schema-contracts",
+      "status": "validated"
+    },
+    {
+      "claim": "Template-root runtime non-applicability is tied to the proof head without absolute checkout or raw process arguments",
+      "evidence": [
+        "README.md",
+        "runtime_identity.json",
+        "command_outputs/runtime_truth_check.txt"
+      ],
+      "id": "portable-runtime-identity",
+      "status": "validated"
+    },
+    {
+      "claim": "The repair diff is whitespace-clean and the explicit anti-brittleness review found no heuristic authority-path warning",
+      "evidence": [
+        "README.md",
+        "command_outputs/diff_check.txt",
+        "command_outputs/brittleness_check.txt"
+      ],
+      "id": "anti-brittleness",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-11T14:43:58+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/pytest_scripts.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/pytest_schema_examples.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/profile_metrics_check.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/schema_validation.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/runtime_truth_check.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/diff_check.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/brittleness_check.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/quality_gate_level_2.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/state_hygiene.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/local_audit.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-max-value-001",
+    "head": "ae851d05aa8113c3cde90d122d1723be123d9e37"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-MAX-VALUE-001"
+}

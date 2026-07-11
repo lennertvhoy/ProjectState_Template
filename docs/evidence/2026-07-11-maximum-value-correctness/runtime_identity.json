@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-07-11T14:43:55+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "ae851d05aa8113c3cde90d122d1723be123d9e37",
+  "in_container": false,
+  "kernel": "7.1.3-200.fc44.x86_64",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Sat Jul  4 19:20:12 UTC 2026",
+  "python": "3.14.6",
+  "repo": {
+    "branch": "bl-max-value-001",
+    "head": "ae851d05aa8113c3cde90d122d1723be123d9e37",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "template-maintenance scripts/docs slice; no application runtime",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v2",
+  "timestamp": "2026-07-11T12:43:55.748390Z"
+}

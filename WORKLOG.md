@@ -774,3 +774,39 @@
 - The SkillSignal-specific canonical schema/export/import loop is a downstream application of the new `SCHEMA_OWNERSHIP_TEMPLATE.md`, not implemented in this slice.
 - The Human Override Rule was added explicitly so the workflow stays a strong default, not a prison.
 - Subagent review feedback was integrated: fixed `.jpg` suffix detection, expanded override marker checks, hardened `statedd_doctor.py` file reads, added `AGENTS.md` freshness to doctor output, and aligned generated `PROJECT_DNA.yaml` / `PROJECT_ADAPTER.yaml` versions to v4.
+
+## 2026-07-11 - BL-MAX-VALUE-001 local implementation proof
+
+**Type:** correctness_and_lifecycle_repair
+**Status:** LOCALLY_VALIDATED_REMOTE_PENDING
+**Git Head:** ae851d05aa8113c3cde90d122d1723be123d9e37
+**Worktree:** isolated; finalization metadata pending commit
+
+### What changed
+- Replaced historical-manifest-driven upgrades with current-catalog desired state,
+  strict ownership validation, transactional writes/rollback, and idempotent reruns.
+- Made the quality gate automatically discover and aggregate applicable suites;
+  CI invokes that single authority path instead of enumerating test files.
+- Hardened initializer/upgrade/evidence/runtime paths against absolute, traversal,
+  root/nested symlink, unsafe-source, and outside-root behavior.
+- Added reproducible proof-head profile/context metrics and strict runtime identity
+  v2 records without absolute checkout paths or raw process arguments.
+- Strengthened exact-head remote closure, agent worktree attribution, evidence
+  contracts, architecture review, and the controlled benchmark specification.
+
+### Verification
+- `python3 -m pytest scripts/ -q`: 289 passed, 4 subtests passed.
+- `python3 -m pytest schemas/examples/ -q`: 5 passed.
+- Canonical profile metrics reproduce against `ae851d05`.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2` passed.
+- Strict evidence and runtime-not-applicable truth checks passed locally.
+
+### Evidence
+- `docs/evidence/2026-07-11-maximum-value-correctness/README.md`
+- `docs/evidence/2026-07-11-maximum-value-correctness/manifest.json`
+- `docs/metrics/profile_metrics.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-11-002`
+
+### Notes
+- This is local implementation/evidence truth only. Remote branch, PR, exact-head
+  CI, finalizer agreement, merge, and human acceptance remain unproven.

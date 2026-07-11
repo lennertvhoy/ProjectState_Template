@@ -1,0 +1,713 @@
+{
+  "generated_at": "2026-07-11T00:00:00Z",
+  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit ae851d05aa8113c3cde90d122d1723be123d9e37",
+  "profiles": [
+    {
+      "actual_tokens": 55983,
+      "contexts": {
+        "architecture_audit": {
+          "actual_tokens": 4435,
+          "estimated_tokens": 4508,
+          "file_count": 7,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "total_bytes": 18026
+        },
+        "ci_diagnosis": {
+          "actual_tokens": 6723,
+          "estimated_tokens": 7775,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "missing_optional_files": [
+            ".github/workflows/validate.yml"
+          ],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            ".github/workflows/validate.yml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "total_bytes": 31091
+        },
+        "closure_review": {
+          "actual_tokens": 1518,
+          "estimated_tokens": 1633,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "total_bytes": 6526
+        },
+        "initial_orientation": {
+          "actual_tokens": 1518,
+          "estimated_tokens": 1633,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6526
+        },
+        "interrupted_resume": {
+          "actual_tokens": 1518,
+          "estimated_tokens": 1633,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6526
+        },
+        "normal_implementation": {
+          "actual_tokens": 1912,
+          "estimated_tokens": 2094,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "total_bytes": 8370
+        }
+      },
+      "estimated_tokens": 59328,
+      "generated_file_count": 34,
+      "profile": "minimal",
+      "quality_gate": {
+        "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
+        "exit_code": 0,
+        "gate_level": 1,
+        "result": "pass"
+      },
+      "required_gate_level": 1,
+      "resolved_asset_sets": [
+        "core"
+      ],
+      "startup_actual_tokens": 1518,
+      "startup_bytes": 6526,
+      "startup_estimated_tokens": 1633,
+      "startup_file_count": 4,
+      "total_bytes": 237270
+    },
+    {
+      "actual_tokens": 139622,
+      "contexts": {
+        "architecture_audit": {
+          "actual_tokens": 4445,
+          "estimated_tokens": 4515,
+          "file_count": 7,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "total_bytes": 18053
+        },
+        "ci_diagnosis": {
+          "actual_tokens": 6733,
+          "estimated_tokens": 7782,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "missing_optional_files": [
+            ".github/workflows/validate.yml"
+          ],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            ".github/workflows/validate.yml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "total_bytes": 31121
+        },
+        "closure_review": {
+          "actual_tokens": 2508,
+          "estimated_tokens": 2673,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "total_bytes": 10688
+        },
+        "initial_orientation": {
+          "actual_tokens": 1528,
+          "estimated_tokens": 1640,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6556
+        },
+        "interrupted_resume": {
+          "actual_tokens": 1528,
+          "estimated_tokens": 1640,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6556
+        },
+        "normal_implementation": {
+          "actual_tokens": 1922,
+          "estimated_tokens": 2101,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "total_bytes": 8400
+        }
+      },
+      "estimated_tokens": 149911,
+      "generated_file_count": 68,
+      "profile": "solo",
+      "quality_gate": {
+        "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
+        "exit_code": 0,
+        "gate_level": 1,
+        "result": "pass"
+      },
+      "required_gate_level": 1,
+      "resolved_asset_sets": [
+        "core",
+        "proof"
+      ],
+      "startup_actual_tokens": 1528,
+      "startup_bytes": 6556,
+      "startup_estimated_tokens": 1640,
+      "startup_file_count": 4,
+      "total_bytes": 599550
+    },
+    {
+      "actual_tokens": 166825,
+      "contexts": {
+        "architecture_audit": {
+          "actual_tokens": 4448,
+          "estimated_tokens": 4515,
+          "file_count": 7,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "total_bytes": 18050
+        },
+        "ci_diagnosis": {
+          "actual_tokens": 6736,
+          "estimated_tokens": 7782,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "missing_optional_files": [
+            ".github/workflows/validate.yml"
+          ],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            ".github/workflows/validate.yml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "total_bytes": 31118
+        },
+        "closure_review": {
+          "actual_tokens": 2511,
+          "estimated_tokens": 2673,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "total_bytes": 10685
+        },
+        "initial_orientation": {
+          "actual_tokens": 1531,
+          "estimated_tokens": 1640,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6553
+        },
+        "interrupted_resume": {
+          "actual_tokens": 1531,
+          "estimated_tokens": 1640,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6553
+        },
+        "normal_implementation": {
+          "actual_tokens": 1925,
+          "estimated_tokens": 2101,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "total_bytes": 8397
+        }
+      },
+      "estimated_tokens": 179371,
+      "generated_file_count": 77,
+      "profile": "team",
+      "quality_gate": {
+        "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
+        "exit_code": 0,
+        "gate_level": 1,
+        "result": "pass"
+      },
+      "required_gate_level": 1,
+      "resolved_asset_sets": [
+        "collaboration",
+        "core",
+        "proof"
+      ],
+      "startup_actual_tokens": 1531,
+      "startup_bytes": 6553,
+      "startup_estimated_tokens": 1640,
+      "startup_file_count": 4,
+      "total_bytes": 717374
+    },
+    {
+      "actual_tokens": 170973,
+      "contexts": {
+        "architecture_audit": {
+          "actual_tokens": 4464,
+          "estimated_tokens": 4557,
+          "file_count": 7,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "PROJECT_DNA.yaml",
+            "EFFICIENCY_BUDGET.yaml",
+            "profiles/catalog.json"
+          ],
+          "total_bytes": 18219
+        },
+        "ci_diagnosis": {
+          "actual_tokens": 6752,
+          "estimated_tokens": 7823,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "missing_optional_files": [
+            ".github/workflows/validate.yml"
+          ],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            ".github/workflows/validate.yml",
+            "scripts/statedd_quality_gate.py"
+          ],
+          "total_bytes": 31282
+        },
+        "closure_review": {
+          "actual_tokens": 2527,
+          "estimated_tokens": 2714,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "prompts/EVIDENCE_README_TEMPLATE.md"
+          ],
+          "total_bytes": 10849
+        },
+        "initial_orientation": {
+          "actual_tokens": 1547,
+          "estimated_tokens": 1681,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6717
+        },
+        "interrupted_resume": {
+          "actual_tokens": 1547,
+          "estimated_tokens": 1681,
+          "file_count": 4,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml"
+          ],
+          "total_bytes": 6717
+        },
+        "normal_implementation": {
+          "actual_tokens": 1941,
+          "estimated_tokens": 2142,
+          "file_count": 5,
+          "included_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "missing_optional_files": [],
+          "requested_files": [
+            "AGENTS.md",
+            "STATUS.md",
+            "NEXT_ACTIONS.md",
+            "PROJECT_STATE.yaml",
+            "scripts/AGENTS.md"
+          ],
+          "total_bytes": 8561
+        }
+      },
+      "estimated_tokens": 183854,
+      "generated_file_count": 78,
+      "profile": "regulated",
+      "quality_gate": {
+        "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance",
+        "exit_code": 0,
+        "gate_level": 2,
+        "result": "pass"
+      },
+      "required_gate_level": 2,
+      "resolved_asset_sets": [
+        "collaboration",
+        "core",
+        "proof",
+        "regulated_controls"
+      ],
+      "startup_actual_tokens": 1547,
+      "startup_bytes": 6717,
+      "startup_estimated_tokens": 1681,
+      "startup_file_count": 4,
+      "total_bytes": 735304
+    }
+  ],
+  "provenance": {
+    "commit_exists": true,
+    "commit_is_ancestor_of_head": true,
+    "mismatched_inputs": [],
+    "source_inputs_match_commit": true
+  },
+  "reproducibility": {
+    "file_order": "relative POSIX path ascending",
+    "path_normalization": "absolute generated root replaced with <TARGET_ROOT> before byte/token counts",
+    "self_reference_rule": "template_commit is the measured source/proof commit, not the later artifact commit",
+    "source_date_epoch": 1783728000,
+    "token_aggregation": "sum of per-file counts"
+  },
+  "schema": "statedd.profile_metrics.v1",
+  "schema_version": 1,
+  "source_inputs": [
+    ".gitignore",
+    "ANTI_BRITTLENESS_GUARD.md",
+    "EFFICIENCY_BUDGET.yaml",
+    "FAILURE_TAXONOMY.md",
+    "INCIDENT_RESPONSE.md",
+    "QUALITY_FIREWALL.md",
+    "VERSION",
+    "docs/BROWSER_VERIFICATION.md",
+    "docs/UPGRADING.md",
+    "docs/adr/0000-adr-template.md",
+    "docs/adr/README.md",
+    "docs/failure_scans/TEMPLATE.md",
+    "docs/incidents/README.md",
+    "docs/quality_gates/ANTI_BRITTLENESS_GATE.md",
+    "docs/quality_gates/README.md",
+    "profiles/catalog.json",
+    "prompts/ACCEPTANCE_FREEZE_TEMPLATE.md",
+    "prompts/CTO_REVIEW_CHECKLIST.md",
+    "prompts/CTO_SESSION_PROMPT.md",
+    "prompts/EVIDENCE_README_TEMPLATE.md",
+    "prompts/FINAL_HANDOFF_TEMPLATE.md",
+    "prompts/RUNTIME_IDENTITY_CHECKLIST.md",
+    "prompts/SCHEMA_OWNERSHIP_TEMPLATE.md",
+    "prompts/SLICE_CONTRACT_TEMPLATE.md",
+    "prompts/SUBAGENT_REVIEW_TEMPLATE.md",
+    "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
+    "schemas/browser_verification.schema.json",
+    "schemas/evidence_manifest.schema.json",
+    "schemas/evidence_readme_contract.json",
+    "schemas/final_handoff_contract.json",
+    "schemas/profile_catalog.schema.json",
+    "schemas/profile_metrics.schema.json",
+    "schemas/project_adapter.schema.json",
+    "schemas/project_dna.schema.json",
+    "schemas/project_state.schema.json",
+    "schemas/runtime_identity.schema.json",
+    "schemas/runtime_identity_v2.schema.json",
+    "schemas/statedd_assets.schema.json",
+    "scripts/AGENTS.md",
+    "scripts/check_state_docs.py",
+    "scripts/init_template.py",
+    "scripts/statedd_agent_worktree.py",
+    "scripts/statedd_audit.py",
+    "scripts/statedd_brittleness_check.py",
+    "scripts/statedd_browser_verify.py",
+    "scripts/statedd_closure_check.py",
+    "scripts/statedd_contracts.py",
+    "scripts/statedd_doctor.py",
+    "scripts/statedd_efficiency_check.py",
+    "scripts/statedd_evidence_pack.py",
+    "scripts/statedd_evidence_type_check.py",
+    "scripts/statedd_generated_controls.py",
+    "scripts/statedd_handoff.py",
+    "scripts/statedd_instruction_lint.py",
+    "scripts/statedd_post_merge_verify.py",
+    "scripts/statedd_profile_metrics.py",
+    "scripts/statedd_quality_gate.py",
+    "scripts/statedd_remote_closure_finalizer.py",
+    "scripts/statedd_remote_truth_check.py",
+    "scripts/statedd_runtime_proof.py",
+    "scripts/statedd_runtime_truth_check.py",
+    "scripts/statedd_upgrade.py",
+    "scripts/statedd_validate_schema.py",
+    "scripts/statedd_version_check.py",
+    "scripts/statedd_worktree_guard.py"
+  ],
+  "source_tree_sha256": "961572790dd992754e82525ae6a7bd723c6e8e7c6484a5a310cb7c2b56e1333e",
+  "template_commit": "ae851d05aa8113c3cde90d122d1723be123d9e37",
+  "template_version": "statedd-template-v5",
+  "tokenizer": {
+    "actual_counts_available": true,
+    "actual_encoding": "o200k_base",
+    "actual_tokenizer_package": "tiktoken",
+    "actual_tokenizer_version": "0.12.0",
+    "estimated_method": "sum(ceil(normalized_utf8_file_bytes/4))"
+  }
+}

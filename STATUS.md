@@ -1,6 +1,6 @@
 # StateDD Template Status
 
-**Updated At:** 2026-07-11 11:22 +02:00
+**Updated At:** 2026-07-11 14:50 +02:00
 **Execution Mode:** template-maintenance
 **Project State:** template_maintenance_active
 **Public URL:** https://github.com/lennertvhoy/StateDD_Template/releases/tag/v5
@@ -27,12 +27,13 @@
 
 ## Current Quality Gate
 
-- The implementation candidate passes local compile, the automatically discovered
-  `scripts/` suite, schema examples, schema validation, state hygiene, instruction
-  lint at the error threshold, and diff whitespace checks in the isolated worktree.
-- This is local worktree truth, not commit, remote, PR, or CI truth. Canonical
-  profile/context metrics will be generated only after the implementation proof
-  commit exists; exact measurements are not copied into this snapshot.
+- Implementation proof `ae851d05aa8113c3cde90d122d1723be123d9e37`
+  passes 289 automatically discovered script tests, 4 subtests, 5 schema-example
+  tests, reproducible profile metrics, strict evidence/runtime checks, schema and
+  state validation, instruction lint, efficiency, and the level-2 quality gate.
+- This is local commit and evidence truth, not remote branch, PR, CI, merge, or
+  human-acceptance truth. Exact measurements live only in the canonical metrics
+  artifact and are not duplicated in this snapshot.
 
 ## Open P0/P1 Failures
 
@@ -44,16 +45,15 @@
 - Independent closure-grade agreement for the BL-PARALLEL-001 changes that entered through PR #4.
 - Downstream repos have not yet upgraded to the BL-WORKFLOW-002 guardrails.
 - BL-BROWSER-002 concrete provider integration is not yet implemented.
-- Whether the current locally validated implementation candidate survives the
-  independent second pass, proof commit, canonical metric reproduction, strict
-  evidence gate, push, PR review, and exact-head GitHub Actions run.
+- Whether the locally validated proof and finalization-only successor survive
+  push, PR review, and exact-head GitHub Actions on the remote branch.
 - Empirical evidence that StateDD outperforms simpler workflows; a controlled benchmark specification must precede superiority claims.
 
 ## Immediate Priorities
 
-1. Complete the independent second pass and commit the locally validated implementation proof.
-2. Generate canonical metrics and strict evidence from that proof, then commit finalization-only metadata.
-3. Push, open a draft PR, observe exact-head CI, and run the remote finalizer without merging.
+1. Commit the generated metrics, strict evidence, and current state as finalization-only metadata.
+2. Push `bl-max-value-001`, open or update a draft PR, and record exact proof/final-head markers.
+3. Observe exact-head CI and run the remote finalizer without merging.
 
 ## Active Blockers
 

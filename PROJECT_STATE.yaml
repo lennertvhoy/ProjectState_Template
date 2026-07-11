@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T09:13:22+02:00
+  updated_at: 2026-07-11T14:50:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -81,7 +81,7 @@ current_state:
       notes: |
         Requires non-trivial fix/feature slices to name the durable invariant
         and review brittle easy-way-out patterns.
-    evidence: docs/evidence/2026-07-10-context-generator-hygiene/README.md
+    evidence: docs/evidence/2026-07-11-maximum-value-correctness/README.md
     docs:
       - QUALITY_FIREWALL.md
       - FAILURE_TAXONOMY.md
@@ -109,11 +109,10 @@ current_state:
     - BL-MAX-VALUE-001
 
   closure_blockers:
-    - merged upgrade lifecycle behavior is not proven safe for old or malformed manifests
-    - the quality gate can skip applicable suites and tolerate unavailable declared runners
-    - CI manually enumerates tests instead of invoking one authoritative suite
-    - initializer and upgrade target-root symlink rejection is not proven
-    - profile metrics and exact-head closure truth are duplicated and inconsistent
+    - finalization-only metrics, evidence, and state are not yet committed or pushed
+    - the repaired branch has no pull request or exact-head GitHub Actions result
+    - the remote finalizer has not re-queried PR, CI, merge state, and remote branch agreement
+    - human acceptance remains unproven
 
   last_live_canary:
     status: not_applicable_for_template_root
@@ -121,7 +120,7 @@ current_state:
 
   last_redteam_run:
     status: passing_for_template_propagation_checks
-    evidence: docs/evidence/2026-07-10-context-generator-hygiene/command_outputs/verification.txt
+    evidence: docs/evidence/2026-07-11-maximum-value-correctness/command_outputs/pytest_scripts.txt
 
   residual_risks:
     - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
@@ -133,15 +132,15 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-07-11T09:13:22+02:00
+      captured_at: 2026-07-11T14:50:00+02:00
       last_verified_branch: bl-max-value-001
-      last_verified_head: c2fe7b25625cc855a47deff721251cdb5d4141b2
-      last_verified_worktree_status: clean
+      last_verified_head: ae851d05aa8113c3cde90d122d1723be123d9e37
+      last_verified_worktree_status: dirty_finalization_only
       notes: |
-        This isolated worktree was created from current origin/main at c2fe7b2.
-        Its branch has no remote publication yet. GitHub Actions passed on the
-        merged main commit, but human acceptance and closure-grade agreement are
-        not proven.
+        The isolated branch contains locally validated implementation proof
+        ae851d05. Canonical metrics and typed evidence reference that proof head
+        and are the only current dirt. The branch is not yet published; PR, CI,
+        merge, remote-finalizer, and human-acceptance truth are not proven.
 
   parallel_agent_support:
     status: observed
@@ -268,9 +267,9 @@ active_problems:
       - exactly one next slice is selected by expected impact, cost, risk reduction, readiness, and measurability
     truth_boundaries:
       sandbox: observed
-      local_worktree: dirty isolated worktree; implementation candidate locally validated
+      local_worktree: dirty only with finalization metadata; implementation proof locally validated
       git_index: clean at slice start
-      local_commit: state-only and failure-scan commits exist; implementation proof pending
+      local_commit: implementation proof ae851d05aa8113c3cde90d122d1723be123d9e37 exists
       remote_branch: not published
       github_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
       ci: success on merged main but insufficient for the reopened claims

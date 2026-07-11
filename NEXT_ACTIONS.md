@@ -8,7 +8,7 @@
 
 ### P0 [BL-MAX-VALUE-001] Maximum-Value Correctness and Lifecycle Repair
 Owner: principal implementation agent; independent reviewers are read-only
-Next: finish the independent second pass, commit the locally validated implementation proof, then generate canonical metrics and strict evidence before publication.
+Next: commit finalization-only metrics/evidence/state, push the isolated branch, open or update a draft PR, then require exact-head GitHub Actions and the remote finalizer before any closure claim.
 Exit: all acceptance criteria in PROJECT_STATE.yaml pass on one pushed PR head with GitHub-visible CI; no merge or human acceptance is implied
 
 ## Queue Rules
