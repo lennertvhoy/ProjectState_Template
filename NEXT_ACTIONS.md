@@ -8,7 +8,7 @@
 
 ### P0 [BL-MAX-VALUE-001] Maximum-Value Correctness and Lifecycle Repair
 Owner: principal implementation agent; independent reviewers are read-only
-Next: write the failure scan, repair the merged upgrade/gate/CI/symlink/metrics failures, then complete the architecture review and benchmark specification.
+Next: use the completed failure scan to repair the merged upgrade/gate/CI/symlink/metrics failures, then complete the architecture review and benchmark specification.
 Exit: all acceptance criteria in PROJECT_STATE.yaml pass on one pushed PR head with GitHub-visible CI; no merge or human acceptance is implied
 
 ## Queue Rules

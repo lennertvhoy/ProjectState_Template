@@ -561,3 +561,19 @@
 - Type: post_deploy
 - as_of: 2026-07-10T22:18:00+02:00
 - Notes: The final closure label is not claimed by this entry; the remote closure finalizer remains authoritative for the final state head.
+
+## EV-2026-07-11-001: Merged correctness blockers and failure scan (BL-MAX-VALUE-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-MAX-VALUE-001.md
+- Title: Upgrade, validation, path-confinement, context, and closure risks reopened after PR #5 merge
+- Source/System: GitHub review and local repository inspection
+- Action: Verified PR #4 and PR #5 merge truth, confirmed that PR #5 merged after an owner review recorded unresolved blockers, reopened the failures in canonical state, and completed the pre-implementation failure scan.
+- Shows:
+  - PR #4 merged as `a0ac268d186d9ec71ffefab6970dc1d40add5b06`
+  - PR #5 merged as `c2fe7b25625cc855a47deff721251cdb5d4141b2`
+  - unresolved upgrade, test aggregation, CI enumeration, root-symlink, metrics, and exact-head closure risks are classified with prevention and rollback requirements
+- Proves:
+  - BL-MAX-VALUE-001 starts from recorded remote truth and an explicit pre-mortem rather than retrofitting state after implementation
+- Type: known_bad_event
+- as_of: 2026-07-11T09:13:22+02:00
+- Notes: This is orientation and risk evidence only; no implementation or closure claim is made.
