@@ -1,0 +1,8 @@
+Manifest check failed:
+  - Strict check failed: unlisted evidence files: README.md, command_outputs/audit.txt, command_outputs/bootstrap_gate.txt, command_outputs/diff_check.txt, command_outputs/efficiency.txt, command_outputs/evidence_check.txt, command_outputs/golden_path.txt, command_outputs/instruction_lint.txt, command_outputs/profile_metrics.txt, command_outputs/pytest_schema_examples.txt, command_outputs/pytest_scripts.txt, command_outputs/quality_gate_level_2.txt, command_outputs/state_hygiene.txt, git_safety_summary.json, runtime_identity.json
+  - Strict check failed: manifest_status must be complete, got 'skeleton'
+  - Strict check failed: claims is empty
+  - Strict check failed: artifacts is empty
+  - Strict check failed: redaction status is 'unchecked'
+  - Strict check failed: manual redaction review is not complete
+  - Strict check failed: redaction requires a passed automated scan or completed manual review

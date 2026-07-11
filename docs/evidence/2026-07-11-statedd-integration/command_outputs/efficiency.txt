@@ -1,0 +1,21 @@
+==================================================
+StateDD Efficiency Check
+==================================================
+
+Gate level: 2
+Budget file: EFFICIENCY_BUDGET.yaml
+
+## measured_context_and_footprint
+  profile: template_repository
+  startup_files: 4
+  startup_bytes: 23019
+  startup_estimated_tokens: 5755
+  token_estimator: utf8_bytes_div_4_ceiling
+  footprint_scope: repository
+  footprint_files: 282
+  footprint_bytes: 1868448
+
+## evidence_bundle
+  [ERROR] Evidence folder 2026-07-11-statedd-integration has 16 files, max 15  (docs/evidence/2026-07-11-statedd-integration)
+
+Summary: 1 error(s), 0 warning(s)

@@ -1,0 +1,187 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "1e66b8f646edd556f3206c53db05c00182977cc66d05b8ead62cd6cd80bdbcdc"
+    },
+    {
+      "kind": "command_output",
+      "path": "git_safety_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "caa0d5797436a81c73d399e65ac1cf4fced1fd2dc135a6a68de36813ef2aabf6"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "4f78ca5c318d53a7776a9674e5a577ea4482661fee145401db57d52037a32f2e"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/pytest_scripts.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f449a8b08015f985c33f3ed23dfa8efe1c9fe066417c5212fa9af7f573ea9a56"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/pytest_schema_examples.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "4d2df7a96ce4a667da3ccf295f2d16c728a65ed0e861a3baa919f7bb469b02b5"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/golden_path.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "11353bee393456c438d1e0366090b6d29be4a5f984d844b016dae39ad0d28300"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/profile_metrics.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "88040f6c041d255fdcb2b48279e2c776b3727ef76bddd538f5aabeca455b46a2"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/quality_gate_level_2.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "ef6144612178f3ff88503032b292e875d4be3fee78b1ababac04432f4461feea"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/state_hygiene.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "69684e0d9776e5ab510e7c37404476cb0bd3a8250e13335871eb8ca5e8cc3ca1"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/bootstrap_gate.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "1919480560df9d8a307f2849c6fb5537cc5a3395c2757cbb8692ee60d6f0c3aa"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/instruction_lint.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "c9cdd4bdf96ada41faa5c893d7ca3f0ddeb78cf8b76af672dc371b5ce2165b43"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/efficiency.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f39db270e5498c4382cce1bd8fba81d5371f58b6b87a1b4062839e7095adc1bd"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/audit.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b0c7f7b8882c8a02f30d05f684619978f62311ba81e6544405e924cd205664bd"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/evidence_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e3a2cd4233735ce414607c1fc4c70f5f5160e9fe4b08693b0780964818be5fe7"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "PR #6 lifecycle/profile/gate/evidence architecture remains authoritative while PR #7 Git-safety/golden-path capabilities are integrated.",
+      "evidence": [
+        "command_outputs/pytest_scripts.txt",
+        "git_safety_summary.json"
+      ],
+      "id": "integrated-architecture",
+      "status": "validated"
+    },
+    {
+      "claim": "Every generated profile passes its v2-lock-declared gate and deterministic metrics reproduce.",
+      "evidence": [
+        "command_outputs/profile_metrics.txt",
+        "command_outputs/quality_gate_level_2.txt"
+      ],
+      "id": "profile-conformance",
+      "status": "validated"
+    },
+    {
+      "claim": "The complete structured bootstrap and isolated-agent golden path passes through remote parity and strict evidence.",
+      "evidence": [
+        "command_outputs/golden_path.txt",
+        "command_outputs/evidence_check.txt"
+      ],
+      "id": "golden-path",
+      "status": "validated"
+    },
+    {
+      "claim": "The integration state, bootstrap gate, instruction lint, efficiency gate, audit, and schema-backed checks were run and recorded.",
+      "evidence": [
+        "README.md",
+        "command_outputs/audit.txt",
+        "command_outputs/bootstrap_gate.txt",
+        "command_outputs/efficiency.txt",
+        "command_outputs/instruction_lint.txt",
+        "command_outputs/pytest_schema_examples.txt",
+        "command_outputs/state_hygiene.txt"
+      ],
+      "id": "local-gates-and-state",
+      "status": "validated"
+    },
+    {
+      "claim": "Template-root runtime is not applicable to this docs/scripts slice.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-not-applicable",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-11T17:55:40+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in git_safety_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/pytest_scripts.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/pytest_schema_examples.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/golden_path.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/profile_metrics.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/quality_gate_level_2.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/state_hygiene.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/bootstrap_gate.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/instruction_lint.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/efficiency.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/audit.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/evidence_check.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-statedd-integration-001",
+    "head": "0fec221c8b3c69fccd0c02399e78c58a74d28e5a"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-STATEDD-INTEGRATION-001"
+}

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/ff/Documents/Projects/StateDD_Template-integration-BL-STATEDD-INTEGRATION-001/scripts/test_golden_path.py", line 13, in <module>
+    from scripts.statedd_validate_schema import parse_yaml_text
+ModuleNotFoundError: No module named 'scripts.statedd_validate_schema'
