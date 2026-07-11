@@ -82,7 +82,7 @@
       "path": "command_outputs/efficiency.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "bcc862c2859e2e4f9ffad4a733ce7d4cfd9ba6227ddfe1410a89eb6747f69e51"
+      "sha256": "267c0af7b96454f3b348e4da4dc6524dffdee77b0fb8575049b770bdc80e1f74"
     },
     {
       "kind": "command_output",

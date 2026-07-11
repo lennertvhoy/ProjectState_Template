@@ -65,7 +65,10 @@ context_budgets:
       max_startup_estimated_tokens: 10000
       max_footprint_files: 330
       # Includes the optional OKF validator, extension schema, and contained scaffold.
-      max_footprint_bytes: 2100000
+      # Includes the committed OKF evidence/state finalization surface; keep
+      # this above the measured full-template footprint without changing
+      # ordinary startup selection.
+      max_footprint_bytes: 2250000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
