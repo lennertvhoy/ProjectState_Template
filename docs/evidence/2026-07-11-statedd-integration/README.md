@@ -36,17 +36,17 @@ Evidence: `runtime_identity.json`
 | `python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose` | pass locally |
 | strict evidence manifest | pass |
 | branch/remote parity in disposable golden-path remote | pass |
-| GitHub branch-head CI | not yet proven |
-| PR merge-candidate CI | not yet proven |
+| GitHub branch-head CI | passed for the published PR head; direct checkout asserted |
+| PR merge-candidate CI | passed; synthetic merge checkout asserted |
 
 ## Closure State
 
 - Implemented: yes
 - Validated locally: yes
-- Pushed: not yet
-- PR opened: not yet
-- Branch-head CI verified: no
-- PR merge-candidate CI verified: no
+- Pushed: yes
+- PR opened: yes — draft PR #8
+- Branch-head CI verified: yes — direct branch-head job passed
+- PR merge-candidate CI verified: yes — synthetic merge-candidate job passed
 - Closure-grade: no
 - Human accepted: no
 - Runtime: not applicable for this template-root docs/scripts slice
@@ -57,7 +57,7 @@ Evidence: `runtime_identity.json`
 
 ## Risks / What Remains Partial
 
-- Remote branch, GitHub-visible PR, branch-head CI, merge-candidate CI, and human acceptance remain unproven.
+- Remote branch, GitHub-visible draft PR, branch-head CI, and merge-candidate CI are verified for the published candidate.
 - This evidence bundle records local proof before publication; the final PR head is intentionally owned by the mutable PR body.
 - The original checkout repair is reported and preserved outside this clone; it is not closure-grade evidence for this slice.
 - Verified copyright owner: not proven.

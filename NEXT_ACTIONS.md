@@ -8,7 +8,7 @@
 
 ### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration
 Owner: integration agent
-Next: run the remote-mutation safety preflight, push the clean locally validated branch, open one draft PR, and observe branch-head versus merge-candidate CI separately.
+Next: review draft PR #8 with the successful direct branch-head and synthetic merge-candidate CI results; resolve ownership and human-acceptance boundaries before any merge decision.
 Exit: authoritative local gates, generated-profile conformance, strict evidence, clean pushed branch, and a draft PR exist with branch-head and merge-candidate CI reported separately.
 
 ## Source candidates

@@ -133,12 +133,10 @@ current_state:
       - verified copyright owner is not proven
       - benchmark superiority is not proven
       - branch-head and PR merge-candidate CI are not yet proven for the integration branch
-      - remote branch and draft PR publication are not yet proven
       - local level-2 quality gate, strict audit, and complete golden-path regression pass
+      - human acceptance and verified copyright ownership remain unproven
 
   closure_blockers:
-    - the integration branch has not yet been pushed or opened as a draft pull request
-    - the branch has no exact-head GitHub Actions result
     - the remote finalizer has not re-queried PR, CI, merge state, and remote branch agreement
     - human acceptance remains unproven
 

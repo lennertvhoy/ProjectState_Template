@@ -15,19 +15,19 @@
 ## Current Truth
 
 - The template root has no application runtime; runtime truth is not applicable here.
-- The integration clone and branch are locally committed and validated; remote branch, PR, and CI truth remain unproven.
+- The integration clone and branch are pushed; draft PR #8 is open, and both direct branch-head and synthetic merge-candidate CI have passed for the published candidate.
 - Neither PR #6 nor PR #7 is being merged independently.
 - Verified copyright owner: not proven. Benchmark superiority: not proven.
 
 ## Open P0/P1 Failures
 
-- [BL-STATEDD-INTEGRATION-001] Publish the locally validated integration branch as one draft PR and observe branch-head versus merge-candidate CI separately.
+- [BL-STATEDD-INTEGRATION-001] Obtain CTO review and human acceptance for draft PR #8; do not merge until the remaining ownership and acceptance boundaries are resolved.
 
 ## Immediate Priorities
 
-1. Run the remote-mutation safety preflight and push the clean integration branch.
-2. Open one draft PR against `main`; do not merge PR #6 or PR #7.
-3. Observe triggered CI and report remote/CI boundaries separately.
+1. Review draft PR #8 against the integrated evidence and CI subjects.
+2. Resolve or explicitly accept the unproven copyright owner boundary.
+3. Keep PR #6 and PR #7 unmerged; human acceptance remains required.
 
 ## Notes
 
