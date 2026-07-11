@@ -26,14 +26,14 @@
       "path": "command_outputs/pytest_scripts.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "7a16f25b726a77b7aa6f37996fec11b5a5e0b9e3711aad901ca33235ac257de9"
+      "sha256": "845b0380a3b6fcae8af88bce46c53e648fc7ad5bf3a2684cd47b46ff6d6bd4cb"
     },
     {
       "kind": "command_output",
       "path": "command_outputs/pytest_schema_examples.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "4d2df7a96ce4a667da3ccf295f2d16c728a65ed0e861a3baa919f7bb469b02b5"
+      "sha256": "b79b5882225729837a8b1f041170493009e27ce2d85691247fb25e6d0f37c21c"
     },
     {
       "kind": "command_output",
@@ -47,7 +47,7 @@
       "path": "command_outputs/profile_metrics.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "79d7599be27c95944fb41bbfec57e4e724dcb01defb708bc056f76d3321cfc3e"
+      "sha256": "3195b8c3e11d9678cb647432a662d2aa4490148afd18bef854bb261853ecf95b"
     },
     {
       "kind": "command_output",
@@ -61,7 +61,7 @@
       "path": "command_outputs/state_hygiene.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "b94ff4d9be7c33fb54ae7ea31293c2d13aab98b6f65978232b211980f847070d"
+      "sha256": "094ab4e94e12bd49462c2e8d7bb643de120e85bb2df28571fd294da942f6f9c4"
     },
     {
       "kind": "command_output",
@@ -82,14 +82,14 @@
       "path": "command_outputs/efficiency.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "ddb7c1a0386f8da0d1c41b3e53b39db3d0d7be3260778ccd4ec702689310b9b3"
+      "sha256": "4ed5777cb8c71f5ee93d5a3f38843aa6f499e349a9c6f080c0862c15a6c760e6"
     },
     {
       "kind": "command_output",
       "path": "command_outputs/audit.txt",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "65692e82cc425873cf51735bdd3fd0a81a2ad3562098dc746013ad37601762b3"
+      "sha256": "4a5c1ca6e32bf775d4884b7743ae5da9a89ef8c8beb37235459360cf82357ece"
     },
     {
       "kind": "command_output",

@@ -43,7 +43,7 @@ worktree_guard
   ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
 
 branch_head_recorded
-  ✅ HEAD 2644f43 not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
+  ✅ HEAD 33c8c52 not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
   ✅ Branch 'bl-statedd-integration-001' recorded in evidence README
 
 user_facing_evidence

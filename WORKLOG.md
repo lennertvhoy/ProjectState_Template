@@ -849,7 +849,7 @@
   v2 profile conformance, strict evidence, and local finalizer boundaries.
 
 ### Verification
-- `python3 -m pytest scripts/ -q`: 289 tests passed.
+- `python3 -m pytest scripts/ -q`: 312 tests passed.
 - `python3 -m pytest schemas/examples/ -q`: 5 tests passed.
 - `python3 scripts/test_golden_path.py`: passed.
 - `python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose`: passed.
