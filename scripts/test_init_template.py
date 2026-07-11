@@ -140,6 +140,21 @@ def test_legacy_new_invocation_still_works() -> None:
             raise AssertionError("Legacy initializer invocation did not create AGENTS.md")
 
 
+def test_new_defaults_to_team_and_fresh_main() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "default-team"
+        run_init(["new", "--name", "Default Team Demo", "--target", str(target)], expect_success=True)
+        if not (target / ".git").is_dir():
+            raise AssertionError("new initializer did not create fresh Git metadata")
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"], cwd=target, capture_output=True, text=True, check=False
+        )
+        if branch.stdout.strip() != "main":
+            raise AssertionError(f"new initializer did not create main: {branch.stdout}")
+        if "profile: team" not in (target / "PROJECT_STATE.yaml").read_text(encoding="utf-8"):
+            raise AssertionError("new initializer default profile is not team")
+
+
 def test_new_copies_curated_template_surface_only() -> None:
     sentinel = ROOT / "LOCAL_UNTRACKED_SENTINEL_FOR_TEST.md"
     if sentinel.exists():
@@ -293,7 +308,7 @@ def assert_runtime_manifest_matches_files(root: Path) -> None:
     actual = {
         path.relative_to(root).as_posix()
         for path in root.rglob("*")
-        if path.is_file() and "__pycache__" not in path.parts
+        if path.is_file() and "__pycache__" not in path.parts and ".git" not in path.parts
     }
     if declared != actual:
         raise AssertionError(
@@ -616,6 +631,7 @@ def main() -> int:
         test_readme_link_rejects_symlinked_readme_before_writes,
         test_top_level_help_shows_subcommands,
         test_legacy_new_invocation_still_works,
+        test_new_defaults_to_team_and_fresh_main,
         test_new_copies_curated_template_surface_only,
         test_new_includes_tool_model_routing_guide,
         test_new_includes_usability_assets,

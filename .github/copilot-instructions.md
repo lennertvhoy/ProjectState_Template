@@ -9,12 +9,8 @@ This file is auto-generated from the StateDD constitutional contract. The author
 ## Agent Behavior
 
 ### Read Order
-1. `AGENTS.md` (root)
-2. `STATUS.md`
-3. `PROJECT_STATE.yaml`
-4. `PROJECT_DNA.yaml`
-5. `NEXT_ACTIONS.md`
-6. Nearest nested `AGENTS.md` in working directory
+Read `AGENTS.md` first and follow its declared task-scoped read order. This file
+is only a compatibility summary and does not define a second read order.
 
 ### Invariants (Non-Negotiable)
 - No fake completeness — unverified claims = false

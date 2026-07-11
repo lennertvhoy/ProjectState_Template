@@ -72,6 +72,7 @@ jobs:
       - name: Validate init script
         run: |
           python3 scripts/test_init_template.py
+          python3 scripts/test_golden_path.py
           python3 scripts/test_git_safety_check.py
           python3 scripts/test_worktree_guard.py
           python3 scripts/test_brittleness_check.py

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T16:10:00+02:00
+  updated_at: 2026-07-11T16:42:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -127,10 +127,24 @@ current_state:
   open_p0_failures:
     - BL-GIT-ISOLATION-001
 
+  golden_path:
+    backlog_id: BL-GOLDEN-PATH-001
+    status: implemented_local
+    profile_default: team
+    local_validation: level_2_quality_gate_passed
+    remote_status: local_only
+    ci_status: not_verified
+    closure_grade: false
+    notes: |
+      The canonical empty-folder prompt, fresh-main initializer, standing
+      delivery policy, integration-owner contract, remote-first handoff, and
+      end-to-end regression are implemented locally. Remote and CI truth remain
+      unproven until this branch is intentionally committed and pushed.
+
   closure_blockers:
     - this local slice is not pushed and has no exact-head CI result
     - PR #6 remains a separate reported draft at remote head 84a67100fee324f6716a5c966500b0c0eeb59699
-    - local validation and generated-profile conformance are still pending for the current uncommitted edits
+    - current worktree contains the uncommitted golden-path slice; local validation is complete for the current edits
     - verified legal copyright owner is missing from LICENSE
     - benchmark superiority and human acceptance are not proven
 
@@ -172,13 +186,13 @@ current_state:
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-07-11T16:10:00+02:00
+      captured_at: 2026-07-11T16:42:00+02:00
       last_verified_branch: bl-git-isolation-001
-      last_verified_head: 114897bc4662748bb20f3ca568e4d3015d87353d
+      last_verified_head: 143843da7eb09111e85467299f5b70e97302a483
       last_verified_worktree_status: dirty_uncommitted_slice
       remote_branch: bl-git-isolation-001
       remote_head_last_observed: 114897bc4662748bb20f3ca568e4d3015d87353d
-      local_ahead_count: 4
+      local_ahead_count: 5
       local_behind_count: 0
       remote_truth_status: observed_for_current_branch
       local_commit_sequence: scoped_local_only_commits_after_proof_head

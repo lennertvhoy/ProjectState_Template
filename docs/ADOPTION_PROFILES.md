@@ -11,7 +11,11 @@ produce the handoff. Read `AGENTS.md` before using this reference page.
 
 ## Which profile should I choose?
 
-**Default recommendation: `solo`.**
+**Default recommendation for new projects: `team`.**
+
+The canonical empty-folder workflow uses `team` because it includes parallel
+agent isolation, remote review, and CTO handoff support. Choose another profile
+only when the project intentionally needs a smaller or stricter footprint.
 
 Use `minimal` if:
 

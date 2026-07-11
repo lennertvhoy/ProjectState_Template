@@ -28,12 +28,12 @@ This directory holds reference documentation for StateDD: failure taxonomy, qual
 | `QUICK_COMMANDS.md` | Command reference |
 
 ## Agent Rules for Docs
-1. **Read before acting** — Consult `FAILURE_TAXONOMY.md` and `QUALITY_FIREWALL.md` before closure
-2. **Write to evidence, not docs** — `EVIDENCE_LOG.md` and `docs/incidents/` are append-only; do not edit history
-3. **Failure scans are mandatory** — Before risky work, create `docs/failure_scans/<slice-id>.md` from TEMPLATE
-4. **ADRs for architecture decisions** — Create `docs/adr/NNN-title.md` for long-lived reasoning
-5. **Quality gates are project-specific** — `docs/quality_gates/` is populated per downstream project
-6. **Do not bloat docs** — Reference only; procedural detail goes in skills/commands/scripts
+
+Read `AGENTS.md` first and follow its declared task-scoped read order. Consult
+the relevant reference only when the active task requires it. Write evidence to
+the append-only ledgers, create failure scans before risky work, use ADRs for
+long-lived architecture decisions, and keep executable procedure in
+skills/commands/scripts.
 
 ## Hygiene
 - `docs/incidents/` and `docs/failure_scans/` are append-only

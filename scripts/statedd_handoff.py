@@ -67,6 +67,15 @@ def git_changed_files(repo: Path) -> list[str]:
     return [line.strip() for line in status.splitlines() if line.strip()]
 
 
+def remote_branch_head(repo: Path, branch: str) -> str:
+    if branch in {"not proven", "HEAD", ""}:
+        return "not proven"
+    code, stdout, _ = run_command(["git", "ls-remote", "origin", f"refs/heads/{branch}"], repo)
+    if code != 0 or not stdout:
+        return "not proven"
+    return stdout.split()[0]
+
+
 def latest_evidence_readme(repo: Path) -> Path | None:
     evidence_root = repo / "docs" / "evidence"
     if not evidence_root.exists():
@@ -242,6 +251,8 @@ def main(argv: list[str] | None = None) -> int:
     upstream_head = "not proven"
     if upstream_branch != "not proven":
         upstream_head = git_value(repo, ["rev-parse", "@{u}"])
+    remote_head = remote_branch_head(repo, branch)
+    remote_contains_head = "yes" if remote_head == head else "no" if remote_head != "not proven" else "not proven"
     local_equals_upstream = head_equals_upstream(head, upstream_head)
     short_status = git_value(repo, ["status", "--short"], fallback="")
     worktree = "clean" if not short_status.strip() else "dirty"
@@ -267,6 +278,23 @@ def main(argv: list[str] | None = None) -> int:
     print("# StateDD Handoff Snapshot")
     print()
     print(f"Generated: {now}")
+    print()
+    print("## Remote-First Status")
+    print()
+    print(f"- repository URL: {origin_url}")
+    print(f"- branch: {branch}")
+    print(f"- exact local HEAD: {head}")
+    print(f"- remote branch HEAD: {remote_head}")
+    print(f"- remote contains exact local HEAD: {remote_contains_head}")
+    if worktree == "clean" and remote_contains_head == "yes":
+        delivery_status = "pushed"
+    elif worktree == "clean":
+        delivery_status = "local-only"
+    else:
+        delivery_status = "local changes not ready to push"
+    print(f"- delivery status: {delivery_status}")
+    print("- PR URL: not currently locatable by this local helper")
+    print("- CI status: not verified by this local helper")
     print()
     print("## Repo Identity")
     print()

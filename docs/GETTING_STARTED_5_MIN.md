@@ -13,7 +13,8 @@ maintain truth, and produce the handoff.
 ## 1. Choose a profile
 
 Read [`ADOPTION_PROFILES.md`](ADOPTION_PROFILES.md). `minimal` is the smallest
-workflow; `solo` is the default; `team` adds parallel-agent/review controls;
+workflow; `team` is the default for new projects; `solo` is the smaller
+single-agent alternative; `team` adds parallel-agent/review controls;
 `regulated` adds stricter evidence and acceptance guidance.
 
 ## 2. Install the workflow
@@ -21,13 +22,13 @@ workflow; `solo` is the default; `team` adds parallel-agent/review controls;
 For a new project:
 
 ```bash
-python3 scripts/init_template.py new --name "My Project" --profile solo
+python3 scripts/init_template.py new --name "My Project" --profile team
 ```
 
 For an existing project, preview first:
 
 ```bash
-python3 scripts/init_template.py adopt --name "My Project" --profile solo --dry-run
+python3 scripts/init_template.py adopt --name "My Project" --profile team --dry-run
 ```
 
 ## 3. Start the coding agent

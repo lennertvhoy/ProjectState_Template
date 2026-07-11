@@ -45,6 +45,8 @@ project: "StateDD_Template"
 - **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove repository/common-directory identity, effective UID/GID, critical metadata ownership and real writability, fsck, mandatory synchronization, and a permitted isolation mode. Failure latches `read_only` until repair and explicit restart.
 - **Isolation Invariant:** One trusted local agent uses `normal_branch`; containers and independent agents use full `clone`; `worktree` requires explicit same-machine/same-identity opt-in. Never automatically repair permissions or force-remove, prune, reset, clean, or garbage-collect affected Git state.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
+- **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones/worktrees, return commits and verification summaries, do not edit global StateDD truth, and do not push the final slice branch.
+- **Standing Delivery Policy Invariant:** Downstream bootstrap records routine coding-agent permissions once. Confirmed policy allows local branches, commits, slice pushes, conflict resolution, and PR preparation; merge-to-main, force-push, history rewrite, and remote-branch deletion remain explicit human boundaries.
 
 ## Gate Levels
 Use the cheapest gate that honestly proves the current claim.

@@ -134,7 +134,7 @@ def test_legacy_minimal_flag_maps_to_profile() -> None:
 
 def test_profile_footprints_are_bounded_and_minimal_is_materially_smaller() -> None:
     limits = {
-        "minimal": (32, 235_000),
+        "minimal": (32, 237_000),
         "solo": (66, 530_000),
         "team": (75, 700_000),
         "regulated": (76, 760_000),
@@ -150,7 +150,7 @@ def test_profile_footprints_are_bounded_and_minimal_is_materially_smaller() -> N
                 ["new", "--name", "Profile footprint", "--target", str(target), "--profile", profile],
                 expect_success=True,
             )
-            files = [path for path in target.rglob("*") if path.is_file()]
+            files = [path for path in target.rglob("*") if path.is_file() and ".git" not in path.parts]
             file_count = len(files)
             byte_count = sum(path.stat().st_size for path in files)
             startup_bytes = sum((target / path).stat().st_size for path in STARTUP_FILES)

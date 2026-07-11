@@ -13,9 +13,9 @@ def render_coding_agent_startup_prompt() -> str:
     return """# Coding Agent Startup Prompt
 
 StateDD is an agent-operated repository workflow. Humans provide project intent,
-select profiles and permissions, and review evidence. Coding agents read
-`AGENTS.md`, operate the StateDD scripts and skills, maintain repository truth,
-and produce the handoff.
+priorities, permissions, feedback, and final acceptance. Coding agents read
+`AGENTS.md`, initialize and maintain repository truth, execute slices, validate
+results, integrate subagents, commit and push changes, and produce the handoff.
 
 Read `AGENTS.md` first and follow its declared read order. Do not copy a second
 read order from this prompt. Load `skills/`, `commands/`, and `docs/` only when
@@ -32,15 +32,21 @@ python3 scripts/statedd_git_safety_check.py --mode normal_branch
 Use a full clone for containers or independent agents. Linked worktrees require
 explicit trusted-local, same-identity opt-in. Keep local, remote, GitHub, CI,
 runtime, and human-accepted truth separate; never call an unverified claim
-complete. For a slice, use the executable quality gate:
+complete. For parallel work, one integration agent owns the slice branch;
+subagents return commits and verification summaries, do not edit global StateDD
+files, and do not push the final branch. The integration agent combines commits,
+resolves conflicts, updates global truth once, runs the whole-project gate, and
+pushes the final branch. For a slice, use the executable quality gate:
 
 ```bash
 python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose
 ```
 
-User-facing closure also requires runtime identity and browser evidence. End
-every session with current state, verification results, risks, absolute evidence
-paths, and the next action using `scripts/statedd_handoff.py`. A remote push is
-never implied by a context file or a local permit; it requires the explicit
-remote-mutation path and operator authorization.
+User-facing closure also requires runtime identity and browser evidence. Confirm
+the standing `delivery_policy` in `PROJECT_STATE.yaml` once during bootstrap;
+after that, do not re-ask for routine commits, slice pushes, or pull requests.
+Merge-to-main, force-push, history rewrite, and remote-branch deletion remain
+explicit human boundaries. End every session with current state, verification
+results, risks, absolute evidence paths, and the next action using
+`scripts/statedd_handoff.py`.
 """

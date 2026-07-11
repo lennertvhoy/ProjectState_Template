@@ -330,6 +330,13 @@ def resolve_repository(target: Path) -> tuple[Path, Path, str] | None:
         common = root / common
     code, head, error = _run_git(root, ["rev-parse", "HEAD"])
     if code != 0 or not head:
+        # A freshly materialized downstream repo has valid Git metadata and an
+        # unborn branch, but no commit yet for a HEAD-based permit to bind to.
+        # Callers that explicitly allow non-Git/bootstrap writes may proceed;
+        # normal repository mutation remains fail-closed below.
+        code, unborn_branch, _ = _run_git(root, ["symbolic-ref", "--quiet", "--short", "HEAD"])
+        if code == 0 and unborn_branch:
+            return root, common.resolve(), ""
         raise MutationBlocked(f"Cannot resolve Git HEAD: {error or 'no diagnostic'}")
     return root, common.resolve(), head
 
@@ -394,6 +401,8 @@ def require_mutation_permit(
             return None
         raise MutationBlocked(f"{operation} blocked: target is not inside a proven Git repository")
     canonical, common, head = resolved
+    if not head and allow_non_git:
+        return None
 
     with state_lock() as root:
         global_latch = read_state(global_latch_path(root))

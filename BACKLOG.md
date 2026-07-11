@@ -12,6 +12,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 ## NOW
 
 - [BL-GIT-ISOLATION-001] P0: repair the Git metadata safety boundary with a centralized fail-closed preflight, explicit isolation modes, independent clone support, read-only latching, incident regressions, safe orchestration, and final-head remote CI proof. Incident: `docs/incidents/20260711-141533-git-object-ownership-permission.md`.
+- [BL-GOLDEN-PATH-001] P1: restore the coding-agent-first new-project and iterative-delivery golden path: fresh downstream materialization, team-profile bootstrap, standing delivery policy, explicit integration ownership, compact remote-first handoff, and an end-to-end regression.
 
 ## NEXT
 

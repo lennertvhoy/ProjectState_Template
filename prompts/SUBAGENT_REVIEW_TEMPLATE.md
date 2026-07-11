@@ -28,3 +28,7 @@ Confidence: high / medium / low
 - A `concern` verdict means the subagent found something that needs human or CTO judgment.
 - If there are no required fixes, write `None` under that heading.
 - Keep findings to the five most important items.
+- Subagents work only in their bounded isolated clone/worktree and return a commit
+  plus this summary. They do not edit `PROJECT_STATE.yaml`, `STATUS.md`,
+  `NEXT_ACTIONS.md`, or other global StateDD truth, push the integration branch,
+  open a competing PR, or claim whole-slice completion.

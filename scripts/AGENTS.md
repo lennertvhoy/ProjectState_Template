@@ -15,6 +15,10 @@ hand-written script inventory here or in downstream documentation.
 
 ## Agent Rules for Scripts
 
+Read `AGENTS.md` first and follow its declared task-scoped read order. This file
+adds script-specific constraints; it does not define a second repository read
+order.
+
 1. **Prefer skills/commands over ad-hoc script calls** — Use `/skill-name` or `/statedd-*` commands; they wrap scripts with context
 2. **Run quality gates after any script change** — `python scripts/statedd_quality_gate.py --gate-level 2`
 4. **Lint instructions after any AGENTS.md/skill/command change** — `python scripts/statedd_instruction_lint.py`

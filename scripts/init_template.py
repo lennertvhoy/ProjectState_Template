@@ -178,7 +178,7 @@ class RepoScan:
     project_type: str
 
 
-def render_agents_template(today: str, mode: str, profile: str = "solo") -> str:
+def render_agents_template(today: str, mode: str, profile: str = "team") -> str:
     return f"""---
 repo_role: downstream_project
 statedd_mode: {mode}
@@ -194,14 +194,14 @@ last_updated: {today}
 
 ## Read Order
 
-1. `AGENTS.md`
-2. `STATUS.md`
-3. `PROJECT_STATE.yaml`
-4. `PROJECT_DNA.yaml`
-5. `NEXT_ACTIONS.md`
+This file is the read-order authority. Read it first, then read the files below
+in the order declared here. Load `BACKLOG.md`, `WORKLOG.md`, evidence, and
+inventory only when the task needs planning, history, proof, or repository detail.
 
-Read `BACKLOG.md`, `WORKLOG.md`, evidence, and inventory only when the task needs
-planning, history, proof, or repository detail.
+1. `STATUS.md`
+2. `PROJECT_STATE.yaml`
+3. `PROJECT_DNA.yaml`
+4. `NEXT_ACTIONS.md`
 
 ## Rules
 
@@ -218,6 +218,8 @@ planning, history, proof, or repository detail.
   `clone`; failure selects `read_only`. Containers/independent agents use clones,
   while worktrees require explicit trusted-local same-identity opt-in.
 - Non-trivial fixes name the invariant that prevents brittle example-only behavior.
+- The integration agent owns one slice branch, combines subagent commits, updates
+  global StateDD truth once, and is the only agent that pushes the final slice.
 - End implementation sessions with state hygiene, relevant gates, and a handoff.
 
 ## Current Mode: `{mode}`
@@ -229,6 +231,13 @@ coherent backlog slice at a time and keep live state current.
 
 {profile_agents_note(profile)}
 
+## Delivery Policy
+
+Confirm the standing `delivery_policy` in `PROJECT_STATE.yaml` once during
+bootstrap. Do not re-ask for routine commits, feature-branch pushes, or pull
+requests after confirmation. Merge-to-main, force-push, history rewrite, and
+remote-branch deletion remain explicit human boundaries.
+
 ## Gates And Handoff
 
 - Edit loop: relevant tests plus `python3 scripts/check_state_docs.py`.
@@ -239,7 +248,7 @@ coherent backlog slice at a time and keep live state current.
 """
 
 
-def render_status(project_name: str, human_timestamp: str, *, summary_lines: list[str], priorities: list[str], profile: str = "solo") -> str:
+def render_status(project_name: str, human_timestamp: str, *, summary_lines: list[str], priorities: list[str], profile: str = "team") -> str:
     snapshot = "\n".join(f"- {line}" for line in summary_lines)
     priority_block = "\n".join(f"{index}. {line}" for index, line in enumerate(priorities, start=1))
     return f"""# {project_name} Status
@@ -301,12 +310,37 @@ def render_project_state(
     system_investigated: bool,
     repo_investigated: bool,
     unknowns: list[str],
-    profile: str = "solo",
+    profile: str = "team",
 ) -> str:
     branch = json.dumps(repo_scan.branch) if repo_scan.branch is not None else "null"
     head = json.dumps(repo_scan.head) if repo_scan.head is not None else "null"
     unknowns_block = "\n".join(f"      - {json.dumps(entry)}" for entry in unknowns) or "      []"
     runtime_helper = "not_installed_in_minimal_profile" if profile == "minimal" else "scripts/statedd_runtime_proof.py"
+    if profile == "minimal":
+        delivery_policy = """delivery_policy:
+  status: proposed_default
+  confirmation: pending_during_bootstrap
+  profile_default: team
+  allowed_routine_operations: [branches, isolated_worktrees, commits, slice_pushes, pull_requests, conflict_resolution]
+  protected_operations: [merge_to_main, delete_remote_branches, force_push, rewrite_shared_history]
+  ci: {mode: best_effort, unavailable_behavior: continue_with_explicit_local_only_status}
+"""
+    else:
+        delivery_policy = """delivery_policy:
+  status: proposed_default
+  confirmation: pending_during_bootstrap
+  owner: human_and_coding_agent
+  profile_default: team
+  coding_agent:
+    allowed_routine_operations: [create_local_branches, create_isolated_worktrees, create_commits, push_slice_branches, open_or_update_pull_requests, resolve_integration_conflicts]
+    merge_to_main: requires_explicit_authorization
+    force_push: forbidden
+    delete_remote_branches: requires_explicit_authorization
+    rewrite_shared_history: forbidden
+  ci:
+    mode: best_effort
+    unavailable_behavior: continue_with_explicit_local_only_status
+"""
 
     return f"""# PROJECT_STATE.yaml - Structured current truth
 
@@ -327,6 +361,8 @@ workflow:
     user_intake_complete: false
     unknowns_remaining:
 {unknowns_block}
+
+{delivery_policy}
 
 verification_labels:
   observed: verified directly in the current session
@@ -488,7 +524,7 @@ governance:
 """
 
 
-def render_project_adapter(project_name: str, profile: str = "solo") -> str:
+def render_project_adapter(project_name: str, profile: str = "team") -> str:
     return f"""# PROJECT_ADAPTER.yaml - Optional project-specific adapter
 
 version: "{TEMPLATE_VERSION}"
@@ -532,7 +568,7 @@ notes:
 """
 
 
-def render_new_next_actions(human_timestamp: str, profile: str = "solo") -> str:
+def render_new_next_actions(human_timestamp: str, profile: str = "team") -> str:
     return f"""# NEXT_ACTIONS - Active Execution Queue
 
 **Updated At:** {human_timestamp}
@@ -553,7 +589,7 @@ No active work yet.
 """
 
 
-def render_adopt_next_actions(human_timestamp: str, profile: str = "solo") -> str:
+def render_adopt_next_actions(human_timestamp: str, profile: str = "team") -> str:
     return f"""# NEXT_ACTIONS - Active Execution Queue
 
 **Updated At:** {human_timestamp}
@@ -587,7 +623,7 @@ Exit: `docs/EVIDENCE_LOG.md` and `WORKLOG.md` explain what bootstrap established
 """
 
 
-def render_new_backlog(project_name: str, today: str, profile: str = "solo") -> str:
+def render_new_backlog(project_name: str, today: str, profile: str = "team") -> str:
     return f"""# BACKLOG - Strategic Roadmap
 
 **Product:** {project_name}
@@ -626,7 +662,7 @@ Initialized with profile: `{profile}` — {profile_summary(profile)}
 """
 
 
-def render_adopt_backlog(project_name: str, today: str, profile: str = "solo") -> str:
+def render_adopt_backlog(project_name: str, today: str, profile: str = "team") -> str:
     return f"""# BACKLOG - Strategic Roadmap
 
 **Product:** {project_name}
@@ -804,10 +840,11 @@ gates; they do not define this project's product behavior.
 
 ## Start
 
-1. Read `AGENTS.md` and follow its declared read order.
+1. Read `AGENTS.md` and follow its declared task-scoped read order.
 2. Replace bootstrap unknowns with observed project/runtime truth.
-3. Create a real queue linked to `BACKLOG.md`.
-4. Run `python3 scripts/check_state_docs.py --bootstrap-gate` before switching
+3. Confirm the standing `delivery_policy` once during bootstrap.
+4. Create a real queue linked to `BACKLOG.md`.
+5. Run `python3 scripts/check_state_docs.py --bootstrap-gate` before switching
    from `bootstrap` to `operating`.
 
 ## Daily Checks
@@ -829,6 +866,12 @@ python3 scripts/statedd_git_safety_check.py --mode normal_branch
 Use full clones for containers or independent agents. Linked worktrees require
 explicit trusted-local same-identity opt-in. A nonzero writable-mode result means
 diagnosis only until repair and an explicit `--restart-session` succeeds.
+
+For parallel slices, one integration agent owns the slice branch. Subagents use
+isolated clones/worktrees, return commits and verification summaries, do not edit
+global StateDD files, and do not push the final slice. The integration agent
+combines commits, resolves conflicts, updates StateDD truth once, validates the
+whole slice, and pushes the final branch.
 
 `STATEDD_ASSETS.json` records the exact workflow files installed for this
 profile. Template-maintenance tests, fixtures, evidence, incidents, and release
@@ -981,6 +1024,31 @@ def run_git(args: list[str], cwd: Path) -> str | None:
     except (FileNotFoundError, subprocess.CalledProcessError):
         return None
     return completed.stdout.strip() or None
+
+
+def initialize_fresh_git(target: Path) -> None:
+    """Create downstream Git metadata without inheriting template history."""
+    git_metadata = target / ".git"
+    if path_exists_for_write(git_metadata):
+        raise SystemExit(
+            "Refusing to initialize a new project over existing Git metadata. "
+            "Use an empty target or the `adopt` command."
+        )
+    try:
+        completed = subprocess.run(
+            ["git", "init", "-b", "main"],
+            cwd=target,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        raise SystemExit(f"Git is required to initialize a fresh downstream repository: {exc}") from exc
+    if completed.returncode != 0:
+        raise SystemExit(
+            "Fresh Git initialization failed: "
+            f"{completed.stderr.strip() or completed.stdout.strip() or 'unknown error'}"
+        )
 
 
 def scan_repo(target: Path) -> RepoScan:
@@ -1272,7 +1340,7 @@ def validate_readme_link_target(target: Path) -> None:
         raise SystemExit("Refusing to append workflow section to symlinked README.md.")
 
 
-def build_managed_files_for_new(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "solo") -> dict[str, str]:
+def build_managed_files_for_new(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "team") -> dict[str, str]:
     asset_paths = assets_for_profile(profile)
     top_level_entries = sorted(
         {path.parts[0] for path in asset_paths}
@@ -1361,7 +1429,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
     }
 
 
-def build_managed_files_for_adopt(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "solo") -> dict[str, str]:
+def build_managed_files_for_adopt(project_name: str, target: Path, today: str, stamp: str, human_timestamp: str, profile: str = "team") -> dict[str, str]:
     repo_scan = scan_repo(target)
     return {
         "AGENTS.md": render_agents_template(today, "bootstrap", profile=profile),
@@ -1414,7 +1482,7 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
     new_parser = subparsers.add_parser("new", help="Create a new repo from the template")
     new_parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     new_parser.add_argument("--target", default=".", help="Repo root to initialize")
-    new_parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
+    new_parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
     new_parser.add_argument("--minimal", action="store_true", help="Use the core-gates-only footprint (legacy alias for --profile minimal)")
     new_parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     new_parser.add_argument(
@@ -1427,11 +1495,17 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Allow template files to replace conflicting files in an existing non-empty target",
     )
+    new_parser.add_argument(
+        "--init-git",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Initialize a fresh Git repository on main after materialization (default: yes)",
+    )
 
     adopt_parser = subparsers.add_parser("adopt", help="Install the workflow into an existing repo")
     adopt_parser.add_argument("--name", required=True, help="Project name to stamp into the workflow files")
     adopt_parser.add_argument("--target", default=".", help="Existing repo root to adopt")
-    adopt_parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
+    adopt_parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
     adopt_parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     adopt_parser.add_argument(
         "--readme-link",
@@ -1460,7 +1534,7 @@ def build_legacy_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Create a new repo from the StateDD workflow template")
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
-    parser.add_argument("--profile", default="solo", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
+    parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
     parser.add_argument("--minimal", action="store_true", help="Use the core-gates-only footprint")
     parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     parser.add_argument(
@@ -1472,6 +1546,12 @@ def build_legacy_parser() -> argparse.ArgumentParser:
         "--force-overwrite",
         action="store_true",
         help="Allow template files to replace conflicting files in an existing non-empty target",
+    )
+    parser.add_argument(
+        "--init-git",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Initialize a fresh Git repository on main after materialization (default: yes)",
     )
     return parser
 
@@ -1504,6 +1584,11 @@ def main(argv: list[str] | None = None) -> int:
                 "Refusing to initialize into the template root itself. "
                 "Choose a different target directory."
             )
+        if getattr(args, "init_git", True) and path_exists_for_write(target / ".git"):
+            raise SystemExit(
+                "New-project initialization requires a fresh target without Git metadata. "
+                "Use `adopt` for an existing repository."
+            )
         asset_paths = assets_for_profile(profile)
         managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
         add_asset_manifest(managed_files, asset_paths, profile=profile, generation_mode="new")
@@ -1533,6 +1618,9 @@ def main(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
         )
 
+        if getattr(args, "init_git", True) and not args.dry_run:
+            initialize_fresh_git(target)
+
         if args.dry_run:
             print("Dry run complete.")
             return 0
@@ -1541,8 +1629,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Target: {target}")
         print("Mode: bootstrap")
         print(f"Profile: {profile} ({len(asset_paths) + len(managed_files)} declared assets)")
-        if (target / ".git").exists():
-            print("Warning: target contains git metadata. Verify git remote -v before first push.")
+        print("Git: fresh repository initialized on main")
         print("Next:")
         print("1. Read README.md and AGENTS.md")
         print("2. Fill bootstrap truth and create a real backlog-linked queue")

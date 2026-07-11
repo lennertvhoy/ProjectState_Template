@@ -1,9 +1,9 @@
 # StateDD Template
 
 StateDD is an agent-operated repository workflow. Humans provide project intent,
-select profiles and permissions, and review evidence. Coding agents read
-`AGENTS.md`, operate the StateDD scripts and skills, maintain repository truth,
-and produce the handoff.
+priorities, permissions, feedback, and final acceptance. Coding agents initialize
+projects, maintain repository truth, execute slices, validate results, integrate
+subagents, commit and push changes, and produce CTO-ready handoffs.
 
 This repository maintains the reusable `statedd-template-v5` contract. It is not
 an application runtime. Generated or adopted projects start in `bootstrap` and
@@ -11,23 +11,24 @@ move to `operating` only after their own truth is established.
 
 ## Operator path
 
-1. Choose `minimal`, `solo`, `team`, or `regulated` in
-   [`docs/ADOPTION_PROFILES.md`](docs/ADOPTION_PROFILES.md).
-2. Initialize a new project or adopt an existing one:
+For a new project, start with an empty folder, open a coding agent, and paste
+[`prompts/NEW_PROJECT_FROM_URL.md`](prompts/NEW_PROJECT_FROM_URL.md). Answer the
+project name and purpose. The agent uses the `team` profile, materializes a fresh
+repository, bootstraps it, pushes the baseline, and returns a compact handoff.
 
-   ```bash
-   python3 scripts/init_template.py new --name "Your Project" --profile solo
-   python3 scripts/init_template.py adopt --name "Your Project" --profile solo --dry-run
-   ```
+Then send that handoff to the CTO agent. For each approved slice, paste the CTO
+prompt back to the coding agent. The agent owns isolation, parallel work,
+integration, gates, evidence, commits, pushes, and the pull request.
 
-3. Give the coding agent one instruction:
+For an existing repository, the coding agent can use the initializer directly:
 
-   ```text
-   Read AGENTS.md and follow its declared read order and controls.
-   ```
+```bash
+python3 scripts/init_template.py adopt --name "Your Project" --profile team --dry-run
+```
 
-4. Review the evidence and handoff produced by the agent.
-5. Keep local, remote, GitHub, CI, runtime, and human-accepted truth distinct.
+The human normally only answers architecture-critical questions and accepts the
+finished product. CI availability changes the reported status; it does not make
+routine local execution unusable.
 
 The agent-facing constitution is [`AGENTS.md`](AGENTS.md). Procedures live in
 `skills/` and `commands/`; executable invariants live in `scripts/`; reference
@@ -39,7 +40,10 @@ material lives in `docs/`. These sources are loaded on demand according to
 Profiles are positive allowlists recorded in `STATEDD_ASSETS.json`. They keep
 template-maintenance tests, fixtures, historical evidence, incidents, and
 release history out of downstream projects unless explicitly selected. Template
-development dependencies are intentionally root-only.
+development dependencies are intentionally root-only. The new-project default is
+`team` because the canonical path supports parallel agents and remote review;
+`minimal`, `solo`, and `regulated` remain explicit alternatives. See
+[`docs/ADOPTION_PROFILES.md`](docs/ADOPTION_PROFILES.md).
 
 ## Truth and safety
 
@@ -78,6 +82,7 @@ placeholder; release readiness is therefore not proven. See
 ## Useful entrypoints
 
 - [`AGENTS.md`](AGENTS.md) — canonical coding-agent constitution and read order
+- [`prompts/NEW_PROJECT_FROM_URL.md`](prompts/NEW_PROJECT_FROM_URL.md) — canonical empty-folder prompt
 - [`docs/ADOPTION_PROFILES.md`](docs/ADOPTION_PROFILES.md) — profile selection
 - [`prompts/CODING_AGENT_STARTUP_PROMPT.md`](prompts/CODING_AGENT_STARTUP_PROMPT.md) — generated startup control
 - [`scripts/init_template.py`](scripts/init_template.py) — new/adopt workflow

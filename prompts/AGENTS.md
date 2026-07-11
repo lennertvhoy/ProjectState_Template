@@ -8,13 +8,14 @@ purpose: "CTO/agent startup prompts and handoff templates"
 ## Scope
 This directory contains prompt templates for CTO sessions, coding agent startup, handoffs, and structured reviews. Agents use these as starting prompts — they do not execute them.
 
-## Read Order (after root AGENTS.md)
-1. This file
-2. Relevant prompt template for the task
+Read `AGENTS.md` first and follow its declared task-scoped read order. This file
+only routes agents to the relevant prompt template after that authority has been
+loaded.
 
 ## Prompt Catalog
 | Template | Use Case |
 |----------|----------|
+| `NEW_PROJECT_FROM_URL.md` | Canonical empty-folder new-project startup |
 | `CTO_SESSION_PROMPT.md` | Start a CTO architecture/review session |
 | `CODING_AGENT_STARTUP_PROMPT.md` | Start a coding agent implementation session |
 | `BOOTSTRAP_INTAKE_PROMPT.md` | Initial bootstrap discovery |

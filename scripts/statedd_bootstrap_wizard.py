@@ -36,7 +36,7 @@ def ask_interactive() -> dict[str, str]:
     if repo_role not in {"downstream_project", "template_repository"}:
         raise SystemExit(f"Unsupported repo role: {repo_role}")
 
-    profile = input("Profile [solo] (minimal/solo/team/regulated): ").strip() or "solo"
+    profile = input("Profile [team] (minimal/solo/team/regulated): ").strip() or "team"
     if profile not in VALID_PROFILES:
         raise SystemExit(f"Unknown profile: {profile}")
 
@@ -105,6 +105,7 @@ def run_init(answers: dict[str, str], target: Path) -> int:
         str(target),
         "--profile",
         answers["profile"],
+        "--no-init-git",
     ]
     completed = subprocess.run(
         args,
@@ -180,6 +181,19 @@ def main(argv: list[str] | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 1
     write_bootstrap_notes(target, answers)
+    initialized = subprocess.run(
+        ["git", "init", "-b", "main"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if initialized.returncode != 0:
+        print(
+            f"Fresh Git initialization failed: {initialized.stderr.strip() or initialized.stdout.strip()}",
+            file=sys.stderr,
+        )
+        return 1
     print(f"\nBootstrap notes written to {target / 'docs' / 'bootstrap_wizard_notes.md'}")
     return 0
 

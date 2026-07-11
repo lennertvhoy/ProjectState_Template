@@ -6,9 +6,9 @@ follow its declared read order and task-scoped controls.
 ## Initialize or adopt
 
 ```bash
-python3 scripts/init_template.py new --name "My Project" --profile solo
-python3 scripts/init_template.py adopt --name "My Project" --profile solo --dry-run
-python3 scripts/init_template.py adopt --name "My Project" --profile solo
+python3 scripts/init_template.py new --name "My Project" --profile team
+python3 scripts/init_template.py adopt --name "My Project" --profile team --dry-run
+python3 scripts/init_template.py adopt --name "My Project" --profile team
 ```
 
 ## Start and validate a slice
