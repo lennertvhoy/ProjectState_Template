@@ -880,3 +880,34 @@
 
 ### Next
 - Implement the optional `knowledge_okf` module, contained scaffold, validator, provenance extension, and staleness checks.
+
+## 2026-07-11 - Locally validate BL-OKF-001
+
+**Type:** architecture_slice_local_validation
+**Status:** VALIDATED_LOCALLY_REMOTE_PENDING
+**Git Head:** 1210947c1ed551e47fd700318f4e9254ba42f0a5
+**Proof Head:** 1e434d4e5b2dae2e91146d81c5eb430cc0d6e21d
+**Worktree:** clean before publication
+
+### What changed
+- Added the optional `knowledge_okf` asset set with explicit `new` and `adopt` selection.
+- Added the contained OKF v0.1 scaffold, standard-library-only validator, StateDD extension schema, source-hash staleness checks, and permissive base-format behavior.
+- Preserved ordinary profile assets and startup context; the optional module is not installed unless selected.
+
+### Verification
+- `python3 -m pytest scripts/ -q`: passed.
+- `python3 -m pytest schemas/examples/ -q`: 5 passed.
+- `python3 scripts/test_okf_validate.py`: 10 passed.
+- Explicit minimal `knowledge_okf` generation and level-1 conformance: passed.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose`: passed.
+- `python3 scripts/statedd_audit.py --strict --evidence-folder docs/evidence/2026-07-11-okf-interoperability`: passed.
+- Strict evidence pack, schema validation, state hygiene, and efficiency checks: passed.
+
+### Evidence
+- `docs/evidence/2026-07-11-okf-interoperability/README.md`
+- `docs/evidence/2026-07-11-okf-interoperability/manifest.json`
+- `docs/metrics/profile_metrics.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-11-004`
+
+### Next
+- Run remote-mutation safety preflight, push the branch, open one separate draft PR, and observe automatic CI without reruns.

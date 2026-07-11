@@ -30,6 +30,25 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-07-11-004: Optional OKF interoperability foundation
+
+- File: docs/evidence/2026-07-11-okf-interoperability/README.md
+- File: docs/evidence/2026-07-11-okf-interoperability/manifest.json
+- File: docs/metrics/profile_metrics.json
+- Title: BL-OKF-001 optional OKF v0.1 knowledge layer
+- Source/System: test | state_update
+- Action: Added optional OKF asset selection, contained scaffold, dependency-free validator, StateDD authority/provenance extension, source staleness checks, and conformance tests without changing ordinary profiles.
+- Shows:
+  - base OKF permissiveness for unknown types, unknown extension keys, broken links, and missing indexes
+  - strict StateDD governance for canonical, derived, and reference concepts
+  - explicit optional profile installation and footprint budget conformance
+  - local level-2 quality, audit, schema, hygiene, and strict evidence success
+- Proves:
+  - local implementation and validation truth for BL-OKF-001
+- Type: test
+- as_of: 2026-07-11T20:40:00+02:00
+- Notes: OKF v0.1 is pinned to upstream commit `ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a`; remote publication and acceptance remain unproven.
+
 ## EV-2026-07-11-003: Integrated lifecycle and Git-safety slice
 
 - File: docs/evidence/2026-07-11-statedd-integration/README.md

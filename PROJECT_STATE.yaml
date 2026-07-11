@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T19:00:00+02:00
+  updated_at: 2026-07-11T20:45:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -333,3 +333,10 @@ active_problems:
     human_override:
       status: override-approved
       reason: user explicitly directed proceeding with BL-OKF-001 while PR #8 remains a separate draft boundary
+    status: validated_locally_remote_pending
+    evidence: docs/evidence/2026-07-11-okf-interoperability/README.md
+    local_head: 1210947c1ed551e47fd700318f4e9254ba42f0a5
+    remote_branch: not published
+    pull_request: not opened
+    branch_head_ci: not proven
+    merge_candidate_ci: not proven

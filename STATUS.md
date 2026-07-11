@@ -16,20 +16,20 @@
 
 - The template root has no application runtime; runtime truth is not applicable here.
 - PR #8 remains open/draft and unchanged by this slice; its direct branch-head and synthetic merge-candidate CI passed at its published head.
-- OKF work is isolated locally on `bl-okf-001`; no remote branch, PR, or CI truth exists for this slice yet.
+- OKF work is isolated and locally validated on `bl-okf-001`; no remote branch, PR, or CI truth exists for this slice yet.
 - Neither PR #6 nor PR #7 is being merged independently.
 - Verified copyright owner: not proven. Benchmark superiority: not proven.
 
 ## Open P0/P1 Failures
 
-- [BL-OKF-001] Implement and validate the optional contained OKF layer without widening PR #8.
+- [BL-OKF-001] Publish the locally validated optional OKF layer as a separate draft PR and observe its CI subjects.
 - [BL-STATEDD-INTEGRATION-001] PR #8 still requires human acceptance and ownership-boundary resolution before merge.
 
 ## Immediate Priorities
 
-1. Implement `knowledge_okf` as an explicit optional module only.
-2. Add base OKF v0.1 and StateDD governance regression coverage.
-3. Keep PR #8, PR #6, and PR #7 unchanged and unmerged.
+1. Run remote-mutation safety preflight and push `bl-okf-001`.
+2. Open a separate draft PR; keep PR #8, PR #6, and PR #7 unchanged.
+3. Observe branch-head versus merge-candidate CI separately.
 
 ## Notes
 
