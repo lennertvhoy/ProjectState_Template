@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -137,6 +139,126 @@ def test_duplicate_nested_yaml_key_fails() -> None:
         assert_output_contains(completed, "duplicate mapping key 'repo_role'")
 
 
+def evidence_manifest_fixture() -> dict:
+    return {
+        "schema": "statedd.evidence_manifest.v1",
+        "slice_id": "BL-SCHEMA-001",
+        "created_at": "2026-07-11T00:00:00+00:00",
+        "repo": {"branch": "main", "head": "abc"},
+        "claims": [
+            {"id": "C1", "claim": "valid", "status": "validated", "evidence": ["artifact.txt"]}
+        ],
+        "artifacts": [
+            {
+                "path": "artifact.txt",
+                "kind": "doc",
+                "sha256": None,
+                "redaction_status": "checked",
+                "sensitive_data": "none_found",
+            }
+        ],
+        "redaction": {"status": "checked"},
+    }
+
+
+def test_local_ref_shapes_unique_items_and_safe_paths_are_enforced() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "manifest.json"
+        schema = ROOT / "schemas" / "evidence_manifest.schema.json"
+
+        missing_ref_field = evidence_manifest_fixture()
+        del missing_ref_field["artifacts"][0]["kind"]
+        path.write_text(json.dumps(missing_ref_field), encoding="utf-8")
+        completed = run(
+            [str(VALIDATOR), "--file", str(path), "--schema", str(schema)],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "missing required property 'kind'")
+
+        duplicate = evidence_manifest_fixture()
+        duplicate["artifacts"].append(dict(duplicate["artifacts"][0]))
+        path.write_text(json.dumps(duplicate), encoding="utf-8")
+        completed = run(
+            [str(VALIDATOR), "--file", str(path), "--schema", str(schema)],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "duplicate array item")
+
+        unsafe = evidence_manifest_fixture()
+        unsafe["artifacts"][0]["path"] = "/etc/hosts"
+        unsafe["claims"][0]["evidence"] = ["/etc/hosts"]
+        path.write_text(json.dumps(unsafe), encoding="utf-8")
+        completed = run(
+            [str(VALIDATOR), "--file", str(path), "--schema", str(schema)],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "absolute managed path")
+
+
+def test_duplicate_json_keys_fail_schema_validation() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "duplicate.json"
+        path.write_text('{"schema":"one","schema":"two"}', encoding="utf-8")
+        completed = run(
+            [
+                str(VALIDATOR),
+                "--file",
+                str(path),
+                "--schema",
+                str(ROOT / "schemas" / "evidence_manifest.schema.json"),
+            ],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "duplicate JSON key 'schema'")
+
+
+def test_numeric_and_object_size_constraints_are_enforced() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        data = root / "data.json"
+        schema = root / "schema.json"
+        data.write_text('{"count":4}', encoding="utf-8")
+        schema.write_text(
+            json.dumps(
+                {
+                    "type": "object",
+                    "minProperties": 2,
+                    "properties": {
+                        "count": {"type": "integer", "minimum": 5, "maximum": 7}
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        completed = run(
+            [str(VALIDATOR), "--file", str(data), "--schema", str(schema)],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "expected at least 2 properties")
+        assert_output_contains(completed, "expected value >= 5")
+
+
+def test_repo_validation_rejects_symlinked_evidence_folder_without_reading_outside() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        outside = Path(tmp) / "outside"
+        run_init(["new", "--name", "Symlink Evidence", "--target", str(root), "--profile", "minimal"])
+        outside.mkdir()
+        (outside / "manifest.json").write_text('{"secret":"do-not-read"}', encoding="utf-8")
+        evidence_root = root / "docs" / "evidence"
+        (evidence_root / ".gitkeep").unlink(missing_ok=True)
+        os.symlink(outside, evidence_root / "linked")
+
+        completed = run(
+            [str(root / "scripts" / "statedd_validate_schema.py"), str(root)],
+            cwd=root,
+            expect_success=False,
+        )
+        assert_output_contains(completed, "symlinked evidence folder")
+        if "do-not-read" in completed.stdout + completed.stderr:
+            raise AssertionError("Validator exposed outside-repository content")
+
+
 def assert_schema_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "project_state.schema.json",
@@ -180,6 +302,10 @@ def main() -> int:
         test_runtime_required_unreachable_fixture_fails,
         test_duplicate_root_yaml_key_fails,
         test_duplicate_nested_yaml_key_fails,
+        test_local_ref_shapes_unique_items_and_safe_paths_are_enforced,
+        test_duplicate_json_keys_fail_schema_validation,
+        test_numeric_and_object_size_constraints_are_enforced,
+        test_repo_validation_rejects_symlinked_evidence_folder_without_reading_outside,
         test_generated_new_repo_includes_schema_validation_assets_and_passes,
         test_adopted_repo_includes_schema_validation_assets_and_passes,
     ]

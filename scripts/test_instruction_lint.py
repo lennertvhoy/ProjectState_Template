@@ -7,7 +7,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from statedd_instruction_lint import InstructionLinter, SmellType, Severity
+import pytest
+
+from statedd_instruction_lint import (
+    InstructionLinter,
+    Severity,
+    SmellType,
+    meets_failure_threshold,
+)
 
 
 def test_context_bloat():
@@ -63,6 +70,19 @@ def test_missing_failure_cases():
         assert any(s.type == SmellType.MISSING_FAILURE_CASES for s in smells)
 
 
+def test_structured_failure_cases_are_recognized():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        skill_dir = root / "skills" / "test-skill"
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(
+            "name: test\nfailure_cases:\n  - name: command fails\n    recovery: stop\n"
+        )
+        linter = InstructionLinter(root)
+        _, smells = linter.run()
+        assert not any(s.type == SmellType.MISSING_FAILURE_CASES for s in smells)
+
+
 def test_outdated_claims():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -96,12 +116,32 @@ def test_no_smells_clean_file():
         assert count == 0
 
 
+@pytest.mark.parametrize(
+    ("findings", "threshold", "expected"),
+    [
+        ([Severity.ERROR], Severity.ERROR, True),
+        ([Severity.ERROR], Severity.WARNING, True),
+        ([Severity.ERROR], Severity.INFO, True),
+        ([Severity.WARNING], Severity.ERROR, False),
+        ([Severity.WARNING], Severity.WARNING, True),
+        ([Severity.INFO], Severity.WARNING, False),
+        ([Severity.INFO], Severity.INFO, True),
+        ([], Severity.INFO, False),
+    ],
+)
+def test_failure_threshold_uses_numeric_severity_order(
+    findings: list[Severity], threshold: Severity, expected: bool
+) -> None:
+    assert meets_failure_threshold(findings, threshold) is expected
+
+
 if __name__ == "__main__":
     test_context_bloat()
     test_conflicting_instructions()
     test_lint_leakage()
     test_skill_leakage()
     test_missing_failure_cases()
+    test_structured_failure_cases_are_recognized()
     test_outdated_claims()
     test_cross_file_lint_leakage()
     test_no_smells_clean_file()

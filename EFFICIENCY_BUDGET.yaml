@@ -19,8 +19,45 @@ context_budgets:
     - AGENTS.md
     - STATUS.md
     - PROJECT_STATE.yaml
-    - PROJECT_DNA.yaml
     - NEXT_ACTIONS.md
+  selection_policies:
+    initial_orientation:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+    normal_implementation:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - scripts/AGENTS.md
+    interrupted_resume:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+    closure_review:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - prompts/EVIDENCE_README_TEMPLATE.md
+    ci_diagnosis:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - .github/workflows/validate.yml
+      - scripts/statedd_quality_gate.py
+    architecture_audit:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - PROJECT_DNA.yaml
+      - EFFICIENCY_BUDGET.yaml
+      - profiles/catalog.json
   profiles:
     template_repository:
       max_startup_files: 5
@@ -32,25 +69,26 @@ context_budgets:
       max_startup_files: 5
       max_startup_bytes: 9000
       max_startup_estimated_tokens: 2250
-      max_footprint_files: 32
-      max_footprint_bytes: 180000
+      max_footprint_files: 36
+      max_footprint_bytes: 250000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
-      max_footprint_files: 64
-      max_footprint_bytes: 520000
+      max_footprint_files: 70
+      max_footprint_bytes: 600000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
       max_startup_estimated_tokens: 2625
-      max_footprint_files: 72
-      max_footprint_bytes: 700000
+      max_footprint_files: 80
+      # Includes strict runtime-truth re-probing and exact-head collaboration controls.
+      max_footprint_bytes: 725000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
       max_startup_estimated_tokens: 2750
-      max_footprint_files: 75
+      max_footprint_files: 82
       max_footprint_bytes: 760000
 
 evidence_budgets:

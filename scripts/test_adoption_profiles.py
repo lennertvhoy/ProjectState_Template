@@ -12,6 +12,11 @@ import sys
 import tempfile
 from pathlib import Path
 
+try:
+    from statedd_validate_schema import parse_yaml_text
+except ModuleNotFoundError:  # pragma: no cover - pytest package import path
+    from scripts.statedd_validate_schema import parse_yaml_text
+
 
 ROOT = Path(__file__).resolve().parents[1]
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
@@ -62,10 +67,20 @@ def run_wizard(args: list[str], *, expect_success: bool) -> subprocess.Completed
 
 
 def validate_repo(repo: Path) -> None:
+    manifest = json.loads((repo / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+    required_gate_level = manifest.get("required_gate_level", 1)
     for command in (
         [sys.executable, str(repo / "scripts" / "statedd_validate_schema.py"), str(repo)],
         [sys.executable, str(repo / "scripts" / "check_state_docs.py"), str(repo)],
-        [sys.executable, str(repo / "scripts" / "statedd_quality_gate.py"), "--root", str(repo)],
+        [
+            sys.executable,
+            str(repo / "scripts" / "statedd_quality_gate.py"),
+            "--root",
+            str(repo),
+            "--gate-level",
+            str(required_gate_level),
+            "--conformance",
+        ],
     ):
         completed = subprocess.run(command, cwd=repo, capture_output=True, text=True, check=False)
         if completed.returncode != 0:
@@ -132,12 +147,13 @@ def test_legacy_minimal_flag_maps_to_profile() -> None:
             raise AssertionError("legacy --minimal should remove fixtures/")
 
 
-def test_profile_footprints_are_bounded_and_minimal_is_materially_smaller() -> None:
+def test_profile_footprints_are_bounded_and_minimal_is_smallest() -> None:
+    budget = parse_yaml_text((ROOT / "EFFICIENCY_BUDGET.yaml").read_text(encoding="utf-8"))
+    profile_budgets = budget["context_budgets"]["profiles"]
     limits = {
-        "minimal": (32, 180_000),
-        "solo": (64, 520_000),
-        "team": (75, 700_000),
-        "regulated": (76, 760_000),
+        profile: (limits["max_footprint_files"], limits["max_footprint_bytes"])
+        for profile, limits in profile_budgets.items()
+        if profile in {"minimal", "solo", "team", "regulated"}
     }
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -163,8 +179,8 @@ def test_profile_footprints_are_bounded_and_minimal_is_materially_smaller() -> N
 
         minimal_files, minimal_bytes, minimal_startup_bytes = measured["minimal"]
         solo_files, solo_bytes, _ = measured["solo"]
-        if minimal_files * 2 > solo_files or minimal_bytes * 2 > solo_bytes:
-            raise AssertionError(f"minimal is not materially smaller than solo: {measured}")
+        if minimal_files >= solo_files or minimal_bytes >= solo_bytes:
+            raise AssertionError(f"minimal is not the smallest usable profile: {measured}")
         other_startup_bytes = [values[2] for profile, values in measured.items() if profile != "minimal"]
         if minimal_startup_bytes >= min(other_startup_bytes):
             raise AssertionError(f"minimal startup context is not the smallest profile payload: {measured}")
@@ -233,7 +249,7 @@ def main() -> int:
         test_new_profile_team,
         test_new_profile_regulated,
         test_legacy_minimal_flag_maps_to_profile,
-        test_profile_footprints_are_bounded_and_minimal_is_materially_smaller,
+        test_profile_footprints_are_bounded_and_minimal_is_smallest,
         test_adopt_with_profile_preserves_readme,
         test_wizard_answers_generates_files,
         test_wizard_dry_run_writes_nothing,

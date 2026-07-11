@@ -83,6 +83,13 @@ python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice --
 # Runtime identity for a user-facing service
 python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/YYYY-MM-DD-slice --url http://localhost:3000
 
+# Re-probe that exact local runtime artifact
+python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/YYYY-MM-DD-slice/runtime_identity.json --expected-endpoint http://localhost:3000
+
+# Remote runtimes must expose a revision header equal to the Git HEAD
+python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/YYYY-MM-DD-slice --url https://service.example/health --revision-header X-Revision
+python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/YYYY-MM-DD-slice/runtime_identity.json --expected-endpoint https://service.example/health --allow-remote
+
 # Runtime identity for docs/scripts-only slices
 python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/YYYY-MM-DD-slice
 ```

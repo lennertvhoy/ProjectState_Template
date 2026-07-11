@@ -30,9 +30,25 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from pathlib import Path
+
+try:
+    from statedd_contracts import (
+        ContractError,
+        reject_symlink_components,
+        safe_root_path,
+        strict_json_loads,
+    )
+except ModuleNotFoundError:  # pragma: no cover - pytest package import path
+    from scripts.statedd_contracts import (
+        ContractError,
+        reject_symlink_components,
+        safe_root_path,
+        strict_json_loads,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,6 +58,16 @@ AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
 RESERVATION_REF_PREFIX = "refs/statedd/reservations/"
 WORKTREE_DIR = ".worktrees"
 LOCK_FILES = ("index.lock", "config.lock")
+AGENT_CONTEXT_FIELDS = {
+    "schema",
+    "agent_id",
+    "slice_id",
+    "reservation_ref",
+    "worktree_path",
+    "branch",
+    "base_branch",
+    "created_at",
+}
 
 
 def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
@@ -145,20 +171,123 @@ def reservation_ref(branch: str) -> str:
 
 
 def load_agent_context(path: Path) -> tuple[int, dict, str]:
-    """Load and validate agent.context JSON."""
+    """Load a closed-world agent.context JSON contract without following links."""
     if path.is_dir():
         context_path = path / ".statedd" / "agent.context"
     else:
         context_path = path
     try:
-        data = json.loads(context_path.read_text(encoding="utf-8"))
+        reject_symlink_components(context_path, label="agent context")
+        if not context_path.is_file():
+            return 2, {}, f"agent context is not a regular file: {context_path}"
+        data = strict_json_loads(context_path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return 2, {}, f"agent context not found: {context_path}"
-    except json.JSONDecodeError as exc:
+    except (ContractError, OSError, UnicodeDecodeError) as exc:
         return 2, {}, f"invalid agent context JSON: {exc}"
+    if not isinstance(data, dict):
+        return 2, {}, "agent context must be a JSON object"
+    missing = AGENT_CONTEXT_FIELDS - set(data)
+    unknown = set(data) - AGENT_CONTEXT_FIELDS
+    if missing or unknown:
+        return 2, {}, f"agent context fields are invalid (missing={sorted(missing)}, unknown={sorted(unknown)})"
     if data.get("schema") != AGENT_CONTEXT_SCHEMA:
         return 2, {}, f"unexpected agent context schema: {data.get('schema')}"
+    for field in AGENT_CONTEXT_FIELDS - {"schema"}:
+        if not isinstance(data.get(field), str) or not data[field].strip():
+            return 2, {}, f"agent context field {field!r} must be a non-empty string"
+    branch = data["branch"]
+    if data["reservation_ref"] != reservation_ref(branch):
+        return 2, {}, "agent context reservation_ref does not match its branch"
+    if not Path(data["worktree_path"]).is_absolute():
+        return 2, {}, "agent context worktree_path must be absolute"
     return 0, data, ""
+
+
+def atomic_write_context(path: Path, context: dict) -> None:
+    """Write context atomically so interruption cannot leave a partial contract."""
+    payload = json.dumps(context, indent=2, sort_keys=True) + "\n"
+    descriptor, tmp_name = tempfile.mkstemp(prefix=".agent.context.", dir=path.parent)
+    tmp_path = Path(tmp_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(tmp_path, 0o600)
+        os.replace(tmp_path, path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+
+def _strict_context_message(text: str) -> dict | None:
+    try:
+        payload = strict_json_loads(text)
+    except ContractError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def verify_agent_ownership(worktree: Path, context: dict) -> tuple[int, Path, str]:
+    """Bind a context to its exact registered worktree, branch, and reservation."""
+    try:
+        requested = safe_root_path(worktree, must_exist=True)
+        declared = safe_root_path(context["worktree_path"], must_exist=True)
+    except (ContractError, OSError) as exc:
+        return 2, worktree, str(exc)
+    code, repo, error = resolve_repo(requested)
+    if code != 0:
+        return code, repo, error
+    if requested != repo or declared != repo:
+        return 2, repo, (
+            f"agent context worktree mismatch: requested={requested}, "
+            f"declared={declared}, git_root={repo}"
+        )
+
+    branch = current_branch(repo)
+    declared_branch = context["branch"]
+    if branch != declared_branch:
+        return 2, repo, (
+            f"agent context branch {declared_branch!r} does not match current branch {branch!r}"
+        )
+
+    repo_root = main_worktree_root(repo)
+    worktrees = list_worktrees(repo_root)
+    record = worktrees.get(f"refs/heads/{declared_branch}")
+    if not isinstance(record, dict):
+        return 2, repo, f"branch {declared_branch!r} is not registered to a worktree"
+    try:
+        registered = safe_root_path(record.get("path", ""), must_exist=True)
+    except (ContractError, OSError) as exc:
+        return 2, repo, f"registered worktree path is unsafe: {exc}"
+    if registered != repo:
+        return 2, repo, (
+            f"branch {declared_branch!r} is registered at {registered}, not {repo}"
+        )
+
+    ref = context["reservation_ref"]
+    if ref != reservation_ref(declared_branch):
+        return 2, repo, "reservation ref does not match the current branch"
+    code, _, stderr = run_command(["git", "rev-parse", "--verify", ref], repo_root)
+    if code != 0:
+        return 2, repo, f"reservation ref is missing: {ref}: {stderr}"
+    code, message, stderr = run_command(
+        ["git", "log", "-g", "-1", "--format=%gs", ref], repo_root
+    )
+    if code != 0:
+        return 2, repo, f"reservation reflog is unavailable for {ref}: {stderr}"
+    reserved_context = _strict_context_message(message)
+    if reserved_context != context:
+        return 2, repo, "agent context does not match the reservation reflog payload"
+    return 0, repo, ""
+
+
+def load_and_verify_agent(worktree: Path) -> tuple[int, dict, Path, str]:
+    code, context, error = load_agent_context(worktree)
+    if code != 0:
+        return code, {}, worktree, error
+    code, repo, error = verify_agent_ownership(worktree, context)
+    return code, context, repo, error
 
 
 def normalize_cell(cell: str) -> str:
@@ -330,6 +459,24 @@ def check_locks_or_fail(repo: Path, wait: bool = False) -> int:
     return 0
 
 
+def rollback_started_worktree(repo: Path, worktree: Path, branch: str, ref: str) -> list[str]:
+    """Best-effort reverse-order rollback for a failed start transaction."""
+    errors: list[str] = []
+    code, _, stderr = run_command(["git", "update-ref", "-d", ref], repo)
+    if code != 0:
+        errors.append(f"reservation cleanup failed: {stderr}")
+    registered = list_worktrees(repo).get(f"refs/heads/{branch}")
+    if registered:
+        try:
+            remove_worktree_safe(repo, worktree)
+        except RuntimeError as exc:
+            errors.append(str(exc))
+    code, _, stderr = run_command(["git", "branch", "-D", branch], repo)
+    if code != 0:
+        errors.append(f"branch cleanup failed: {stderr}")
+    return errors
+
+
 def cmd_start(args: argparse.Namespace) -> int:
     repo = Path(args.repo).resolve()
     code, repo, error = resolve_repo(repo)
@@ -402,34 +549,39 @@ def cmd_start(args: argparse.Namespace) -> int:
         print(f"Failed to create worktree '{wt_path}': {stderr}", file=sys.stderr)
         return 2
 
-    # Ensure .statedd directory exists inside worktree.
-    statedd_dir = wt_path / ".statedd"
-    statedd_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        # Ensure .statedd directory exists inside worktree.
+        statedd_dir = wt_path / ".statedd"
+        statedd_dir.mkdir(parents=True, exist_ok=True)
 
-    created_at = dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds")
-    context = {
-        "schema": AGENT_CONTEXT_SCHEMA,
-        "agent_id": agent_id,
-        "slice_id": slice_id,
-        "reservation_ref": ref,
-        "worktree_path": str(wt_path),
-        "branch": branch,
-        "base_branch": base,
-        "created_at": created_at,
-    }
-    context_path = statedd_dir / "agent.context"
-    context_path.write_text(json.dumps(context, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        created_at = dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds")
+        context = {
+            "schema": AGENT_CONTEXT_SCHEMA,
+            "agent_id": agent_id,
+            "slice_id": slice_id,
+            "reservation_ref": ref,
+            "worktree_path": str(wt_path),
+            "branch": branch,
+            "base_branch": base,
+            "created_at": created_at,
+        }
+        context_path = statedd_dir / "agent.context"
+        atomic_write_context(context_path, context)
 
-    # Create reservation ref with context JSON as reflog message.
-    # --create-reflog is required so custom refs under refs/statedd/ keep a
-    # reflog that `git log -g` can later retrieve.
-    context_json = json.dumps(context, sort_keys=True)
-    code, _, stderr = run_command(
-        ["git", "update-ref", "--create-reflog", "-m", context_json, ref, base_commit],
-        repo,
-    )
-    if code != 0:
-        print(f"Failed to create reservation ref '{ref}': {stderr}", file=sys.stderr)
+        # Create reservation ref with context JSON as reflog message.
+        # --create-reflog is required so custom refs under refs/statedd/ keep a
+        # reflog that `git log -g` can later retrieve.
+        context_json = json.dumps(context, sort_keys=True)
+        code, _, stderr = run_command(
+            ["git", "update-ref", "--create-reflog", "-m", context_json, ref, base_commit],
+            repo,
+        )
+        if code != 0:
+            raise RuntimeError(f"Failed to create reservation ref '{ref}': {stderr}")
+    except (OSError, RuntimeError) as exc:
+        cleanup_errors = rollback_started_worktree(repo, wt_path, branch, ref)
+        suffix = f"; rollback errors: {cleanup_errors}" if cleanup_errors else ""
+        print(f"Failed to complete worktree start: {exc}{suffix}", file=sys.stderr)
         return 2
 
     print(f"Agent worktree ready: {wt_path}")
@@ -438,13 +590,8 @@ def cmd_start(args: argparse.Namespace) -> int:
 
 
 def cmd_guard(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).resolve() if args.worktree else Path.cwd()
-    code, context, error = load_agent_context(worktree)
-    if code != 0:
-        print(f"StateDD Agent Worktree Guard\n\nBlocking problems\n- {error}", file=sys.stderr)
-        return 2
-
-    code, repo, error = resolve_repo(worktree)
+    worktree = Path(args.worktree).absolute() if args.worktree else Path.cwd().absolute()
+    code, context, repo, error = load_and_verify_agent(worktree)
     if code != 0:
         print(f"StateDD Agent Worktree Guard\n\nBlocking problems\n- {error}", file=sys.stderr)
         return 2
@@ -545,11 +692,12 @@ def cmd_guard(args: argparse.Namespace) -> int:
 
 
 def cmd_handoff(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).resolve() if args.worktree else Path.cwd()
-    code, context, error = load_agent_context(worktree)
+    worktree = Path(args.worktree).absolute() if args.worktree else Path.cwd().absolute()
+    code, context, repo, error = load_and_verify_agent(worktree)
     if code != 0:
         print(f"StateDD Agent Worktree Handoff\n\nBlocking problems\n- {error}", file=sys.stderr)
         return 2
+    worktree = repo
 
     handoff_script = ROOT / "scripts" / "statedd_handoff.py"
     if not handoff_script.exists():
@@ -587,18 +735,22 @@ def cmd_handoff(args: argparse.Namespace) -> int:
         ref = context.get("reservation_ref", "")
         if ref:
             repo_root = main_worktree_root(worktree)
-            run_command(["git", "update-ref", "-d", ref], repo_root)
+            delete_code, _, delete_error = run_command(["git", "update-ref", "-d", ref], repo_root)
+            if delete_code != 0:
+                print(f"Failed to release reservation {ref}: {delete_error}", file=sys.stderr)
+                return 1
             print(f"Released reservation: {ref}")
 
     return 0
 
 
 def cmd_close(args: argparse.Namespace) -> int:
-    worktree = Path(args.worktree).resolve() if args.worktree else Path.cwd()
-    code, context, error = load_agent_context(worktree)
+    worktree = Path(args.worktree).absolute() if args.worktree else Path.cwd().absolute()
+    code, context, repo, error = load_and_verify_agent(worktree)
     if code != 0:
         print(f"StateDD Agent Worktree Close\n\nBlocking problems\n- {error}", file=sys.stderr)
         return 2
+    worktree = repo
 
     pr_number = args.pr
     if not pr_number or pr_number <= 0:
@@ -621,7 +773,9 @@ def cmd_close(args: argparse.Namespace) -> int:
         return lock_code
 
     # Push branch.
-    code, _, stderr = run_command(["git", "push", "origin", branch], worktree)
+    code, _, stderr = run_command(
+        ["git", "push", "origin", f"HEAD:refs/heads/{branch}"], worktree
+    )
     if code != 0:
         print(f"Failed to push branch '{branch}': {stderr}", file=sys.stderr)
         print(f"Worktree left intact for debugging: {worktree}")
@@ -645,9 +799,12 @@ def cmd_close(args: argparse.Namespace) -> int:
         print(f"\nRemote closure finalizer failed; worktree left intact: {worktree}", file=sys.stderr)
         return code
 
-    # Remove reservation ref and worktree.
-    run_command(["git", "update-ref", "-d", ref], repo_root)
-    remove_worktree_safe(repo_root, worktree)
+    # Remove the verified worktree first. Keep the reservation if removal fails
+    # so cleanup remains attributable and retryable.
+    cleanup_code, cleanup_error = remove_worktree_then_reservation(repo_root, worktree, ref)
+    if cleanup_code != 0:
+        print(cleanup_error, file=sys.stderr)
+        return 1
     print(f"Closed agent worktree: {worktree}")
     return 0
 
@@ -665,6 +822,18 @@ def remove_worktree_safe(repo_root: Path, worktree_path: Path) -> None:
 
     # Prune leftover registration.
     run_command(["git", "worktree", "prune"], repo_root)
+
+
+def remove_worktree_then_reservation(repo_root: Path, worktree: Path, ref: str) -> tuple[int, str]:
+    """Close local ownership without discarding attribution on removal failure."""
+    try:
+        remove_worktree_safe(repo_root, worktree)
+    except RuntimeError as exc:
+        return 1, f"{exc}; reservation retained: {ref}"
+    code, _, error = run_command(["git", "update-ref", "-d", ref], repo_root)
+    if code != 0:
+        return 1, f"Worktree removed but reservation cleanup failed for {ref}: {error}"
+    return 0, ""
 
 
 def list_reservations(repo: Path) -> list[tuple[str, str, dict]]:

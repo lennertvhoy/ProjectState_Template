@@ -119,6 +119,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `scripts/statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard |
 | `scripts/statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scanner |
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
+| `scripts/statedd_runtime_truth_check.py` | Re-probe an explicit v2 runtime artifact against current Git/runtime truth |
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
 | `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
 | `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
@@ -315,6 +316,8 @@ Use `python3 scripts/statedd_handoff.py` near the end of a slice to print a loca
 Before accepting user-facing behavior, first prove which repo, branch, HEAD commit, process or container, and endpoint were actually under test, plus whether the artifact was rebuilt and whether duplicate runtimes were checked.
 
 Use `python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url http://localhost:<port>` to write `runtime_identity.json` for runtime slices. For docs/scripts-only slices, use `python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>`.
+
+Re-probe the exact artifact with `python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json --expected-endpoint http://localhost:<port>`. Remote endpoints additionally require `--allow-remote` and a proof captured with `--revision-header <header>` whose response value equals the current Git HEAD.
 
 StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider. Kimi WebBridge is a preferred provider when available, not a required dependency. Acceptable providers include Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots with explicit limits, or custom project tooling, as long as the evidence is durable and linked to runtime identity.
 

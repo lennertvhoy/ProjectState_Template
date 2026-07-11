@@ -8,6 +8,10 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
+
+import statedd_agent_worktree as orchestrator
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -238,6 +242,86 @@ def test_close_removes_worktree_and_reservation() -> None:
         assert not worktree.exists()
 
 
+def test_close_rejects_context_from_another_worktree_before_push() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        for slice_id, agent_id in (("BL-TEST-A", "agent-a111"), ("BL-TEST-B", "agent-b222")):
+            run(
+                ["--repo", str(repo), "start", "--slice-id", slice_id, "--agent-id", agent_id],
+                cwd=repo,
+                expect_code=0,
+            )
+        worktree_a = next(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-A', 'agent-a111')}*"))
+        worktree_b = next(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-TEST-B', 'agent-b222')}*"))
+        context_a_path = worktree_a / ".statedd" / "agent.context"
+        context_b_path = worktree_b / ".statedd" / "agent.context"
+        context_a = json.loads(context_a_path.read_text(encoding="utf-8"))
+        context_b = json.loads(context_b_path.read_text(encoding="utf-8"))
+        before_a = git(repo, "ls-remote", "origin", context_a["branch"])
+        before_b = git(repo, "ls-remote", "origin", context_b["branch"])
+
+        context_a_path.write_bytes(context_b_path.read_bytes())
+        completed = run(
+            ["--repo", str(repo), "close", "--worktree", str(worktree_a), "--pr", "1"],
+            cwd=repo,
+            expect_code=2,
+        )
+
+        assert_contains(completed.stderr, "worktree mismatch")
+        assert git(repo, "ls-remote", "origin", context_a["branch"]) == before_a
+        assert git(repo, "ls-remote", "origin", context_b["branch"]) == before_b
+
+
+def test_start_rolls_back_when_reservation_creation_fails() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        branch = "bl-rollback-test"
+        real_run = orchestrator.run_command
+
+        def fail_reservation(args: list[str], cwd: Path) -> tuple[int, str, str]:
+            if args[:4] == ["git", "update-ref", "--create-reflog", "-m"]:
+                return 1, "", "injected reservation failure"
+            return real_run(args, cwd)
+
+        args = SimpleNamespace(
+            repo=str(repo),
+            slice_id="BL-ROLLBACK",
+            agent_id="agent-rb01",
+            branch=branch,
+            base="main",
+            wait=False,
+            dry_run=False,
+        )
+        with mock.patch.object(orchestrator, "run_command", side_effect=fail_reservation):
+            assert orchestrator.cmd_start(args) == 2
+
+        assert git(repo, "branch", "--list", branch) == ""
+        assert not (repo / ".worktrees" / branch).exists()
+        assert git(repo, "for-each-ref", "--format=%(refname)", orchestrator.reservation_ref(branch)) == ""
+
+
+def test_close_preserves_reservation_when_worktree_removal_fails() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        run(
+            ["--repo", str(repo), "start", "--slice-id", "BL-REMOVE", "--agent-id", "agent-rm01"],
+            cwd=repo,
+            expect_code=0,
+        )
+        worktree = next(repo.joinpath(".worktrees").glob(f"{agent_branch_prefix('BL-REMOVE', 'agent-rm01')}*"))
+        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        ref = context["reservation_ref"]
+        with mock.patch.object(
+            orchestrator,
+            "remove_worktree_safe",
+            side_effect=RuntimeError("injected removal failure"),
+        ):
+            code, error = orchestrator.remove_worktree_then_reservation(repo, worktree, ref)
+        assert code == 1
+        assert "reservation retained" in error
+        assert git(repo, "rev-parse", "--verify", ref)
+
+
 def test_cleanup_removes_stale_worktree() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
@@ -334,6 +418,9 @@ def main() -> int:
         test_lock_detection_reports_concurrent_git_operation,
         test_handoff_includes_agent_context,
         test_close_removes_worktree_and_reservation,
+        test_close_rejects_context_from_another_worktree_before_push,
+        test_start_rolls_back_when_reservation_creation_fails,
+        test_close_preserves_reservation_when_worktree_removal_fails,
         test_cleanup_removes_stale_worktree,
         test_existing_audit_passes_in_agent_context,
     ]

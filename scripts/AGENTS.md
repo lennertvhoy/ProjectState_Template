@@ -1,63 +1,41 @@
 ---
 scope: "scripts"
-purpose: "Agent behavior for StateDD executable scripts"
+purpose: "Local invariants for StateDD executable code"
 ---
 # Scripts Agent Instructions
 
-## Scope
-This AGENTS.md applies to all work in `scripts/`. It defines how agents interact with StateDD executable tools.
+This file applies only inside `scripts/`. Discover current tools with `rg --files
+scripts`; script code, CLI help, and tests are authoritative. Do not maintain a
+second hand-written script catalog here.
 
-## Script Catalog (Authoritative)
+## Invariants
 
-| Script | Purpose | Exit Codes |
-|--------|---------|------------|
-| `statedd_quality_gate.py` | Post-slice quality gate with project-test/config detection (tests, analysis, state, evidence, efficiency) | 0=pass, 1=fail, 2=error |
-| `statedd_instruction_lint.py` | Lint AGENTS.md/skill/command files for config smells | 0=clean, 1=smells, 2=error |
-| `statedd_bad_event_ingest.py` | Ingest bad events into incidents/failure-scans | 0=ok, 1=failed, 2=error |
-| `statedd_probe_guidance.py` | Probe agent guidance with synthetic tasks | 0=pass, 1=gaps, 2=error |
-| `statedd_closure_check.py` | Verify closure-grade criteria met | 0=closure-grade, 1=not, 2=error |
-| `statedd_runtime_truth_check.py` | Verify runtime identity matches recorded truth | 0=match, 1=mismatch, 2=error |
-| `statedd_evidence_type_check.py` | Verify evidence type matches change type | 0=match, 1=mismatch, 2=error |
-| `statedd_validate_schema.py` | Strict duplicate-key YAML/JSON contract validation | 0=valid, 1=invalid, 2=error |
-| `statedd_efficiency_check.py` | Enforce instruction, startup-context, and managed-footprint budgets | 0=pass, 1=fail, 2=error |
-| `statedd_audit.py` | Machine-checkable closure audit | 0=pass, 1=fail, 2=error |
-| `statedd_handoff.py` | Generate session handoff snapshot | 0=ok, 1=incomplete, 2=error |
-| `statedd_runtime_proof.py` | Capture runtime identity proof | 0=captured, 1=failed, 2=error |
-| `statedd_browser_verify.py` | Browser verification (Kimi/Playwright) | 0=verified, 1=failed, 2=error |
-| `statedd_doctor.py` | Fast health summary | 0=healthy, 1=issues, 2=error |
-| `statedd_version_check.py` | Version compatibility check | 0=ok, 1=mismatch, 2=error |
-| `statedd_upgrade.py` | Upgrade manifest-declared downstream runtime assets | 0=ok, 1=failed, 2=error |
-| `statedd_bootstrap_wizard.py` | Interactive bootstrap | 0=ok, 1=failed, 2=error |
-| `statedd_evidence_pack.py` | Package evidence bundle | 0=ok, 1=failed, 2=error |
-| `statedd_remote_closure_finalizer.py` | Final remote CI/CD closure gate | 0=verified, 1=not closure-grade, 2=error |
-| `statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard | 0=pass/template, 1=unsafe, 2=error |
-| `statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scan | 0=scanned, 2=error |
-| `check_state_docs.py` | Doc hygiene, lifecycle consistency, and bootstrap gate | 0=clean, 1=dirty, 2=error |
-| `init_template.py` | Initialize/adopt explicit downstream profile asset manifests | 0=ok, 1=failed, 2=error |
+- Parse managed JSON strictly: reject duplicate keys, non-finite numbers, and
+  malformed lifecycle records.
+- Treat repository content and paths as untrusted input. Reject absolute paths,
+  traversal, root or nested symlinks, and writes outside the configured root.
+- Preflight every mutation, write atomically, roll back partial failure, and make
+  successful reruns idempotent where the operation is repeatable.
+- Use `sys.executable` for Python subprocesses. A declared but unavailable runner
+  is a failure; no detected suite is a distinct, explicit result.
+- Tests cover the general invariant plus malformed and adjacent cases, not only
+  the observed fixture.
+- Local audit and remote-branch parity are preflights. When the profile installs
+  `statedd_remote_closure_finalizer.py`, only it may establish exact-head remote
+  closure; profiles without it must report remote closure as not proven.
+- Exit nonzero with actionable output when a required proof cannot be established.
 
-## Agent Rules for Scripts
+## Edit Loop
 
-1. **Prefer skills/commands over ad-hoc script calls** — Use `/skill-name` or `/statedd-*` commands; they wrap scripts with context
-2. **Never modify scripts without updating this catalog** — Keep catalog in sync
-3. **Run quality gates after any script change** — `python scripts/statedd_quality_gate.py`
-4. **Lint instructions after any AGENTS.md/skill/command change** — `python scripts/statedd_instruction_lint.py`
-5. **Test scripts with `python -m pytest scripts/test_*.py`** before committing
-6. **Scripts are executable gates, not suggestions** — Non-zero exit = block closure
+Run focused tests while editing, then the single authoritative local entrypoint:
 
-## Script Development Workflow
-1. Identify need → add to catalog above
-2. Create skill in `skills/` with SKILL.md wrapping the script
-3. Create command in `commands/` for slash-invocation
-4. Implement script in `scripts/` with proper exit codes
-5. Add test in `scripts/test_<name>.py`
-6. Run quality gate and instruction lint
-7. Update this catalog
+```bash
+python3 scripts/statedd_quality_gate.py --gate-level 2
+```
 
-## Hygiene
-- `scripts/__pycache__/` ignored in `.gitignore`
-- Keep script headers: purpose, args, exit codes, example
-- No secrets in scripts — use env vars
-- Python 3.11+ target; no external deps beyond stdlib + pyyaml
+Gate level 1 is sufficient for a trivial non-runtime edit; level 3 is reserved
+for release or migration proof. Add a skill or command only when it represents a
+reusable workflow, not merely because a new script exists.
 
-## Human Override
-Explicit human direction overrides script gates. Record in handoff.
+Explicit human override may accept residual risk, but it must be recorded and
+cannot relabel unproven remote, CI, runtime, or acceptance truth.

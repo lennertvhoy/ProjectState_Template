@@ -47,5 +47,8 @@ description: "Run the remote CI/CD closure finalizer"
 
 **Command:**
 ```bash
-python scripts/statedd_remote_closure_finalizer.py --verbose
+python3 scripts/statedd_remote_closure_finalizer.py \
+  --pr-number <pr-number> \
+  --evidence-folder <docs/evidence/folder> \
+  --verbose
 ```

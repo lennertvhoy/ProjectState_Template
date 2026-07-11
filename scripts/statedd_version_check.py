@@ -87,6 +87,11 @@ def rel(path: Path, root: Path) -> str:
 def is_historical_path(relpath: str) -> bool:
     if relpath in HISTORICAL_PATHS:
         return True
+    path = Path(relpath)
+    if path.parts and path.parts[0] in {"fixtures", "tests"}:
+        return True
+    if len(path.parts) >= 2 and path.parts[0] == "scripts" and path.name.startswith("test_"):
+        return True
     return any(relpath == directory or relpath.startswith(f"{directory}/") for directory in HISTORICAL_DIRS)
 
 

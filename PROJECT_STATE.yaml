@@ -129,7 +129,7 @@ current_state:
     - merged main passed its configured CI, but that CI did not cover the unresolved review failures
 
   repository:
-    canonical_path: /home/ff/Documents/Projects/StateDD_Template
+    canonical_path: .
     path_status: observed
     git_snapshot:
       status: observed
@@ -174,7 +174,7 @@ current_state:
 
   runtime_identity:
     status: not_applicable_for_template_root
-    repo_path: /home/ff/Documents/Projects/StateDD_Template
+    repo_path: .
     artifact_contract: runtime_identity.json
     helper: scripts/statedd_runtime_proof.py
     process_or_container: no application runtime
@@ -209,99 +209,16 @@ current_state:
       notes: |
         Capture active listeners directly during bootstrap when that matters.
 
-  repository_structure:
-    status: observed
-    top_level_entries:
-      - AGENTS.md
-      - ANTI_BRITTLENESS_GUARD.md
-      - BACKLOG.md
-      - CHANGELOG.md
-      - LICENSE
-      - LICENSE_FAQ.md
-      - NEXT_ACTIONS.md
-      - PROJECT_ADAPTER.yaml
-      - PROJECT_DNA.yaml
-      - PROJECT_STATE.yaml
-      - README.md
-      - STATUS.md
-      - VERSION
-      - WORKLOG.md
-      - docs
-      - fixtures
-      - prompts
-      - scripts
-    manifests:
-      - VERSION
-      - README.md
-      - scripts/init_template.py
-      - scripts/check_state_docs.py
-      - scripts/statedd_audit.py
-      - scripts/statedd_doctor.py
-      - scripts/statedd_worktree_guard.py
-      - scripts/statedd_agent_worktree.py
-      - scripts/statedd_brittleness_check.py
-      - scripts/statedd_runtime_proof.py
-      - scripts/statedd_evidence_pack.py
-      - scripts/statedd_upgrade.py
-      - scripts/statedd_bootstrap_wizard.py
-      - scripts/statedd_remote_closure_finalizer.py
-      - scripts/test_init_template.py
-      - scripts/test_worktree_guard.py
-      - scripts/test_agent_worktree.py
-      - scripts/test_brittleness_check.py
-      - scripts/test_runtime_proof.py
-      - scripts/test_evidence_pack.py
-      - scripts/test_upgrade.py
-      - scripts/test_adoption_profiles.py
-      - scripts/test_remote_closure_finalizer.py
-    entrypoints:
-      - scripts/init_template.py
-      - scripts/check_state_docs.py
-      - scripts/statedd_audit.py
-      - scripts/statedd_doctor.py
-      - scripts/statedd_handoff.py
-      - scripts/statedd_validate_schema.py
-      - scripts/statedd_version_check.py
-      - scripts/statedd_worktree_guard.py
-      - scripts/statedd_agent_worktree.py
-      - scripts/statedd_brittleness_check.py
-      - scripts/statedd_runtime_proof.py
-      - scripts/statedd_evidence_pack.py
-      - scripts/statedd_upgrade.py
-      - scripts/statedd_bootstrap_wizard.py
-      - scripts/statedd_remote_closure_finalizer.py
-      - scripts/test_init_template.py
-      - scripts/test_worktree_guard.py
-      - scripts/test_agent_worktree.py
-      - scripts/test_brittleness_check.py
-      - scripts/test_runtime_proof.py
-      - scripts/test_schema_validation.py
-      - scripts/test_evidence_pack.py
-      - scripts/test_upgrade.py
-      - scripts/test_adoption_profiles.py
-      - scripts/test_remote_closure_finalizer.py
-      - schemas
-    test_setup:
-      - python3 scripts/check_state_docs.py
-      - python3 scripts/statedd_validate_schema.py
-      - python3 scripts/test_init_template.py
-      - python3 scripts/test_worktree_guard.py
-      - python3 scripts/test_agent_worktree.py
-      - python3 scripts/test_brittleness_check.py
-      - python3 scripts/test_runtime_proof.py
-      - python3 scripts/test_schema_validation.py
-      - python3 scripts/test_evidence_pack.py
-      - python3 scripts/test_upgrade.py
-      - python3 scripts/test_adoption_profiles.py
-      - python3 scripts/test_remote_closure_finalizer.py
-      - python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
-      - python3 scripts/statedd_audit.py
-      - python3 scripts/statedd_doctor.py
-    deployment_assumptions:
-      - distributed as a git-hosted workflow template
-      - no application deployment target
-    contradictions:
-      - not proven
+  repository_inventory:
+    status: derived_on_demand
+    authority: filesystem_and_git_index
+    discovery_commands:
+      - rg --files
+      - git ls-files
+    notes: |
+      File, script, documentation, and test catalogs are intentionally not
+      duplicated in live state. The profile catalog owns managed template assets;
+      CLI help and tests own executable behavior.
 
   evidence:
     status: active
@@ -311,134 +228,15 @@ current_state:
     standard: browser_or_test_output_plus_runtime_identity_for_user_facing_claims
 
   documentation:
-    status: observed
+    status: derived_on_demand
     primary_user_guide: README.md
-    live_docs:
-      - README.md
-      - AGENTS.md
-      - STATUS.md
-      - VERSION
-      - CHANGELOG.md
-      - PROJECT_STATE.yaml
-      - PROJECT_DNA.yaml
-      - PROJECT_ADAPTER.yaml
-      - NEXT_ACTIONS.md
-      - BACKLOG.md
-      - WORKLOG.md
-      - LICENSE
-      - LICENSE_FAQ.md
-      - docs/GETTING_STARTED_5_MIN.md
-      - docs/QUICK_COMMANDS.md
-      - docs/BROWSER_VERIFICATION.md
-      - QUALITY_FIREWALL.md
-      - FAILURE_TAXONOMY.md
-      - INCIDENT_RESPONSE.md
-      - docs/failure_scans/TEMPLATE.md
-      - docs/incidents/README.md
-      - docs/quality_gates/README.md
-      - docs/UPGRADING.md
-      - docs/ADOPTION_PROFILES.md
-      - docs/RELEASE_NOTES_statedd-template-v5.md
-      - docs/EVIDENCE_LOG.md
-      - docs/ACCEPTANCE_FREEZES.md
-      - prompts/OPENCODE_STARTUP_PROMPT.md
-      - prompts/TOOL_MODEL_ROUTING_GUIDE.md
-      - scripts/statedd_version_check.py
-      - scripts/statedd_handoff.py
-      - scripts/statedd_validate_schema.py
-      - scripts/statedd_runtime_proof.py
-      - schemas/examples/schema_prompt_loop/README.md
-    prompt_assets:
-      cto_session_prompt: prompts/CTO_SESSION_PROMPT.md
-      coding_agent_startup_prompt: prompts/CODING_AGENT_STARTUP_PROMPT.md
-      opencode_startup_prompt: prompts/OPENCODE_STARTUP_PROMPT.md
-      tool_model_routing_guide:
-        status: observed
-        path: prompts/TOOL_MODEL_ROUTING_GUIDE.md
-        summary: |
-          Guides the CTO lane to recommend tools, models, settings, context
-          strategy, and tailored prompts based on current user access, task
-          risk, budget, and verified provider facts.
-    workflow_helpers:
-      getting_started_5_min:
-        status: observed
-        path: docs/GETTING_STARTED_5_MIN.md
-      workflow_for_beginners:
-        status: observed
-        path: docs/WORKFLOW_FOR_BEGINNERS.md
-      handoff_snapshot:
-        status: observed
-        path: scripts/statedd_handoff.py
-      worktree_guard:
-        status: observed
-        path: scripts/statedd_worktree_guard.py
-        summary: Captures repo root, branch, upstream, worktree topology, dirty-file classification, and start/closure safety without deleting files.
-      agent_worktree_orchestrator:
-        status: observed
-        path: scripts/statedd_agent_worktree.py
-        summary: Provisions isolated per-agent worktrees, branches, and reservation refs; detects git locks; runs guard/handoff/close/cleanup/list in agent context.
-      brittleness_check:
-        status: observed
-        path: scripts/statedd_brittleness_check.py
-        summary: Advisory warning scan for brittle keyword, exact-string, sleep/timeout, silent-fallback, and fixture-only patterns; not proof of quality.
-      runtime_proof:
-        status: observed
-        path: scripts/statedd_runtime_proof.py
-        summary: Captures runtime_identity.json evidence artifacts and skips local process claims for remote endpoints unless explicitly overridden.
-      remote_closure_finalizer:
-        status: observed
-        path: scripts/statedd_remote_closure_finalizer.py
-        summary: Blocks closure-grade handoffs until local HEAD, pushed branch, PR head, PR body, evidence, GitHub Actions, and merge state all agree.
-      audit_command:
-        status: observed
-        path: scripts/statedd_audit.py
-        summary: Machine-checkable StateDD closure audit, including runtime identity artifact recognition and schema validation.
-      schema_validation:
-        status: observed
-        path: scripts/statedd_validate_schema.py
-        summary: Stdlib-only schema-backed validation for StateDD state, evidence README, runtime identity, and final handoff contracts.
-      version_check:
-        status: observed
-        path: scripts/statedd_version_check.py
-        summary: Fails when current version-bearing files disagree with VERSION.
-      doctor_command:
-        status: observed
-        path: scripts/statedd_doctor.py
-        summary: Fast human-readable StateDD health summary, including runtime identity status.
-      evidence_pack:
-        status: observed
-        path: scripts/statedd_evidence_pack.py
-        summary: Evidence folder manifest initialization, hash verification, and redaction scanning.
-      browser_verification:
-        status: observed
-        path: scripts/statedd_browser_verify.py
-        summary: Provider-agnostic browser verification artifact validation and recording; accepts Kimi WebBridge, Playwright, agent-native browser tools, existing E2E tests, manual screenshots, or custom tooling.
-      upgrade_helper:
-        status: observed
-        path: scripts/statedd_upgrade.py
-        summary: Non-destructive downstream upgrade helper with dry-run-by-default semantics.
-      bootstrap_wizard:
-        status: observed
-        path: scripts/statedd_bootstrap_wizard.py
-        summary: Interactive MVP that asks minimum strategic questions and runs the initializer.
-      slice_contract_template:
-        status: observed
-        path: prompts/SLICE_CONTRACT_TEMPLATE.md
-      evidence_readme_template:
-        status: observed
-        path: prompts/EVIDENCE_README_TEMPLATE.md
-      schema_ownership_template:
-        status: observed
-        path: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
-      subagent_review_template:
-        status: observed
-        path: prompts/SUBAGENT_REVIEW_TEMPLATE.md
-      cto_review_checklist:
-        status: observed
-        path: prompts/CTO_REVIEW_CHECKLIST.md
-      adr_template:
-        status: observed
-        path: docs/adr/0000-adr-template.md
+    architecture_review: docs/architecture/STATE_DD_MAXIMUM_VALUE_REVIEW.md
+    benchmark_specification: docs/benchmarks/STATE_DD_BENCHMARK_SPEC.md
+    profile_metrics: docs/metrics/profile_metrics.json
+    notes: |
+      Documentation and helper catalogs are intentionally derived from the
+      filesystem. Stable ownership lives in PROJECT_DNA.yaml, current truth here,
+      and managed-asset membership in profiles/catalog.json.
 
 active_problems:
   - id: BL-MAX-VALUE-001
@@ -470,9 +268,9 @@ active_problems:
       - exactly one next slice is selected by expected impact, cost, risk reduction, readiness, and measurability
     truth_boundaries:
       sandbox: observed
-      local_worktree: clean isolated worktree at slice base
+      local_worktree: dirty isolated worktree; implementation candidate locally validated
       git_index: clean at slice start
-      local_commit: state-only commit pending
+      local_commit: state-only and failure-scan commits exist; implementation proof pending
       remote_branch: not published
       github_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
       ci: success on merged main but insufficient for the reopened claims

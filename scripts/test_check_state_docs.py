@@ -108,6 +108,20 @@ def test_terminal_worklog_item_cannot_remain_active() -> None:
         assert any("terminal WORKLOG.md item BL-001" in issue for issue in issues)
 
 
+def test_merged_item_can_reopen_when_correctness_is_not_closure_grade() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_lifecycle_repo(
+            root,
+            backlog="## NOW\n- [BL-001] reopened blocker\n",
+            next_actions="## Active Work\n### P1 [BL-001] repair merged blocker\n",
+            active_problems="active_problems:\n  - id: BL-001\n    severity: P1\n",
+            status_failures="- P1 [BL-001]: merged but correctness remains open.\n",
+            worklog="# WORKLOG\n\n## 2026-07-10 - Merged (BL-001)\n\n**Status:** MERGED\n",
+        )
+        assert not check_cross_file_rules(root)
+
+
 def test_consistent_lifecycle_passes() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)

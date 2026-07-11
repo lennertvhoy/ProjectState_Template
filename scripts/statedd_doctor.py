@@ -324,7 +324,7 @@ def next_recommended_slice(repo: Path) -> str:
     return "none"
 
 
-def closure_grade(repo: Path) -> str:
+def local_audit_readiness(repo: Path) -> str:
     audit_script = repo / "scripts" / "statedd_audit.py"
     if not audit_script.exists():
         return "unknown (no audit script)"
@@ -381,7 +381,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Evidence manifest: {evidence_manifest_status(repo)}")
     print(f"Open blockers: {open_blockers(repo)}")
     print(f"Next recommended slice: {next_recommended_slice(repo)}")
-    print(f"Closure grade: {closure_grade(repo)}")
+    print(f"Local audit readiness: {local_audit_readiness(repo)}")
+    print("Remote closure: not checked by doctor")
 
     return 0
 

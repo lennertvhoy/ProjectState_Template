@@ -5,12 +5,49 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
+import tempfile
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 from pathlib import Path
+
+try:
+    from statedd_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_profile_catalog,
+        normalize_relative_path,
+        regular_source_path,
+        resolve_profile,
+        safe_root_path,
+    )
+    from statedd_generated_controls import (
+        render_coding_agent_startup_prompt as render_coding_agent_control,
+        render_downstream_workflow as render_workflow_control,
+    )
+    from statedd_validate_schema import load_schema, validate_json_schema
+except ModuleNotFoundError:  # pragma: no cover - pytest package import path
+    from scripts.statedd_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_profile_catalog,
+        normalize_relative_path,
+        regular_source_path,
+        resolve_profile,
+        safe_root_path,
+    )
+    from scripts.statedd_generated_controls import (
+        render_coding_agent_startup_prompt as render_coding_agent_control,
+        render_downstream_workflow as render_workflow_control,
+    )
+    from scripts.statedd_validate_schema import load_schema, validate_json_schema
 
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +56,36 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
 TEMPLATE_VERSION = "statedd-template-v5"
-VALID_PROFILES = {"minimal", "solo", "team", "regulated"}
+try:
+    PROFILE_CATALOG = load_profile_catalog(TEMPLATE_ROOT)
+except ContractError as exc:  # fail before any target write
+    raise SystemExit(f"Invalid StateDD profile catalog: {exc}") from exc
+VALID_PROFILES = set(PROFILE_CATALOG["profiles"])
+OPTIONAL_ASSET_SETS = sorted(
+    set_id
+    for set_id, definition in PROFILE_CATALOG["asset_sets"].items()
+    if definition.get("optional") is True
+)
+try:
+    _version_file = regular_source_path(TEMPLATE_ROOT, "VERSION").read_text(encoding="utf-8").strip()
+except (UnsafePathError, OSError, UnicodeDecodeError) as exc:
+    raise SystemExit(f"Invalid StateDD template VERSION source: {exc}") from exc
+if len({TEMPLATE_VERSION, PROFILE_CATALOG["template_version"], _version_file}) != 1:
+    raise SystemExit(
+        "StateDD template version mismatch across init constant, profiles/catalog.json, and VERSION"
+    )
+
+
+def current_time() -> dt.datetime:
+    """Return reproducible UTC time when SOURCE_DATE_EPOCH is configured."""
+    raw = os.environ.get("SOURCE_DATE_EPOCH")
+    if raw is None:
+        return dt.datetime.now(dt.timezone.utc).astimezone()
+    try:
+        epoch = int(raw)
+    except ValueError as exc:
+        raise SystemExit("SOURCE_DATE_EPOCH must be an integer Unix timestamp") from exc
+    return dt.datetime.fromtimestamp(epoch, tz=dt.timezone.utc)
 
 
 def validate_profile(profile: str) -> str:
@@ -60,101 +126,24 @@ rationale, and residual risk."""
 proportion to the claim."""
 
 
-# Downstream repos receive only executable/runtime workflow assets. Template tests,
-# fixtures, evidence, incidents, changelogs, release notes, and maintenance history
-# are intentionally absent from every profile.
-CORE_RUNTIME_ASSET_PATHS = [
-    Path(".gitignore"),
-    Path("VERSION"),
-    Path("EFFICIENCY_BUDGET.yaml"),
-    Path("scripts/check_state_docs.py"),
-    Path("scripts/statedd_version_check.py"),
-    Path("scripts/statedd_validate_schema.py"),
-    Path("scripts/statedd_instruction_lint.py"),
-    Path("scripts/statedd_efficiency_check.py"),
-    Path("scripts/statedd_quality_gate.py"),
-    Path("schemas/project_state.schema.json"),
-    Path("schemas/project_dna.schema.json"),
-    Path("schemas/project_adapter.schema.json"),
-    Path("schemas/statedd_assets.schema.json"),
-]
+def assets_for_profile(profile: str, *, optional_asset_sets: tuple[str, ...] = ()) -> list[Path]:
+    return list(
+        resolve_profile(
+            PROFILE_CATALOG,
+            validate_profile(profile),
+            optional_asset_sets=optional_asset_sets,
+        ).assets
+    )
 
-STANDARD_RUNTIME_ASSET_PATHS = [
-    Path("QUALITY_FIREWALL.md"),
-    Path("FAILURE_TAXONOMY.md"),
-    Path("INCIDENT_RESPONSE.md"),
-    Path("ANTI_BRITTLENESS_GUARD.md"),
-    Path("scripts/statedd_handoff.py"),
-    Path("scripts/statedd_audit.py"),
-    Path("scripts/statedd_doctor.py"),
-    Path("scripts/statedd_worktree_guard.py"),
-    Path("scripts/statedd_brittleness_check.py"),
-    Path("scripts/statedd_runtime_proof.py"),
-    Path("scripts/statedd_evidence_pack.py"),
-    Path("scripts/statedd_browser_verify.py"),
-    Path("scripts/statedd_closure_check.py"),
-    Path("scripts/statedd_runtime_truth_check.py"),
-    Path("scripts/statedd_evidence_type_check.py"),
-    Path("scripts/statedd_remote_truth_check.py"),
-    Path("scripts/statedd_upgrade.py"),
-    Path("schemas/runtime_identity.schema.json"),
-    Path("schemas/evidence_readme_contract.json"),
-    Path("schemas/evidence_manifest.schema.json"),
-    Path("schemas/final_handoff_contract.json"),
-    Path("schemas/browser_verification.schema.json"),
-    Path("prompts/FINAL_HANDOFF_TEMPLATE.md"),
-    Path("prompts/RUNTIME_IDENTITY_CHECKLIST.md"),
-    Path("prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"),
-    Path("prompts/SLICE_CONTRACT_TEMPLATE.md"),
-    Path("prompts/EVIDENCE_README_TEMPLATE.md"),
-    Path("prompts/SCHEMA_OWNERSHIP_TEMPLATE.md"),
-    Path("docs/failure_scans/TEMPLATE.md"),
-    Path("docs/incidents/README.md"),
-    Path("docs/quality_gates/README.md"),
-    Path("docs/quality_gates/ANTI_BRITTLENESS_GATE.md"),
-    Path("docs/BROWSER_VERIFICATION.md"),
-]
 
-TEAM_RUNTIME_ASSET_PATHS = [
-    Path("scripts/statedd_agent_worktree.py"),
-    Path("scripts/statedd_remote_closure_finalizer.py"),
-    Path("prompts/CTO_SESSION_PROMPT.md"),
-    Path("prompts/TOOL_MODEL_ROUTING_GUIDE.md"),
-    Path("prompts/SUBAGENT_REVIEW_TEMPLATE.md"),
-    Path("prompts/CTO_REVIEW_CHECKLIST.md"),
-    Path("docs/UPGRADING.md"),
-    Path("docs/adr/README.md"),
-    Path("docs/adr/0000-adr-template.md"),
-]
+def profile_gate_level(profile: str) -> int:
+    return resolve_profile(PROFILE_CATALOG, validate_profile(profile)).required_gate_level
 
-REGULATED_RUNTIME_ASSET_PATHS = [
-    Path("scripts/statedd_post_merge_verify.py"),
-]
-
-PROFILE_ASSET_PATHS = {
-    "minimal": CORE_RUNTIME_ASSET_PATHS,
-    "solo": [*CORE_RUNTIME_ASSET_PATHS, *STANDARD_RUNTIME_ASSET_PATHS],
-    "team": [*CORE_RUNTIME_ASSET_PATHS, *STANDARD_RUNTIME_ASSET_PATHS, *TEAM_RUNTIME_ASSET_PATHS],
-    "regulated": [
-        *CORE_RUNTIME_ASSET_PATHS,
-        *STANDARD_RUNTIME_ASSET_PATHS,
-        *TEAM_RUNTIME_ASSET_PATHS,
-        *REGULATED_RUNTIME_ASSET_PATHS,
-    ],
-}
 
 OPTIONAL_GITHUB_ASSET_PATHS = [
-    Path(".github/pull_request_template.md"),
-    Path(".github/ISSUE_TEMPLATE/config.yml"),
-    Path(".github/ISSUE_TEMPLATE/bootstrap-init.md"),
-    Path(".github/ISSUE_TEMPLATE/bug-regression.md"),
-    Path(".github/ISSUE_TEMPLATE/backlog-item.md"),
-    Path(".github/ISSUE_TEMPLATE/architecture-change.md"),
+    normalize_relative_path(path)
+    for path in PROFILE_CATALOG["asset_sets"]["github"]["assets"]
 ]
-
-
-def assets_for_profile(profile: str) -> list[Path]:
-    return sorted(set(PROFILE_ASSET_PATHS[validate_profile(profile)]), key=lambda path: path.as_posix())
 
 
 @dataclass
@@ -186,16 +175,17 @@ last_updated: {today}
 
 **Purpose:** Small, stable truth contract for AI-assisted delivery.
 
-## Read Order
+## Task-Scoped Read Order
 
-1. `AGENTS.md`
-2. `STATUS.md`
-3. `PROJECT_STATE.yaml`
-4. `PROJECT_DNA.yaml`
-5. `NEXT_ACTIONS.md`
+1. Always read `AGENTS.md`.
+2. For orientation or resumption, read `STATUS.md`, `NEXT_ACTIONS.md`, and the
+   active-slice fields in canonical `PROJECT_STATE.yaml`.
+3. Read `PROJECT_DNA.yaml` for architecture, invariants, or unfamiliar changes.
+4. Read the nearest nested `AGENTS.md` before working in a subtree.
 
-Read `BACKLOG.md`, `WORKLOG.md`, evidence, and inventory only when the task needs
-planning, history, proof, or repository detail.
+Load backlog, history, evidence, and inventory only when the task needs planning,
+history, proof, or repository detail. Generated context packs are disposable
+views and never replace canonical readable state.
 
 ## Rules
 
@@ -805,39 +795,63 @@ history are intentionally excluded.
 
 
 def render_coding_agent_startup_prompt() -> str:
-    return """# Coding Agent Start
-
-Read `AGENTS.md` and its declared read order. Treat `PROJECT_STATE.yaml` as
-canonical current truth, keep `NEXT_ACTIONS.md` open-only, and load backlog,
-history, inventory, or evidence only when the task needs them.
-
-In bootstrap, investigate before implementing and keep unknowns explicit. For
-implementation, take one coherent slice, verify the relevant truth boundary,
-update live state, and end with a precise handoff.
-"""
+    return render_coding_agent_control()
 
 
-def render_downstream_workflow() -> str:
-    return """name: StateDD
+def render_downstream_workflow(profile: str = "solo") -> str:
+    return render_workflow_control(profile_gate_level(profile))
 
-on:
-  push:
-  pull_request:
 
-permissions:
-  contents: read
+PROJECT_TRUTH_ASSETS = {
+    "AGENTS.md",
+    "STATUS.md",
+    "PROJECT_STATE.yaml",
+    "PROJECT_DNA.yaml",
+    "PROJECT_ADAPTER.yaml",
+    "NEXT_ACTIONS.md",
+    "BACKLOG.md",
+    "README.md",
+}
+APPEND_ONLY_ASSETS = {
+    "WORKLOG.md",
+    "docs/EVIDENCE_LOG.md",
+    "docs/ACCEPTANCE_FREEZES.md",
+}
+GENERATED_CONTROL_ASSETS = {
+    ".github/workflows/statedd-validate.yml",
+    "prompts/CODING_AGENT_STARTUP_PROMPT.md",
+    "STATEDD_ASSETS.json",
+}
+SCHEMA_BY_ASSET = {
+    "PROJECT_STATE.yaml": "schemas/project_state.schema.json",
+    "PROJECT_DNA.yaml": "schemas/project_dna.schema.json",
+    "PROJECT_ADAPTER.yaml": "schemas/project_adapter.schema.json",
+    "STATEDD_ASSETS.json": "schemas/statedd_assets.schema.json",
+}
 
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: "3.13"
-      - run: python3 scripts/statedd_quality_gate.py --gate-level 1
-"""
+
+def _sha256_bytes(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def _lifecycle_record(
+    path: str,
+    *,
+    lifecycle_class: str,
+    content_hash: str | None,
+    desired_by: list[str],
+    generated_by: str,
+) -> dict[str, object]:
+    defaults = PROFILE_CATALOG["lifecycle_defaults"][lifecycle_class]
+    return {
+        "path": path,
+        **defaults,
+        "schema": SCHEMA_BY_ASSET.get(path),
+        "generated_by": generated_by,
+        "desired_by": sorted(desired_by),
+        "base_sha256": content_hash,
+        "installed_sha256": content_hash,
+    }
 
 
 def add_asset_manifest(
@@ -846,19 +860,85 @@ def add_asset_manifest(
     *,
     profile: str,
     generation_mode: str,
+    optional_asset_sets: tuple[str, ...] = (),
 ) -> None:
     manifest_path = "STATEDD_ASSETS.json"
-    installed = sorted(
-        {path.as_posix() for path in asset_paths}
-        | set(managed_files)
-        | {manifest_path}
+    overlap = {path.as_posix() for path in asset_paths} & set(managed_files)
+    if overlap:
+        raise SystemExit(
+            f"Profile copy assets overlap generated/project-owned paths: {sorted(overlap)}"
+        )
+    resolved = resolve_profile(
+        PROFILE_CATALOG,
+        profile,
+        optional_asset_sets=optional_asset_sets,
     )
+    asset_set_by_path: dict[str, list[str]] = {}
+    for set_id in PROFILE_CATALOG["asset_sets"]:
+        for raw in PROFILE_CATALOG["asset_sets"][set_id]["assets"]:
+            asset_set_by_path.setdefault(raw, []).append(set_id)
+
+    records: list[dict[str, object]] = []
+    for path in asset_paths:
+        rel = path.as_posix()
+        source = regular_source_path(TEMPLATE_ROOT, path)
+        records.append(
+            _lifecycle_record(
+                rel,
+                lifecycle_class="template_asset",
+                content_hash=_sha256_bytes(source.read_bytes()),
+                desired_by=asset_set_by_path.get(rel, []),
+                generated_by=f"copy:{rel}",
+            )
+        )
+    for rel, content in managed_files.items():
+        if rel == manifest_path:
+            continue
+        if rel in APPEND_ONLY_ASSETS:
+            lifecycle_class = "append_only"
+        elif rel in GENERATED_CONTROL_ASSETS:
+            lifecycle_class = "generated"
+        else:
+            lifecycle_class = "project_truth"
+        records.append(
+            _lifecycle_record(
+                rel,
+                lifecycle_class=lifecycle_class,
+                content_hash=_sha256_bytes(content.encode("utf-8")),
+                desired_by=[f"profile:{profile}"],
+                generated_by=f"scripts/init_template.py:{generation_mode}",
+            )
+        )
+    records.append(
+        _lifecycle_record(
+            manifest_path,
+            lifecycle_class="generated",
+            content_hash=None,
+            desired_by=[f"profile:{profile}"],
+            generated_by="scripts/init_template.py:add_asset_manifest",
+        )
+    )
+    records.sort(key=lambda record: str(record["path"]))
+    catalog_path = TEMPLATE_ROOT / "profiles" / "catalog.json"
     payload = {
-        "schema": "statedd.runtime_assets.v1",
+        "schema": "statedd.runtime_assets.v2",
         "template_version": TEMPLATE_VERSION,
+        "template_commit": clean_git_head(TEMPLATE_ROOT),
+        "catalog": {
+            "schema": PROFILE_CATALOG["schema"],
+            "version": PROFILE_CATALOG["catalog_version"],
+            "sha256": _sha256_bytes(catalog_path.read_bytes()),
+        },
         "profile": profile,
+        "profile_dependencies": list(resolved.profile_dependencies),
+        "asset_sets": list(resolved.asset_sets),
+        "capabilities": list(resolved.capabilities),
+        "validations": list(resolved.validations),
+        "required_gate_level": resolved.required_gate_level,
         "generation_mode": generation_mode,
-        "assets": installed,
+        "managed_assets": records,
+        "retired_assets": [],
+        "upgrade_history": [],
         "excluded_classes": [
             "template_tests",
             "fixtures",
@@ -868,6 +948,14 @@ def add_asset_manifest(
             "maintenance_changelog",
         ],
     }
+    schema = load_schema(TEMPLATE_ROOT / "schemas" / "statedd_assets.schema.json")
+    issues = validate_json_schema(payload, schema)
+    if issues:
+        details = "; ".join(f"{issue.path}: {issue.message}" for issue in issues[:8])
+        raise SystemExit(f"Generated STATEDD_ASSETS.json violates its schema: {details}")
+    paths = [str(record["path"]) for record in records]
+    if len(paths) != len(set(paths)):
+        raise SystemExit("Generated STATEDD_ASSETS.json contains duplicate managed paths")
     managed_files[manifest_path] = json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
@@ -894,23 +982,17 @@ def path_exists_for_write(path: Path) -> bool:
 
 
 def normalize_managed_relpath(relpath: str | Path) -> Path:
-    path = Path(relpath)
-    if path.is_absolute() or not path.parts:
-        raise SystemExit(f"Unsafe managed path: {relpath}")
-    if any(part in {"", ".", ".."} for part in path.parts):
-        raise SystemExit(f"Unsafe managed path: {relpath}")
-    return path
+    try:
+        return normalize_relative_path(relpath)
+    except UnsafePathError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def reject_symlink_components(root: Path, relpath: Path) -> None:
-    current = root
-    if current.is_symlink():
-        raise SystemExit(f"Refusing to write through symlinked target root: {current}")
-
-    for part in relpath.parts:
-        current = current / part
-        if current.is_symlink():
-            raise SystemExit(f"Refusing to write through symlink inside target: {current}")
+    try:
+        confined_path(root, relpath)
+    except UnsafePathError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def prepare_destination(root: Path, relpath: str | Path) -> Path:
@@ -930,20 +1012,54 @@ def ensure_directory(root: Path, relpath: Path) -> None:
     reject_symlink_components(root, normalized)
 
 
+def atomic_replace_bytes(path: Path, content: bytes, *, mode: int) -> None:
+    """Replace one destination inode atomically without mutating hard-link peers."""
+    descriptor, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    tmp_path = Path(tmp_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(tmp_path, mode)
+        os.replace(tmp_path, path)
+        # Persist the directory entry where the platform permits directory fsync.
+        try:
+            directory_fd = os.open(path.parent, os.O_RDONLY)
+        except OSError:
+            directory_fd = None
+        if directory_fd is not None:
+            try:
+                os.fsync(directory_fd)
+            except OSError:
+                pass
+            finally:
+                os.close(directory_fd)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+
 def write_file(root: Path, relpath: str | Path, content: str) -> None:
     path = prepare_destination(root, relpath)
     if path.is_dir():
         raise SystemExit(f"Refusing to replace directory with file: {relpath}")
-    path.write_text(content, encoding="utf-8")
+    mode = path.stat().st_mode & 0o777 if path.exists() else 0o644
+    atomic_replace_bytes(path, content.encode("utf-8"), mode=mode)
 
 
 def copy_file(source: Path, target: Path, relpath: Path) -> None:
     normalized = normalize_managed_relpath(relpath)
-    source_path = source / normalized
-    if source_path.is_symlink():
-        raise SystemExit(f"Refusing to copy symlinked template source: {normalized}")
+    try:
+        source_path = regular_source_path(source, normalized)
+    except UnsafePathError as exc:
+        raise SystemExit(str(exc)) from exc
     destination = prepare_destination(target, normalized)
-    shutil.copy2(source_path, destination)
+    source_stat = source_path.stat()
+    atomic_replace_bytes(
+        destination,
+        source_path.read_bytes(),
+        mode=source_stat.st_mode & 0o777,
+    )
 
 
 def should_ignore_path(path: Path) -> bool:
@@ -962,6 +1078,23 @@ def run_git(args: list[str], cwd: Path) -> str | None:
     except (FileNotFoundError, subprocess.CalledProcessError):
         return None
     return completed.stdout.strip() or None
+
+
+def clean_git_head(root: Path) -> str | None:
+    """Return HEAD only when it honestly identifies every working-tree source byte."""
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    if status.stdout.strip():
+        return None
+    return run_git(["rev-parse", "HEAD"], root)
 
 
 def scan_repo(target: Path) -> RepoScan:
@@ -989,8 +1122,11 @@ def scan_repo(target: Path) -> RepoScan:
     manifests = [name for name in manifest_candidates if (target / name).exists()]
 
     entrypoints: list[str] = []
-    package_json = target / "package.json"
-    if package_json.exists() and not package_json.is_symlink():
+    try:
+        package_json = confined_path(target, "package.json")
+    except UnsafePathError:
+        package_json = None
+    if package_json is not None and package_json.is_file() and not package_json.is_symlink():
         try:
             data = json.loads(read_text(package_json))
         except json.JSONDecodeError:
@@ -1041,8 +1177,11 @@ def scan_repo(target: Path) -> RepoScan:
 
     doc_text = []
     for candidate in ("README.md", "NOTES.txt", "docs/STATUS.md", "docs/ARCHITECTURE.md"):
-        path = target / candidate
-        if path.exists() and not path.is_symlink():
+        try:
+            path = confined_path(target, candidate)
+        except UnsafePathError:
+            continue
+        if path.is_file() and not path.is_symlink():
             doc_text.append(read_text(path).lower())
     docs = "\n".join(doc_text)
 
@@ -1060,7 +1199,7 @@ def scan_repo(target: Path) -> RepoScan:
     project_summary = "bootstrap_adoption_baseline" if top_level_entries else "bootstrap_initializing"
 
     return RepoScan(
-        canonical_path=str(target),
+        canonical_path=".",
         branch=branch,
         head=head,
         top_level_entries=top_level_entries,
@@ -1078,6 +1217,112 @@ def find_conflicting_template_paths(target: Path, asset_paths: list[Path]) -> li
     return sorted(relpath for relpath in asset_paths if path_exists_for_write(target / relpath))
 
 
+def preflight_materialization(
+    source_root: Path,
+    target: Path,
+    asset_paths: list[Path],
+    managed_paths: list[Path],
+) -> None:
+    """Validate every source and destination before the first materialization write."""
+    def validate_destination_parents(destination: Path, relpath: Path) -> None:
+        current = target
+        for part in relpath.parts[:-1]:
+            current = current / part
+            if current.exists() and not current.is_dir():
+                raise SystemExit(
+                    f"Refusing managed asset beneath non-directory destination parent: {current}"
+                )
+
+    for relpath in asset_paths:
+        try:
+            regular_source_path(source_root, relpath)
+            destination = confined_path(target, relpath)
+        except UnsafePathError as exc:
+            raise SystemExit(str(exc)) from exc
+        validate_destination_parents(destination, relpath)
+        if destination.exists() and not destination.is_file():
+            raise SystemExit(f"Refusing non-file destination for managed asset: {relpath}")
+    for relpath in managed_paths:
+        try:
+            destination = confined_path(target, relpath)
+        except UnsafePathError as exc:
+            raise SystemExit(str(exc)) from exc
+        validate_destination_parents(destination, relpath)
+        if destination.exists() and not destination.is_file():
+            raise SystemExit(f"Refusing non-file destination for managed asset: {relpath}")
+
+
+def _restore_file_bytes(path: Path, content: bytes, mode: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.rollback.", dir=path.parent)
+    tmp_path = Path(tmp_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(tmp_path, mode)
+        os.replace(tmp_path, path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+
+@contextmanager
+def materialization_transaction(target: Path, relpaths: list[Path]):
+    """Rollback all template/managed writes if any materialization step fails."""
+    normalized = sorted(
+        {normalize_managed_relpath(path) for path in relpaths},
+        key=lambda path: path.as_posix(),
+    )
+    target_existed = target.exists()
+    snapshots: dict[Path, tuple[bytes, int] | None] = {}
+    parent_existed: dict[Path, bool] = {}
+    for relpath in normalized:
+        destination = confined_path(target, relpath)
+        if os.path.lexists(destination):
+            if destination.is_symlink() or not destination.is_file():
+                raise SystemExit(f"Refusing non-file destination for managed asset: {relpath}")
+            snapshots[destination] = (
+                destination.read_bytes(),
+                destination.stat().st_mode & 0o777,
+            )
+        else:
+            snapshots[destination] = None
+        current = destination.parent
+        while current != target.parent and current != target:
+            parent_existed.setdefault(current, current.exists())
+            current = current.parent
+
+    try:
+        yield
+    except BaseException:
+        rollback_errors: list[str] = []
+        for destination, snapshot in reversed(list(snapshots.items())):
+            try:
+                if snapshot is None:
+                    if destination.is_file() and not destination.is_symlink():
+                        destination.unlink()
+                else:
+                    _restore_file_bytes(destination, snapshot[0], snapshot[1])
+            except OSError as exc:
+                rollback_errors.append(f"{destination}: {exc}")
+        for directory, existed in sorted(
+            parent_existed.items(), key=lambda item: len(item[0].parts), reverse=True
+        ):
+            if existed:
+                continue
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
+        if not target_existed:
+            try:
+                target.rmdir()
+            except OSError:
+                pass
+        if rollback_errors:
+            raise RuntimeError(f"initializer failed and rollback was incomplete: {rollback_errors}")
+        raise
 def copy_template_tree(
     template_root: Path,
     target: Path,
@@ -1088,6 +1333,7 @@ def copy_template_tree(
     force_overwrite: bool,
     dry_run: bool,
 ) -> None:
+    preflight_materialization(template_root, target, asset_paths, managed_paths)
     if target.exists() and not target.is_dir():
         raise SystemExit("Target exists and is not a directory.")
 
@@ -1119,9 +1365,6 @@ def copy_template_tree(
     if target != template_root and not dry_run:
         target.mkdir(parents=True, exist_ok=True)
         for relpath in asset_paths:
-            source_path = template_root / relpath
-            if source_path.is_symlink() or not source_path.is_file():
-                raise SystemExit(f"Refusing to copy symlinked template source: {relpath}")
             copy_file(template_root, target, relpath)
 
 
@@ -1155,6 +1398,7 @@ def copy_assets(
     force_overwrite: bool,
     dry_run: bool,
 ) -> None:
+    preflight_materialization(TEMPLATE_ROOT, target, relpaths, managed_paths or [])
     actions, conflicts = plan_asset_actions(relpaths, target, overwrite=overwrite, force_overwrite=force_overwrite)
     if managed_paths:
         _, managed_conflicts = plan_asset_actions(
@@ -1194,6 +1438,11 @@ def apply_managed_files(
     force_overwrite: bool,
     dry_run: bool,
 ) -> None:
+    for relpath in managed_files:
+        try:
+            confined_path(target, relpath)
+        except UnsafePathError as exc:
+            raise SystemExit(str(exc)) from exc
     conflicts = []
     for relpath in managed_files:
         path = target / relpath
@@ -1274,7 +1523,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         }
     )
     repo_scan = RepoScan(
-        canonical_path=str(target),
+        canonical_path=".",
         branch=None,
         head=None,
         top_level_entries=top_level_entries,
@@ -1337,7 +1586,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         "docs/BOOTSTRAP_INVENTORY.yaml": render_bootstrap_inventory(repo_scan, stamp),
         "docs/evidence/.gitkeep": "",
         "prompts/CODING_AGENT_STARTUP_PROMPT.md": render_coding_agent_startup_prompt(),
-        ".github/workflows/statedd-validate.yml": render_downstream_workflow(),
+        ".github/workflows/statedd-validate.yml": render_downstream_workflow(profile),
     }
 
 
@@ -1424,6 +1673,13 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
         help="Copy optional GitHub workflow and template assets into the existing repo",
     )
     adopt_parser.add_argument(
+        "--asset-set",
+        action="append",
+        default=[],
+        choices=OPTIONAL_ASSET_SETS,
+        help="Install an optional catalog asset set; repeat for multiple sets",
+    )
+    adopt_parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Allow replacing existing workflow-managed files in the target",
@@ -1470,13 +1726,18 @@ def main(argv: list[str] | None = None) -> int:
     if args.force_overwrite and not args.overwrite:
         raise SystemExit("--force-overwrite requires --overwrite.")
 
-    now = dt.datetime.now(dt.timezone.utc).astimezone()
+    now = current_time()
     today = now.date().isoformat()
     stamp = now.isoformat(timespec="seconds")
     human_timestamp = now.strftime("%Y-%m-%d %H:%M %Z")
-    target = Path(args.target).resolve()
-
     profile = validate_profile("minimal" if getattr(args, "minimal", False) else args.profile)
+    try:
+        target = safe_root_path(
+            args.target,
+            must_exist=args.command == "adopt",
+        )
+    except UnsafePathError as exc:
+        raise SystemExit(str(exc)) from exc
 
     if args.command == "new":
         if target == TEMPLATE_ROOT:
@@ -1487,22 +1748,30 @@ def main(argv: list[str] | None = None) -> int:
         asset_paths = assets_for_profile(profile)
         managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
         add_asset_manifest(managed_files, asset_paths, profile=profile, generation_mode="new")
-        copy_template_tree(
-            TEMPLATE_ROOT,
-            target,
-            asset_paths,
-            managed_paths=[Path(path) for path in managed_files],
-            overwrite=args.overwrite,
-            force_overwrite=args.force_overwrite,
-            dry_run=args.dry_run,
+        transaction = (
+            nullcontext()
+            if args.dry_run
+            else materialization_transaction(
+                target, [*asset_paths, *(Path(path) for path in managed_files)]
+            )
         )
-        apply_managed_files(
-            target,
-            managed_files,
-            overwrite=args.overwrite,
-            force_overwrite=args.force_overwrite,
-            dry_run=args.dry_run,
-        )
+        with transaction:
+            copy_template_tree(
+                TEMPLATE_ROOT,
+                target,
+                asset_paths,
+                managed_paths=[Path(path) for path in managed_files],
+                overwrite=args.overwrite,
+                force_overwrite=args.force_overwrite,
+                dry_run=args.dry_run,
+            )
+            apply_managed_files(
+                target,
+                managed_files,
+                overwrite=args.overwrite,
+                force_overwrite=args.force_overwrite,
+                dry_run=args.dry_run,
+            )
 
         if args.dry_run:
             print("Dry run complete.")
@@ -1525,31 +1794,52 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("Adoption target must be an existing repo directory.")
 
     managed_files = build_managed_files_for_adopt(args.name, target, today, stamp, human_timestamp, profile=profile)
-    support_paths = assets_for_profile(profile)
+    resolved_profile = resolve_profile(PROFILE_CATALOG, profile)
+    selected_optional_sets = set(args.asset_set)
     if args.install_github_assets:
-        support_paths.extend(OPTIONAL_GITHUB_ASSET_PATHS)
-        managed_files[".github/workflows/statedd-validate.yml"] = render_downstream_workflow()
-    add_asset_manifest(managed_files, support_paths, profile=profile, generation_mode="adopt")
+        if "github" not in PROFILE_CATALOG["asset_sets"] or PROFILE_CATALOG["asset_sets"]["github"].get("optional") is not True:
+            raise SystemExit("legacy --install-github-assets alias is unavailable in this catalog")
+        selected_optional_sets.add("github")
+    optional_asset_sets = tuple(sorted(selected_optional_sets))
+    support_paths = assets_for_profile(profile, optional_asset_sets=optional_asset_sets)
+    if selected_optional_sets or "remote_closure_contract" in resolved_profile.validations:
+        managed_files[".github/workflows/statedd-validate.yml"] = render_downstream_workflow(profile)
+    add_asset_manifest(
+        managed_files,
+        support_paths,
+        profile=profile,
+        generation_mode="adopt",
+        optional_asset_sets=optional_asset_sets,
+    )
     if args.readme_link:
         validate_readme_link_target(target)
 
-    copy_assets(
-        support_paths,
-        target,
-        managed_paths=[Path(path) for path in managed_files],
-        overwrite=args.overwrite,
-        force_overwrite=args.force_overwrite,
-        dry_run=args.dry_run,
-    )
-    apply_managed_files(
-        target,
-        managed_files,
-        overwrite=args.overwrite,
-        force_overwrite=args.force_overwrite,
-        dry_run=args.dry_run,
-    )
+    transaction_paths = [*support_paths, *(Path(path) for path in managed_files)]
     if args.readme_link:
-        maybe_append_readme_link(target, dry_run=args.dry_run)
+        transaction_paths.append(Path("README.md"))
+    transaction = (
+        nullcontext()
+        if args.dry_run
+        else materialization_transaction(target, transaction_paths)
+    )
+    with transaction:
+        copy_assets(
+            support_paths,
+            target,
+            managed_paths=[Path(path) for path in managed_files],
+            overwrite=args.overwrite,
+            force_overwrite=args.force_overwrite,
+            dry_run=args.dry_run,
+        )
+        apply_managed_files(
+            target,
+            managed_files,
+            overwrite=args.overwrite,
+            force_overwrite=args.force_overwrite,
+            dry_run=args.dry_run,
+        )
+        if args.readme_link:
+            maybe_append_readme_link(target, dry_run=args.dry_run)
 
     if args.dry_run:
         print("Dry run complete.")
@@ -1562,10 +1852,10 @@ def main(argv: list[str] | None = None) -> int:
     print("README behavior: existing README preserved")
     if args.readme_link:
         print("README behavior: appended workflow section")
-    if args.install_github_assets:
-        print("GitHub assets: installed")
+    if selected_optional_sets:
+        print(f"Optional asset sets: installed {', '.join(sorted(selected_optional_sets))}")
     else:
-        print("GitHub assets: skipped")
+        print("Optional asset sets: skipped")
     print("Next:")
     print("1. Read AGENTS.md and review PROJECT_STATE.yaml against the real repo")
     print("2. Resolve inherited contradictions and fill the backlog-linked queue")

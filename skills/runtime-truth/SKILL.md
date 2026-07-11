@@ -12,14 +12,15 @@ when_to_use:
   - "When runtime_identity.json is stale or missing"
 required_inputs:
   - "Target service/process to verify"
+  - "Trusted endpoint expected by the operator or deployment configuration"
   - "Expected runtime_identity.json (if exists)"
 step_by_step:
   - name: "Capture runtime proof"
-    command: "python scripts/statedd_runtime_proof.py"
+    command: "python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url <endpoint>"
     expected: "Creates/updates runtime_identity.json with OS, kernel, deps, container, ports, services, git head"
     failure: "Check script output, fix environment detection"
   - name: "Verify against recorded"
-    command: "python scripts/statedd_runtime_truth_check.py"
+    command: "python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json --expected-endpoint <endpoint>"
     expected: "Exit 0 (current runtime matches recorded)"
     failure: "Update runtime_identity.json or investigate drift"
   - name: "Browser verification (if user-facing)"

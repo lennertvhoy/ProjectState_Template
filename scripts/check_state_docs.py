@@ -76,11 +76,13 @@ TEMPLATE_ASSET_PATHS = [
     "scripts/statedd_worktree_guard.py",
     "scripts/statedd_brittleness_check.py",
     "scripts/statedd_runtime_proof.py",
+    "scripts/statedd_runtime_truth_check.py",
     "scripts/statedd_validate_schema.py",
     "scripts/test_init_template.py",
     "scripts/test_worktree_guard.py",
     "scripts/test_brittleness_check.py",
     "scripts/test_runtime_proof.py",
+    "scripts/test_runtime_truth_check.py",
     "scripts/test_schema_validation.py",
     "scripts/statedd_evidence_pack.py",
     "scripts/statedd_upgrade.py",
@@ -100,6 +102,7 @@ TEMPLATE_ASSET_PATHS = [
     "schemas/project_adapter.schema.json",
     "schemas/statedd_assets.schema.json",
     "schemas/runtime_identity.schema.json",
+    "schemas/runtime_identity_v2.schema.json",
     "schemas/evidence_readme_contract.json",
     "schemas/evidence_manifest.schema.json",
     "schemas/final_handoff_contract.json",
@@ -162,7 +165,6 @@ TERMINAL_WORKLOG_STATUSES = {
     "CLOSED",
     "COMPLETE",
     "CLOSURE_GRADE_CI_VERIFIED",
-    "MERGED",
 }
 
 
@@ -484,6 +486,7 @@ def check_readme(path: Path) -> list[str]:
         "scripts/statedd_worktree_guard.py",
         "ANTI_BRITTLENESS_GUARD.md",
         "scripts/statedd_runtime_proof.py",
+        "scripts/statedd_runtime_truth_check.py",
         "scripts/statedd_validate_schema.py",
         "LICENSE_FAQ.md",
         "teaching/training rights are reserved",
@@ -775,18 +778,15 @@ def check_template_assets(root: Path) -> list[str]:
                 issues.append(f"GitHub Action reference must be pinned to a full SHA, found: {ref}")
         if not PINNED_ACTION_RE.search(workflow_text):
             issues.append("GitHub workflow must pin action references to full SHAs")
-        if "scripts/test_init_template.py" not in workflow_text:
-            issues.append("GitHub workflow must run scripts/test_init_template.py")
-        if "scripts/statedd_runtime_proof.py" not in workflow_text:
-            issues.append("GitHub workflow must validate scripts/statedd_runtime_proof.py")
-        if "scripts/statedd_validate_schema.py" not in workflow_text:
-            issues.append("GitHub workflow must validate scripts/statedd_validate_schema.py")
-        if "scripts/test_schema_validation.py" not in workflow_text:
-            issues.append("GitHub workflow must run scripts/test_schema_validation.py")
-        if "scripts/test_worktree_guard.py" not in workflow_text:
-            issues.append("GitHub workflow must run scripts/test_worktree_guard.py")
-        if "scripts/test_brittleness_check.py" not in workflow_text:
-            issues.append("GitHub workflow must run scripts/test_brittleness_check.py")
+        authoritative = "python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance"
+        if authoritative not in workflow_text:
+            issues.append(f"GitHub workflow must run the authoritative local gate: {authoritative}")
+        manual_script_tests = re.findall(r"python3?\s+(scripts/test_[^\s]+\.py)", workflow_text)
+        if manual_script_tests:
+            issues.append(
+                "GitHub workflow must not manually enumerate script tests: "
+                + ", ".join(sorted(set(manual_script_tests)))
+            )
 
     return issues
 

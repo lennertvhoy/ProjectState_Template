@@ -7,7 +7,7 @@ evidence hygiene, git state, and schema ownership. Run it before
 handoff, before switching to operating mode, and in CI.
 
 Exit codes:
-  0 = audit passed (closure-grade, unless overridden)
+  0 = local audit passed; remote closure is not implied
   1 = audit found issues that must be fixed or explicitly overridden
 """
 
@@ -60,7 +60,10 @@ EVIDENCE_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 EVIDENCE_BROWSER_EXTENSIONS = {".html", ".har", ".json"}
 RUNTIME_IDENTITY_FILE = "runtime_identity.json"
 BROWSER_VERIFICATION_FILE = "browser_verification.json"
-RUNTIME_IDENTITY_SCHEMA = "statedd.runtime_identity.v1"
+RUNTIME_IDENTITY_SCHEMAS = {
+    "statedd.runtime_identity.v1",
+    "statedd.runtime_identity.v2",
+}
 EVIDENCE_MANIFEST_FILE = "manifest.json"
 EVIDENCE_MANIFEST_SCHEMA = "statedd.evidence_manifest.v1"
 BROWSER_VERIFICATION_SCHEMA = "statedd.browser_verification.v1"
@@ -299,7 +302,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--test-command",
         action="append",
         default=[],
-        help="Command(s) that must pass for the slice to be closure-grade",
+        help="Command(s) that must pass for local slice readiness",
     )
     parser.add_argument(
         "--override-file",
@@ -804,12 +807,13 @@ def check_runtime_identity(
         return
 
     schema = data.get("schema") if isinstance(data, dict) else None
-    if schema != RUNTIME_IDENTITY_SCHEMA:
+    if schema not in RUNTIME_IDENTITY_SCHEMAS:
         status = "fail" if strict else "warn"
         result.add(
             "runtime_identity",
             status,
-            f"runtime_identity.json schema is {schema or 'missing'}; expected {RUNTIME_IDENTITY_SCHEMA}",
+            "runtime_identity.json schema is "
+            f"{schema or 'missing'}; expected one of {sorted(RUNTIME_IDENTITY_SCHEMAS)}",
         )
     else:
         result.add("runtime_identity", "pass", f"runtime_identity.json schema: {schema}")
@@ -1379,12 +1383,12 @@ def render_result(result: AuditResult, strict: bool) -> int:
     print(f"Summary: {counts['pass']} pass, {counts['warn']} warn, {counts['fail']} fail, {counts['override']} override")
 
     if result.has_failures():
-        print("AUDIT RESULT: FAIL — closure-grade not met")
+        print("AUDIT RESULT: FAIL — local readiness not met")
         return 1
     if strict and result.has_warnings():
         print("AUDIT RESULT: FAIL — warnings treated as failures in strict mode")
         return 1
-    print("AUDIT RESULT: PASS — closure-grade")
+    print("AUDIT RESULT: PASS — local readiness only; remote closure not checked")
     return 0
 
 

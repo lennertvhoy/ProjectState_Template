@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.runtime_identity.v2",
+  "title": "StateDD portable runtime_identity.json",
+  "type": "object",
+  "required": [
+    "schema",
+    "captured_at",
+    "repo",
+    "runtime",
+    "checks",
+    "limits",
+    "timestamp",
+    "os",
+    "os_version",
+    "kernel",
+    "arch",
+    "python",
+    "git_head",
+    "in_container"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"type": "string", "const": "statedd.runtime_identity.v2"},
+    "captured_at": {"type": "string", "minLength": 10},
+    "repo": {
+      "type": "object",
+      "required": ["path", "branch", "head", "worktree_clean", "status_porcelain"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "const": "."},
+        "branch": {"type": ["string", "null"]},
+        "head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "worktree_clean": {"type": "boolean"},
+        "status_porcelain": {"type": "string"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["required"],
+      "additionalProperties": false,
+      "properties": {
+        "required": {"type": "boolean"},
+        "reason": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "endpoint": {"type": "string", "minLength": 1},
+        "ownership_mode": {"enum": ["local_process", "remote_revision"]},
+        "revision_header": {"type": "string", "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"},
+        "process": {
+          "type": "object",
+          "required": ["detected"],
+          "additionalProperties": false,
+          "properties": {
+            "detected": {"type": "boolean"},
+            "pid": {"type": "integer", "minimum": 1},
+            "port": {"type": ["integer", "null"], "minimum": 1, "maximum": 65535},
+            "host": {"type": "string", "minLength": 1},
+            "reason": {"type": "string", "minLength": 1},
+            "impact": {"type": "string", "minLength": 1},
+            "cwd_relation": {"enum": ["repo_root", "within_repo", "outside_repo", "unavailable"]},
+            "cwd_matches_repo": {"type": ["boolean", "null"]},
+            "executable": {"type": ["string", "null"]},
+            "argv_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+            "argv_count": {"type": "integer", "minimum": 0},
+            "all_candidate_pids": {
+              "type": "array",
+              "items": {"type": "integer", "minimum": 1},
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "http_status", "content_type", "response_sha256", "response_bytes"],
+      "properties": {
+        "url": {"type": "string", "minLength": 1},
+        "http_status": {"type": ["integer", "null"]},
+        "content_type": {"type": ["string", "null"]},
+        "response_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "response_bytes": {"type": "integer", "minimum": 0},
+        "revision_header": {"type": "string", "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"},
+        "revision_matches_expected": {"type": "boolean"}
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "endpoint_reachable": {"type": "boolean"},
+        "process_detected": {"type": "boolean"},
+        "process_cwd_matches_repo": {"type": ["boolean", "string"]},
+        "duplicate_runtime_checked": {"type": "boolean"},
+        "head_recorded": {"type": "boolean"},
+        "runtime_not_applicable_recorded": {"type": "boolean"}
+        ,"revision_matches_head": {"type": "boolean"}
+      }
+    },
+    "limits": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "timestamp": {"type": "string", "minLength": 10},
+    "os": {"type": "string"},
+    "os_version": {"type": "string"},
+    "kernel": {"type": "string"},
+    "arch": {"type": "string"},
+    "python": {"type": "string"},
+    "git_head": {"type": "string", "minLength": 1},
+    "in_container": {"type": "boolean"},
+    "container_runtime": {"type": "string", "minLength": 1}
+  },
+  "statedd_semantics": {
+    "runtime_required_requires_endpoint_reachable": true
+  }
+}

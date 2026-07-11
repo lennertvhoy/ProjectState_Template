@@ -1,34 +1,116 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.runtime_assets.v1",
-  "title": "StateDD generated runtime asset manifest",
+  "$id": "statedd.runtime_assets.v2",
+  "title": "StateDD resolved runtime asset lock",
   "type": "object",
   "required": [
     "schema",
     "template_version",
+    "template_commit",
+    "catalog",
     "profile",
+    "profile_dependencies",
+    "asset_sets",
+    "capabilities",
+    "validations",
+    "required_gate_level",
     "generation_mode",
-    "assets",
+    "managed_assets",
+    "retired_assets",
+    "upgrade_history",
     "excluded_classes"
   ],
   "additionalProperties": false,
   "properties": {
-    "schema": {"type": "string", "const": "statedd.runtime_assets.v1"},
-    "template_version": {"type": "string", "const": "statedd-template-v5"},
-    "profile": {
-      "type": "string",
-      "enum": ["minimal", "solo", "team", "regulated"]
+    "schema": {"type": "string", "const": "statedd.runtime_assets.v2"},
+    "template_version": {"type": "string", "pattern": "^statedd-template-v[0-9]+$"},
+    "template_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "catalog": {
+      "type": "object",
+      "required": ["schema", "version", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {"type": "string", "const": "statedd.profile_catalog.v1"},
+        "version": {"type": "integer"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
     },
+    "profile": {"type": "string", "minLength": 1},
+    "profile_dependencies": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "asset_sets": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "capabilities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "validations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "required_gate_level": {"type": "integer", "minimum": 0, "maximum": 3},
     "generation_mode": {"type": "string", "enum": ["new", "adopt"]},
-    "assets": {
+    "managed_assets": {
       "type": "array",
       "minItems": 1,
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "role",
+          "owner",
+          "required",
+          "provision",
+          "merge_strategy",
+          "schema",
+          "generated_by",
+          "sensitivity",
+          "protected",
+          "append_only",
+          "desired_by",
+          "base_sha256",
+          "installed_sha256"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "role": {"type": "string", "minLength": 1},
+          "owner": {"type": "string", "enum": ["template", "project"]},
+          "required": {"type": "boolean"},
+          "provision": {"type": "string", "minLength": 1},
+          "merge_strategy": {"type": "string", "enum": ["preserve", "append-only", "create-if-missing", "replace-if-unmodified", "regenerate", "forbid"]},
+          "schema": {"type": ["string", "null"]},
+          "generated_by": {"type": "string", "minLength": 1},
+          "sensitivity": {"type": "string", "enum": ["public", "project", "sensitive"]},
+          "protected": {"type": "boolean"},
+          "append_only": {"type": "boolean"},
+          "desired_by": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "base_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "installed_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
     },
-    "excluded_classes": {
+    "retired_assets": {
       "type": "array",
-      "minItems": 1,
-      "items": {"type": "string", "minLength": 1}
-    }
+      "items": {
+        "type": "object",
+        "required": ["path", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1},
+          "base_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "upgrade_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from_template_version", "to_template_version", "source_commit"],
+        "additionalProperties": false,
+        "properties": {
+          "from_template_version": {"type": ["string", "null"]},
+          "to_template_version": {"type": "string", "minLength": 1},
+          "source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}
+        }
+      }
+    },
+    "excluded_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  },
+  "statedd_semantics": {
+    "managed_asset_paths_safe_and_unique": true
   }
 }

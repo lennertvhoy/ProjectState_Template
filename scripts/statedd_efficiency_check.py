@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -26,6 +27,25 @@ try:
     from statedd_validate_schema import StateDDYamlError, parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - module import path under pytest
     from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
+
+try:
+    from statedd_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_json_file,
+        normalize_relative_path,
+        safe_root_path,
+    )
+except ModuleNotFoundError:  # pragma: no cover - module import path under pytest
+    from scripts.statedd_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_json_file,
+        normalize_relative_path,
+        safe_root_path,
+    )
 
 
 class Severity(Enum):
@@ -365,40 +385,59 @@ class EfficiencyCheck:
     def _tree_files(self) -> list[Path]:
         files: list[Path] = []
         for path in self.root.rglob("*"):
-            if not path.is_file():
-                continue
             rel = path.relative_to(self.root)
             if self._skip_path(rel):
                 continue
-            files.append(path)
+            try:
+                candidate = confined_path(self.root, rel)
+            except UnsafePathError as exc:
+                self._log(Severity.ERROR, "context_footprint", str(exc), rel.as_posix())
+                continue
+            if candidate.is_file() and not candidate.is_symlink():
+                files.append(candidate)
         return files
 
     def _manifest_files(self, path: Path) -> tuple[list[Path], str] | None:
         try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            payload = load_json_file(path)
+        except ContractError as exc:
             self._log(Severity.ERROR, "asset_manifest", f"Could not parse STATEDD_ASSETS.json: {exc}", path.name)
             return None
-        if not isinstance(payload, dict) or payload.get("schema") != "statedd.runtime_assets.v1":
+        if not isinstance(payload, dict) or payload.get("schema") not in {
+            "statedd.runtime_assets.v1",
+            "statedd.runtime_assets.v2",
+        }:
             self._log(Severity.ERROR, "asset_manifest", "STATEDD_ASSETS.json has an unsupported schema", path.name)
             return None
-        raw_assets = payload.get("assets")
+        if payload["schema"] == "statedd.runtime_assets.v1":
+            raw_assets = payload.get("assets")
+        else:
+            records = payload.get("managed_assets")
+            if not isinstance(records, list) or not all(isinstance(item, dict) for item in records):
+                self._log(Severity.ERROR, "asset_manifest", "STATEDD_ASSETS.json managed_assets must be an object list", path.name)
+                return None
+            raw_assets = [record.get("path") for record in records]
         if not isinstance(raw_assets, list) or not all(isinstance(item, str) for item in raw_assets):
             self._log(Severity.ERROR, "asset_manifest", "STATEDD_ASSETS.json assets must be a string list", path.name)
             return None
         files: list[Path] = []
         seen: set[Path] = set()
         for raw in raw_assets:
-            rel = Path(raw)
-            if rel.is_absolute() or not rel.parts or any(part in {"", ".", ".."} for part in rel.parts):
-                self._log(Severity.ERROR, "asset_manifest", f"Unsafe managed asset path: {raw}", path.name)
+            try:
+                rel = normalize_relative_path(raw)
+            except UnsafePathError as exc:
+                self._log(Severity.ERROR, "asset_manifest", str(exc), path.name)
                 continue
             if rel in seen:
                 self._log(Severity.ERROR, "asset_manifest", f"Duplicate managed asset path: {raw}", path.name)
                 continue
             seen.add(rel)
-            candidate = self.root / rel
-            if not candidate.is_file():
+            try:
+                candidate = confined_path(self.root, rel)
+            except UnsafePathError as exc:
+                self._log(Severity.ERROR, "asset_manifest", str(exc), path.name)
+                continue
+            if candidate.is_symlink() or not candidate.is_file():
                 self._log(Severity.ERROR, "asset_manifest", f"Declared managed asset is missing: {raw}", path.name)
                 continue
             files.append(candidate)
@@ -421,11 +460,22 @@ class EfficiencyCheck:
         if not isinstance(startup_names, list) or not all(isinstance(name, str) for name in startup_names):
             self._log(Severity.ERROR, "context_footprint", "context_budgets.startup_files must be a string list")
             return
-        startup_paths = [self.root / name for name in startup_names]
-        missing_startup = [name for name, path in zip(startup_names, startup_paths) if not path.is_file()]
-        for name in missing_startup:
-            self._log(Severity.ERROR, "context_footprint", f"Mandatory startup file is missing: {name}", name)
-        startup_paths = [path for path in startup_paths if path.is_file()]
+        startup_paths: list[Path] = []
+        for name in startup_names:
+            try:
+                path = confined_path(self.root, normalize_relative_path(name))
+            except UnsafePathError as exc:
+                self._log(Severity.ERROR, "context_footprint", str(exc), name)
+                continue
+            if path.is_symlink() or not path.is_file():
+                self._log(
+                    Severity.ERROR,
+                    "context_footprint",
+                    f"Mandatory startup file is missing or unsafe: {name}",
+                    name,
+                )
+                continue
+            startup_paths.append(path)
         startup_bytes = sum(path.stat().st_size for path in startup_paths)
         startup_tokens = math.ceil(startup_bytes / 4)
 
@@ -502,26 +552,99 @@ class EfficiencyCheck:
                     )
 
     def check_evidence_budget(self) -> None:
-        evidence_root = self.root / "docs" / "evidence"
+        try:
+            evidence_root = confined_path(self.root, "docs/evidence")
+        except UnsafePathError as exc:
+            self._log(Severity.ERROR, "evidence_bundle", str(exc), "docs/evidence")
+            return
         if not evidence_root.exists():
+            return
+        if evidence_root.is_symlink() or not evidence_root.is_dir():
+            self._log(
+                Severity.ERROR,
+                "evidence_bundle",
+                "docs/evidence must be a regular directory without symlink components",
+                "docs/evidence",
+            )
             return
         budgets = self._budget("evidence_budgets", default={})
         default_max = budgets.get("default_max_files", 5)
         candidates = [
             entry
             for entry in evidence_root.iterdir()
-            if entry.is_dir() and not entry.name.startswith(".")
+            if entry.is_dir() and not entry.is_symlink() and not entry.name.startswith(".")
         ]
         if not candidates:
             return
-        latest = max(candidates, key=lambda p: p.stat().st_mtime)
-        files = [p for p in latest.rglob("*") if p.is_file()]
+
+        selected: Path | None = None
+        context_path = self.root / ".statedd" / "agent.context"
+        if os.path.lexists(context_path):
+            try:
+                context = load_json_file(context_path)
+            except ContractError as exc:
+                self._log(Severity.ERROR, "evidence_bundle", f"Invalid active slice context: {exc}")
+                return
+            slice_id = context.get("slice_id") if isinstance(context, dict) else None
+            if not isinstance(slice_id, str) or not slice_id:
+                self._log(Severity.ERROR, "evidence_bundle", "Active slice context has no slice_id")
+                return
+            matches: list[Path] = []
+            for candidate in candidates:
+                manifest = candidate / "manifest.json"
+                if manifest.is_symlink() or not manifest.is_file():
+                    continue
+                try:
+                    payload = load_json_file(manifest)
+                except ContractError:
+                    continue
+                if isinstance(payload, dict) and payload.get("slice_id") == slice_id:
+                    matches.append(candidate)
+            if len(matches) != 1:
+                self._log(
+                    Severity.ERROR,
+                    "evidence_bundle",
+                    f"Active slice {slice_id} must have exactly one evidence pack; found {len(matches)}",
+                )
+                return
+            selected = matches[0]
+        else:
+            # Conformance/no-slice mode uses a stable lexical choice; mtimes are
+            # mutable and must not select which evidence escapes a budget.
+            selected = max(candidates, key=lambda path: path.name)
+
+        files: list[Path] = []
+        for current_root, directory_names, file_names in os.walk(
+            selected, topdown=True, followlinks=False
+        ):
+            current = Path(current_root)
+            symlinks = [
+                current / name
+                for name in [*directory_names, *file_names]
+                if (current / name).is_symlink()
+            ]
+            if symlinks:
+                self._log(
+                    Severity.ERROR,
+                    "evidence_bundle",
+                    "Evidence pack contains symlink entries: "
+                    + ", ".join(path.relative_to(selected).as_posix() for path in symlinks),
+                    str(selected.relative_to(self.root)),
+                )
+            directory_names[:] = [
+                name for name in directory_names if not (current / name).is_symlink()
+            ]
+            files.extend(
+                current / name
+                for name in file_names
+                if (current / name).is_file() and not (current / name).is_symlink()
+            )
         if len(files) > default_max:
             self._log(
                 Severity.ERROR,
                 "evidence_bundle",
-                f"Evidence folder {latest.name} has {len(files)} files, max {default_max}",
-                str(latest.relative_to(self.root)),
+                f"Evidence folder {selected.name} has {len(files)} files, max {default_max}",
+                str(selected.relative_to(self.root)),
             )
 
     def check_single_file_edit_audit(self) -> None:
@@ -598,7 +721,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv or sys.argv[1:])
 
-    root = Path(args.root).resolve()
+    try:
+        root = safe_root_path(args.root, must_exist=True)
+    except UnsafePathError as exc:
+        print(f"Efficiency check refused: {exc}")
+        return 1
     checker = EfficiencyCheck(root, args.gate_level, args.verbose)
     exit_code, findings = checker.run()
 

@@ -1,6 +1,6 @@
 # StateDD Template Status
 
-**Updated At:** 2026-07-11 09:13 +02:00
+**Updated At:** 2026-07-11 11:22 +02:00
 **Execution Mode:** template-maintenance
 **Project State:** template_maintenance_active
 **Public URL:** https://github.com/lennertvhoy/StateDD_Template/releases/tag/v5
@@ -27,8 +27,12 @@
 
 ## Current Quality Gate
 
-- GitHub Actions passed on merged `main` at `c2fe7b2`, but the current gate and CI entrypoint do not yet prove all applicable test suites or automatic test discovery.
-- Exact profile/context measurements are not repeated here; a single canonical metrics artifact is required before new quantitative claims are accepted.
+- The implementation candidate passes local compile, the automatically discovered
+  `scripts/` suite, schema examples, schema validation, state hygiene, instruction
+  lint at the error threshold, and diff whitespace checks in the isolated worktree.
+- This is local worktree truth, not commit, remote, PR, or CI truth. Canonical
+  profile/context metrics will be generated only after the implementation proof
+  commit exists; exact measurements are not copied into this snapshot.
 
 ## Open P0/P1 Failures
 
@@ -40,19 +44,22 @@
 - Independent closure-grade agreement for the BL-PARALLEL-001 changes that entered through PR #4.
 - Downstream repos have not yet upgraded to the BL-WORKFLOW-002 guardrails.
 - BL-BROWSER-002 concrete provider integration is not yet implemented.
-- Safe upgrade evolution, fail-closed malformed-manifest handling, transactional manifest refresh, and idempotent reruns on the merged PR #5 lineage.
-- All-suite test aggregation, unavailable-runner failure behavior, authoritative CI test discovery, and target-root symlink rejection.
+- Whether the current locally validated implementation candidate survives the
+  independent second pass, proof commit, canonical metric reproduction, strict
+  evidence gate, push, PR review, and exact-head GitHub Actions run.
 - Empirical evidence that StateDD outperforms simpler workflows; a controlled benchmark specification must precede superiority claims.
 
 ## Immediate Priorities
 
-1. Repair and regression-test the unresolved merged lifecycle, gate, CI, symlink, and metrics failures under BL-MAX-VALUE-001.
-2. Reconcile exact-head state/evidence/PR/CI truth on a new PR without merging it.
-3. Publish the concise maximum-value architecture review and choose one evidence-backed next slice.
+1. Complete the independent second pass and commit the locally validated implementation proof.
+2. Generate canonical metrics and strict evidence from that proof, then commit finalization-only metadata.
+3. Push, open a draft PR, observe exact-head CI, and run the remote finalizer without merging.
 
 ## Active Blockers
 
-- Closure is blocked until the repaired exact head, canonical metrics, in-repo evidence, PR body, and GitHub Actions agree.
+- Closure remains blocked until the repaired exact head, canonical metrics,
+  in-repo evidence, PR body, review state, authoritative workflow run, and remote
+  branch agree in the finalizer's last GitHub requery.
 - Human acceptance remains unproven even after technical validation.
 
 ## Notes

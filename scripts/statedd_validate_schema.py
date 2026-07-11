@@ -9,12 +9,38 @@ style emitted by `scripts/init_template.py`.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+try:
+    from statedd_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_json_file,
+        load_profile_catalog,
+        normalize_relative_path,
+        regular_source_path,
+        resolve_profile,
+        safe_root_path,
+    )
+except ModuleNotFoundError:  # pragma: no cover - pytest package import path
+    from scripts.statedd_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_json_file,
+        load_profile_catalog,
+        normalize_relative_path,
+        regular_source_path,
+        resolve_profile,
+        safe_root_path,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -210,7 +236,7 @@ def parse_block_scalar(lines: list[tuple[int, str, int]], index: int, min_indent
 
 def load_data(path: Path) -> Any:
     if path.suffix.lower() == ".json":
-        return json.loads(path.read_text(encoding="utf-8"))
+        return load_json_file(path)
     if path.suffix.lower() in {".yaml", ".yml"}:
         return parse_yaml_text(path.read_text(encoding="utf-8"))
     return path.read_text(encoding="utf-8")
@@ -234,8 +260,49 @@ def type_matches(value: Any, expected: str) -> bool:
     return False
 
 
-def validate_json_schema(value: Any, schema: dict[str, Any], path: str = "$") -> list[ValidationIssue]:
+def _resolve_local_ref(root_schema: dict[str, Any], ref: str) -> dict[str, Any]:
+    if not ref.startswith("#/"):
+        raise ContractError(f"only local JSON Schema references are supported: {ref!r}")
+    current: Any = root_schema
+    for raw in ref[2:].split("/"):
+        key = raw.replace("~1", "/").replace("~0", "~")
+        if not isinstance(current, dict) or key not in current:
+            raise ContractError(f"unresolvable JSON Schema reference: {ref!r}")
+        current = current[key]
+    if not isinstance(current, dict):
+        raise ContractError(f"JSON Schema reference does not target an object: {ref!r}")
+    return current
+
+
+def validate_json_schema(
+    value: Any,
+    schema: dict[str, Any],
+    path: str = "$",
+    *,
+    _root_schema: dict[str, Any] | None = None,
+    _ref_stack: tuple[str, ...] = (),
+) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
+    root_schema = schema if _root_schema is None else _root_schema
+
+    ref = schema.get("$ref")
+    if isinstance(ref, str):
+        if ref in _ref_stack:
+            return [ValidationIssue(path, f"cyclic JSON Schema reference: {ref!r}")]
+        try:
+            resolved = _resolve_local_ref(root_schema, ref)
+        except ContractError as exc:
+            return [ValidationIssue(path, str(exc))]
+        issues.extend(
+            validate_json_schema(
+                value,
+                resolved,
+                path,
+                _root_schema=root_schema,
+                _ref_stack=(*_ref_stack, ref),
+            )
+        )
+        schema = {key: nested for key, nested in schema.items() if key != "$ref"}
 
     expected_type = schema.get("type")
     if isinstance(expected_type, list):
@@ -259,16 +326,45 @@ def validate_json_schema(value: Any, schema: dict[str, Any], path: str = "$") ->
         if isinstance(pattern, str) and not re.search(pattern, value):
             issues.append(ValidationIssue(path, f"string does not match pattern {pattern!r}"))
 
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        minimum = schema.get("minimum")
+        maximum = schema.get("maximum")
+        if isinstance(minimum, (int, float)) and value < minimum:
+            issues.append(ValidationIssue(path, f"expected value >= {minimum}"))
+        if isinstance(maximum, (int, float)) and value > maximum:
+            issues.append(ValidationIssue(path, f"expected value <= {maximum}"))
+
     if isinstance(value, list):
         min_items = schema.get("minItems")
         if isinstance(min_items, int) and len(value) < min_items:
             issues.append(ValidationIssue(path, f"expected at least {min_items} item(s)"))
+        if schema.get("uniqueItems") is True:
+            seen: set[str] = set()
+            for index, item in enumerate(value):
+                marker = json.dumps(item, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+                if marker in seen:
+                    issues.append(ValidationIssue(f"{path}[{index}]", "duplicate array item is not allowed"))
+                seen.add(marker)
         item_schema = schema.get("items")
         if isinstance(item_schema, dict):
             for index, item in enumerate(value):
-                issues.extend(validate_json_schema(item, item_schema, f"{path}[{index}]"))
+                issues.extend(
+                    validate_json_schema(
+                        item,
+                        item_schema,
+                        f"{path}[{index}]",
+                        _root_schema=root_schema,
+                        _ref_stack=_ref_stack,
+                    )
+                )
 
     if isinstance(value, dict):
+        min_properties = schema.get("minProperties")
+        max_properties = schema.get("maxProperties")
+        if isinstance(min_properties, int) and len(value) < min_properties:
+            issues.append(ValidationIssue(path, f"expected at least {min_properties} properties"))
+        if isinstance(max_properties, int) and len(value) > max_properties:
+            issues.append(ValidationIssue(path, f"expected at most {max_properties} properties"))
         required = schema.get("required", [])
         if isinstance(required, list):
             for key in required:
@@ -278,7 +374,15 @@ def validate_json_schema(value: Any, schema: dict[str, Any], path: str = "$") ->
         if isinstance(properties, dict):
             for key, property_schema in properties.items():
                 if key in value and isinstance(property_schema, dict):
-                    issues.extend(validate_json_schema(value[key], property_schema, f"{path}.{key}"))
+                    issues.extend(
+                        validate_json_schema(
+                            value[key],
+                            property_schema,
+                            f"{path}.{key}",
+                            _root_schema=root_schema,
+                            _ref_stack=_ref_stack,
+                        )
+                    )
         additional = schema.get("additionalProperties", True)
         if additional is False and isinstance(properties, dict):
             allowed = set(properties)
@@ -289,7 +393,15 @@ def validate_json_schema(value: Any, schema: dict[str, Any], path: str = "$") ->
             for key, nested in value.items():
                 if isinstance(properties, dict) and key in properties:
                     continue
-                issues.extend(validate_json_schema(nested, additional, f"{path}.{key}"))
+                issues.extend(
+                    validate_json_schema(
+                        nested,
+                        additional,
+                        f"{path}.{key}",
+                        _root_schema=root_schema,
+                        _ref_stack=_ref_stack,
+                    )
+                )
 
     semantics = schema.get("statedd_semantics")
     if isinstance(semantics, dict):
@@ -340,6 +452,66 @@ def validate_statedd_semantics(value: Any, semantics: dict[str, Any], path: str)
                     "repo_mode must match statedd_mode",
                 )
             )
+    if semantics.get("managed_asset_paths_safe_and_unique") is True and isinstance(value, dict):
+        records = value.get("managed_assets")
+        if isinstance(records, list):
+            seen: set[Path] = set()
+            for index, record in enumerate(records):
+                raw = record.get("path") if isinstance(record, dict) else None
+                if not isinstance(raw, str):
+                    continue
+                try:
+                    normalized = normalize_relative_path(raw)
+                except UnsafePathError as exc:
+                    issues.append(ValidationIssue(f"{path}.managed_assets[{index}].path", str(exc)))
+                    continue
+                if normalized in seen:
+                    issues.append(
+                        ValidationIssue(
+                            f"{path}.managed_assets[{index}].path",
+                            f"duplicate managed asset path: {raw}",
+                        )
+                    )
+                seen.add(normalized)
+    if semantics.get("evidence_paths_safe_and_unique") is True and isinstance(value, dict):
+        artifacts = value.get("artifacts")
+        claims = value.get("claims")
+        seen: set[Path] = set()
+        if isinstance(artifacts, list):
+            for index, artifact in enumerate(artifacts):
+                raw = artifact.get("path") if isinstance(artifact, dict) else None
+                if not isinstance(raw, str):
+                    continue
+                try:
+                    normalized = normalize_relative_path(raw)
+                except UnsafePathError as exc:
+                    issues.append(ValidationIssue(f"{path}.artifacts[{index}].path", str(exc)))
+                    continue
+                if normalized in seen:
+                    issues.append(
+                        ValidationIssue(
+                            f"{path}.artifacts[{index}].path",
+                            f"duplicate evidence artifact path: {raw}",
+                        )
+                    )
+                seen.add(normalized)
+        if isinstance(claims, list):
+            for claim_index, claim in enumerate(claims):
+                refs = claim.get("evidence") if isinstance(claim, dict) else None
+                if not isinstance(refs, list):
+                    continue
+                for ref_index, raw in enumerate(refs):
+                    if not isinstance(raw, str):
+                        continue
+                    try:
+                        normalize_relative_path(raw)
+                    except UnsafePathError as exc:
+                        issues.append(
+                            ValidationIssue(
+                                f"{path}.claims[{claim_index}].evidence[{ref_index}]",
+                                str(exc),
+                            )
+                        )
     return issues
 
 
@@ -355,7 +527,10 @@ def validate_markdown_contract(text: str, contract: dict[str, Any]) -> list[Vali
 
 
 def load_schema(schema_path: Path) -> dict[str, Any]:
-    return json.loads(schema_path.read_text(encoding="utf-8"))
+    schema = load_json_file(schema_path)
+    if not isinstance(schema, dict):
+        raise ContractError(f"schema root must be an object: {schema_path}")
+    return schema
 
 
 def validate_file(path: Path, schema_path: Path) -> list[ValidationIssue]:
@@ -379,20 +554,82 @@ def root_targets(root: Path) -> list[tuple[Path, Path, bool]]:
         (root / "PROJECT_DNA.yaml", schema_path(root, "project_dna.schema.json"), True),
         (root / "PROJECT_ADAPTER.yaml", schema_path(root, "project_adapter.schema.json"), False),
         (root / "STATEDD_ASSETS.json", schema_path(root, "statedd_assets.schema.json"), False),
+        (root / "profiles" / "catalog.json", schema_path(root, "profile_catalog.schema.json"), False),
+        (root / "docs" / "metrics" / "profile_metrics.json", schema_path(root, "profile_metrics.schema.json"), False),
         (root / "prompts" / "FINAL_HANDOFF_TEMPLATE.md", schema_path(root, "final_handoff_contract.json"), False),
     ]
 
     evidence_root = root / "docs" / "evidence"
     if evidence_root.exists():
-        for readme in sorted(evidence_root.glob("*/README.md")):
-            targets.append((readme, schema_path(root, "evidence_readme_contract.json"), True))
-        for artifact in sorted(evidence_root.glob("*/runtime_identity.json")):
-            targets.append((artifact, schema_path(root, "runtime_identity.schema.json"), True))
-        for manifest in sorted(evidence_root.glob("*/manifest.json")):
-            targets.append((manifest, schema_path(root, "evidence_manifest.schema.json"), True))
-        for browser in sorted(evidence_root.glob("*/browser_verification.json")):
-            targets.append((browser, schema_path(root, "browser_verification.schema.json"), True))
+        if evidence_root.is_symlink() or not evidence_root.is_dir():
+            raise UnsafePathError("docs/evidence must be a real directory, not a symlink")
+        evidence_contracts = {
+            "README.md": "evidence_readme_contract.json",
+            "runtime_identity.json": "runtime_identity.schema.json",
+            "manifest.json": "evidence_manifest.schema.json",
+            "browser_verification.json": "browser_verification.schema.json",
+        }
+        for folder in sorted(evidence_root.iterdir()):
+            if folder.name.startswith("."):
+                continue
+            if folder.is_symlink():
+                raise UnsafePathError(f"refusing symlinked evidence folder: {folder}")
+            if not folder.is_dir():
+                continue
+            for name, contract in evidence_contracts.items():
+                candidate = confined_path(root, folder.relative_to(root) / name)
+                if candidate.exists():
+                    if name == "runtime_identity.json":
+                        try:
+                            runtime_payload = load_json_file(candidate)
+                        except ContractError:
+                            runtime_payload = {}
+                        if (
+                            isinstance(runtime_payload, dict)
+                            and runtime_payload.get("schema") == "statedd.runtime_identity.v2"
+                        ):
+                            contract = "runtime_identity_v2.schema.json"
+                    targets.append((candidate, schema_path(root, contract), True))
     return targets
+
+
+def validate_manifest_catalog_consistency(root: Path) -> list[ValidationIssue]:
+    manifest_path = root / "STATEDD_ASSETS.json"
+    catalog_path = root / "profiles" / "catalog.json"
+    if not manifest_path.exists() or not catalog_path.exists():
+        return []
+    manifest = load_json_file(manifest_path)
+    if not isinstance(manifest, dict) or manifest.get("schema") != "statedd.runtime_assets.v2":
+        return []
+    catalog = load_profile_catalog(root)
+    profile = manifest.get("profile")
+    if not isinstance(profile, str) or profile not in catalog["profiles"]:
+        return [ValidationIssue("$.profile", f"profile {profile!r} is absent from profiles/catalog.json")]
+    raw_sets = manifest.get("asset_sets")
+    optional_sets = []
+    if isinstance(raw_sets, list):
+        optional_sets = [
+            set_id
+            for set_id in raw_sets
+            if set_id in catalog["asset_sets"] and catalog["asset_sets"][set_id].get("optional") is True
+        ]
+    resolved = resolve_profile(catalog, profile, optional_asset_sets=optional_sets)
+    expected = {
+        "profile_dependencies": list(resolved.profile_dependencies),
+        "asset_sets": list(resolved.asset_sets),
+        "capabilities": list(resolved.capabilities),
+        "validations": list(resolved.validations),
+        "required_gate_level": resolved.required_gate_level,
+    }
+    issues: list[ValidationIssue] = []
+    for field, value in expected.items():
+        if manifest.get(field) != value:
+            issues.append(ValidationIssue(f"$.{field}", f"must match current profile catalog: {value!r}"))
+    catalog_block = manifest.get("catalog")
+    actual_hash = hashlib.sha256(catalog_path.read_bytes()).hexdigest()
+    if not isinstance(catalog_block, dict) or catalog_block.get("sha256") != actual_hash:
+        issues.append(ValidationIssue("$.catalog.sha256", "must match profiles/catalog.json"))
+    return issues
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -420,7 +657,13 @@ def validate_root(root: Path, quiet: bool) -> int:
         print("============================================================")
         print("STATEDD SCHEMA VALIDATION")
         print("============================================================")
-    for path, schema_path, required in root_targets(root):
+    try:
+        targets = root_targets(root)
+    except (ContractError, UnsafePathError, OSError) as exc:
+        issues = [ValidationIssue("$", f"unsafe validation target: {exc}")]
+        print_target_result("validation targets", issues, quiet)
+        return 1
+    for path, schema_path, required in targets:
         label = path.relative_to(root).as_posix() if path.is_relative_to(root) else str(path)
         if not path.exists():
             if required:
@@ -435,13 +678,33 @@ def validate_root(root: Path, quiet: bool) -> int:
             all_issues.append((label, issues))
             print_target_result(label, issues, quiet)
             continue
+        if path.is_symlink() or not path.is_file():
+            issues = [ValidationIssue("$", "validation target must be a regular non-symlink file")]
+            all_issues.append((label, issues))
+            print_target_result(label, issues, quiet)
+            continue
+        try:
+            regular_source_path(schema_path.parent, schema_path.name)
+        except (ContractError, UnsafePathError) as exc:
+            issues = [ValidationIssue("$", f"schema must be a regular confined file: {exc}")]
+            all_issues.append((label, issues))
+            print_target_result(label, issues, quiet)
+            continue
         try:
             issues = validate_file(path, schema_path)
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError, StateDDYamlError) as exc:
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, StateDDYamlError, ContractError) as exc:
             issues = [ValidationIssue("$", f"could not parse or validate file: {exc}")]
         if issues:
             all_issues.append((label, issues))
         print_target_result(label, issues, quiet)
+
+    try:
+        consistency_issues = validate_manifest_catalog_consistency(root)
+    except (ContractError, UnsafePathError, OSError) as exc:
+        consistency_issues = [ValidationIssue("$", f"could not validate manifest/catalog agreement: {exc}")]
+    if consistency_issues:
+        all_issues.append(("manifest/catalog agreement", consistency_issues))
+    print_target_result("manifest/catalog agreement", consistency_issues, quiet)
 
     if all_issues:
         print(f"FAILED: {sum(len(issues) for _, issues in all_issues)} schema issue(s) found")
@@ -453,15 +716,27 @@ def validate_root(root: Path, quiet: bool) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
-    root = Path(args.root).resolve()
+    try:
+        root = safe_root_path(args.root, must_exist=True)
+    except UnsafePathError as exc:
+        print(f"FAILED: unsafe validation root: {exc}")
+        return 1
     if args.file or args.schema:
         if not args.file or not args.schema:
             raise SystemExit("--file and --schema must be used together")
-        path = Path(args.file).resolve()
-        schema_path = Path(args.schema).resolve()
+        try:
+            raw_path = Path(args.file)
+            raw_schema = Path(args.schema)
+            path_root = safe_root_path(raw_path.parent or Path("."), must_exist=True)
+            schema_root = safe_root_path(raw_schema.parent or Path("."), must_exist=True)
+            path = regular_source_path(path_root, raw_path.name)
+            schema_path = regular_source_path(schema_root, raw_schema.name)
+        except (ContractError, UnsafePathError) as exc:
+            print(f"FAILED: unsafe explicit validation target: {exc}")
+            return 1
         try:
             issues = validate_file(path, schema_path)
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError, StateDDYamlError) as exc:
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, StateDDYamlError, ContractError) as exc:
             issues = [ValidationIssue("$", f"could not parse or validate file: {exc}")]
         label = path.name
         print_target_result(label, issues, args.quiet)

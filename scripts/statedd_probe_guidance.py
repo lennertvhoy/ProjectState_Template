@@ -92,8 +92,14 @@ PROBES = [
         expected_skills=["runtime-truth"],
         expected_commands=[],
         expected_gates=["statedd_runtime_truth_check.py"],
-        setup="",
-        verify="python scripts/statedd_runtime_truth_check.py"
+        setup=(
+            "python scripts/statedd_runtime_proof.py --no-runtime-required "
+            "--evidence-dir docs/evidence/runtime-proof-probe"
+        ),
+        verify=(
+            "python scripts/statedd_runtime_truth_check.py "
+            "--artifact docs/evidence/runtime-proof-probe/runtime_identity.json"
+        )
     ),
 ]
 

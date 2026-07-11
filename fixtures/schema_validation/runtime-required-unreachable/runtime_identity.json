@@ -2,7 +2,7 @@
   "schema": "statedd.runtime_identity.v1",
   "generated_at": "2026-06-23T00:00:00+00:00",
   "repo": {
-    "path": "/example/runtime",
+    "path": ".",
     "branch": "main",
     "head": "abc1234",
     "worktree_clean": true,
@@ -11,7 +11,7 @@
   "runtime": {
     "required": true,
     "kind": "web",
-    "url": "http://localhost:9999",
+    "endpoint": "http://localhost:9999",
     "process": {
       "detected": false,
       "reason": "no process found"

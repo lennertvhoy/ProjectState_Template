@@ -13,6 +13,9 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from unittest import mock
+
+import init_template as init_module
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,6 +65,8 @@ def test_adopt_rejects_symlinked_managed_directory() -> None:
 
         assert_mentions_symlink(completed)
         assert_no_external_files(outside)
+        if [entry.name for entry in repo.iterdir() if entry.name != "docs"]:
+            raise AssertionError("Adoption wrote partial files before nested-symlink refusal")
 
 
 def test_new_rejects_symlinked_existing_directory() -> None:
@@ -88,6 +93,190 @@ def test_new_rejects_symlinked_existing_directory() -> None:
 
         assert_mentions_symlink(completed)
         assert_no_external_files(outside)
+        if [entry.name for entry in repo.iterdir() if entry.name != "docs"]:
+            raise AssertionError("Initializer wrote partial files before nested-symlink refusal")
+
+
+def test_new_rejects_symlinked_target_root() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        actual = root / "actual"
+        actual.mkdir()
+        linked = root / "linked"
+        os.symlink(actual, linked)
+
+        completed = run_init(
+            ["new", "--name", "Root Symlink", "--target", str(linked)],
+            expect_success=False,
+        )
+        assert_mentions_symlink(completed)
+        assert_no_external_files(actual)
+
+
+def test_new_rejects_directory_destination_before_any_write() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "AGENTS.md").mkdir()
+
+        completed = run_init(
+            [
+                "new",
+                "--name",
+                "Directory Collision",
+                "--target",
+                str(repo),
+                "--overwrite",
+                "--force-overwrite",
+            ],
+            expect_success=False,
+        )
+        if "non-file destination" not in (completed.stdout + completed.stderr):
+            raise AssertionError(f"Expected directory-destination refusal:\n{completed.stdout}{completed.stderr}")
+        if [entry.name for entry in repo.iterdir() if entry.name != "AGENTS.md"]:
+            raise AssertionError("Initializer wrote partial files before directory-destination refusal")
+
+
+def test_new_rejects_file_parent_before_any_write() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "scripts").write_text("parent collision\n", encoding="utf-8")
+
+        completed = run_init(
+            [
+                "new",
+                "--name",
+                "Parent Collision",
+                "--target",
+                str(repo),
+                "--overwrite",
+                "--force-overwrite",
+            ],
+            expect_success=False,
+        )
+        if "non-directory destination parent" not in (completed.stdout + completed.stderr):
+            raise AssertionError(f"Expected parent-file refusal:\n{completed.stdout}{completed.stderr}")
+        if sorted(path.name for path in repo.iterdir()) != ["scripts"]:
+            raise AssertionError("Initializer wrote partial files before parent-file refusal")
+
+
+def test_new_replaces_hardlinked_managed_file_without_mutating_external_inode() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        repo = root / "repo"
+        repo.mkdir()
+        external = root / "external-managed.txt"
+        external.write_text("external sentinel\n", encoding="utf-8")
+        os.link(external, repo / "AGENTS.md")
+        external_inode = external.stat().st_ino
+
+        run_init(
+            [
+                "new", "--name", "Hardlink Managed", "--profile", "minimal",
+                "--target", str(repo), "--overwrite", "--force-overwrite",
+            ],
+            expect_success=True,
+        )
+
+        assert external.read_text(encoding="utf-8") == "external sentinel\n"
+        assert external.stat().st_ino == external_inode
+        assert (repo / "AGENTS.md").stat().st_ino != external_inode
+
+
+def test_new_replaces_hardlinked_copied_asset_without_mutating_external_inode() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        repo = root / "repo"
+        repo.mkdir()
+        managed = set(
+            init_module.build_managed_files_for_new(
+                "Hardlink Asset",
+                repo,
+                "2026-07-11",
+                "20260711",
+                "2026-07-11T00:00:00+00:00",
+                "minimal",
+            )
+        )
+        copied = next(
+            path
+            for path in init_module.assets_for_profile("minimal")
+            if path.as_posix() not in managed
+        )
+        destination = repo / copied
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        external = root / "external-asset.txt"
+        external.write_text("external asset sentinel\n", encoding="utf-8")
+        os.link(external, destination)
+        external_inode = external.stat().st_ino
+
+        run_init(
+            [
+                "new", "--name", "Hardlink Asset", "--profile", "minimal",
+                "--target", str(repo), "--overwrite", "--force-overwrite",
+            ],
+            expect_success=True,
+        )
+
+        assert external.read_text(encoding="utf-8") == "external asset sentinel\n"
+        assert external.stat().st_ino == external_inode
+        assert destination.stat().st_ino != external_inode
+        assert destination.read_bytes() == (ROOT / copied).read_bytes()
+
+
+def test_new_materialization_failure_rolls_back_every_write() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "rollback"
+        original = init_module.copy_file
+        calls = 0
+
+        def fail_second_copy(source: Path, destination: Path, relpath: Path) -> None:
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise OSError("injected copy failure")
+            original(source, destination, relpath)
+
+        with mock.patch.object(init_module, "copy_file", side_effect=fail_second_copy):
+            try:
+                init_module.main(
+                    [
+                        "init_template.py",
+                        "new",
+                        "--name",
+                        "Rollback",
+                        "--profile",
+                        "minimal",
+                        "--target",
+                        str(target),
+                    ]
+                )
+            except OSError as exc:
+                if "injected copy failure" not in str(exc):
+                    raise
+            else:
+                raise AssertionError("Injected materialization failure did not propagate")
+        if target.exists():
+            leaked = sorted(path.relative_to(target) for path in target.rglob("*"))
+            raise AssertionError(f"Failed initializer left partial target state: {leaked}")
+
+
+def test_template_commit_provenance_is_null_when_source_tree_is_dirty() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        subprocess.run(["git", "init", "-q", str(repo)], check=True)
+        subprocess.run(["git", "-C", str(repo), "config", "user.email", "test@example.com"], check=True)
+        subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
+        (repo / "source.txt").write_text("clean\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repo), "add", "source.txt"], check=True)
+        subprocess.run(["git", "-C", str(repo), "commit", "-qm", "source"], check=True)
+        proven = init_module.clean_git_head(repo)
+        if not isinstance(proven, str) or len(proven) != 40:
+            raise AssertionError("Clean source tree did not produce commit provenance")
+        (repo / "source.txt").write_text("dirty\n", encoding="utf-8")
+        if init_module.clean_git_head(repo) is not None:
+            raise AssertionError("Dirty source bytes were falsely attributed to HEAD")
 
 
 def test_new_rejects_template_root() -> None:
@@ -280,9 +469,12 @@ def assert_downstream_bootstrap_context(root: Path) -> None:
 def assert_runtime_manifest_matches_files(root: Path) -> None:
     manifest_path = root / "STATEDD_ASSETS.json"
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if payload.get("schema") != "statedd.runtime_assets.v1":
+    if payload.get("schema") != "statedd.runtime_assets.v2":
         raise AssertionError("Generated runtime asset manifest has the wrong schema")
-    declared = set(payload.get("assets", []))
+    records = payload.get("managed_assets", [])
+    if not isinstance(records, list):
+        raise AssertionError("Generated runtime asset manifest has no managed_assets list")
+    declared = {record.get("path") for record in records if isinstance(record, dict)}
     actual = {
         path.relative_to(root).as_posix()
         for path in root.rglob("*")
@@ -292,6 +484,9 @@ def assert_runtime_manifest_matches_files(root: Path) -> None:
         raise AssertionError(
             f"Runtime asset manifest drift: missing={sorted(actual - declared)}, extra={sorted(declared - actual)}"
         )
+    template_records = [record for record in records if record.get("owner") == "template"]
+    if not template_records or any("merge_strategy" not in record for record in template_records):
+        raise AssertionError("Generated lock lacks per-asset lifecycle semantics")
 
 
 def assert_template_only_payload_absent(root: Path) -> None:
@@ -558,6 +753,31 @@ def test_adopt_installs_v2_executable_workflow_assets() -> None:
         assert_v2_assets_exist(repo)
 
 
+def test_optional_github_assets_are_recorded_in_resolved_lock() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        (repo / "README.md").write_text("# Existing\n", encoding="utf-8")
+        run_init(
+            [
+                "adopt",
+                "--name",
+                "GitHub Optional",
+                "--target",
+                str(repo),
+                "--profile",
+                "team",
+                "--install-github-assets",
+            ],
+            expect_success=True,
+        )
+        manifest = json.loads((repo / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+        if "github" not in manifest["asset_sets"]:
+            raise AssertionError("Optional github asset set is absent from lock provenance")
+        if "github_issue_and_pr_templates" not in manifest["capabilities"]:
+            raise AssertionError("Optional github capability is absent from lock provenance")
+
+
 def test_handoff_snapshot_runs() -> None:
     completed = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "statedd_handoff.py"), "--no-include-listeners"],
@@ -588,7 +808,7 @@ def test_doctor_runs() -> None:
             f"Expected doctor helper success, got {completed.returncode}\n"
             f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
-    for phrase in ("StateDD Health", "Closure grade:", "Current HEAD:"):
+    for phrase in ("StateDD Health", "Local audit readiness:", "Remote closure: not checked", "Current HEAD:"):
         if phrase not in completed.stdout:
             raise AssertionError(f"Doctor helper output missing phrase: {phrase}")
 
@@ -597,6 +817,11 @@ def main() -> int:
     tests = [
         test_adopt_rejects_symlinked_managed_directory,
         test_new_rejects_symlinked_existing_directory,
+        test_new_rejects_symlinked_target_root,
+        test_new_rejects_directory_destination_before_any_write,
+        test_new_rejects_file_parent_before_any_write,
+        test_new_replaces_hardlinked_managed_file_without_mutating_external_inode,
+        test_new_replaces_hardlinked_copied_asset_without_mutating_external_inode,
         test_readme_link_rejects_symlinked_readme_before_writes,
         test_top_level_help_shows_subcommands,
         test_legacy_new_invocation_still_works,
@@ -617,6 +842,7 @@ def main() -> int:
         test_adopt_installs_quality_firewall_assets,
         test_adopt_installs_schema_validation_assets_and_passes_schema_validation,
         test_adopt_installs_v2_executable_workflow_assets,
+        test_optional_github_assets_are_recorded_in_resolved_lock,
         test_template_root_uses_template_maintenance_mode,
         test_template_root_bootstrap_gate_passes,
         test_handoff_snapshot_runs,

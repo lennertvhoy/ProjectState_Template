@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""
-StateDD Remote Truth Check
+"""Prove clean local-commit parity with the configured remote branch.
 
-Hard gate: No closure claim without proving remote GitHub state matches local claims.
-Truth boundaries: sandbox → local worktree → git index → local commit → remote branch → GitHub main → CI → user-accepted
-No transition crosses a boundary without proof.
+This is a remote-branch preflight, not a closure gate. It deliberately does not
+inspect a pull request, GitHub-visible file contents, CI, merge state, runtime,
+or human acceptance. ``statedd_remote_closure_finalizer.py`` owns those checks.
 """
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -34,7 +34,7 @@ class RemoteTruthCheck:
         self.boundaries: List[TruthBoundary] = []
         self.failures: List[str] = []
         self.warnings: List[str] = []
-        self.closure_label = "NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM"
+        self.closure_label = "local-only"
 
     def run_cmd(self, cmd: List[str]) -> Tuple[int, str, str]:
         try:
@@ -60,24 +60,39 @@ class RemoteTruthCheck:
         print("StateDD Remote Truth Check")
         print("=" * 60)
 
-        # Boundary 1: Repo identity
-        b1 = TruthBoundary("repo_identity", ["pwd"], evidence="pwd")
+        # Boundary 1: Repo identity. `pwd` can succeed outside a repository, so
+        # prove the Git top-level is the requested root.
+        b1 = TruthBoundary(
+            "repo_identity",
+            ["git", "rev-parse", "--show-toplevel"],
+            expected=str(self.root.resolve()),
+            evidence="git rev-parse --show-toplevel",
+        )
         self.check_boundary(b1)
         self.boundaries.append(b1)
 
         # Boundary 2: Git remote
-        b2 = TruthBoundary("git_remote", ["git", "remote", "-v"], evidence="git remote -v")
+        b2 = TruthBoundary("git_remote", ["git", "remote", "get-url", "origin"], evidence="git remote get-url origin")
         self.check_boundary(b2)
+        if b2.passed and not b2.actual:
+            b2.passed = False
+            self.failures.append("Boundary 'git_remote' failed: origin URL is empty")
         self.boundaries.append(b2)
 
         # Boundary 3: Current branch
         b3 = TruthBoundary("current_branch", ["git", "branch", "--show-current"], evidence="git branch --show-current")
         self.check_boundary(b3)
+        if b3.passed and not b3.actual:
+            b3.passed = False
+            self.failures.append("Boundary 'current_branch' failed: detached HEAD")
         self.boundaries.append(b3)
 
         # Boundary 4: Git status (tracked files)
         b4 = TruthBoundary("git_status", ["git", "status", "--short"], evidence="git status --short")
         self.check_boundary(b4)
+        if b4.passed and b4.actual:
+            b4.passed = False
+            self.failures.append("Boundary 'git_status' failed: worktree is dirty")
         self.boundaries.append(b4)
 
         # Boundary 5: Git log (recent commits)
@@ -88,6 +103,9 @@ class RemoteTruthCheck:
         # Boundary 6: HEAD commit SHA
         b6 = TruthBoundary("head_sha", ["git", "rev-parse", "HEAD"], evidence="git rev-parse HEAD")
         self.check_boundary(b6)
+        if b6.passed and not re.fullmatch(r"[0-9a-f]{40}", b6.actual):
+            b6.passed = False
+            self.failures.append("Boundary 'head_sha' failed: expected a full commit SHA")
         self.boundaries.append(b6)
 
         # Boundary 7: Remote contains HEAD SHA
@@ -101,7 +119,7 @@ class RemoteTruthCheck:
                 expected=b6.actual,
                 evidence=f"git ls-remote origin {branch}"
             )
-            b7.actual = out
+            b7.actual = remote_sha
             b7.passed = (code == 0 and remote_sha == b6.actual)
             if not b7.passed:
                 self.failures.append(f"Boundary 'remote_contains_head' failed: remote SHA {remote_sha} != local HEAD {b6.actual}")
@@ -120,11 +138,6 @@ class RemoteTruthCheck:
                 elif out.strip() != f:
                     self.failures.append(f"Claimed file mismatch: expected '{f}', got '{out.strip()}'")
 
-        # Boundary 9: GitHub visible files match claimed deliverables (via GitHub API if available)
-        b9 = TruthBoundary("github_visible", ["git", "ls-remote", "origin", "HEAD"], evidence="git ls-remote origin HEAD")
-        self.check_boundary(b9)
-        self.boundaries.append(b9)
-
         # Report
         print("\nTruth Boundaries:")
         print("-" * 60)
@@ -139,24 +152,20 @@ class RemoteTruthCheck:
             for f in self.failures:
                 print(f"  ✗ {f}")
 
-        # Determine closure label
+        # Determine remote branch state. This label intentionally stops at the
+        # pushed truth boundary and never implies PR, CI, or closure proof.
         if not self.failures:
-            # Check if pushed to remote and GitHub-verified
-            if b7.passed and b9.passed:
-                self.closure_label = "GitHub-verified"
-            elif b7.passed:
-                self.closure_label = "pushed"
-            else:
-                self.closure_label = "local-only"
+            self.closure_label = "pushed"
 
-        print(f"\nClosure Label: {self.closure_label}")
+        print(f"\nRemote Branch State: {self.closure_label}")
+        print("PR, CI, merge state, and closure evidence: not checked")
         print("=" * 60)
 
         if self.failures:
-            print(f"❌ REMOTE TRUTH CHECK FAILED — {self.closure_label}")
+            print(f"❌ REMOTE BRANCH PREFLIGHT FAILED — {self.closure_label}")
             return 1
 
-        print(f"✅ REMOTE TRUTH CHECK PASSED — {self.closure_label}")
+        print(f"✅ REMOTE BRANCH PREFLIGHT PASSED — {self.closure_label}")
         return 0
 
     def _get_current_branch(self) -> str:

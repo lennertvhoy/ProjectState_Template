@@ -22,123 +22,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install pyyaml
+          python3 -m pip install pytest==9.0.3 pyyaml==6.0.3 tiktoken==0.12.0
 
-      - name: Compile Python scripts
+      - name: Run authoritative Level 2 validation
         run: |
-          python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py scripts/statedd_version_check.py scripts/statedd_handoff.py scripts/statedd_audit.py scripts/statedd_doctor.py scripts/statedd_worktree_guard.py scripts/statedd_agent_worktree.py scripts/statedd_brittleness_check.py scripts/statedd_runtime_proof.py scripts/statedd_validate_schema.py scripts/statedd_evidence_pack.py scripts/statedd_upgrade.py scripts/statedd_bootstrap_wizard.py scripts/statedd_browser_verify.py scripts/statedd_remote_closure_finalizer.py scripts/statedd_efficiency_check.py scripts/statedd_post_merge_verify.py scripts/test_init_template.py scripts/test_worktree_guard.py scripts/test_agent_worktree.py scripts/test_brittleness_check.py scripts/test_runtime_proof.py scripts/test_schema_validation.py scripts/test_evidence_pack.py scripts/test_upgrade.py scripts/test_adoption_profiles.py scripts/test_browser_verification.py scripts/test_remote_closure_finalizer.py scripts/test_efficiency_check.py scripts/test_post_merge_verify.py scripts/test_check_state_docs.py schemas/examples/schema_prompt_loop/validate_example.py schemas/examples/schema_prompt_loop/generate_prompt.py schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+          python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance --verbose
 
-      - name: Validate root docs
+      - name: Generate and self-validate every profile
         run: |
-          python3 scripts/statedd_version_check.py
-          python3 scripts/statedd_validate_schema.py
-          python3 scripts/check_state_docs.py
-          python3 scripts/statedd_doctor.py
-          python3 scripts/check_state_docs.py --bootstrap-gate
-
-      - name: Validate runtime proof helper
-        run: |
-          python3 scripts/test_runtime_proof.py
           tmpdir="$(mktemp -d)"
-          python3 scripts/statedd_runtime_proof.py --no-runtime-required --output "$tmpdir/runtime_identity.json"
-          python3 -m json.tool "$tmpdir/runtime_identity.json" >/dev/null
-
-      - name: Validate fixtures
-        run: |
-          python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap
-          python3 scripts/statedd_validate_schema.py fixtures/bootstrap_dry_run/bootstrap
-          python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating
-          python3 scripts/statedd_validate_schema.py fixtures/bootstrap_dry_run/operating
-          python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
-          python3 scripts/statedd_validate_schema.py fixtures/messy_inherited_repo/bootstrap
-          if python3 scripts/check_state_docs.py --bootstrap-gate fixtures/bootstrap_dry_run/bootstrap; then
-            echo "expected bootstrap gate to fail for placeholder bootstrap fixture"
-            exit 1
-          fi
-          python3 scripts/check_state_docs.py --bootstrap-gate fixtures/messy_inherited_repo/bootstrap
-
-      - name: Validate schema prompt loop example
-        run: |
-          python3 schemas/examples/schema_prompt_loop/validate_example.py
-          python3 schemas/examples/schema_prompt_loop/generate_prompt.py
-          python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
-
-      - name: Validate init script
-        run: |
-          python3 scripts/test_init_template.py
-          python3 scripts/test_worktree_guard.py
-          python3 scripts/test_brittleness_check.py
-          python3 scripts/test_schema_validation.py
-          python3 scripts/test_evidence_pack.py
-          python3 scripts/test_upgrade.py
-          python3 scripts/test_browser_verification.py
-          tmpdir="$(mktemp -d)"
-          mkdir -p "$tmpdir/evidence"
-          python3 scripts/statedd_evidence_pack.py init "$tmpdir/evidence" --slice-id BL-012
-          python3 scripts/statedd_evidence_pack.py check "$tmpdir/evidence"
-          tmpdir="$(mktemp -d)"
-          python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/demo"
-          python3 scripts/check_state_docs.py "$tmpdir/demo"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/demo"
-          python3 scripts/statedd_doctor.py "$tmpdir/demo"
-          python3 scripts/statedd_audit.py "$tmpdir/demo"
-          for profile in minimal solo team regulated; do
+          for profile in $(python3 -c 'import json; print(" ".join(json.load(open("profiles/catalog.json"))["profiles"]))'); do
             profile_target="$tmpdir/profile-$profile"
             python3 scripts/init_template.py new --name "CI $profile" --profile "$profile" --target "$profile_target"
-            python3 "$profile_target/scripts/statedd_quality_gate.py" --root "$profile_target" --gate-level 1
+            gate_level="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["required_gate_level"])' "$profile_target/STATEDD_ASSETS.json")"
+            python3 "$profile_target/scripts/statedd_quality_gate.py" --root "$profile_target" --gate-level "$gate_level" --conformance
           done
-          mkdir -p "$tmpdir/nonempty-safe"
-          printf 'keep me\n' > "$tmpdir/nonempty-safe/local-note.txt"
-          python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-safe" --overwrite
-          python3 scripts/check_state_docs.py "$tmpdir/nonempty-safe"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/nonempty-safe"
-          mkdir -p "$tmpdir/nonempty-conflict"
-          printf '# Existing README\n' > "$tmpdir/nonempty-conflict/README.md"
-          if python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite; then
-            echo "expected overwrite collision to fail without --force-overwrite"
-            exit 1
-          fi
-          python3 scripts/init_template.py new --name "Demo Project" --target "$tmpdir/nonempty-conflict" --overwrite --force-overwrite
-          python3 scripts/check_state_docs.py "$tmpdir/nonempty-conflict"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/nonempty-conflict"
-          python3 scripts/init_template.py new --name "Demo Project" --minimal --target "$tmpdir/minimal"
-          python3 scripts/check_state_docs.py "$tmpdir/minimal"
-          python3 scripts/statedd_validate_schema.py "$tmpdir/minimal"
-          cp -R fixtures/messy_inherited_repo/source "$tmpdir/adopt-source"
-          python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --dry-run
-          python3 scripts/init_template.py adopt --name "Demo Adopted" --target "$tmpdir/adopt-source" --readme-link
-          python3 scripts/test_adoption_profiles.py
-          python3 scripts/statedd_bootstrap_wizard.py --help
-          adopt_source="$tmpdir/adopt-source"
-          browser_tmp="$(mktemp -d)"
-          python3 scripts/statedd_browser_verify.py init "$browser_tmp/browser-evidence" --slice-id BL-BROWSER-001
-          python3 scripts/statedd_browser_verify.py check "$browser_tmp/browser-evidence"
-          wizard_tmp="$(mktemp -d)"
-          printf '{"project_name":"Wizard Demo","profile":"solo"}\n' > "$wizard_tmp/answers.json"
-          python3 scripts/statedd_bootstrap_wizard.py --target "$wizard_tmp/wizard" --answers "$wizard_tmp/answers.json"
-          python3 scripts/check_state_docs.py "$wizard_tmp/wizard"
-          python3 scripts/statedd_validate_schema.py "$wizard_tmp/wizard"
-          test -f "$adopt_source/scripts/statedd_runtime_proof.py"
-          test -f "$adopt_source/prompts/RUNTIME_IDENTITY_CHECKLIST.md"
-          test -f "$adopt_source/prompts/ACCEPTANCE_FREEZE_TEMPLATE.md"
-          test -f "$adopt_source/docs/ACCEPTANCE_FREEZES.md"
-          python3 scripts/check_state_docs.py "$adopt_source"
-          python3 scripts/statedd_validate_schema.py "$adopt_source"
-          python3 scripts/check_state_docs.py --bootstrap-gate "$adopt_source"
 
-      - name: Validate efficiency and sanity checks
+      - name: Prove validation left the checkout clean
         run: |
-          python3 scripts/statedd_efficiency_check.py --gate-level 2
-          python3 scripts/test_efficiency_check.py
-          python3 scripts/test_check_state_docs.py
-          python3 scripts/test_post_merge_verify.py
-
-      - name: Validate agent worktree orchestrator
-        run: |
-          python3 scripts/test_agent_worktree.py
-          python3 scripts/statedd_agent_worktree.py --dry-run start --slice-id CI-SMOKE-001
-
-      - name: Validate remote closure finalizer
-        run: |
-          python3 scripts/test_remote_closure_finalizer.py
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=all)"

@@ -19,8 +19,8 @@ description: "Final release gate before deployment"
 **Procedure:**
 1. Run `skills/quality-gate/SKILL.md` — full pipeline
 2. Run `skills/release-gate/SKILL.md` — release-specific gate
-3. Run `scripts/statedd_runtime_proof.py` — capture deployment runtime
-4. Run `scripts/statedd_runtime_truth_check.py` — verify matches
+3. Run `python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url <endpoint>` — capture deployment runtime
+4. Run `python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json --expected-endpoint <endpoint>` — verify matches
 5. Run `scripts/statedd_evidence_type_check.py` — verify release evidence
 6. Run `scripts/statedd_remote_closure_finalizer.py` — verify pushed PR/CI state
 7. Verify `docs/ACCEPTANCE_FREEZES.md` has all milestones
