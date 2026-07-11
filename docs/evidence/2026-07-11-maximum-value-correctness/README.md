@@ -61,6 +61,8 @@
 | --- | --- | --- | --- |
 | ?? | `docs/metrics/` | generated_artifact | Canonical metrics directory measured from proof HEAD |
 | ?? | `docs/evidence/2026-07-11-maximum-value-correctness/` | generated_artifact | Typed evidence and captured command outputs |
+| M | `docs/evidence/2026-07-11-maximum-value-correctness/README.md` | generated_artifact | Proof/final-head split and exact dirt classification |
+| M | `docs/evidence/2026-07-11-maximum-value-correctness/manifest.json` | generated_artifact | Hash refresh for the tracked evidence README |
 | M | `STATUS.md` | intended_slice_work | Final local/remote truth boundary update |
 | M | `PROJECT_STATE.yaml` | intended_slice_work | Structured proof-head and gate-state update |
 | M | `NEXT_ACTIONS.md` | intended_slice_work | Keep only the remaining publication action |
@@ -127,6 +129,8 @@
 - Global quality gates passed: yes locally at level 2
 - Closure-grade: no; branch is not pushed and CI/remote finalizer have not run
 - Accepted: pending
+- Final PR head: intentionally not embedded in tracked evidence; the exact final
+  head belongs in the mutable PR body after publication.
 
 ## Human Override
 
