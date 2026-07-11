@@ -763,7 +763,7 @@ def evidence_has_visual_or_browser_artifact(folder: Path) -> bool:
     return any(
         p.suffix.lower() in EVIDENCE_IMAGE_EXTENSIONS
         or (
-            p.suffix.lower() in EVIDENCE_BROWSER_EXTENSIONS
+            p.suffix.lower() in {".html", ".har"}
             and p.name != RUNTIME_IDENTITY_FILE
             and p.name != EVIDENCE_MANIFEST_FILE
             and p.name != BROWSER_VERIFICATION_FILE

@@ -10,7 +10,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-from scripts.statedd_validate_schema import parse_yaml_text
+try:
+    from scripts.statedd_validate_schema import parse_yaml_text
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from statedd_validate_schema import parse_yaml_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
