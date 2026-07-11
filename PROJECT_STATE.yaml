@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-10T22:18:00+02:00
+  updated_at: 2026-07-11T09:13:22+02:00
   updated_by: agent
   version: "statedd-template-v5"
 
@@ -16,11 +16,11 @@ workflow:
     downstream_default_mode: bootstrap
     unknowns_remaining:
       - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - BL-SANITY-002 template logic-hole repair is closure-grade and CI-verified on PR #4; merge pending
-      - BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails is closure-grade and CI-verified on PR #4; merge pending
-      - BL-PARALLEL-001 is locally implemented and validated; remote closure is pending
-      - BL-CONTEXT-001 implementation proof head 8840a3c is CI-verified on PR #5; the final state head is governed by the remote closure finalizer
-      - BL-BROWSER-002 concrete browser automation provider integration follows the generator repair
+      - PR #4 merged to main as a0ac268d186d9ec71ffefab6970dc1d40add5b06 on 2026-07-10
+      - PR #5 merged to main as c2fe7b25625cc855a47deff721251cdb5d4141b2 on 2026-07-10
+      - PR #5 merged despite an owner review that recorded unresolved correctness blockers
+      - BL-MAX-VALUE-001 now owns lifecycle, gate, CI, symlink, metrics, closure-truth, architecture-review, and benchmark-spec repair
+      - BL-PARALLEL-001 is merged but independent closure-grade agreement is not proven
       - downstream upgrade semantic merges of customized workflow files not yet supported
 
 verification_labels:
@@ -47,7 +47,7 @@ current_state:
       according to product/runtime truth.
 
   quality_gates:
-    status: active
+    status: active_with_open_p0
     product_quality_gate: not_applicable_for_template_root
     runtime_truth_gate: not_applicable_for_template_root
     live_canary_gate: not_applicable_for_template_root
@@ -100,14 +100,20 @@ current_state:
       must prove runtime identity for user-facing or operator-facing acceptance.
 
   known_bad_events:
-    status: none_known_for_template_root
+    status: active
     fixture_policy: |
       Downstream projects should convert observed bad events into durable
       incident notes, fixtures or equivalent artifacts, and regression gates.
 
-  open_p0_failures: []
+  open_p0_failures:
+    - BL-MAX-VALUE-001
 
-  closure_blockers: []
+  closure_blockers:
+    - merged upgrade lifecycle behavior is not proven safe for old or malformed manifests
+    - the quality gate can skip applicable suites and tolerate unavailable declared runners
+    - CI manually enumerates tests instead of invoking one authoritative suite
+    - initializer and upgrade target-root symlink rejection is not proven
+    - profile metrics and exact-head closure truth are duplicated and inconsistent
 
   last_live_canary:
     status: not_applicable_for_template_root
@@ -120,21 +126,22 @@ current_state:
   residual_risks:
     - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
     - ultra-terse model-facing context remains a benchmark variant and is not canonical state
+    - merged main passed its configured CI, but that CI did not cover the unresolved review failures
 
   repository:
     canonical_path: /home/ff/Documents/Projects/StateDD_Template
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-06-29T12:05:00+02:00
-      last_verified_branch: main
-      last_verified_head: b884f3cef5da340942be3a130b548193bb7e2827
+      captured_at: 2026-07-11T09:13:22+02:00
+      last_verified_branch: bl-max-value-001
+      last_verified_head: c2fe7b25625cc855a47deff721251cdb5d4141b2
       last_verified_worktree_status: clean
       notes: |
-        BL-SANITY-001 merged directly to main and CI is green. Current truth
-        reflects the latest accepted commit. Use git, scripts/statedd_audit.py,
-        scripts/statedd_doctor.py, scripts/statedd_handoff.py, or evidence
-        artifacts for current branch, HEAD, and worktree status.
+        This isolated worktree was created from current origin/main at c2fe7b2.
+        Its branch has no remote publication yet. GitHub Actions passed on the
+        merged main commit, but human acceptance and closure-grade agreement are
+        not proven.
 
   parallel_agent_support:
     status: observed
@@ -433,4 +440,41 @@ current_state:
         status: observed
         path: docs/adr/0000-adr-template.md
 
-active_problems: []
+active_problems:
+  - id: BL-MAX-VALUE-001
+    title: Repair merged lifecycle and closure failures; maximize StateDD value per unit of process
+    severity: P0
+    opened_at: 2026-07-11T09:13:22+02:00
+    source:
+      pull_request: 5
+      review_commit: ace4f3af70d9322d50c5f5b86f8a876bda4b537d
+      merged_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
+    scope:
+      - upgrade lifecycle and managed-asset ownership
+      - test-suite discovery and aggregation
+      - authoritative local and CI validation entrypoint
+      - initializer and upgrade path confinement
+      - canonical profile and context metrics
+      - exact-head evidence and closure truth
+      - concise whole-template architecture review
+      - controlled benchmark specification and next-slice decision
+    acceptance_criteria:
+      - current profile definitions determine desired future assets while old manifests remain historical ownership evidence
+      - malformed manifests fail closed; local modifications and removals are reported; apply is transactional and idempotent
+      - every applicable declared test suite runs; failures aggregate; unavailable declared runners fail with actionable output
+      - CI and documented local validation use one authoritative automatically discovered Python suite
+      - symlinked target roots, nested symlinks, absolute managed paths, traversal, unsafe source symlinks, and outside-root writes fail closed
+      - one machine-readable artifact is authoritative for profile and context metrics
+      - exact repaired head, evidence, PR body, remote branch, and GitHub Actions agree before closure-grade is claimed
+      - architecture review records verified strengths, weaknesses, simplifications, decisions, benchmark gaps, dependency order, and non-goals only
+      - exactly one next slice is selected by expected impact, cost, risk reduction, readiness, and measurability
+    truth_boundaries:
+      sandbox: observed
+      local_worktree: clean isolated worktree at slice base
+      git_index: clean at slice start
+      local_commit: state-only commit pending
+      remote_branch: not published
+      github_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
+      ci: success on merged main but insufficient for the reopened claims
+      runtime: not applicable for template root
+      human_acceptance: not proven
