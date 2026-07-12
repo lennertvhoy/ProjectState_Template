@@ -84,7 +84,39 @@
           }
         },
         "open_p0_failures": {
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "remote_reconciliation": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "evidence": {"type": "string", "minLength": 1},
+            "pull_requests": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": ["number", "state"],
+                "additionalProperties": true,
+                "properties": {
+                  "number": {"type": "integer", "minimum": 1},
+                  "state": {"type": "string", "enum": ["open", "closed", "merged"]},
+                  "evidence": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "main_ci": {
+              "type": "object",
+              "required": ["status", "evidence"],
+              "additionalProperties": true,
+              "properties": {
+                "status": {"type": "string", "enum": ["pending", "failed", "verified"]},
+                "evidence": {"type": "string", "minLength": 1}
+              }
+            }
+          }
         },
         "closure_blockers": {
           "type": "array"
@@ -150,11 +182,23 @@
       }
     },
     "active_problems": {
-      "type": "array"
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "severity"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "severity": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
+          "status": {"type": "string", "minLength": 1}
+        }
+      }
     }
   },
   "statedd_semantics": {
     "repo_role_mode_compatibility": true,
-    "statedd_mode_matches_repo_mode": true
+    "statedd_mode_matches_repo_mode": true,
+    "live_state_is_nonterminal": true
   }
 }

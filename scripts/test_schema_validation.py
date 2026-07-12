@@ -63,6 +63,104 @@ def test_invalid_project_state_fails_with_actionable_message() -> None:
     assert_output_contains(completed, "template-maintenance")
 
 
+def project_state_fixture(*, active_problem: str = "", repository_extra: str = "") -> str:
+    return f"""metadata:
+  updated_at: 2026-07-12T00:00:00+00:00
+  updated_by: test
+  version: statedd-template-v5
+workflow:
+  repo_role: template_repository
+  statedd_mode: template-maintenance
+  repo_mode: template-maintenance
+current_state:
+  execution_mode:
+    status: observed
+    mode: template-maintenance
+  open_p0_failures: []
+  repository:
+    canonical_path: .
+    path_status: observed
+{repository_extra}  operating_mode:
+    status: observed
+    mode: template-maintenance
+  project:
+    name: StateDD Test
+    type: template
+    lifecycle_stage: template-maintenance
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+active_problems:{active_problem}
+"""
+
+
+def test_project_state_schema_accepts_stable_post_merge_target_state() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "PROJECT_STATE.yaml"
+        path.write_text(project_state_fixture(active_problem=" []"), encoding="utf-8")
+        run(
+            [
+                str(VALIDATOR),
+                "--file",
+                str(path),
+                "--schema",
+                str(ROOT / "schemas" / "project_state.schema.json"),
+            ],
+            expect_success=True,
+        )
+
+
+def test_project_state_schema_rejects_terminal_active_problem() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "PROJECT_STATE.yaml"
+        path.write_text(
+            project_state_fixture(
+                active_problem=(
+                    "\n  - id: BL-DONE-001\n"
+                    "    severity: P1\n"
+                    "    status: merged_into_main"
+                )
+            ),
+            encoding="utf-8",
+        )
+        completed = run(
+            [
+                str(VALIDATOR),
+                "--file",
+                str(path),
+                "--schema",
+                str(ROOT / "schemas" / "project_state.schema.json"),
+            ],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "terminal work cannot remain in active_problems")
+
+
+def test_project_state_schema_rejects_volatile_main_head_field() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "PROJECT_STATE.yaml"
+        path.write_text(
+            project_state_fixture(
+                active_problem=" []",
+                repository_extra=(
+                    "    main_head: 0123456789abcdef0123456789abcdef01234567\n"
+                ),
+            ),
+            encoding="utf-8",
+        )
+        completed = run(
+            [
+                str(VALIDATOR),
+                "--file",
+                str(path),
+                "--schema",
+                str(ROOT / "schemas" / "project_state.schema.json"),
+            ],
+            expect_success=False,
+        )
+        assert_output_contains(completed, "volatile containing-main SHA")
+
+
 def test_invalid_evidence_readme_fails_contract() -> None:
     completed = run(
         [
