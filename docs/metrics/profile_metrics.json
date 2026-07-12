@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 253884aca1b31ad23c602252728b5073a2aa3194",
+  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 2b4b435fe10066019dd796f4f901cbc89f153280",
   "profiles": [
     {
       "actual_tokens": 80885,
@@ -705,8 +705,8 @@
     "scripts/statedd_version_check.py",
     "scripts/statedd_worktree_guard.py"
   ],
-  "source_tree_sha256": "a51608c028c83796c2c9ca0848ceae1737b57fa0af71d5527fce9d1f342149a3",
-  "template_commit": "253884aca1b31ad23c602252728b5073a2aa3194",
+  "source_tree_sha256": "db2482d47b15963b296962215dc6ccb98c8565aaccd641afac6c088c46b3f006",
+  "template_commit": "2b4b435fe10066019dd796f4f901cbc89f153280",
   "template_version": "statedd-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
