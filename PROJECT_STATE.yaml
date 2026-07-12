@@ -210,6 +210,6 @@ current_state:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    current_slice: docs/evidence/2026-07-12-golden-path-closure
+    current_slice: docs/evidence/2026-07-12-cto-architecture-acceptance
 
 active_problems: []

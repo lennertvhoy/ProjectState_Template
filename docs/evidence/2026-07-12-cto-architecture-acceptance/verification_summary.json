@@ -1,0 +1,24 @@
+{
+  "schema": "statedd.verification_summary.v1",
+  "proof_head": "eac202b6eaebde91a4079ecf48702cc6dd47cc99",
+  "checks": [
+    {
+      "command": "python3 scripts/statedd_validate_schema.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 scripts/check_state_docs.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "boundaries": {
+    "runtime": "not_applicable_for_template_root",
+    "human_product_acceptance": "pending",
+    "verified_legal_copyright_owner": "not_proven",
+    "benchmark_superiority": "not_proven"
+  }
+}
