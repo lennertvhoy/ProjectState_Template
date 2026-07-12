@@ -1,0 +1,33 @@
+{
+  "schema": "statedd.verification_summary.v1",
+  "slice_id": "BL-GOLDEN-PATH-CLOSURE-001",
+  "proof_head": "b46c97a7b643459185f21d7bd0bfd4a8d03017a0",
+  "status": "validated_local_remote_pending",
+  "checks": [
+    {"command": "python3 -m compileall -q scripts schemas/examples", "result": "pass"},
+    {"command": "ruff check scripts", "result": "pass"},
+    {"command": "python3 -m pytest scripts/ -q", "result": "pass"},
+    {"command": "python3 -m pytest schemas/examples/ -q", "result": "pass"},
+    {"command": "python3 scripts/test_golden_path.py", "result": "pass"},
+    {"command": "python3 scripts/statedd_validate_schema.py", "result": "pass"},
+    {"command": "python3 scripts/check_state_docs.py", "result": "pass"},
+    {"command": "python3 scripts/check_state_docs.py --bootstrap-gate", "result": "pass"},
+    {"command": "python3 scripts/statedd_instruction_lint.py --fail-on error", "result": "pass_with_non_error_warning"},
+    {"command": "python3 scripts/statedd_efficiency_check.py --gate-level 2", "result": "pass"},
+    {"command": "git diff --check", "result": "pass"},
+    {"command": "git status --short", "result": "clean_at_proof_head"}
+  ],
+  "focused_regressions": {
+    "delivery_policy": "pass",
+    "finish_state_machine": "pass",
+    "post_merge_future_sha": "pass",
+    "semantic_state_reconciliation": "pass",
+    "generated_profile_round_trip": "pass",
+    "complete_golden_path": "pass"
+  },
+  "remote_phase": "pending",
+  "runtime": "not_applicable_for_template_root",
+  "human_product_acceptance": "pending",
+  "benchmark_superiority": "not_proven",
+  "license_owner": "not_proven"
+}

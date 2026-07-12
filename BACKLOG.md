@@ -11,7 +11,6 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-GOLDEN-PATH-CLOSURE-001] Complete agent-owned exact-head merge, post-merge main verification, external handoff, cleanup, and self-reconciling remote truth in one PR.
 
 ## NEXT
 
@@ -20,6 +19,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## CLOSED
 
+- [BL-GOLDEN-PATH-CLOSURE-001] Complete agent-owned exact-head merge, post-merge main verification, external handoff, cleanup, and self-reconciling remote truth in one PR.
 - [BL-OKF-001] Add optional OKF v0.1 knowledge interoperability with StateDD authority, provenance, and staleness governance without changing the canonical operational-state model.
 - [BL-STATEDD-INTEGRATION-001] Integrate PR #6's lifecycle/profile/gate/evidence correctness with PR #7's Git-safety and coding-agent golden path without downgrading either branch's strongest invariants.
 - [BL-CONTEXT-001] Implement generated-repo correctness and context hygiene. Merged in PR #5 as `c2fe7b2`; unresolved lifecycle and closure defects are reopened under BL-MAX-VALUE-001.

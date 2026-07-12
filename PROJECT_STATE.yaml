@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-12T10:04:43+02:00
+  updated_at: 2026-07-12T10:44:33+02:00
   updated_by: integration_agent
   version: "statedd-template-v5"
 
@@ -19,6 +19,28 @@ workflow:
       - comparative benchmark superiority is not proven
       - downstream upgrade semantic merges of customized workflow files are not yet supported
 
+delivery_policy:
+  status: confirmed
+  confirmation: human_confirmed
+  merge:
+    mode: agent_after_green
+    method: squash
+    delete_branch_after_verification: true
+    require_exact_pr_head: true
+    require_clean_merge_state: true
+    require_no_requested_changes: true
+    require_no_unresolved_review_threads: true
+    require_branch_head_ci: true
+    require_merge_candidate_ci: true
+    require_remote_closure: true
+    require_post_merge_main_ci: true
+  protected_operations:
+    force_push: forbidden
+    rewrite_shared_history: forbidden
+  ci_unavailable:
+    automatic_merge: forbidden
+    override: requires_separate_explicit_human_authorization
+
 verification_labels:
   observed: verified directly in the current session
   unknown: not yet determined from currently available evidence
@@ -31,31 +53,32 @@ verification_labels:
 current_state:
   execution_mode:
     status: observed
-    mode: quality_freeze
+    mode: template-maintenance
     notes: |
-      BL-GOLDEN-PATH-CLOSURE-001 is the only open P0. It directly closes the
-      remaining merge and post-merge workflow gap. No unrelated feature work is
-      selected during this freeze.
+      No P0/P1 implementation item remains active. The template is stable except
+      for real defects, compatibility migrations, measured improvements, and
+      optional evidence-gated research.
 
   quality_gates:
-    status: active_with_open_p0
+    status: passing
     product_quality_gate: not_applicable_for_template_root
     runtime_truth_gate: not_applicable_for_template_root
     live_canary_gate: not_applicable_for_template_root
-    redteam_gate: passing_for_integrated_template_baseline
-    known_bad_events_gate: active_for_golden_path_closure
+    redteam_gate: passing_for_golden_path_regressions
+    known_bad_events_gate: passing_for_golden_path_regressions
+    authoritative_local_gate:
+      script: scripts/statedd_quality_gate.py
+      default_slice_level: 2
     remote_closure_gate:
       status: active
       script: scripts/statedd_remote_closure_finalizer.py
-      evidence: docs/evidence/2026-06-29-remote-closure/README.md
-    efficiency_gate:
+    finish_slice_gate:
       status: active
-      script: scripts/statedd_efficiency_check.py
-      budget: EFFICIENCY_BUDGET.yaml
+      script: scripts/statedd_finish_slice.py
+      external_handoff_schema: schemas/finish_slice_handoff.schema.json
     git_safety_preflight:
       status: active
       script: scripts/statedd_git_safety_check.py
-      policy: mutation requires a current permit and independent agents use full clones
     anti_brittleness_gate:
       status: active
       script: scripts/statedd_brittleness_check.py
@@ -63,53 +86,23 @@ current_state:
   runtime_truth:
     status: not_applicable_for_template_root
     repo_truth_is_not_runtime_truth_rule: active
-    notes: The template root has no deployed application runtime.
+    evidence: docs/evidence/2026-07-12-golden-path-closure/runtime_identity.json
 
   known_bad_events:
-    status: active
+    status: covered_by_regressions
     failure_scan: docs/failure_scans/BL-GOLDEN-PATH-CLOSURE-001.md
-    backlog_id: BL-GOLDEN-PATH-CLOSURE-001
     classes:
       - workflow
       - state_truth
       - brittleness
-    summary: |
-      The automated close path stops before merge, tracked post-merge evidence
-      predicts a future squash identity, and semantic state checks allowed merged
-      work to remain active on green main.
 
-  open_p0_failures:
-    - BL-GOLDEN-PATH-CLOSURE-001
+  open_p0_failures: []
 
-  golden_path_closure:
-    id: BL-GOLDEN-PATH-CLOSURE-001
-    status: active
-    branch: bl-golden-path-closure-001
-    starting_truth:
-      default_branch: verified_current
-      direct_branch_ci: verified
-      superseded_pull_requests: closed
-      open_pull_requests: none_at_slice_start
-      evidence: WORKLOG.md
-    standing_authorization:
-      status: override-approved
-      granted_by: human
-      scope:
-        - create_and_push_slice_branch
-        - open_and_update_pull_request
-        - mark_ready_after_local_proof
-        - squash_merge_exact_verified_head_after_all_gates
-        - verify_default_branch_and_direct_ci
-        - delete_remote_slice_branch_after_post_merge_verification
-        - release_isolation_after_successful_closure
-      forbidden:
-        - force_push
-        - bypass_failed_or_pending_ci
-        - merge_unexpected_head
-        - merge_with_requested_changes_or_unresolved_threads
-        - rewrite_shared_history
-        - guess_legal_copyright_holder
-    required_finish_state:
+  golden_path:
+    status: operational_complete
+    delivery_mode: agent_after_green
+    evidence: docs/evidence/2026-07-12-golden-path-closure/README.md
+    finish_state_machine:
       - LOCAL_VALIDATED
       - PUSHED
       - PR_OPEN
@@ -118,72 +111,68 @@ current_state:
       - MERGED
       - MAIN_CI_VERIFIED
       - HANDOFF_COMPLETE
+    tracked_truth:
+      - immutable proof commit and tree
+      - test and source hashes
+      - final PR head binding in the PR body
+      - stable semantic target state
+    external_truth:
+      - resulting merge commit
+      - verified default-branch head
+      - branch-head, merge-candidate, and direct-main CI runs
+      - post-merge result, branch deletion, and isolation release
+    notes: |
+      This target state is non-canonical on a feature branch and becomes
+      canonical only when the confirmed finish command merges that exact head.
+      Failure leaves the prior default-branch state and recovery data intact.
 
   completed_capabilities:
-    integrated_baseline:
-      status: merged_main_ci_verified
+    integrated_statedd_baseline:
+      status: operational
       evidence: docs/evidence/2026-07-11-statedd-integration/README.md
-      history: WORKLOG.md
     optional_okf_interoperability:
       status: implemented_opt_in
       evidence: docs/evidence/2026-07-11-okf-interoperability/README.md
-      research_boundary: BL-OKF-002 remains future evidence-gated work
+    agent_owned_remote_closure:
+      status: implemented_and_locally_validated
+      evidence: docs/evidence/2026-07-12-golden-path-closure/README.md
 
-  closure_blockers:
-    - agent-owned exact-head merge and post-merge main verification are not implemented yet
-    - canonical state must become self-reconciling without future containing-commit identities
-    - human product acceptance remains pending
-    - verified legal copyright owner is not proven
-    - comparative benchmark superiority is not proven
+  closure_blockers: []
 
-  last_live_canary:
-    status: not_applicable_for_template_root
-    evidence: null
-
-  last_redteam_run:
-    status: passing_for_integrated_template_baseline
-    evidence: docs/evidence/2026-07-11-statedd-integration/README.md
-
-  residual_risks:
-    - downstream repos must explicitly confirm a delivery policy during bootstrap
-    - CI-unavailable merge must never be inferred from local tests
-    - optional StateIR and StatePack work remains experimental until benchmarked
-    - verified legal copyright owner remains unknown
+  remaining_boundaries:
+    human_product_acceptance: pending
+    verified_legal_copyright_owner: not_proven
+    benchmark_superiority: not_proven
+    optional_stateir_statepack_research: future_evidence_gated
 
   repository:
     canonical_path: .
     path_status: observed
     git_snapshot:
-      status: observed
-      default_branch_status: current_and_direct_ci_verified_at_slice_start
-      current_slice_branch: bl-golden-path-closure-001
-      worktree_status: clean_at_slice_opening
+      status: derived_at_remote_boundary
+      stable_state: no_containing_commit_or_workflow_run_is_duplicated_here
       volatile_identity_authority:
         - GitHub
         - immutable evidence
-        - external final handoff
-      notes: |
-        Canonical live state intentionally does not embed the containing commit or
-        duplicate workflow-run identities. Those volatile identities are verified
-        at the remote boundary and recorded in immutable history or the external
-        final handoff.
+        - external finish handoff
 
   parallel_agent_support:
     status: active
     orchestrator: scripts/statedd_agent_worktree.py
-    isolation_policy: integration agent owns this full clone; subagents use separate full clones
-    notes: Subagents return commits and verification summaries and do not mutate canonical truth or push the slice branch.
+    integration_owner: one agent per slice branch
+    independent_agent_isolation: full_clone
+    trusted_local_optional_isolation: worktree_with_same_identity_opt_in
 
   operating_mode:
     status: observed
     mode: template-maintenance
-    summary: The repository maintains the reusable StateDD template.
+    summary: The repository maintains a stable reusable StateDD template.
 
   project:
     name: StateDD_Template
     type: documentation_and_workflow_template
-    lifecycle_stage: template-maintenance
-    truth_summary: final_operational_slice_active
+    lifecycle_stage: operational_template_maintenance
+    truth_summary: operational_core_complete
 
   runtime_identity:
     status: not_applicable_for_template_root
@@ -199,36 +188,6 @@ current_state:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    standard: tests_and_remote_truth_for_template_workflow_changes
+    current_slice: docs/evidence/2026-07-12-golden-path-closure
 
-active_problems:
-  - id: BL-GOLDEN-PATH-CLOSURE-001
-    title: Complete agent-owned merge, post-merge verification, and self-reconciling remote truth
-    severity: P0
-    opened_at: 2026-07-12T10:04:43+02:00
-    source:
-      failure_scan: docs/failure_scans/BL-GOLDEN-PATH-CLOSURE-001.md
-      human_authorization: recorded_in_current_state
-    scope:
-      - confirmed-once delivery policy with human_merge and agent_after_green modes
-      - one idempotent executable finish path through exact-head merge and direct main CI
-      - future-SHA-free tracked evidence and external post-merge identities
-      - semantic state reconciliation and one-PR closure regression
-    acceptance_criteria:
-      - automatic merge is allowed only by confirmed agent_after_green policy
-      - branch-head and merge-candidate CI, review state, threads, head, and merge state gate the merge
-      - post-merge main CI and source-tree equivalence are verified
-      - cleanup and isolation release occur only after successful verification
-      - reruns resume from observed remote truth without duplicating the merge
-      - completed work cannot remain active in canonical state
-      - one PR closes without a metadata repair PR or human Git action
-    truth_boundaries:
-      sandbox: observed
-      local_worktree: clean at slice opening
-      git_index: clean
-      local_commit: verified starting main
-      remote_branch: not published
-      github_main: verified starting truth
-      ci: starting direct main CI verified; slice CI not run
-      runtime: not applicable for template root
-      human_acceptance: pending
+active_problems: []

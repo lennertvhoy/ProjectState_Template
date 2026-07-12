@@ -1,0 +1,18 @@
+{
+  "schema": "statedd.proof_source_hashes.v1",
+  "proof_head": "b46c97a7b643459185f21d7bd0bfd4a8d03017a0",
+  "algorithm": "sha256",
+  "files": {
+    "profiles/catalog.json": "6d30851b1dd7277a2a08c6444c2d1856c10d9d97f3bb9dcfba49f6401a103275",
+    "schemas/bootstrap_answers.schema.json": "9450ad5d60d9377c9c947f4d76a98b920764b42ebcde85d6e33907c6760d2071",
+    "schemas/finish_slice_handoff.schema.json": "8da6f4594c251129b41a6173a088613998f1d23601f178aeefa1bb6cdb35d5b5",
+    "scripts/check_state_docs.py": "d85c6a939b06b47918879722a42415f02b1f28bcf79af4f541db4293adcefac5",
+    "scripts/statedd_finish_slice.py": "03c935c37b5a8210965d73f67bed6554285d3ee7d1c22d222611b122b5bf2b42",
+    "scripts/statedd_generated_controls.py": "b2fc1158f4f008dd87d3e19b732ce1d91c97c1f220ae8f3b5f041175d84b0b1b",
+    "scripts/statedd_post_merge_verify.py": "715b331ad04d68b2e8bd6f6094ed5564dafd7e74e3d8f7cf2ec7d4677118ef27",
+    "scripts/test_check_state_docs.py": "6ee17857a86e2434e34470b0503019d27a56ee244dfb07805525525097b4cb6d",
+    "scripts/test_finish_slice.py": "f0fab4b0f9057b02ce3a5f7bb973c420add8b0b2890ca5cd972e02527a56044b",
+    "scripts/test_golden_path.py": "f9ffc3e96860c15f37822b0c9d64edd64dd0a207daf8bf8fa0d93bc4224aa46c",
+    "scripts/test_post_merge_verify.py": "547eed76933da4dadfb126fea026d78c594fae21389c27ef38ea3f507ac4588b"
+  }
+}
