@@ -12,9 +12,17 @@ from typing import Any
 
 try:
     from statedd_contracts import ContractError, load_json_file
+    from statedd_generated_controls import (
+        SUPPORTED_DELIVERY_MERGE_MODES,
+        confirmed_delivery_policy,
+    )
     from statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 except ModuleNotFoundError:  # pragma: no cover
     from scripts.statedd_contracts import ContractError, load_json_file
+    from scripts.statedd_generated_controls import (
+        SUPPORTED_DELIVERY_MERGE_MODES,
+        confirmed_delivery_policy,
+    )
     from scripts.statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 
 
@@ -101,6 +109,35 @@ def apply_answers(root: Path, answers: dict[str, Any]) -> None:
     if not isinstance(state, dict):
         raise SystemExit("PROJECT_STATE.yaml must contain a mapping")
 
+    answer_policy = answers["delivery_policy"]
+    answer_merge = answer_policy["merge"]
+    requested_mode = answer_merge["mode"]
+    requested_method = answer_merge["method"]
+    existing_policy = state.get("delivery_policy", {})
+    if not isinstance(existing_policy, dict):
+        raise SystemExit("PROJECT_STATE.yaml delivery_policy must contain a mapping")
+    existing_status = existing_policy.get("status")
+    existing_confirmation = existing_policy.get("confirmation")
+    existing_confirmed = (
+        existing_status == "confirmed" or existing_confirmation == "human_confirmed"
+    )
+    if existing_confirmed:
+        if existing_status != "confirmed" or existing_confirmation != "human_confirmed":
+            raise SystemExit(
+                "Existing delivery policy has inconsistent confirmed status; repair it explicitly"
+            )
+        existing_merge = existing_policy.get("merge")
+        if not isinstance(existing_merge, dict):
+            raise SystemExit("Existing confirmed delivery policy has no valid merge mapping")
+        existing_mode = existing_merge.get("mode")
+        existing_method = existing_merge.get("method")
+        if existing_mode not in SUPPORTED_DELIVERY_MERGE_MODES or existing_method != "squash":
+            raise SystemExit("Existing confirmed delivery policy has unsupported merge settings")
+        if existing_mode != requested_mode or existing_method != requested_method:
+            raise SystemExit(
+                "Refusing to silently change the confirmed delivery policy merge mode or method"
+            )
+
     workflow = state.setdefault("workflow", {})
     bootstrap = workflow.setdefault("bootstrap", {})
     bootstrap.update({
@@ -110,9 +147,10 @@ def apply_answers(root: Path, answers: dict[str, Any]) -> None:
         "user_intake_complete": True,
         "unknowns_remaining": [],
     })
-    policy = state.setdefault("delivery_policy", {})
-    policy["status"] = "confirmed"
-    policy["confirmation"] = "human_confirmed"
+    state["delivery_policy"] = confirmed_delivery_policy(
+        requested_mode,
+        method=requested_method,
+    )
     current = state.setdefault("current_state", {})
     project = current.setdefault("project", {})
     project.update({
@@ -163,9 +201,9 @@ def apply_answers(root: Path, answers: dict[str, Any]) -> None:
     (root / "NEXT_ACTIONS.md").write_text("\n".join(queue_lines), encoding="utf-8")
 
     with (root / "WORKLOG.md").open("a", encoding="utf-8") as handle:
-        handle.write(f"\n## {date.today().isoformat()} - Structured bootstrap baseline\n\n**Type:** bootstrap_baseline\n**Status:** COMPLETE\n\n- Purpose, primary user, architecture, constraints, first milestone, backlog, active queue, and delivery policy were applied from the validated answer document.\n")
+        handle.write(f"\n## {date.today().isoformat()} - Structured bootstrap baseline\n\n**Type:** bootstrap_baseline\n**Status:** COMPLETE\n\n- Purpose, primary user, architecture, constraints, first milestone, backlog, active queue, and confirmed `{requested_mode}` delivery policy were applied from the validated answer document.\n")
     with (root / "docs" / "EVIDENCE_LOG.md").open("a", encoding="utf-8") as handle:
-        handle.write(f"\n## EV-{date.today().isoformat()}-003: Structured bootstrap baseline\n\n- Source: validated structured bootstrap answer document.\n- Result: canonical project truth, backlog, queue, and delivery policy populated.\n")
+        handle.write(f"\n## EV-{date.today().isoformat()}-003: Structured bootstrap baseline\n\n- Source: validated structured bootstrap answer document.\n- Result: canonical project truth, backlog, queue, and confirmed `{requested_mode}` delivery policy populated.\n")
 
 
 def apply_integration_result(root: Path, result: dict[str, Any]) -> None:

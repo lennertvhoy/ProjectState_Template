@@ -143,7 +143,7 @@ def test_golden_path() -> None:
                     "constraints": [
                         "No inherited template Git history",
                         "No writes through symlinked roots",
-                        "Human controls merge and acceptance",
+                        "Confirmed delivery policy controls merge; human controls acceptance",
                     ],
                     "first_milestone": "Complete the bootstrap baseline and integrate two bounded agent commits.",
                     "backlog": [
@@ -178,7 +178,13 @@ def test_golden_path() -> None:
                             "exit": "Whole-project gate and strict evidence pack pass.",
                         }
                     ],
-                    "delivery_policy_confirmation": "confirmed",
+                    "delivery_policy": {
+                        "confirmation": "human_confirmed",
+                        "merge": {
+                            "mode": "agent_after_green",
+                            "method": "squash",
+                        },
+                    },
                 },
                 indent=2,
             ),
@@ -209,6 +215,8 @@ def test_golden_path() -> None:
             raise AssertionError("structured bootstrap primary user did not reach canonical project state")
         if state["delivery_policy"]["confirmation"] != "human_confirmed":
             raise AssertionError("structured delivery policy was not confirmed")
+        if state["delivery_policy"]["merge"]["mode"] != "agent_after_green":
+            raise AssertionError("structured delivery policy merge mode did not round-trip")
 
         git(downstream, "config", "user.email", "statedd-golden@example.invalid")
         git(downstream, "config", "user.name", "StateDD Golden Path")

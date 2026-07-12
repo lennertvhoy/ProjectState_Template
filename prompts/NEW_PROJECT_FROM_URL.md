@@ -42,8 +42,15 @@ During bootstrap:
 - Use explicit `unknown` values with follow-up actions rather than inventing facts.
 - Build a prioritized backlog for the first project milestone.
 - Keep `NEXT_ACTIONS.md` short.
-- Record standing permissions for commits, feature-branch pushes, pull requests,
-  merging, CI, and destructive Git operations.
+- Present the `team` profile's recommended `agent_after_green` delivery mode and
+  the cautious `human_merge` alternative. Require me to confirm exactly one mode
+  once; never treat silence or the generated proposal as authorization.
+- Record the confirmed mode under `delivery_policy`, including squash merge,
+  exact-PR-head, clean-merge-state, review/thread, branch-head CI,
+  merge-candidate CI, remote-closure, direct-main CI, and post-merge verification
+  requirements.
+- Keep force-push, shared-history rewrite, and automatic merge without CI
+  forbidden. A CI-unavailable merge needs a separate explicit human override.
 - Do not implement product features before the bootstrap baseline is coherent.
 
 Before handoff:
@@ -53,6 +60,13 @@ Before handoff:
 - Configure the new project's own GitHub remote.
 - Push the bootstrap baseline.
 - Leave the worktree clean.
+
+For later implementation slices, follow the confirmed delivery policy. Under
+`agent_after_green`, the coding agent owns commit, push, PR preparation,
+exact-head squash merge after every configured gate passes, direct-main CI,
+post-merge verification, the external final handoff, and remote branch deletion
+only after verified closure. Under `human_merge`, stop before merge. Final
+product acceptance remains mine in either mode.
 
 Finish with a CTO-ready handoff containing:
 

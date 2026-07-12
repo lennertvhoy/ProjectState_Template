@@ -8,6 +8,24 @@ proof by themselves. Resolved validation IDs dispatch executable/presence
 contracts in the generated quality gate and are the enforceable capability proof.
 Profiles do not change core truth rules.
 
+## Delivery policy is confirmed separately
+
+Generated `team` state proposes `agent_after_green`. The smaller `minimal` and
+`solo` profiles and the cautious `regulated` profile propose `human_merge`.
+A profile recommendation is never merge authority. Structured bootstrap must
+record exactly one human-confirmed mode before delivery automation can act:
+
+- `human_merge`: the coding agent validates and prepares remote closure, then
+  stops before merge;
+- `agent_after_green`: after every configured exact-head, review/thread,
+  merge-state, evidence, remote-closure, and CI condition passes, the coding
+  agent owns squash merge, direct-main CI, post-merge verification, the external
+  final handoff, and branch deletion after verification.
+
+Either mode may be selected for any profile. The coding agent never silently
+changes a confirmed mode, infers a CI-unavailable override, force-pushes, or
+rewrites shared history. Final product acceptance remains human.
+
 ## Which profile should I choose?
 
 **Default recommendation: `solo`.**
