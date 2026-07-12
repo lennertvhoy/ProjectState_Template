@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-12T09:25:00+02:00
-  updated_by: agent
+  updated_at: 2026-07-12T10:04:43+02:00
+  updated_by: integration_agent
   version: "statedd-template-v5"
 
 workflow:
@@ -15,13 +15,9 @@ workflow:
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
-      - BL-SANITY-001 repo coherence and efficiency repair is merged and accepted
-      - PR #4 merged to main as a0ac268d186d9ec71ffefab6970dc1d40add5b06 on 2026-07-10
-      - PR #5 merged to main as c2fe7b25625cc855a47deff721251cdb5d4141b2 on 2026-07-10
-      - PR #5 merged despite an owner review that recorded unresolved correctness blockers
-      - BL-MAX-VALUE-001 now owns lifecycle, gate, CI, symlink, metrics, closure-truth, architecture-review, and benchmark-spec repair
-      - BL-PARALLEL-001 is merged but independent closure-grade agreement is not proven
-      - downstream upgrade semantic merges of customized workflow files not yet supported
+      - verified legal copyright owner is not known; the license placeholder must not be guessed
+      - comparative benchmark superiority is not proven
+      - downstream upgrade semantic merges of customized workflow files are not yet supported
 
 verification_labels:
   observed: verified directly in the current session
@@ -35,167 +31,159 @@ verification_labels:
 current_state:
   execution_mode:
     status: observed
-    mode: template-maintenance
-    supported_downstream_modes:
-      - operating
-      - quality_freeze
-      - incident_response
-      - release_candidate
+    mode: quality_freeze
     notes: |
-      The template root stays in template-maintenance. Downstream repos should
-      record operating, quality_freeze, incident_response, or release_candidate
-      according to product/runtime truth.
+      BL-GOLDEN-PATH-CLOSURE-001 is the only open P0. It directly closes the
+      remaining merge and post-merge workflow gap. No unrelated feature work is
+      selected during this freeze.
 
   quality_gates:
     status: active_with_open_p0
     product_quality_gate: not_applicable_for_template_root
     runtime_truth_gate: not_applicable_for_template_root
     live_canary_gate: not_applicable_for_template_root
-    redteam_gate: passing_for_template_propagation_checks
-    known_bad_events_gate: not_applicable_for_template_root
+    redteam_gate: passing_for_integrated_template_baseline
+    known_bad_events_gate: active_for_golden_path_closure
     remote_closure_gate:
       status: active
       script: scripts/statedd_remote_closure_finalizer.py
       evidence: docs/evidence/2026-06-29-remote-closure/README.md
-      notes: |
-        Enforces the Remote Closure Invariant: local HEAD, pushed branch, PR head,
-        PR body, in-repo evidence, latest GitHub Actions result, and mergeStateStatus
-        must all agree before a slice is closure-grade.
     efficiency_gate:
       status: active
       script: scripts/statedd_efficiency_check.py
       budget: EFFICIENCY_BUDGET.yaml
-      notes: |
-        Enforces the Efficiency Invariant: instruction size, active queues,
-        evidence bundles, and gate-level metadata must stay within declared budgets.
-    worktree_guard:
+    git_safety_preflight:
       status: active
-      script: scripts/statedd_worktree_guard.py
-      notes: |
-        Enforces pre-slice worktree/source-of-truth inspection and closure-mode
-        clean-worktree checks without deleting files.
+      script: scripts/statedd_git_safety_check.py
+      policy: mutation requires a current permit and independent agents use full clones
     anti_brittleness_gate:
       status: active
-      guide: ANTI_BRITTLENESS_GUARD.md
       script: scripts/statedd_brittleness_check.py
-      notes: |
-        Requires non-trivial fix/feature slices to name the durable invariant
-        and review brittle easy-way-out patterns.
-    evidence: docs/evidence/2026-07-11-statedd-integration/README.md
-    docs:
-      - QUALITY_FIREWALL.md
-      - FAILURE_TAXONOMY.md
-      - INCIDENT_RESPONSE.md
-      - ANTI_BRITTLENESS_GUARD.md
-      - docs/failure_scans/TEMPLATE.md
-      - docs/incidents/README.md
-      - docs/quality_gates/README.md
-      - docs/quality_gates/ANTI_BRITTLENESS_GATE.md
 
   runtime_truth:
     status: not_applicable_for_template_root
     repo_truth_is_not_runtime_truth_rule: active
-    notes: |
-      The template root has no deployed application runtime. Downstream repos
-      must prove runtime identity for user-facing or operator-facing acceptance.
+    notes: The template root has no deployed application runtime.
 
   known_bad_events:
     status: active
-    fixture_policy: |
-      Downstream projects should convert observed bad events into durable
-      incident notes, fixtures or equivalent artifacts, and regression gates.
+    failure_scan: docs/failure_scans/BL-GOLDEN-PATH-CLOSURE-001.md
+    backlog_id: BL-GOLDEN-PATH-CLOSURE-001
+    classes:
+      - workflow
+      - state_truth
+      - brittleness
+    summary: |
+      The automated close path stops before merge, tracked post-merge evidence
+      predicts a future squash identity, and semantic state checks allowed merged
+      work to remain active on green main.
 
   open_p0_failures:
-    - BL-STATEDD-INTEGRATION-001
+    - BL-GOLDEN-PATH-CLOSURE-001
 
-  integration_slice:
-    id: BL-STATEDD-INTEGRATION-001
+  golden_path_closure:
+    id: BL-GOLDEN-PATH-CLOSURE-001
     status: active
-    branch: bl-statedd-integration-001
-    base_head: 84a67100fee324f6716a5c966500b0c0eeb59699
-    source_candidates:
-      pr_6:
-        branch: bl-max-value-001
-        head: 84a67100fee324f6716a5c966500b0c0eeb59699
-        role: lifecycle_profile_gate_evidence_authority
-        merge_independently: false
-      pr_7:
-        branch: bl-git-isolation-001
-        head: 99f401110d9c5d130e8524d1cca4873649a84cbe
-        role: git_safety_and_coding_agent_golden_path_candidate
-        merge_independently: false
-    original_checkout:
-      path: /home/ff/Documents/Projects/StateDD_Template
-      local_repair: reported
-      read_only_verification: completed_on_current_source_worktree
-      existing_local_changes: preserved_untouched
-    unresolved_boundaries:
-      - verified copyright owner is not proven
-      - benchmark superiority is not proven
-      - branch-head and PR merge-candidate CI are not yet proven for the integration branch
-      - local level-2 quality gate, strict audit, and complete golden-path regression pass
-      - human acceptance and verified copyright ownership remain unproven
+    branch: bl-golden-path-closure-001
+    starting_truth:
+      default_branch: verified_current
+      direct_branch_ci: verified
+      superseded_pull_requests: closed
+      open_pull_requests: none_at_slice_start
+      evidence: WORKLOG.md
+    standing_authorization:
+      status: override-approved
+      granted_by: human
+      scope:
+        - create_and_push_slice_branch
+        - open_and_update_pull_request
+        - mark_ready_after_local_proof
+        - squash_merge_exact_verified_head_after_all_gates
+        - verify_default_branch_and_direct_ci
+        - delete_remote_slice_branch_after_post_merge_verification
+        - release_isolation_after_successful_closure
+      forbidden:
+        - force_push
+        - bypass_failed_or_pending_ci
+        - merge_unexpected_head
+        - merge_with_requested_changes_or_unresolved_threads
+        - rewrite_shared_history
+        - guess_legal_copyright_holder
+    required_finish_state:
+      - LOCAL_VALIDATED
+      - PUSHED
+      - PR_OPEN
+      - PR_READY
+      - REMOTE_CLOSURE_VERIFIED
+      - MERGED
+      - MAIN_CI_VERIFIED
+      - HANDOFF_COMPLETE
+
+  completed_capabilities:
+    integrated_baseline:
+      status: merged_main_ci_verified
+      evidence: docs/evidence/2026-07-11-statedd-integration/README.md
+      history: WORKLOG.md
+    optional_okf_interoperability:
+      status: implemented_opt_in
+      evidence: docs/evidence/2026-07-11-okf-interoperability/README.md
+      research_boundary: BL-OKF-002 remains future evidence-gated work
 
   closure_blockers:
-    - the remote finalizer has not re-queried PR, CI, merge state, and remote branch agreement
-    - human acceptance remains unproven
+    - agent-owned exact-head merge and post-merge main verification are not implemented yet
+    - canonical state must become self-reconciling without future containing-commit identities
+    - human product acceptance remains pending
+    - verified legal copyright owner is not proven
+    - comparative benchmark superiority is not proven
 
   last_live_canary:
     status: not_applicable_for_template_root
     evidence: null
 
   last_redteam_run:
-    status: passing_for_template_propagation_checks
-    evidence: docs/evidence/2026-07-11-maximum-value-correctness/command_outputs/pytest_scripts.txt
+    status: passing_for_integrated_template_baseline
+    evidence: docs/evidence/2026-07-11-statedd-integration/README.md
 
   residual_risks:
-    - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
-    - ultra-terse model-facing context remains a benchmark variant and is not canonical state
-    - merged main passed its configured CI, but that CI did not cover the unresolved review failures
+    - downstream repos must explicitly confirm a delivery policy during bootstrap
+    - CI-unavailable merge must never be inferred from local tests
+    - optional StateIR and StatePack work remains experimental until benchmarked
+    - verified legal copyright owner remains unknown
 
   repository:
     canonical_path: .
     path_status: observed
     git_snapshot:
       status: observed
-      captured_at: 2026-07-11T17:00:00+02:00
-      last_verified_branch: bl-statedd-integration-001
-      last_verified_head: 2644f438d40e38f87adc3ca52e678452233430d3
-      last_verified_worktree_status: clean
+      default_branch_status: current_and_direct_ci_verified_at_slice_start
+      current_slice_branch: bl-golden-path-closure-001
+      worktree_status: clean_at_slice_opening
+      volatile_identity_authority:
+        - GitHub
+        - immutable evidence
+        - external final handoff
       notes: |
-        The integration branch is a fresh full clone based on PR #6. The integrated
-        implementation, metrics, evidence, and state are locally committed and the
-        level-2 quality gate and strict audit pass. Remote branch, PR, CI,
-        remote-finalizer, and human-acceptance truth are not proven for this slice.
+        Canonical live state intentionally does not embed the containing commit or
+        duplicate workflow-run identities. Those volatile identities are verified
+        at the remote boundary and recorded in immutable history or the external
+        final handoff.
 
   parallel_agent_support:
-    status: observed
+    status: active
     orchestrator: scripts/statedd_agent_worktree.py
-    reservation_ref_prefix: refs/statedd/reservations/
-    worktree_dir: .worktrees
-    agent_context_file: .statedd/agent.context
-    agent_context_schema: statedd.agent_context.v1
-    notes: |
-      First-class support for concurrent coding agents. Each non-trivial slice
-      defaults to an isolated branch + worktree + reservation ref. Existing
-      worktree guard, handoff, audit, closure check, and remote closure finalizer
-      are agent-context-aware. Lock detection reports contention instead of
-      corrupting state. Evidence selection prefers the folder whose manifest
-      slice_id matches the current agent context.
+    isolation_policy: integration agent owns this full clone; subagents use separate full clones
+    notes: Subagents return commits and verification summaries and do not mutate canonical truth or push the slice branch.
 
   operating_mode:
     status: observed
     mode: template-maintenance
-    summary: |
-      This repository maintains the reusable StateDD template. Generated and
-      adopted downstream repositories still start in bootstrap mode; the root
-      template repo tracks template-maintenance truth.
+    summary: The repository maintains the reusable StateDD template.
 
   project:
     name: StateDD_Template
     type: documentation_and_workflow_template
     lifecycle_stage: template-maintenance
-    truth_summary: template_maintenance_active
+    truth_summary: final_operational_slice_active
 
   runtime_identity:
     status: not_applicable_for_template_root
@@ -205,142 +193,42 @@ current_state:
     process_or_container: no application runtime
     port_or_base_url: not_applicable
     rebuilt_in_current_slice: false
-    duplicate_runtimes_checked: not_applicable
-    notes: |
-      The template root does not ship an application runtime. Downstream
-      projects use scripts/statedd_runtime_proof.py to record runtime identity
-      artifacts before accepting user-facing behavior.
-
-  environment:
-    status: observed
-    host:
-      os: Linux
-      kernel: 7.0.12-201.fc44.x86_64
-      shell: unknown
-      terminal: unknown
-    package_managers:
-      - unknown
-    language_runtimes:
-      python: 3.14.5
-      node: unknown
-    container_tooling:
-      docker: unknown
-      podman: unknown
-    browser_tooling:
-      chrome: unknown
-      playwright: unknown
-    ports:
-      listeners: unknown
-      notes: |
-        Capture active listeners directly during bootstrap when that matters.
-
-  repository_inventory:
-    status: derived_on_demand
-    authority: filesystem_and_git_index
-    discovery_commands:
-      - rg --files
-      - git ls-files
-    notes: |
-      File, script, documentation, and test catalogs are intentionally not
-      duplicated in live state. The profile catalog owns managed template assets;
-      CLI help and tests own executable behavior.
 
   evidence:
     status: active
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    standard: browser_or_test_output_plus_runtime_identity_for_user_facing_claims
-
-  documentation:
-    status: derived_on_demand
-    primary_user_guide: README.md
-    architecture_review: docs/architecture/STATE_DD_MAXIMUM_VALUE_REVIEW.md
-    benchmark_specification: docs/benchmarks/STATE_DD_BENCHMARK_SPEC.md
-    profile_metrics: docs/metrics/profile_metrics.json
-    notes: |
-      Documentation and helper catalogs are intentionally derived from the
-      filesystem. Stable ownership lives in PROJECT_DNA.yaml, current truth here,
-      and managed-asset membership in profiles/catalog.json.
+    standard: tests_and_remote_truth_for_template_workflow_changes
 
 active_problems:
-  - id: BL-STATEDD-INTEGRATION-001
-    title: Integrate lifecycle correctness with Git safety and the coding-agent golden path
+  - id: BL-GOLDEN-PATH-CLOSURE-001
+    title: Complete agent-owned merge, post-merge verification, and self-reconciling remote truth
     severity: P0
-    opened_at: 2026-07-11T17:00:00+02:00
+    opened_at: 2026-07-12T10:04:43+02:00
     source:
-      pull_request_candidates:
-        - number: 6
-          head: 84a67100fee324f6716a5c966500b0c0eeb59699
-        - number: 7
-          head: 99f401110d9c5d130e8524d1cca4873649a84cbe
+      failure_scan: docs/failure_scans/BL-GOLDEN-PATH-CLOSURE-001.md
+      human_authorization: recorded_in_current_state
     scope:
-      - preserve PR #6 declarative profiles, v2 lifecycle locks, transactional upgrades, confinement, test aggregation, metrics, evidence, and remote closure
-      - port PR #7 Git safety, clone isolation, agent-first docs, standing policy, integration ownership, and golden-path coverage
-      - repair quality-gate, root-symlink, declarative-profile, CI-subject, and bootstrap-coverage regressions
+      - confirmed-once delivery policy with human_merge and agent_after_green modes
+      - one idempotent executable finish path through exact-head merge and direct main CI
+      - future-SHA-free tracked evidence and external post-merge identities
+      - semantic state reconciliation and one-PR closure regression
     acceptance_criteria:
-      - PR #6 lifecycle/profile/gate/evidence invariants remain authoritative
-      - PR #7 Git-safety and golden-path capabilities are ported semantically
-      - all applicable suites execute and unavailable declared runners fail
-      - root and nested symlink escapes fail closed
-      - generated profiles conform to their v2 locks and declared gate levels
-      - complete bootstrap and integration journey is covered by a durable regression
-      - branch, PR, evidence, CI subject, and final handoff use separate truth labels
-    truth_boundaries:
-      sandbox: observed
-      local_worktree: dirty with state-opening changes before the opening commit
-      git_index: clean at slice start
-      local_commit: PR #6 base 84a67100fee324f6716a5c966500b0c0eeb59699
-      remote_branch: not published
-      github_main: c2fe7b25625cc855a47deff721251cdb5d4141b2
-      ci: not run for integration branch
-      runtime: not applicable for template root
-      human_acceptance: not proven
-
-  - id: BL-OKF-001
-    title: Add optional OKF v0.1 knowledge interoperability without replacing StateDD operational truth
-    severity: P1
-    opened_at: 2026-07-11T19:00:00+02:00
-    source:
-      base_branch: bl-statedd-integration-001
-      base_head: b9712a514d25b799a35a10bac35e00fc713a620e
-      architecture_decision: docs/adr/0001-okf-knowledge-layer.md
-      upstream_spec_commit: ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a
-    scope:
-      - add an optional knowledge_okf asset set and explicit selection path
-      - validate OKF v0.1 reserved files, concept frontmatter, and unknown-type tolerance
-      - add StateDD authority, owner, source-hash, citation, and staleness governance
-      - preserve canonical StateDD operational files and ordinary startup context
-      - keep real project concepts project-owned rather than template-owned
-    acceptance_criteria:
-      - minimal, solo, and team generated profiles remain unchanged unless knowledge_okf is explicitly selected
-      - the contained knowledge/index.md scaffold follows the pinned OKF v0.1 contract
-      - malformed frontmatter, duplicate keys, unsafe paths, symlink escapes, and stale derived sources fail with actionable output
-      - unknown concept types, unknown extension keys, broken links, and missing indexes remain base-format compatible
-      - canonical, derived, and reference StateDD authority classes are machine-checkable
-      - generated optional profiles remain within declared footprint budgets
-      - dependency-free validation works without external OKF tooling
+      - automatic merge is allowed only by confirmed agent_after_green policy
+      - branch-head and merge-candidate CI, review state, threads, head, and merge state gate the merge
+      - post-merge main CI and source-tree equivalence are verified
+      - cleanup and isolation release occur only after successful verification
+      - reruns resume from observed remote truth without duplicating the merge
+      - completed work cannot remain active in canonical state
+      - one PR closes without a metadata repair PR or human Git action
     truth_boundaries:
       sandbox: observed
       local_worktree: clean at slice opening
       git_index: clean
-      local_commit: e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
-      remote_branch: bl-okf-001 at e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
-      github_main: not changed by this slice
-      ci: branch-head and PR merge-candidate passed; run 29164234097
-      runtime: not applicable for template docs/scripts
-      human_acceptance: not proven
-    human_override:
-      status: override-approved
-      reason: user explicitly directed proceeding with BL-OKF-001 while PR #8 remains a separate draft boundary
-    status: merged_into_main
-    evidence: docs/evidence/2026-07-11-okf-interoperability/README.md
-    proof_head: 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
-    local_head: 840ebaa69b95c1ecda1c2113d53011e4e3dde77d
-    remote_branch: main at 886710edc9032465302f8bc6c390fe470f1fde3d
-    pull_request: 9
-    pull_request_url: https://github.com/lennertvhoy/StateDD_Template/pull/9
-    merged_commit: 840ebaa69b95c1ecda1c2113d53011e4e3dde77d
-    branch_head_ci: verified run 29184051017 on main after PR #10
-    merge_candidate_ci: verified before merge; main push validation passed
-    closure_grade: main_ci_verified; human_acceptance_recorded_as_user_directive
+      local_commit: verified starting main
+      remote_branch: not published
+      github_main: verified starting truth
+      ci: starting direct main CI verified; slice CI not run
+      runtime: not applicable for template root
+      human_acceptance: pending

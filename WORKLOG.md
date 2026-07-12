@@ -945,3 +945,59 @@
 - Merged PR #10 as `886710edc9032465302f8bc6c390fe470f1fde3d` to refresh profile metrics after squash history.
 - Main branch-head validation passed in run `29184051017`.
 - PR #6 and PR #7 remain superseded draft source candidates and were not merged independently.
+
+## 2026-07-12 - Reconcile completed integration and OKF work
+
+**Type:** remote_truth_reconciliation
+**Status:** COMPLETE
+**Backlog items:** [BL-STATEDD-INTEGRATION-001], [BL-OKF-001]
+
+### Verified remote truth
+
+- PR #8 merged as `f92d2610a5d2616b71ee40a4e5358cf3f45cc6a2`.
+- PR #9 merged as `840ebaa69b95c1ecda1c2113d53011e4e3dde77d`.
+- PR #10 merged as `886710edc9032465302f8bc6c390fe470f1fde3d`.
+- PR #11 merged as `55abc6ee07d1e57f5c472d2d306bf6477c29d65a`.
+- PR #12 merged as `0aab4c02b0ff2ec4c7983f4e3807983b7f1ac8c4`.
+- Direct `main` branch-head CI passed in run `29184458026`, including the
+  authoritative level-2 gate, every generated profile, and checkout cleanliness.
+- PR #6 and PR #7 are closed as superseded historical candidates; no PR was open
+  when the final closure slice started.
+
+### Stable boundary
+
+- BL-STATEDD-INTEGRATION-001 and BL-OKF-001 are terminal and no longer belong in
+  canonical active state.
+- BL-OKF-002 and StateIR/StatePack benchmarking are future evidence-gated research.
+- Runtime is not applicable for the template root. Human product acceptance,
+  benchmark superiority, and the verified legal copyright owner remain unproven.
+
+## 2026-07-12 - Open BL-GOLDEN-PATH-CLOSURE-001
+
+**Type:** final_operational_slice_opening
+**Status:** OPEN
+**Backlog item:** [BL-GOLDEN-PATH-CLOSURE-001]
+**Worktree:** clean before state-opening edits
+
+### What changed
+
+- Opened the only remaining P0 to add confirmed agent-owned merge, post-merge
+  default-branch verification, external final handoff, and semantic state closure.
+- Recorded the human standing authorization for exact-head squash merge and
+  post-verification cleanup while preserving the force-push, CI-bypass, unexpected
+  head, unresolved-review, history-rewrite, and legal-owner boundaries.
+- Removed volatile containing-commit and workflow-run duplication from live state;
+  immutable identities remain in this history, GitHub, evidence, or final sidecars.
+
+### Verification
+
+- Fresh full clone has an independent common Git directory.
+- Clone-mode Git-safety preflight passed ownership, writability, fsck, fetch
+  synchronization, and isolation checks before mutation.
+- The branch starts from the independently verified default-branch head and no
+  open PR existed at slice start.
+
+### Next
+
+- Commit this state opening separately, integrate bounded subagent packages, run
+  all local/profile gates, publish one PR, and exercise the new finish path.
