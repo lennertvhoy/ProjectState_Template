@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 try:
     from statedd_validate_schema import StateDDYamlError, parse_yaml_text
@@ -19,6 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 BACKLOG_ID_RE = re.compile(r"\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]")
 WORKLOG_BACKLOG_ID_RE = re.compile(r"(?:\[|\()(BL-(?:[A-Z][A-Za-z]*-)*\d{3})(?:\]|\))")
 NEXT_ACTION_ID_RE = re.compile(r"^###\s+P\d+\s+\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]\s+.+$", re.MULTILINE)
+TERMINAL_NEXT_ACTION_TITLE_RE = re.compile(
+    r"^###\s+P\d+\s+\[(BL-(?:[A-Z][A-Za-z]*-)*\d{3})\]\s+"
+    r"(?:accepted|closed|complete(?:d)?|merged)\b",
+    re.IGNORECASE | re.MULTILINE,
+)
 WORKLOG_ENTRY_RE = re.compile(r"^##\s+\d{4}-\d{2}-\d{2}\s+-\s+.+$", re.MULTILINE)
 EVIDENCE_ENTRY_RE = re.compile(r"^##\s+EV-\d{4}-\d{2}-\d{2}-\d{3}:\s+.+$", re.MULTILINE)
 PINNED_ACTION_RE = re.compile(r"uses:\s+actions/[^@\s]+@([0-9a-f]{40})")
@@ -165,7 +171,43 @@ TERMINAL_WORKLOG_STATUSES = {
     "CLOSED",
     "COMPLETE",
     "CLOSURE_GRADE_CI_VERIFIED",
+    "MERGED_AND_VERIFIED",
+    "MERGED_MAIN_CI_PASSING",
+    "MERGED_MAIN_CI_VERIFIED",
 }
+TERMINAL_ACTIVE_PROBLEM_STATUSES = {
+    "ACCEPTED",
+    "CLOSED",
+    "COMPLETE",
+    "COMPLETED",
+    "CLOSURE_GRADE_CI_VERIFIED",
+    "MERGED_AND_VERIFIED",
+    "MERGED_INTO_MAIN",
+    "MERGED_MAIN_CI_PASSING",
+    "MERGED_MAIN_CI_VERIFIED",
+}
+VOLATILE_CONTAINING_HEAD_FIELDS = {
+    "containing_commit",
+    "containing_head",
+    "current_main_head",
+    "default_branch_head",
+    "github_main",
+    "github_main_head",
+    "last_verified_head",
+    "main_commit",
+    "main_head",
+}
+RECONCILED_REMOTE_KEYS = {
+    "reconciled_remote_truth",
+    "remote_reconciliation",
+    "remote_truth_reconciliation",
+}
+TERMINAL_PR_STATES = {"CLOSED", "MERGED"}
+VERIFIED_CI_STATES = {"PASS", "PASSED", "SUCCESS", "VERIFIED"}
+UNPROVEN_CI_RE = re.compile(
+    r"\b(?:not\s+(?:yet\s+)?(?:proven|verified|run)|unproven|pending|unknown|failed)\b",
+    re.IGNORECASE,
+)
 
 
 def count_nonempty_lines(text: str) -> int:
@@ -291,6 +333,208 @@ def extract_active_problems(project_state_text: str) -> tuple[dict[str, str], li
     return problems, issues
 
 
+def normalize_lifecycle_status(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    return re.sub(r"[^A-Z0-9]+", "_", value.strip().upper()).strip("_")
+
+
+def parse_project_state(project_state_text: str) -> tuple[dict[str, Any], list[str]]:
+    try:
+        state = parse_yaml_text(project_state_text)
+    except StateDDYamlError as exc:
+        return {}, [f"PROJECT_STATE.yaml could not be parsed for semantic checks: {exc}"]
+    if not isinstance(state, dict):
+        return {}, ["PROJECT_STATE.yaml root must be a mapping for semantic checks"]
+    return state, []
+
+
+def walk_state(value: Any, path: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], Any]]:
+    """Return every nested value with its structural path."""
+    found: list[tuple[tuple[str, ...], Any]] = [(path, value)]
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            found.extend(walk_state(nested, (*path, str(key))))
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            found.extend(walk_state(nested, (*path, str(index))))
+    return found
+
+
+def state_remote_reconciliation(state: dict[str, Any]) -> dict[str, Any] | None:
+    current_state = state.get("current_state")
+    if not isinstance(current_state, dict):
+        return None
+    candidates = [
+        value
+        for key, value in current_state.items()
+        if str(key).lower() in RECONCILED_REMOTE_KEYS and isinstance(value, dict)
+    ]
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def reconciled_pr_states(reconciliation: dict[str, Any] | None) -> dict[int, str]:
+    if not isinstance(reconciliation, dict):
+        return {}
+    raw = reconciliation.get("pull_requests")
+    states: dict[int, str] = {}
+    records: list[tuple[Any, Any]] = []
+    if isinstance(raw, list):
+        records = [
+            (item.get("number"), item.get("state"))
+            for item in raw
+            if isinstance(item, dict)
+        ]
+    elif isinstance(raw, dict):
+        records = [
+            (value.get("number", key), value.get("state"))
+            if isinstance(value, dict)
+            else (key, value)
+            for key, value in raw.items()
+        ]
+    for raw_number, raw_state in records:
+        try:
+            number = int(str(raw_number).removeprefix("pr_").removeprefix("#"))
+        except ValueError:
+            continue
+        state = normalize_lifecycle_status(raw_state)
+        if number > 0 and state:
+            states[number] = state
+    return states
+
+
+def reconciled_main_ci_verified(reconciliation: dict[str, Any] | None) -> bool:
+    if not isinstance(reconciliation, dict):
+        return False
+    raw = reconciliation.get("main_ci") or reconciliation.get("default_branch_ci")
+    if not isinstance(raw, dict):
+        return False
+    status = normalize_lifecycle_status(raw.get("status") or raw.get("state"))
+    evidence = raw.get("evidence") or raw.get("evidence_ref") or raw.get("handoff")
+    return status in VERIFIED_CI_STATES and isinstance(evidence, str) and bool(evidence.strip())
+
+
+def markdown_section(text: str, heading: str) -> str:
+    match = re.search(
+        rf"^##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^##\s+|\Z)",
+        text,
+        re.MULTILINE,
+    )
+    return match.group(1) if match else ""
+
+
+def check_live_state_semantics(
+    state: dict[str, Any],
+    *,
+    status_text: str,
+    next_actions_text: str,
+) -> list[str]:
+    """Validate stable live truth without binding files to their containing commit."""
+    issues: list[str] = []
+    raw_active = state.get("active_problems")
+    active = raw_active if isinstance(raw_active, list) else []
+    active_records = [item for item in active if isinstance(item, dict)]
+    active_p0_ids = {
+        str(item.get("id"))
+        for item in active_records
+        if str(item.get("severity", "")).upper() == "P0"
+    }
+    terminal_active_ids: set[str] = set()
+    for item in active_records:
+        problem_id = item.get("id")
+        lifecycle = normalize_lifecycle_status(item.get("status"))
+        if isinstance(problem_id, str) and lifecycle in TERMINAL_ACTIVE_PROBLEM_STATUSES:
+            terminal_active_ids.add(problem_id)
+            issues.append(
+                f"PROJECT_STATE.yaml keeps terminal problem {problem_id} active with status {lifecycle}"
+            )
+
+    current_state = state.get("current_state")
+    if isinstance(current_state, dict):
+        declared_open_p0 = current_state.get("open_p0_failures")
+        if isinstance(declared_open_p0, list):
+            declared_ids = {str(item) for item in declared_open_p0}
+            if declared_ids != active_p0_ids:
+                issues.append(
+                    "PROJECT_STATE.yaml current_state.open_p0_failures must match active P0 problems: "
+                    f"declared={sorted(declared_ids)}, active={sorted(active_p0_ids)}"
+                )
+
+        execution = current_state.get("execution_mode")
+        execution_mode = (
+            normalize_lifecycle_status(execution.get("mode"))
+            if isinstance(execution, dict)
+            else ""
+        )
+        quality_gates = current_state.get("quality_gates")
+        quality_status = (
+            normalize_lifecycle_status(quality_gates.get("status"))
+            if isinstance(quality_gates, dict)
+            else ""
+        )
+        status_mode_match = re.search(r"^\*\*Execution Mode:\*\*\s*(.+)$", status_text, re.MULTILINE)
+        status_mode = normalize_lifecycle_status(status_mode_match.group(1)) if status_mode_match else ""
+        if (
+            execution_mode == "QUALITY_FREEZE"
+            or "QUALITY_FREEZE" in status_mode
+            or "OPEN_P0" in quality_status
+        ) and not active_p0_ids:
+            issues.append("quality_freeze/active_with_open_p0 requires an actual active P0 problem")
+
+    for path, value in walk_state(state):
+        if not path or not isinstance(value, str):
+            continue
+        field = path[-1].lower()
+        if field in VOLATILE_CONTAINING_HEAD_FIELDS and re.fullmatch(r"[0-9a-f]{7,40}", value):
+            issues.append(
+                "PROJECT_STATE.yaml must not couple live state to a volatile containing-main SHA at "
+                + ".".join(path)
+            )
+
+    current_truth = markdown_section(status_text, "Current Truth")
+    for line in current_truth.splitlines():
+        if re.search(r"\bmain\b", line, re.IGNORECASE) and re.search(r"\b[0-9a-f]{40}\b", line):
+            issues.append("STATUS.md Current Truth must not embed a volatile exact main SHA")
+            break
+
+    reconciliation = state_remote_reconciliation(state)
+    pr_states = reconciled_pr_states(reconciliation)
+    if pr_states:
+        for label, text in (("STATUS.md", status_text), ("NEXT_ACTIONS.md", next_actions_text)):
+            for line in text.splitlines():
+                numbers = {int(number) for number in re.findall(r"\bPR\s*#(\d+)\b", line, re.IGNORECASE)}
+                if not numbers or not re.search(r"\b(?:open|draft)\b", line, re.IGNORECASE):
+                    continue
+                for number in sorted(numbers):
+                    if pr_states.get(number) in TERMINAL_PR_STATES:
+                        issues.append(
+                            f"{label} declares PR #{number} open/draft but reconciled remote state is {pr_states[number]}"
+                        )
+
+    if reconciled_main_ci_verified(reconciliation):
+        for label, text in (("STATUS.md", status_text), ("NEXT_ACTIONS.md", next_actions_text)):
+            for line in text.splitlines():
+                if re.search(r"\bCI\b", line) and UNPROVEN_CI_RE.search(line):
+                    issues.append(
+                        f"{label} says CI is unproven/pending after reconciled main CI evidence was verified"
+                    )
+                    break
+        if isinstance(current_state, dict):
+            for path, value in walk_state(current_state):
+                if path and "ci" in path[-1].lower() and isinstance(value, str) and UNPROVEN_CI_RE.search(value):
+                    # The reconciliation subtree is the stable authority, not a contradiction.
+                    if not any(part.lower() in RECONCILED_REMOTE_KEYS for part in path):
+                        issues.append(
+                            "PROJECT_STATE.yaml contains unproven CI truth after verified reconciliation at "
+                            + ".".join(("current_state", *path))
+                        )
+
+    action_ids = set(extract_next_action_ids(next_actions_text))
+    for problem_id in sorted(terminal_active_ids & action_ids):
+        issues.append(f"NEXT_ACTIONS.md contains terminal active-problem item {problem_id}")
+    return issues
+
+
 def read_optional(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8") if path.exists() else ""
@@ -349,6 +593,10 @@ def check_file(path: Path) -> list[str]:
         for heading in re.findall(r"^###\s+.+$", text, re.MULTILINE):
             if not NEXT_ACTION_ID_RE.match(heading):
                 issues.append(f"Active item heading is missing the `### Pn [BL-001] ...` format: {heading}")
+        for terminal_id in TERMINAL_NEXT_ACTION_TITLE_RE.findall(text):
+            issues.append(
+                f"NEXT_ACTIONS.md active title for {terminal_id} starts with a terminal lifecycle state"
+            )
 
     if path.name == "BACKLOG.md":
         now_items = backlog_now_count(text)
@@ -400,6 +648,16 @@ def check_cross_file_rules(root: Path) -> list[str]:
 
     active_problems, problem_issues = extract_active_problems(state_text)
     issues.extend(problem_issues)
+    parsed_state, state_parse_issues = parse_project_state(state_text)
+    issues.extend(state_parse_issues)
+    if parsed_state:
+        issues.extend(
+            check_live_state_semantics(
+                parsed_state,
+                status_text=status_text,
+                next_actions_text=next_actions_text,
+            )
+        )
     active_ids = set(active_problems)
     for problem_id in sorted(active_ids):
         if problem_id in closed_ids:

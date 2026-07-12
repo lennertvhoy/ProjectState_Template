@@ -46,6 +46,29 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_ROOT = ROOT / "schemas"
 
+TERMINAL_ACTIVE_PROBLEM_STATUSES = {
+    "ACCEPTED",
+    "CLOSED",
+    "COMPLETE",
+    "COMPLETED",
+    "CLOSURE_GRADE_CI_VERIFIED",
+    "MERGED_AND_VERIFIED",
+    "MERGED_INTO_MAIN",
+    "MERGED_MAIN_CI_PASSING",
+    "MERGED_MAIN_CI_VERIFIED",
+}
+VOLATILE_CONTAINING_HEAD_FIELDS = {
+    "containing_commit",
+    "containing_head",
+    "current_main_head",
+    "default_branch_head",
+    "github_main",
+    "github_main_head",
+    "last_verified_head",
+    "main_commit",
+    "main_head",
+}
+
 
 @dataclass
 class ValidationIssue:
@@ -452,6 +475,84 @@ def validate_statedd_semantics(value: Any, semantics: dict[str, Any], path: str)
                     "repo_mode must match statedd_mode",
                 )
             )
+    if semantics.get("live_state_is_nonterminal") is True and isinstance(value, dict):
+        active = value.get("active_problems")
+        active_records = active if isinstance(active, list) else []
+        active_p0_ids: set[str] = set()
+        for index, record in enumerate(active_records):
+            if not isinstance(record, dict):
+                continue
+            problem_id = record.get("id")
+            severity = record.get("severity")
+            if isinstance(problem_id, str) and isinstance(severity, str) and severity.upper() == "P0":
+                active_p0_ids.add(problem_id)
+            raw_status = record.get("status")
+            status = (
+                re.sub(r"[^A-Z0-9]+", "_", raw_status.strip().upper()).strip("_")
+                if isinstance(raw_status, str)
+                else ""
+            )
+            if status in TERMINAL_ACTIVE_PROBLEM_STATUSES:
+                issues.append(
+                    ValidationIssue(
+                        f"{path}.active_problems[{index}].status",
+                        "terminal work cannot remain in active_problems",
+                    )
+                )
+
+        current_state = value.get("current_state")
+        if isinstance(current_state, dict):
+            declared = current_state.get("open_p0_failures")
+            if isinstance(declared, list):
+                declared_ids = {str(item) for item in declared}
+                if declared_ids != active_p0_ids:
+                    issues.append(
+                        ValidationIssue(
+                            f"{path}.current_state.open_p0_failures",
+                            "must match the IDs of active P0 problems",
+                        )
+                    )
+            execution = current_state.get("execution_mode")
+            execution_mode = (
+                str(execution.get("mode", "")).strip().lower()
+                if isinstance(execution, dict)
+                else ""
+            )
+            quality_gates = current_state.get("quality_gates")
+            quality_status = (
+                str(quality_gates.get("status", "")).strip().lower()
+                if isinstance(quality_gates, dict)
+                else ""
+            )
+            if (execution_mode == "quality_freeze" or "open_p0" in quality_status) and not active_p0_ids:
+                issues.append(
+                    ValidationIssue(
+                        f"{path}.current_state.execution_mode",
+                        "quality_freeze/active_with_open_p0 requires an active P0 problem",
+                    )
+                )
+
+        def walk(nested: Any, nested_path: str) -> None:
+            if isinstance(nested, dict):
+                for key, item in nested.items():
+                    item_path = f"{nested_path}.{key}"
+                    if (
+                        str(key).lower() in VOLATILE_CONTAINING_HEAD_FIELDS
+                        and isinstance(item, str)
+                        and re.fullmatch(r"[0-9a-f]{7,40}", item)
+                    ):
+                        issues.append(
+                            ValidationIssue(
+                                item_path,
+                                "live state must not embed a volatile containing-main SHA",
+                            )
+                        )
+                    walk(item, item_path)
+            elif isinstance(nested, list):
+                for index, item in enumerate(nested):
+                    walk(item, f"{nested_path}[{index}]")
+
+        walk(value, path)
     if semantics.get("managed_asset_paths_safe_and_unique") is True and isinstance(value, dict):
         records = value.get("managed_assets")
         if isinstance(records, list):
