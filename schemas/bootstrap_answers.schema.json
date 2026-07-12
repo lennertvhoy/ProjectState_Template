@@ -13,7 +13,7 @@
     "first_milestone",
     "backlog",
     "active_queue",
-    "delivery_policy_confirmation"
+    "delivery_policy"
   ],
   "properties": {
     "project_name": {"type": "string", "minLength": 1},
@@ -55,6 +55,22 @@
         }
       }
     },
-    "delivery_policy_confirmation": {"type": "string", "const": "confirmed"}
+    "delivery_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmation", "merge"],
+      "properties": {
+        "confirmation": {"type": "string", "const": "human_confirmed"},
+        "merge": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "method"],
+          "properties": {
+            "mode": {"type": "string", "enum": ["human_merge", "agent_after_green"]},
+            "method": {"type": "string", "const": "squash"}
+          }
+        }
+      }
+    }
   }
 }

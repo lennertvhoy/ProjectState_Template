@@ -54,6 +54,22 @@ python3 scripts/statedd_upgrade.py /path/to/downstream/repo --include-asset-set 
   overwrites an existing path, records `apply_requested`, and deliberately does
   not claim that application succeeded.
 
+### Delivery-policy migration
+
+Upgrades refresh the generated coding-agent control, but they preserve
+project-owned `PROJECT_STATE.yaml`. A legacy `merge_to_main` field is therefore
+not silently translated into merge authority. Review the new safeguards and
+record one explicit confirmed mode:
+
+- `human_merge` keeps merge as a human operation;
+- `agent_after_green` lets the coding agent squash-merge the exact verified PR
+  head and own direct-main CI plus post-merge closure.
+
+Until `status: confirmed`, `confirmation: human_confirmed`, and a supported
+`merge.mode` agree, the policy is non-authorizing. Changing an already confirmed
+mode requires a separate explicit human decision. Force-push, shared-history
+rewrite, and automatic merge without CI remain forbidden in either mode.
+
 ## Manual Upgrade Checklist
 
 1. Read the source repo `VERSION`.
@@ -73,3 +89,6 @@ python3 scripts/statedd_upgrade.py /path/to/downstream/repo --include-asset-set 
 - A copied prompt or script can be newer than the state files. Run the version check before handoff.
 - Semantic or three-way migration of customized project truth is not implemented.
   Preserve it and perform an explicit reviewed migration.
+- Older delivery-policy shapes are preserved rather than inferred. Migrate them
+  through an explicit confirmed policy update; a regenerated prompt alone never
+  changes merge authority.

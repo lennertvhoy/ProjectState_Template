@@ -27,8 +27,10 @@ try:
         safe_root_path,
     )
     from statedd_generated_controls import (
+        recommended_merge_mode,
         render_coding_agent_startup_prompt as render_coding_agent_control,
         render_downstream_workflow as render_workflow_control,
+        render_proposed_delivery_policy,
     )
     from statedd_validate_schema import load_schema, validate_json_schema
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
@@ -43,8 +45,10 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
         safe_root_path,
     )
     from scripts.statedd_generated_controls import (
+        recommended_merge_mode,
         render_coding_agent_startup_prompt as render_coding_agent_control,
         render_downstream_workflow as render_workflow_control,
+        render_proposed_delivery_policy,
     )
     from scripts.statedd_validate_schema import load_schema, validate_json_schema
 
@@ -203,6 +207,15 @@ views and never replace canonical readable state.
   `clone`; containers and independent agents use full clones.
 - One integration agent owns each slice branch; subagents return bounded commits,
   do not edit global StateDD truth, and do not push the final slice.
+- The human confirms `delivery_policy.merge.mode` once during bootstrap. A
+  proposed or pending policy grants no merge authority, and an agent never
+  silently changes a confirmed mode.
+- Confirmed `human_merge` stops automation before merge. Confirmed
+  `agent_after_green` lets the integration agent squash-merge only the exact
+  verified PR head, verify direct-main CI, write an external final handoff, and
+  delete the remote slice branch only after post-merge verification.
+- Force-push, shared-history rewrite, and CI-unavailable automatic merge remain
+  forbidden; final product acceptance remains human.
 - End implementation sessions with state hygiene, relevant gates, and a handoff.
 
 ## Current Mode: `{mode}`
@@ -292,20 +305,7 @@ def render_project_state(
     head = json.dumps(repo_scan.head) if repo_scan.head is not None else "null"
     unknowns_block = "\n".join(f"      - {json.dumps(entry)}" for entry in unknowns) or "      []"
     runtime_helper = "not_installed_in_minimal_profile" if profile == "minimal" else "scripts/statedd_runtime_proof.py"
-    delivery_policy = """delivery_policy:
-  status: proposed_default
-  confirmation: pending_during_bootstrap
-  profile_default: team
-  coding_agent:
-    allowed_routine_operations: [create_local_branches, create_isolated_clones, create_commits, push_slice_branches, open_or_update_pull_requests, resolve_integration_conflicts]
-    merge_to_main: requires_explicit_authorization
-    force_push: forbidden
-    delete_remote_branches: requires_explicit_authorization
-    rewrite_shared_history: forbidden
-  ci:
-    mode: best_effort
-    unavailable_behavior: continue_with_explicit_local_only_status
-"""
+    delivery_policy = render_proposed_delivery_policy(profile)
 
     return f"""# PROJECT_STATE.yaml - Structured current truth
 
@@ -790,6 +790,7 @@ and must be protected from quiet regression.
 
 
 def render_downstream_readme(project_name: str, profile: str) -> str:
+    proposed_merge_mode = recommended_merge_mode(profile)
     return f"""# {project_name}
 
 This repository uses StateDD `{TEMPLATE_VERSION}` with the `{profile}` profile.
@@ -800,7 +801,9 @@ gates; they do not define this project's product behavior.
 
 1. Read `AGENTS.md` and follow its declared task-scoped read order.
 2. Replace bootstrap unknowns with observed project/runtime truth.
-3. Confirm the standing `delivery_policy` once during bootstrap.
+3. Review the proposed `{proposed_merge_mode}` merge mode and explicitly confirm
+   either `human_merge` or `agent_after_green` once during structured bootstrap.
+   A pending proposal is not merge authorization.
 4. Create a real queue linked to `BACKLOG.md`.
 5. Run `python3 scripts/check_state_docs.py --bootstrap-gate` before switching
    from `bootstrap` to `operating`.
@@ -824,6 +827,15 @@ python3 scripts/statedd_git_safety_check.py --mode normal_branch
 Use full clones for containers or independent agents. Linked worktrees require
 explicit trusted-local same-identity opt-in. A failed writable preflight means
 diagnosis only until repair and an explicit `--restart-session` succeed.
+
+## Delivery Policy
+
+`human_merge` keeps merge as a human operation. Confirmed `agent_after_green`
+lets the coding agent own exact-head squash merge and post-merge verification
+after every configured review, evidence, remote-closure, and CI condition passes.
+The agent never infers a CI-unavailable override, changes the confirmed mode, or
+deletes the remote slice branch before verified main closure. Final product
+acceptance remains human in either mode.
 
 `STATEDD_ASSETS.json` records the exact workflow files installed for this
 profile. Template-maintenance tests, fixtures, evidence, incidents, and release

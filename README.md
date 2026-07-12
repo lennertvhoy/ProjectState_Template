@@ -16,7 +16,11 @@ The template repository itself uses `repo_role: template_repository` and
 
 StateDD is agent-operated. The human supplies intent, permissions, feedback,
 and acceptance; the coding agent inspects the repository, makes scoped changes,
-runs the executable gates, pushes a branch, and returns a remote-first handoff.
+runs the executable gates, and follows the delivery policy confirmed once during
+bootstrap. The canonical `team` path recommends `agent_after_green`, under which
+the coding agent owns commit, push, PR, exact-head squash merge, direct-main CI,
+post-merge verification, and the final remote-first handoff. `human_merge`
+remains available, and final product acceptance remains human in either mode.
 For an empty folder, use the canonical URL startup prompt in
 `prompts/NEW_PROJECT_FROM_URL.md`; it explicitly selects the `team` profile,
 creates a fresh `main`, and enters truthful bootstrap mode.
@@ -151,8 +155,13 @@ This repository publishes the template itself. It keeps the workflow contract pu
 5. execute: implement and verify directly.
 6. record: update state and evidence when truth changes.
 7. audit: run `statedd_audit.py` before claiming closure-grade.
-8. handoff: leave the next session a clear starting point.
-9. review: the CTO AI accepts, rejects, or conditions closure.
+8. remote closure: bind the exact PR head, evidence, review state, merge state,
+   and CI subjects.
+9. merge: when confirmed policy is `agent_after_green`, squash-merge only the
+   exact verified head; with `human_merge`, stop for the human operation.
+10. post-merge: verify direct-main CI, write the external final handoff, then
+    delete the slice branch only after verification.
+11. acceptance: the human accepts, rejects, or conditions product closure.
 
 ## What Makes This Different
 
@@ -164,7 +173,9 @@ This repository publishes the template itself. It keeps the workflow contract pu
 - executable schemas: `statedd_validate_schema.py` checks state, evidence README, runtime identity, and handoff contracts
 - `bootstrap vs operating`: discovery is a real phase, not a formality
 - `adopt` path for inherited repos: bring the workflow into existing codebases without blindly overwriting them
-- agent-first delivery: clone-default isolation, standing permissions, and remote-first handoffs keep routine work automatic while merge/acceptance remain human boundaries
+- agent-first delivery: clone-default isolation and confirmed-once policy let the
+  coding agent own merge and post-merge closure when `agent_after_green` is
+  selected, while final product acceptance remains human
 - short active queue: open work stays small and backlog-linked
 
 ## Quick Start
