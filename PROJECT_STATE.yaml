@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-12T10:44:33+02:00
-  updated_by: integration_agent
+  updated_at: 2026-07-12T18:08:58+02:00
+  updated_by: integration_agent_recording_human_cto_acceptance
   version: "statedd-template-v5"
 
 workflow:
@@ -51,6 +51,28 @@ verification_labels:
   invalid: known false or superseded
 
 current_state:
+  acceptance:
+    cto_engineering_and_architecture:
+      status: accepted
+      accepted_on: 2026-07-12
+      scope: statedd_v5_operational_core
+      authority: human_cto
+      evidence: docs/ACCEPTANCE_FREEZES.md#af-2026-07-12-001-statedd-v5-operational-core-accepted
+    human_product_acceptance:
+      status: pending
+      notes: CTO engineering and architecture acceptance does not imply final product acceptance.
+
+  operational_core_freeze:
+    status: active
+    scope: statedd_v5_operational_core
+    accepted_change_classes:
+      - reproduced_defect
+      - compatibility_or_security_migration
+      - measured_improvement_against_current_baseline
+      - explicitly_selected_optional_research
+      - verified_legal_copyright_holder_decision
+    forbidden_default: unmeasured_core_expansion
+
   execution_mode:
     status: observed
     mode: template-maintenance

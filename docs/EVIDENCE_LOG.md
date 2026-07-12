@@ -665,3 +665,24 @@
 - as_of: 2026-07-12T10:44:33+02:00
 - Notes: Remote PR/CI/merge/main verification and human product acceptance remain
   separately unproven until the authorized finish command completes.
+
+## EV-2026-07-12-002: CTO engineering and architecture acceptance
+
+- File: docs/ACCEPTANCE_FREEZES.md
+- Title: StateDD v5 operational core accepted and frozen for stable maintenance
+- Source/System: explicit human CTO acceptance after independent GitHub verification
+- Action: Recorded engineering and architecture acceptance of final main baseline
+  `5779baf293a9b5357f896d9725fd7edae2528445` and constrained future core work to
+  reproduced defects, compatibility/security migrations, measured improvements,
+  explicitly selected research, or the legal copyright-holder decision.
+- Shows:
+  - the human CTO accepts the operational architecture and agent-owned golden path
+  - the core moves from construction to stable maintenance
+  - human product acceptance remains a separate pending label
+  - legal-owner and benchmark-superiority claims remain unproven
+- Proves:
+  - user-accepted engineering and architecture truth for the accepted main baseline
+- Type: human_acceptance, state_update
+- as_of: 2026-07-12T18:08:58+02:00
+- Notes: This acceptance does not guess legal identity or claim product acceptance
+  or benchmark superiority.
