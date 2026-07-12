@@ -984,8 +984,9 @@ class GitHubProvider:
 
     def delete_branch(self, branch: str, expected_head: str) -> bool:
         encoded = quote(branch, safe="")
-        path = f"repos/{self.owner}/{self.repo}/git/ref/heads/{encoded}"
-        current = self._gh(["api", path], allow_not_found=True)
+        read_path = f"repos/{self.owner}/{self.repo}/git/ref/heads/{encoded}"
+        delete_path = f"repos/{self.owner}/{self.repo}/git/refs/heads/{encoded}"
+        current = self._gh(["api", read_path], allow_not_found=True)
         if current.get("_not_found"):
             return False
         actual = ((current.get("object") or {}).get("sha"))
@@ -993,8 +994,8 @@ class GitHubProvider:
             raise FinishRefused(
                 f"remote branch moved before deletion: expected {expected_head}, found {actual or 'not found'}"
             )
-        self._gh(["api", "--method", "DELETE", path])
-        absent = self._gh(["api", path], allow_not_found=True)
+        self._gh(["api", "--method", "DELETE", delete_path])
+        absent = self._gh(["api", read_path], allow_not_found=True)
         if not absent.get("_not_found"):
             raise FinishRefused("remote branch still exists after deletion request")
         return True
