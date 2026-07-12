@@ -37,6 +37,62 @@
         }
       }
     },
+    "delivery_policy": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": {"type": "string", "enum": ["proposed_default", "confirmed"]},
+        "confirmation": {"type": "string", "enum": ["pending_during_bootstrap", "human_confirmed"]},
+        "merge": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "method",
+            "delete_branch_after_verification",
+            "require_exact_pr_head",
+            "require_clean_merge_state",
+            "require_no_requested_changes",
+            "require_no_unresolved_review_threads",
+            "require_branch_head_ci",
+            "require_merge_candidate_ci",
+            "require_remote_closure",
+            "require_post_merge_main_ci"
+          ],
+          "properties": {
+            "mode": {"type": "string", "enum": ["human_merge", "agent_after_green"]},
+            "method": {"type": "string", "const": "squash"},
+            "delete_branch_after_verification": {"type": "boolean", "const": true},
+            "require_exact_pr_head": {"type": "boolean", "const": true},
+            "require_clean_merge_state": {"type": "boolean", "const": true},
+            "require_no_requested_changes": {"type": "boolean", "const": true},
+            "require_no_unresolved_review_threads": {"type": "boolean", "const": true},
+            "require_branch_head_ci": {"type": "boolean", "const": true},
+            "require_merge_candidate_ci": {"type": "boolean", "const": true},
+            "require_remote_closure": {"type": "boolean", "const": true},
+            "require_post_merge_main_ci": {"type": "boolean", "const": true}
+          }
+        },
+        "protected_operations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["force_push", "rewrite_shared_history"],
+          "properties": {
+            "force_push": {"type": "string", "const": "forbidden"},
+            "rewrite_shared_history": {"type": "string", "const": "forbidden"}
+          }
+        },
+        "ci_unavailable": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["automatic_merge", "override"],
+          "properties": {
+            "automatic_merge": {"type": "string", "const": "forbidden"},
+            "override": {"type": "string", "const": "requires_separate_explicit_human_authorization"}
+          }
+        }
+      }
+    },
     "verification_labels": {
       "type": "object",
       "additionalProperties": {"type": "string"}
@@ -84,7 +140,39 @@
           }
         },
         "open_p0_failures": {
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "remote_reconciliation": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "evidence": {"type": "string", "minLength": 1},
+            "pull_requests": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": ["number", "state"],
+                "additionalProperties": true,
+                "properties": {
+                  "number": {"type": "integer", "minimum": 1},
+                  "state": {"type": "string", "enum": ["open", "closed", "merged"]},
+                  "evidence": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "main_ci": {
+              "type": "object",
+              "required": ["status", "evidence"],
+              "additionalProperties": true,
+              "properties": {
+                "status": {"type": "string", "enum": ["pending", "failed", "verified"]},
+                "evidence": {"type": "string", "minLength": 1}
+              }
+            }
+          }
         },
         "closure_blockers": {
           "type": "array"
@@ -150,11 +238,23 @@
       }
     },
     "active_problems": {
-      "type": "array"
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "severity"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "severity": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
+          "status": {"type": "string", "minLength": 1}
+        }
+      }
     }
   },
   "statedd_semantics": {
     "repo_role_mode_compatibility": true,
-    "statedd_mode_matches_repo_mode": true
+    "statedd_mode_matches_repo_mode": true,
+    "live_state_is_nonterminal": true
   }
 }

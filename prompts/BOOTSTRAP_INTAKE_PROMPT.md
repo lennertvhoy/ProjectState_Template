@@ -23,3 +23,15 @@ Ask only the minimum strategic questions needed:
 8. What are the top constraints?
 9. What is the biggest current blocker?
 10. What should the agent optimize first?
+
+Then present the profile recommendation and ask for one explicit delivery-policy
+choice:
+
+- `human_merge`: the coding agent stops before merge;
+- `agent_after_green`: after every configured exact-head, review/thread,
+  merge-state, evidence, remote-closure, and CI condition passes, the coding
+  agent owns squash merge and post-merge verification.
+
+Record `confirmation: human_confirmed` only after the user selects a mode. A
+generated proposal, silence, or an old policy field is not confirmation. Final
+product acceptance remains human in either mode.

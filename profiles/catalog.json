@@ -90,19 +90,24 @@
       ]
     },
     "collaboration": {
-      "version": 1,
+      "version": 2,
       "depends_on": ["proof"],
       "conflicts_with": [],
       "capabilities": [
         "parallel_worktree_isolation",
         "remote_closure",
+        "agent_owned_remote_closure",
+        "post_merge_verification",
         "review_handoff",
         "upgrade_guidance"
       ],
-      "validation": ["remote_closure_contract", "worktree_contract"],
+      "validation": ["remote_closure_contract", "finish_slice_contract", "post_merge_contract", "worktree_contract"],
       "assets": [
         "scripts/statedd_agent_worktree.py",
         "scripts/statedd_remote_closure_finalizer.py",
+        "scripts/statedd_finish_slice.py",
+        "scripts/statedd_post_merge_verify.py",
+        "schemas/finish_slice_handoff.schema.json",
         "prompts/CTO_SESSION_PROMPT.md",
         "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
         "prompts/SUBAGENT_REVIEW_TEMPLATE.md",
@@ -113,15 +118,12 @@
       ]
     },
     "regulated_controls": {
-      "version": 1,
+      "version": 2,
       "depends_on": ["collaboration"],
       "conflicts_with": [],
-      "capabilities": [
-        "post_merge_verification",
-        "level_2_validation_default"
-      ],
-      "validation": ["quality_gate_level_2", "post_merge_contract"],
-      "assets": ["scripts/statedd_post_merge_verify.py"]
+      "capabilities": ["level_2_validation_default"],
+      "validation": ["quality_gate_level_2"],
+      "assets": []
     },
     "knowledge_okf": {
       "version": 1,
@@ -173,7 +175,7 @@
     "team": {
       "depends_on": ["solo"],
       "asset_sets": ["collaboration"],
-      "required_capabilities": ["parallel_worktree_isolation", "remote_closure", "review_handoff"],
+      "required_capabilities": ["parallel_worktree_isolation", "remote_closure", "agent_owned_remote_closure", "post_merge_verification", "review_handoff"],
       "required_gate_level": 1
     },
     "regulated": {

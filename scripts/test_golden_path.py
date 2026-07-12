@@ -8,11 +8,36 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 
 try:
+    from scripts.statedd_finish_slice import (
+        CiObservation,
+        DefaultBranchSnapshot,
+        DeliveryPolicy,
+        FinishSlice,
+        LocalTruth,
+        MergeResult,
+        PostMergeProof,
+        PullRequestSnapshot,
+        RemoteClosureProof,
+        Stage,
+    )
     from scripts.statedd_validate_schema import parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from statedd_finish_slice import (
+        CiObservation,
+        DefaultBranchSnapshot,
+        DeliveryPolicy,
+        FinishSlice,
+        LocalTruth,
+        MergeResult,
+        PostMergeProof,
+        PullRequestSnapshot,
+        RemoteClosureProof,
+        Stage,
+    )
     from statedd_validate_schema import parse_yaml_text
 
 
@@ -105,6 +130,19 @@ def test_golden_path() -> None:
             raise AssertionError("new-project materialization did not initialize Git metadata")
         if git(downstream, "branch", "--show-current") != "main":
             raise AssertionError("new-project materialization did not initialize main")
+        for required_finish_asset in (
+            "scripts/statedd_finish_slice.py",
+            "scripts/statedd_post_merge_verify.py",
+            "schemas/finish_slice_handoff.schema.json",
+        ):
+            if not (downstream / required_finish_asset).is_file():
+                raise AssertionError(f"team profile omitted finish asset: {required_finish_asset}")
+        workflow_text = (
+            downstream / ".github" / "workflows" / "statedd-validate.yml"
+        ).read_text(encoding="utf-8")
+        for required_subject in ("branch-head:", "merge-candidate:"):
+            if required_subject not in workflow_text:
+                raise AssertionError(f"generated CI omitted subject: {required_subject}")
         inherited = subprocess.run(
             ["git", "cat-file", "-e", f"{source_head}^{{commit}}"],
             cwd=downstream,
@@ -143,7 +181,7 @@ def test_golden_path() -> None:
                     "constraints": [
                         "No inherited template Git history",
                         "No writes through symlinked roots",
-                        "Human controls merge and acceptance",
+                        "Confirmed delivery policy controls merge; human controls acceptance",
                     ],
                     "first_milestone": "Complete the bootstrap baseline and integrate two bounded agent commits.",
                     "backlog": [
@@ -178,7 +216,13 @@ def test_golden_path() -> None:
                             "exit": "Whole-project gate and strict evidence pack pass.",
                         }
                     ],
-                    "delivery_policy_confirmation": "confirmed",
+                    "delivery_policy": {
+                        "confirmation": "human_confirmed",
+                        "merge": {
+                            "mode": "agent_after_green",
+                            "method": "squash",
+                        },
+                    },
                 },
                 indent=2,
             ),
@@ -209,6 +253,8 @@ def test_golden_path() -> None:
             raise AssertionError("structured bootstrap primary user did not reach canonical project state")
         if state["delivery_policy"]["confirmation"] != "human_confirmed":
             raise AssertionError("structured delivery policy was not confirmed")
+        if state["delivery_policy"]["merge"]["mode"] != "agent_after_green":
+            raise AssertionError("structured delivery policy merge mode did not round-trip")
 
         git(downstream, "config", "user.email", "statedd-golden@example.invalid")
         git(downstream, "config", "user.name", "StateDD Golden Path")
@@ -363,6 +409,185 @@ def test_golden_path() -> None:
         ):
             if phrase not in handoff:
                 raise AssertionError(f"handoff is missing remote proof: {phrase}")
+
+        # Continue the same journey through the provider boundary with a
+        # deterministic fake. Unit tests exercise every failure branch; this
+        # end-to-end regression proves that the materialized team policy and
+        # real bootstrap/integration evidence feed the authoritative finish
+        # state machine without any human Git or follow-up metadata action.
+        merge_commit = "f" * 40
+        events: list[str] = []
+
+        class GoldenLocal:
+            def validate(self, expected_head: str, evidence_folder: Path) -> LocalTruth:
+                events.append("local-validated")
+                if expected_head != integration_head or not evidence_dir.is_dir():
+                    raise AssertionError("finish inputs do not bind the integrated proof")
+                return LocalTruth(
+                    root=downstream,
+                    branch=integration_branch,
+                    head=integration_head,
+                    evidence_folder=evidence_dir,
+                    evidence_ref="docs/evidence/golden-path-integration",
+                    agent_id="integration-agent",
+                    slice_id="BL-GOLDEN-PATH-001",
+                )
+
+            def authorize_remote(self, operation: str) -> None:
+                events.append(f"authorized:{operation}")
+
+            def push_exact(self, branch: str, expected_head: str) -> None:
+                events.append("exact-head-pushed")
+                if git(remote, "show-ref", "--hash", f"refs/heads/{branch}") != expected_head:
+                    raise AssertionError("fake provider saw a different pushed head")
+
+            def remote_closure(
+                self, pr_number: int, expected_head: str, evidence_folder: Path, output: Path
+            ) -> RemoteClosureProof:
+                events.append("remote-closure-verified")
+                output.write_text("{}\n", encoding="utf-8")
+                return RemoteClosureProof(
+                    head=expected_head,
+                    proof_head=integration_head,
+                    evidence_ref="docs/evidence/golden-path-integration",
+                    ci_run_id="501",
+                    output=output,
+                )
+
+            def fetch_default_branch(self, branch: str) -> str:
+                events.append("default-branch-fetched")
+                return merge_commit
+
+            def post_merge_verify(
+                self,
+                pr_number: int,
+                expected_head: str,
+                evidence_folder: Path,
+                output: Path,
+            ) -> PostMergeProof:
+                events.append("post-merge-verified")
+                payload = {"schema": "statedd.post_merge_handoff.v1", "status": "verified"}
+                output.write_text(json.dumps(payload), encoding="utf-8")
+                return PostMergeProof(output=output, payload=payload)
+
+            def release_isolation(self) -> None:
+                events.append("isolation-released")
+
+            def record_remote_failure(self, operation: str, diagnostic: str) -> None:
+                raise AssertionError(f"unexpected remote failure: {operation}: {diagnostic}")
+
+        green_branch = CiObservation(
+            state="SUCCESS",
+            subject_sha=integration_head,
+            run_id="501",
+            run_url="https://example.invalid/actions/runs/501",
+            workflow_path=".github/workflows/statedd-validate.yml",
+            check_name="branch-head",
+        )
+        green_candidate = replace(green_branch, check_name="merge-candidate")
+
+        class GoldenProvider:
+            def __init__(self) -> None:
+                self.snapshot = PullRequestSnapshot(
+                    number=1,
+                    url="https://example.invalid/pull/1",
+                    state="OPEN",
+                    head=integration_head,
+                    branch=integration_branch,
+                    base_branch="main",
+                    draft=True,
+                    review_decision=None,
+                    unresolved_threads=0,
+                    merge_state="CLEAN",
+                    proof_head=integration_head,
+                    final_pr_head=integration_head,
+                    evidence_ref="docs/evidence/golden-path-integration",
+                    branch_head_ci=green_branch,
+                    merge_candidate_ci=green_candidate,
+                )
+                self.open_pr_count = 1
+                self.human_git_actions = 0
+                self.follow_up_metadata_prs = 0
+
+            def pull_request(self, number: int) -> PullRequestSnapshot:
+                events.append("pr-observed")
+                return self.snapshot
+
+            def mark_ready(self, number: int) -> None:
+                events.append("pr-ready")
+                self.snapshot = replace(self.snapshot, draft=False)
+
+            def merge(self, number: int, expected_head: str, method: str) -> MergeResult:
+                events.append("exact-head-squash-merged")
+                if expected_head != integration_head or method != "squash":
+                    raise AssertionError("merge did not use the confirmed exact-head policy")
+                self.snapshot = replace(
+                    self.snapshot,
+                    state="MERGED",
+                    merge_state="MERGED",
+                    merge_commit=merge_commit,
+                )
+                self.open_pr_count = 0
+                return MergeResult(True, merge_commit, "merged")
+
+            def default_branch(self) -> DefaultBranchSnapshot:
+                events.append("default-branch-observed")
+                main_ci = replace(
+                    green_branch,
+                    subject_sha=merge_commit,
+                    run_id="502",
+                    run_url="https://example.invalid/actions/runs/502",
+                )
+                return DefaultBranchSnapshot("main", merge_commit, main_ci)
+
+            def delete_branch(self, branch: str, expected_head: str) -> bool:
+                events.append("remote-branch-deleted")
+                git(
+                    remote,
+                    "update-ref",
+                    "-d",
+                    f"refs/heads/{branch}",
+                    expected_head,
+                )
+                return True
+
+        provider = GoldenProvider()
+        final_handoff = root / "golden-path-final-handoff.json"
+        finish = FinishSlice(
+            local=GoldenLocal(),
+            provider=provider,
+            policy=DeliveryPolicy.from_mapping(state),
+            pr_number=1,
+            expected_head=integration_head,
+            evidence_folder=Path("docs/evidence/golden-path-integration"),
+            handoff_output=final_handoff,
+            pr_ci_timeout=0,
+            main_ci_timeout=0,
+            poll_interval=0,
+        )
+        if finish.run() != 0:
+            raise AssertionError(f"agent-owned finish failed: {finish.report.failure}")
+        expected_transitions = [stage.value for stage in Stage]
+        if finish.report.transitions != expected_transitions:
+            raise AssertionError(f"finish transitions drifted: {finish.report.transitions}")
+        if provider.open_pr_count != 0 or provider.human_git_actions != 0:
+            raise AssertionError("golden path still requires a human Git action or leaves an open PR")
+        deleted_branch_probe = subprocess.run(
+            ["git", "show-ref", "--verify", f"refs/heads/{integration_branch}"],
+            cwd=remote,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if deleted_branch_probe.returncode == 0:
+            raise AssertionError("golden path retained the verified remote slice branch")
+        if provider.follow_up_metadata_prs != 0:
+            raise AssertionError("golden path created a follow-up metadata PR")
+        if events.index("post-merge-verified") > events.index("remote-branch-deleted"):
+            raise AssertionError("remote branch was deleted before post-merge verification")
+        final_payload = json.loads(final_handoff.read_text(encoding="utf-8"))
+        if final_payload["status"] != "HANDOFF_COMPLETE":
+            raise AssertionError("external final handoff is not complete")
 
 
 if __name__ == "__main__":

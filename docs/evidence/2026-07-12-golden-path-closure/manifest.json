@@ -1,0 +1,102 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "3240999e5fed872eabac7f417fbebe34caa505e4f8a8de35d44845ce079a570f"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e9428b0d31341d513192999f7009c9c7442725852549c3348b593a1ba68ed08b"
+    },
+    {
+      "kind": "command_output",
+      "path": "verification_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f4d6f119a1ece06641529fc48f5ad0df1187748d8ae86f671aee2c2f8750e856"
+    },
+    {
+      "kind": "doc",
+      "path": "source_hashes.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "bd0f4f105ebd663a262cf30a8a9a2a25cee75059eb8c08151de4e6e5cb3984cd"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "Confirmed-once delivery policy and generated profile round-trip are validated.",
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
+      "id": "delivery-policy",
+      "status": "validated"
+    },
+    {
+      "claim": "The idempotent finish state machine gates exact-head merge, main CI, post-merge proof, and cleanup.",
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
+      "id": "finish-state-machine",
+      "status": "validated"
+    },
+    {
+      "claim": "Tracked proof needs no future merge identity and semantic state cannot retain terminal active work.",
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
+      "id": "future-sha-and-state",
+      "status": "validated"
+    },
+    {
+      "claim": "The complete generated-team golden path ends without a human Git action or follow-up metadata PR.",
+      "evidence": [
+        "verification_summary.json"
+      ],
+      "id": "complete-golden-path",
+      "status": "validated"
+    },
+    {
+      "claim": "The tracked evidence contract records the proof boundary and runtime-not-applicable truth without future remote identities.",
+      "evidence": [
+        "README.md",
+        "runtime_identity.json"
+      ],
+      "id": "evidence-and-runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-12T10:38:32+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in source_hashes.json; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-golden-path-closure-001",
+    "head": "b46c97a7b643459185f21d7bd0bfd4a8d03017a0"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-GOLDEN-PATH-CLOSURE-001"
+}

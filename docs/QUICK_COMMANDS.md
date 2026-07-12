@@ -67,6 +67,26 @@ python3 scripts/statedd_audit.py
 python3 scripts/statedd_audit.py --strict
 ```
 
+## Finish a green slice
+
+After the branch is pushed and its PR exists, confirmed `agent_after_green`
+projects use one idempotent finish command:
+
+```bash
+python3 scripts/statedd_finish_slice.py \
+  --root . \
+  --pr-number 123 \
+  --expected-pr-head <40-character-sha> \
+  --delivery-policy PROJECT_STATE.yaml \
+  --evidence-folder docs/evidence/YYYY-MM-DD-slice \
+  --merge-method squash \
+  --handoff-output /absolute/path/to/final-handoff.json
+```
+
+The command refuses unconfirmed or `human_merge` policies. It retains recovery
+state on failure and deletes the remote branch/releases isolation only after
+direct default-branch CI and post-merge verification pass.
+
 ## Evidence and runtime proof
 
 ```bash

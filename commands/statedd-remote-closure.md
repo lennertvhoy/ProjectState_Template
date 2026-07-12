@@ -2,50 +2,36 @@
 command: "statedd-remote-closure"
 gate_level: 2
 evidence_max: 4
-cheapest_proof: "Remote closure finalizer exits 0 with CI verified or merged label"
+cheapest_proof: "Remote closure finalizer exits 0 for the exact pre-merge head"
 escalate_when: "Release gate requires level 3 with CI proof"
-description: "Run the remote CI/CD closure finalizer"
+description: "Verify the exact pre-merge PR candidate before policy-governed merge"
 ---
 
 # /statedd-remote-closure — Remote Closure Finalizer
 
-**When to use:** After pushing a slice and before calling it closure-grade.
-
-**Triggers:**
-- Human types `/statedd-remote-closure`
-- Close-slice skill reaches the remote closure step
-- Release gate requires remote verification
+**When to use:** After pushing a slice and before the merge transition. This proves
+the exact PR candidate; full `agent_after_green` closure also requires merge,
+direct default-branch CI, post-merge verification, and an external handoff.
 
 **Procedure:**
-1. Confirm worktree is clean (`git status --short`)
-2. Confirm current branch is pushed to origin (`git ls-remote origin <branch>`)
-3. Find the open PR for the current branch (or use `--pr-number`)
-4. Verify PR head SHA equals local HEAD
-5. Verify PR body references current HEAD or uses an explicit Proof head/Final PR head split
-6. Verify GitHub Actions checks completed successfully for current HEAD
-7. Verify `mergeStateStatus` is CLEAN, HAS_HOOKS, or MERGED
-8. Verify in-repo evidence references current HEAD or uses an explicit proof_head/final_head split
-9. Print and optionally write a JSON handoff artifact
-
-**Required inputs:**
-- Clean git worktree
-- Current branch pushed to origin
-- Open PR for the branch
-- `GH_TOKEN` or `GITHUB_TOKEN` environment variable (or authenticated `gh` CLI)
+1. Confirm the worktree is clean and the exact branch head is pushed.
+2. Verify the PR body uniquely binds the proof head, final PR head, and evidence folder.
+3. Verify PR and remote branch heads equal local HEAD.
+4. Verify branch-head and merge-candidate CI completed successfully for that head.
+5. Verify requested changes, unresolved current review threads, and dirty merge state are absent.
+6. Validate the strict tracked evidence bundle.
+7. Print and optionally write the pre-merge remote-finalizer receipt.
 
 **Failure cases:**
-- Dirty worktree: commit or stash changes, re-run
-- Branch not pushed: push, re-run
-- No PR for branch: open a PR, re-run
-- PR head drift: pull/push to align heads, re-run
-- Stale PR body: edit PR body to reference current HEAD, re-run
-- CI pending/failing: wait for CI or fix failures, re-push, re-run
-- mergeStateStatus blocked: resolve branch protection or rebase, re-run
-- Evidence references stale head: update evidence or add explicit proof_head/final_head split
+- Dirty or unpushed branch: restore the clean exact-head boundary, then rerun.
+- PR-head drift or stale body: stop; never merge the unexpected head.
+- CI pending/failing: wait or fix on the same PR; local tests do not override it.
+- Review or merge state blocked: resolve the blocker and re-query remote truth.
+- Evidence mismatch: repair the tracked proof binding and obtain new exact-head CI.
 
-**Exit criteria:** `statedd_remote_closure_finalizer.py` exits 0 with a `CI verified` or `merged` closure label.
+**Exit criteria:** `statedd_remote_closure_finalizer.py` exits 0 for the exact
+pre-merge head. This alone does not prove the later merge or default-branch CI.
 
-**Command:**
 ```bash
 python3 scripts/statedd_remote_closure_finalizer.py \
   --pr-number <pr-number> \

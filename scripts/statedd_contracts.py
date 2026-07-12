@@ -62,6 +62,13 @@ VALIDATION_REQUIREMENTS: dict[str, dict[str, Any]] = {
     "remote_closure_contract": {
         "required_paths": ("scripts/statedd_remote_closure_finalizer.py",),
     },
+    "finish_slice_contract": {
+        "required_paths": (
+            "scripts/statedd_finish_slice.py",
+            "scripts/statedd_post_merge_verify.py",
+            "schemas/finish_slice_handoff.schema.json",
+        ),
+    },
     "worktree_contract": {
         "required_paths": (
             "scripts/statedd_worktree_guard.py",

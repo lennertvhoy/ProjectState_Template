@@ -638,3 +638,30 @@
 - Type: test
 - as_of: 2026-07-11T14:50:00+02:00
 - Notes: Remote branch, PR, exact-head CI, finalizer, merge, and human acceptance are not proven.
+
+## EV-2026-07-12-001: Agent-owned golden-path closure local proof
+
+- File: docs/evidence/2026-07-12-golden-path-closure/README.md
+- File: docs/evidence/2026-07-12-golden-path-closure/manifest.json
+- File: docs/evidence/2026-07-12-golden-path-closure/verification_summary.json
+- File: docs/evidence/2026-07-12-golden-path-closure/source_hashes.json
+- File: docs/evidence/2026-07-12-golden-path-closure/runtime_identity.json
+- Title: Confirmed delivery policy, agent-owned merge, post-merge truth, and semantic state reconciliation
+- Source/System: implementation proof and local executable gates
+- Action: Added the schema-backed delivery policy, typed finish state machine,
+  future-SHA-free post-merge verifier, self-reconciling state checks, generated
+  team assets/two-subject CI, and complete mocked remote golden-path regression.
+- Shows:
+  - proof head `b46c97a7b643459185f21d7bd0bfd4a8d03017a0`
+  - full scripts and schema-example suites pass
+  - complete empty-folder through agent-owned merge/main-CI/cleanup regression passes
+  - every generated profile passes its declared v2-lock gate
+  - runtime is not applicable for the template root
+- Proves:
+  - local implementation and validation truth for BL-GOLDEN-PATH-CLOSURE-001
+  - tracked proof does not require a future provider-created merge identity
+  - the target default-branch state needs no follow-up metadata PR
+- Type: implementation, test, adversarial, state_update
+- as_of: 2026-07-12T10:44:33+02:00
+- Notes: Remote PR/CI/merge/main verification and human product acceptance remain
+  separately unproven until the authorized finish command completes.

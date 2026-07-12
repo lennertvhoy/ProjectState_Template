@@ -28,6 +28,28 @@ Four-state closure
 - Closure-grade: yes | no  (evidence, state docs, commit, clean worktree, risks complete)
 - Accepted: pending | yes | rejected | conditionally accepted  (CTO/human reviewed)
 
+Delivery policy and remote closure
+- delivery policy status: proposed_default | confirmed
+- delivery policy confirmation: pending_during_bootstrap | human_confirmed
+- merge mode: human_merge | agent_after_green
+- merge method: squash | merge | rebase
+- proof head: ...
+- final PR head: ...
+- PR number and URL: ...
+- branch-head CI run: ...
+- merge-candidate CI run: ...
+- remote closure finalizer: passing | failing | not_run
+- merged by coding agent: yes | no | not_applicable
+- merge commit: ... | not_created
+- verified default-branch head: ... | not_verified
+- direct default-branch CI run: ... | not_verified
+- post-merge verifier: passing | failing | not_run
+- external closure sidecar: /absolute/path | not_written
+- remote slice branch deleted after verification: yes | no | not_applicable
+- isolation released after verification: yes | no | not_applicable
+- follow-up metadata PR required: no | yes (explain defect)
+- human Git action required: no | yes (explain confirmed policy boundary)
+
 Release / update gate
 - committed in repo: yes | no
 - tests passed: yes | no
@@ -63,6 +85,8 @@ Repo and runtime identity
 - dirty files classified: yes | no | not applicable
 - GitHub-visible deliverables: yes | no | not proven
 - local-only files claimed: yes | no
+- PR head equals authorized head: yes | no | not proven
+- resulting default branch contains equivalent proof tree/patch: yes | no | not proven
 - process/container: ...
 - port/base URL: ...
 - rebuilt in this slice: yes | no
@@ -146,4 +170,9 @@ Required fields:
 - next recommended action
 - paste-ready wording for the CTO chat
 - four-state closure status (implemented, validated, closure-grade, accepted)
+- confirmed delivery-policy status, confirmation, merge mode, and merge method
+- proof head, final PR head, PR URL, branch-head CI, and merge-candidate CI
+- merge actor, merge commit, verified default-branch head, and direct main CI
+- post-merge verifier, external closure sidecar, branch cleanup, and isolation release
+- whether a follow-up metadata PR or human Git action is required
 - human override declaration when applicable

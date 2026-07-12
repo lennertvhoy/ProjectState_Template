@@ -945,3 +945,99 @@
 - Merged PR #10 as `886710edc9032465302f8bc6c390fe470f1fde3d` to refresh profile metrics after squash history.
 - Main branch-head validation passed in run `29184051017`.
 - PR #6 and PR #7 remain superseded draft source candidates and were not merged independently.
+
+## 2026-07-12 - Reconcile completed integration and OKF work
+
+**Type:** remote_truth_reconciliation
+**Status:** COMPLETE
+**Backlog items:** [BL-STATEDD-INTEGRATION-001], [BL-OKF-001]
+
+### Verified remote truth
+
+- PR #8 merged as `f92d2610a5d2616b71ee40a4e5358cf3f45cc6a2`.
+- PR #9 merged as `840ebaa69b95c1ecda1c2113d53011e4e3dde77d`.
+- PR #10 merged as `886710edc9032465302f8bc6c390fe470f1fde3d`.
+- PR #11 merged as `55abc6ee07d1e57f5c472d2d306bf6477c29d65a`.
+- PR #12 merged as `0aab4c02b0ff2ec4c7983f4e3807983b7f1ac8c4`.
+- Direct `main` branch-head CI passed in run `29184458026`, including the
+  authoritative level-2 gate, every generated profile, and checkout cleanliness.
+- PR #6 and PR #7 are closed as superseded historical candidates; no PR was open
+  when the final closure slice started.
+
+### Stable boundary
+
+- BL-STATEDD-INTEGRATION-001 and BL-OKF-001 are terminal and no longer belong in
+  canonical active state.
+- BL-OKF-002 and StateIR/StatePack benchmarking are future evidence-gated research.
+- Runtime is not applicable for the template root. Human product acceptance,
+  benchmark superiority, and the verified legal copyright owner remain unproven.
+
+## 2026-07-12 - Open BL-GOLDEN-PATH-CLOSURE-001
+
+**Type:** final_operational_slice_opening
+**Status:** OPEN
+**Backlog item:** [BL-GOLDEN-PATH-CLOSURE-001]
+**Worktree:** clean before state-opening edits
+
+### What changed
+
+- Opened the only remaining P0 to add confirmed agent-owned merge, post-merge
+  default-branch verification, external final handoff, and semantic state closure.
+- Recorded the human standing authorization for exact-head squash merge and
+  post-verification cleanup while preserving the force-push, CI-bypass, unexpected
+  head, unresolved-review, history-rewrite, and legal-owner boundaries.
+- Removed volatile containing-commit and workflow-run duplication from live state;
+  immutable identities remain in this history, GitHub, evidence, or final sidecars.
+
+### Verification
+
+- Fresh full clone has an independent common Git directory.
+- Clone-mode Git-safety preflight passed ownership, writability, fsck, fetch
+  synchronization, and isolation checks before mutation.
+- The branch starts from the independently verified default-branch head and no
+  open PR existed at slice start.
+
+### Next
+
+- Commit this state opening separately, integrate bounded subagent packages, run
+  all local/profile gates, publish one PR, and exercise the new finish path.
+
+## 2026-07-12 - Validate BL-GOLDEN-PATH-CLOSURE-001 and stage stable target state
+
+**Type:** final_operational_slice_local_validation
+**Status:** VALIDATED_LOCALLY_REMOTE_PENDING
+**Backlog item:** [BL-GOLDEN-PATH-CLOSURE-001]
+**Proof Head:** b46c97a7b643459185f21d7bd0bfd4a8d03017a0
+
+### What changed
+
+- Added a confirmed-once `human_merge` / `agent_after_green` delivery policy to
+  schema-backed bootstrap, generated state/agents/prompts, and upgrade controls.
+- Added one provider-neutral finish state machine with a GitHub adapter for draft
+  readiness, exact-head CI/review/merge gates, expected-head squash merge, direct
+  default-branch CI, post-merge verification, external handoff, and safe cleanup.
+- Removed future merge identity from tracked proof and added source-tree/stable-
+  patch squash equivalence.
+- Strengthened semantic state checks and allowed an empty template queue only
+  when active problems, open P0s, and BACKLOG NOW are empty and freeze is off.
+- Shipped the finish/post-merge contracts and two-subject CI workflow in the
+  generated team profile; refreshed proportional footprint budgets and metrics.
+
+### Verification
+
+- Compile, Ruff, the full script suite, schema examples, complete golden-path
+  regression, schema/state/bootstrap checks, instruction lint, efficiency, and
+  diff hygiene passed at the proof head.
+- Every generated profile passed the gate level declared in its v2 asset lock.
+- Strict evidence and runtime-not-applicable truth are recorded under
+  `docs/evidence/2026-07-12-golden-path-closure/`.
+- Remote branch, PR, exact-head CI, merge, direct-main CI, cleanup, and human
+  product acceptance remain separate boundaries until the finish command runs.
+
+### Target-state rule
+
+- The PR carries stable intended default-branch state with no active P0 or
+  mandatory queue item. It is not canonical on the feature branch and becomes
+  canonical only if the exact head passes every remote gate and merges.
+- Provider-created merge/default-head/CI identities remain external; no
+  post-merge metadata PR is planned or required by the architecture.

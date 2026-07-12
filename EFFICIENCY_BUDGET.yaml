@@ -68,7 +68,10 @@ context_budgets:
       # Includes the committed OKF evidence/state finalization surface; keep
       # this above the measured full-template footprint without changing
       # ordinary startup selection.
-      max_footprint_bytes: 2250000
+      # The final operational slice adds typed finish/post-merge implementations,
+      # their schemas/tests, and one proportional evidence pack. Measured before
+      # evidence finalization at 2,359,582 bytes.
+      max_footprint_bytes: 2450000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
@@ -76,13 +79,15 @@ context_budgets:
       max_footprint_files: 42
       # Optional knowledge_okf adds the validator, extension schema, and one
       # contained index without changing the startup file selection.
-      max_footprint_bytes: 380000
+      # Measured at 397,864 bytes with optional knowledge_okf installed.
+      max_footprint_bytes: 410000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
       max_footprint_files: 76
-      max_footprint_bytes: 730000
+      # Measured at 763,265 bytes with optional knowledge_okf installed.
+      max_footprint_bytes: 780000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
@@ -90,13 +95,15 @@ context_budgets:
       # Includes strict runtime-truth, Git-safety, structured bootstrap, and
       # exact-head collaboration controls required by the agent-first contract.
       max_footprint_files: 90
-      max_footprint_bytes: 850000
+      # Measured at 986,599 bytes with finish/post-merge controls and optional OKF.
+      max_footprint_bytes: 1020000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
       max_startup_estimated_tokens: 2750
       max_footprint_files: 92
-      max_footprint_bytes: 900000
+      # Measured at 987,047 bytes with inherited finish controls and optional OKF.
+      max_footprint_bytes: 1020000
 
 evidence_budgets:
   default_max_files: 15

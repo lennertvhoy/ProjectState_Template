@@ -843,7 +843,8 @@ def cmd_close(args: argparse.Namespace) -> int:
         print("--pr must be a positive integer", file=sys.stderr)
         return 1
     if args.dry_run:
-        print("DRY RUN: would require explicit remote-mutation authorization, then push and invoke remote closure finalizer")
+        print("DRY RUN (deprecated pre-merge close): would push and invoke the remote closure finalizer")
+        print("This does not merge or finish the slice; use scripts/statedd_finish_slice.py.")
         print("No worktree, clone, branch, or reservation cleanup would occur.")
         return 0
     if not args.remote_mutation or not args.operator_authorized:
@@ -920,7 +921,9 @@ def cmd_close(args: argparse.Namespace) -> int:
     if code != 0:
         print(f"Remote closure failed; isolation path retained: {worktree}", file=sys.stderr)
         return code
-    print(f"Remote closure verified; isolation path retained for explicit human cleanup: {worktree}")
+    print("PRE-MERGE REMOTE CLOSURE VERIFIED ONLY — the slice is not finished.")
+    print("Use scripts/statedd_finish_slice.py for agent-owned merge, main CI, and post-merge closure.")
+    print(f"Isolation path retained: {worktree}")
     return 0
 
 
@@ -1059,7 +1062,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     handoff.add_argument("--release", action="store_true", help="Release only after a clean, validated session")
     handoff.add_argument("--validated", action="store_true", help="Assert that the applicable local closure gate passed")
 
-    close = subparsers.add_parser("close", help="Push and run remote closure without automatic cleanup")
+    close = subparsers.add_parser(
+        "close",
+        help="Deprecated pre-merge push/finalizer only; use statedd_finish_slice.py",
+        description=(
+            "Deprecated pre-merge push/finalizer only. This command cannot finish a slice; "
+            "use scripts/statedd_finish_slice.py for merge and post-merge closure."
+        ),
+    )
     close.add_argument("--pr", type=int, required=True)
     close.add_argument("--worktree")
     close.add_argument("--restart-session", action="store_true")

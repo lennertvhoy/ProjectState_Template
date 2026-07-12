@@ -69,6 +69,20 @@ classification table in the evidence folder before any non-trivial edits.
 
 Always:
 - anchor on verified current truth
+- read `delivery_policy.status`, `delivery_policy.confirmation`, and
+  `delivery_policy.merge.mode` before any remote closure or merge action
+- treat a proposed or pending policy as no merge authorization
+- stop before merge when the confirmed mode is `human_merge`
+- when the mode is confirmed `agent_after_green`, own the exact-head squash
+  merge only after every configured local, evidence, review/thread, merge-state,
+  branch-head CI, merge-candidate CI, and remote-closure condition passes; then
+  verify direct-main CI, write the external post-merge handoff, and delete the
+  remote slice branch only after verification
+- use `scripts/statedd_finish_slice.py` as the one authoritative merge,
+  direct-main CI, post-merge handoff, and verified-cleanup path
+- never silently change a confirmed delivery mode or infer a CI-unavailable
+  override; force-push and shared-history rewrite remain forbidden
+- leave final product acceptance to the human even when delivery is agent-owned
 - forbid overclaiming
 - keep negative searches negative: use `not found`, `not currently locatable`, or `not proven`
 - require runtime identity proof before accepting or investigating user-facing behavior

@@ -2,7 +2,7 @@
 
 **Product:** StateDD_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-07-11
+**Updated At:** 2026-07-12
 
 ## Purpose
 
@@ -11,15 +11,17 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-STATEDD-INTEGRATION-001] Integrate PR #6's lifecycle/profile/gate/evidence correctness with PR #7's Git-safety and coding-agent golden path without downgrading either branch's strongest invariants.
-- [BL-OKF-001] Add optional OKF v0.1 knowledge interoperability with StateDD authority, provenance, and staleness governance without changing the canonical operational-state model.
 
 ## NEXT
 
+- [BL-OKF-002] Measure optional OKF, StateIR, and StatePack task-context value through controlled evidence-gated experiments before changing defaults.
 - [BL-BROWSER-002] Integrate a concrete browser automation provider using the provider-agnostic contract when a provider is available and permitted.
 
 ## CLOSED
 
+- [BL-GOLDEN-PATH-CLOSURE-001] Complete agent-owned exact-head merge, post-merge main verification, external handoff, cleanup, and self-reconciling remote truth in one PR.
+- [BL-OKF-001] Add optional OKF v0.1 knowledge interoperability with StateDD authority, provenance, and staleness governance without changing the canonical operational-state model.
+- [BL-STATEDD-INTEGRATION-001] Integrate PR #6's lifecycle/profile/gate/evidence correctness with PR #7's Git-safety and coding-agent golden path without downgrading either branch's strongest invariants.
 - [BL-CONTEXT-001] Implement generated-repo correctness and context hygiene. Merged in PR #5 as `c2fe7b2`; unresolved lifecycle and closure defects are reopened under BL-MAX-VALUE-001.
 - [BL-PARALLEL-001] Implement the parallel-agent worktree orchestrator. Merged through PR #4 as `a0ac268`; independent closure-grade agreement was not proven and is reviewed under BL-MAX-VALUE-001.
 - [BL-WORKFLOW-002] Re-validate and close worktree isolation and anti-brittleness guardrails after BL-SANITY-002 repairs; evidence, PR body, CI, and remote closure all agree on final head `0c2a136`.

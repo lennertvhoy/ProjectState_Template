@@ -81,12 +81,17 @@ def test_profile_catalog_expands_dependencies_and_enforces_capabilities() -> Non
     root = Path(__file__).resolve().parents[1]
     catalog = load_profile_catalog(root)
     minimal = resolve_profile(catalog, "minimal")
+    team = resolve_profile(catalog, "team")
     regulated = resolve_profile(catalog, "regulated")
     assert set(minimal.assets) < set(regulated.assets)
     assert regulated.profile_dependencies == ("minimal", "solo", "team")
     assert regulated.asset_sets == ("collaboration", "core", "proof", "regulated_controls")
     assert regulated.required_gate_level == 2
     assert "post_merge_verification" in regulated.capabilities
+    assert "agent_owned_remote_closure" in team.capabilities
+    assert Path("scripts/statedd_finish_slice.py") in team.assets
+    assert Path("scripts/statedd_post_merge_verify.py") in team.assets
+    assert "finish_slice_contract" in team.validations
     assert "quality_gate_level_1" in regulated.validations
     assert "quality_gate_level_2" in regulated.validations
 

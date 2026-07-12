@@ -4,7 +4,7 @@ statedd_mode: "template-maintenance"
 repo_mode: "template-maintenance"
 statedd_version: "statedd-template-v5"
 initialized_on: 2026-04-26
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 project: "StateDD_Template"
 ---
 
@@ -44,15 +44,15 @@ non-authoritative task pack is available.
   deliverable, PR, and exact-head CI proof. Final handoffs state `local-only`,
   `pushed`, `PR opened`, `merged`, and `CI verified` boundaries separately.
   Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
-- **Remote Closure Invariant:** A slice is not done until the pushed PR head, PR body, in-repo evidence, closure handoff, and latest GitHub Actions run all agree on the same final head. Local tests are only preflight. Final closure requires GitHub-visible CI success or an explicit `NOT CI-VERIFIED` label.
+- **Remote Closure Invariant:** A slice is not done until its pushed PR head/body/tracked proof, branch-head and merge-candidate CI, review/merge state, resulting default-branch head/direct CI, and external handoff agree. Tracked proof never predicts a provider-created merge SHA; local tests are preflight, and missing remote CI stays `NOT CI-VERIFIED`.
 - **Efficiency Invariant:** StateDD exists to reduce agent confusion and false closure, not to create bureaucracy. Every required file, gate, command, and evidence artifact must justify its cost. Prefer the smallest proof that crosses the relevant truth boundary.
 - **Worktree Isolation Invariant:** No non-trivial coding-agent slice may start from an ambiguous or dirty shared worktree unless the dirt is classified and isolated first with `scripts/statedd_worktree_guard.py`.
-- **Parallel-Agent Invariant:** Multiple coding agents working concurrently must each use an isolated agent worktree provisioned by `scripts/statedd_agent_worktree.py`. Shared worktrees cannot prove "whose change is whose" at closure; worktree isolation is the default boundary for non-trivial parallel slices.
+- **Parallel-Agent Invariant:** Concurrent coding agents use isolated full clones, or `scripts/statedd_agent_worktree.py` only with trusted-local same-identity proof; shared working trees cannot prove change ownership.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
 - **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove identity, common-directory ownership, metadata writability, fsck, synchronization, and the permitted isolation mode. A failed mandatory check latches the session read-only until repair and explicit restart.
 - **Isolation Invariant:** Containers and independent agents use full clones; linked worktrees require explicit trusted-local same-identity opt-in. No automatic permission repair, force cleanup, pruning, reset, or garbage collection.
 - **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones, return commits and verification summaries, do not edit global StateDD truth, and do not push the final slice.
-- **Standing Delivery Policy Invariant:** Routine branches, commits, slice pushes, conflict resolution, and PR preparation may be delegated once confirmed in downstream bootstrap; merge-to-main, force-push, history rewrite, and remote-branch deletion remain explicit human boundaries.
+- **Standing Delivery Policy Invariant:** Bootstrap confirms `human_merge` or `agent_after_green` once. The latter delegates branch/commit/push/PR, exact-head merge, direct-main CI, and verified cleanup to the integration agent; the former keeps merge manual. Agents never change the mode silently; force-push/history rewrite and product acceptance remain human boundaries, and CI-unavailable merge needs a separate explicit override.
 ## Gate Levels
 Use the cheapest gate that honestly proves the current claim.
 
