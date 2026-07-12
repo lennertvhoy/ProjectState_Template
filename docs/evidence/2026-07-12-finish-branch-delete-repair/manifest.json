@@ -3,51 +3,72 @@
     {
       "kind": "doc",
       "path": "README.md",
-      "redaction_status": "unchecked",
-      "sensitive_data": "none_found"
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2c2e41c452b34e6d2925aad8da1fccf886cfd0f583a2b5175172e0ef1523fe35"
     },
     {
       "kind": "runtime_identity",
       "path": "runtime_identity.json",
-      "redaction_status": "unchecked",
-      "sensitive_data": "none_found"
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "5fa9da71a10365c7d38ca56486632b15a44611070ffc0c6b07b734b91ed7b40b"
     },
     {
       "kind": "command_output",
       "path": "verification_summary.json",
-      "redaction_status": "unchecked",
-      "sensitive_data": "none_found"
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e2d08a364fee67d61d655e8cb03bf665bcc692fb2f00c213a6686409174f8bda"
     },
     {
       "kind": "doc",
       "path": "source_hashes.json",
-      "redaction_status": "unchecked",
-      "sensitive_data": "none_found"
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "c9e16cd6c15a9c10ae5fd4664832b3a505bf5f6324c952df775bbfba0752fb38"
     }
   ],
   "claims": [
     {
       "claim": "GitHub branch deletion uses the plural refs endpoint while exact-head reads use the singular ref endpoint.",
-      "evidence": ["source_hashes.json", "verification_summary.json"],
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
       "id": "github-delete-endpoint",
       "status": "validated"
     },
     {
       "claim": "Remote branch deletion is exact-head constrained and idempotent when the ref is absent.",
-      "evidence": ["verification_summary.json"],
+      "evidence": [
+        "verification_summary.json"
+      ],
       "id": "safe-idempotent-cleanup",
+      "status": "validated"
+    },
+    {
+      "claim": "Tracked proof records the defect boundary and runtime-not-applicable truth without predicting remote identities.",
+      "evidence": [
+        "README.md",
+        "runtime_identity.json"
+      ],
+      "id": "evidence-runtime-boundary",
       "status": "validated"
     }
   ],
   "created_at": "2026-07-12T11:03:49+02:00",
   "manifest_status": "complete",
   "redaction": {
-    "automated_scan": "not_applicable",
+    "automated_scan": "passed",
     "known_limits": [
-      "Manifest created; redaction review not yet performed."
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in source_hashes.json; this does not prove absence of secrets."
     ],
-    "manual_review": "required",
-    "status": "unchecked"
+    "manual_review": "completed",
+    "status": "checked_with_limits"
   },
   "repo": {
     "branch": "fix-finish-branch-delete",
