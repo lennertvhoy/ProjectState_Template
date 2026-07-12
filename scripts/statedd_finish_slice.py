@@ -43,6 +43,7 @@ try:
         require_mutation_permit,
         sanitized_git_environment,
     )
+    from statedd_generated_controls import confirmed_delivery_policy_refusal
     from statedd_remote_closure_finalizer import parse_remote_url
     from statedd_validate_schema import StateDDYamlError, parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - package-import fallback
@@ -59,6 +60,7 @@ except ModuleNotFoundError:  # pragma: no cover - package-import fallback
         require_mutation_permit,
         sanitized_git_environment,
     )
+    from scripts.statedd_generated_controls import confirmed_delivery_policy_refusal
     from scripts.statedd_remote_closure_finalizer import parse_remote_url
     from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
 
@@ -119,6 +121,9 @@ class DeliveryPolicy:
         policy = payload.get("delivery_policy", payload)
         if not isinstance(policy, dict):
             raise FinishRefused("delivery_policy must be a mapping")
+        refusal = confirmed_delivery_policy_refusal(policy)
+        if refusal is not None:
+            raise FinishRefused(refusal)
         merge = policy.get("merge")
         if not isinstance(merge, dict):
             raise FinishRefused("delivery_policy.merge must be a mapping")
@@ -1166,6 +1171,12 @@ class FinishSlice:
             snapshot = self.provider.pull_request(self.pr_number)
             self.report.pr_url = snapshot.url
             self._validate_pr_identity(snapshot, require_open=False)
+            default_before_merge = self.provider.default_branch()
+            if snapshot.base_branch != default_before_merge.name:
+                raise FinishRefused(
+                    f"PR base {snapshot.base_branch!r} is not the provider default branch "
+                    f"{default_before_merge.name!r}"
+                )
             remote_output, post_output = self._external_children()
 
             if snapshot.state == "MERGED":

@@ -137,6 +137,8 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
 | `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
 | `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
+| `scripts/statedd_finish_slice.py` | Finish confirmed `agent_after_green` delivery through exact-head merge, direct-main CI, post-merge proof, cleanup, and external handoff |
+| `scripts/statedd_post_merge_verify.py` | Verify squash tree/patch identity and direct default-branch CI without tracked future-SHA claims |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
 | `scripts/test_worktree_guard.py` | Regression-check worktree guard behavior |
 | `scripts/test_brittleness_check.py` | Regression-check brittleness scanner and audit marker behavior |
@@ -360,16 +362,22 @@ flowchart LR
     A[Human need] --> B[CTO AI picks next slice]
     B --> C[Coding agent writes slice contract]
     C --> D[Implement + verify]
-    D --> E[Evidence + state docs]
+    D --> E[Tracked proof + stable target state]
     E --> F[statedd_audit.py]
     F --> G{Pass?}
     G -->|No| D
-    G -->|Yes| H[Final handoff]
-    H --> I[CTO AI review]
-    I --> J{Accept?}
-    J -->|No| D
-    J -->|Yes| K[Next slice]
-    K --> B
+    G -->|Yes| H[Push + PR + exact-head CI]
+    H --> I{Confirmed merge mode?}
+    I -->|agent_after_green| J[Agent merges exact verified head]
+    I -->|human_merge| K[Human performs configured merge]
+    J --> L[Direct-main CI + post-merge verification]
+    K --> L
+    L --> M[External final handoff + verified cleanup]
+    M --> N[CTO AI product review]
+    N --> O{Accept?}
+    O -->|No| D
+    O -->|Yes| P[Next slice]
+    P --> B
 ```
 
 ```mermaid

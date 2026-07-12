@@ -28,6 +28,7 @@ from statedd_finish_slice import (  # noqa: E402
     PullRequestSnapshot,
     RemoteClosureProof,
     Stage,
+    load_policy,
 )
 from statedd_validate_schema import validate_json_schema  # noqa: E402
 
@@ -244,6 +245,40 @@ def test_unconfirmed_policy_refuses_automatic_merge(tmp_path: Path) -> None:
     assert not provider.merge_calls
 
 
+def test_policy_loader_refuses_missing_protected_operation_guards(tmp_path: Path) -> None:
+    payload = {
+        "delivery_policy": {
+            "status": "confirmed",
+            "confirmation": "human_confirmed",
+            "merge": {
+                "mode": "agent_after_green",
+                "method": "squash",
+                "delete_branch_after_verification": True,
+                "require_exact_pr_head": True,
+                "require_clean_merge_state": True,
+                "require_no_requested_changes": True,
+                "require_no_unresolved_review_threads": True,
+                "require_branch_head_ci": True,
+                "require_merge_candidate_ci": True,
+                "require_remote_closure": True,
+                "require_post_merge_main_ci": True,
+            },
+            "protected_operations": {
+                "force_push": "allowed",
+                "rewrite_shared_history": "forbidden",
+            },
+            "ci_unavailable": {
+                "automatic_merge": "forbidden",
+                "override": "requires_separate_explicit_human_authorization",
+            },
+        }
+    }
+    source = tmp_path / "policy.json"
+    source.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(FinishRefused, match="force-push"):
+        load_policy(source)
+
+
 @pytest.mark.parametrize("state", ["PENDING", "FAILURE"])
 def test_non_green_branch_head_ci_blocks_merge(tmp_path: Path, state: str) -> None:
     snapshot = pr_snapshot(branch_head_ci=ci(state))
@@ -297,6 +332,16 @@ def test_unexpected_pr_head_movement_blocks_push_and_merge(tmp_path: Path) -> No
     finish, local, provider, _, _ = build(tmp_path, snapshot=pr_snapshot(head="9" * 40))
     assert finish.run() == 1
     assert "unexpected PR-head movement" in (finish.report.failure or "")
+    assert not local.pushes
+    assert not provider.merge_calls
+
+
+def test_non_default_pr_base_blocks_merge(tmp_path: Path) -> None:
+    finish, local, provider, _, _ = build(
+        tmp_path, snapshot=pr_snapshot(base_branch="release-candidate")
+    )
+    assert finish.run() == 1
+    assert "not the provider default branch" in (finish.report.failure or "")
     assert not local.pushes
     assert not provider.merge_calls
 

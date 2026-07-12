@@ -21,6 +21,7 @@ try:
         confirmed_delivery_policy,
         confirmed_delivery_policy_refusal,
         proposed_delivery_policy,
+        render_downstream_workflow,
     )
     from statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
@@ -32,6 +33,7 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
         confirmed_delivery_policy,
         confirmed_delivery_policy_refusal,
         proposed_delivery_policy,
+        render_downstream_workflow,
     )
     from scripts.statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 
@@ -243,6 +245,15 @@ def test_agent_merge_policy_refuses_missing_safeguard() -> None:
     assert confirmed_delivery_policy_refusal(proposed_delivery_policy("team")) is not None
     assert agent_merge_policy_refusal(proposed_delivery_policy("team")) is not None
     assert agent_merge_policy_refusal(confirmed_delivery_policy("human_merge")) is not None
+
+
+def test_generated_workflow_proves_branch_and_merge_candidate_subjects() -> None:
+    workflow = render_downstream_workflow(2)
+    assert "branch-head:" in workflow
+    assert "merge-candidate:" in workflow
+    assert "github.event.pull_request.head.sha" in workflow
+    assert "EXPECTED_MERGE: ${{ github.sha }}" in workflow
+    assert workflow.count("statedd_quality_gate.py --gate-level 2 --conformance") == 2
 
 
 def test_upgrade_refreshes_agent_control_without_changing_confirmed_policy(

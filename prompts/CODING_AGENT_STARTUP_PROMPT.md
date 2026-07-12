@@ -78,6 +78,8 @@ Always:
   branch-head CI, merge-candidate CI, and remote-closure condition passes; then
   verify direct-main CI, write the external post-merge handoff, and delete the
   remote slice branch only after verification
+- use `scripts/statedd_finish_slice.py` as the one authoritative merge,
+  direct-main CI, post-merge handoff, and verified-cleanup path
 - never silently change a confirmed delivery mode or infer a CI-unavailable
   override; force-push and shared-history rewrite remain forbidden
 - leave final product acceptance to the human even when delivery is agent-owned

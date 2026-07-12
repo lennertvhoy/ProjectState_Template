@@ -213,7 +213,8 @@ views and never replace canonical readable state.
 - Confirmed `human_merge` stops automation before merge. Confirmed
   `agent_after_green` lets the integration agent squash-merge only the exact
   verified PR head, verify direct-main CI, write an external final handoff, and
-  delete the remote slice branch only after post-merge verification.
+  delete the remote slice branch only after post-merge verification through
+  `scripts/statedd_finish_slice.py`.
 - Force-push, shared-history rewrite, and CI-unavailable automatic merge remain
   forbidden; final product acceptance remains human.
 - End implementation sessions with state hygiene, relevant gates, and a handoff.

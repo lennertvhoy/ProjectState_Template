@@ -143,6 +143,8 @@ governance:
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
   closure_audit: scripts/statedd_audit.py
+  finish_slice: scripts/statedd_finish_slice.py
+  finish_slice_handoff_schema: schemas/finish_slice_handoff.schema.json
   worktree_guard: scripts/statedd_worktree_guard.py
   brittleness_check: scripts/statedd_brittleness_check.py
   health_summary: scripts/statedd_doctor.py

@@ -176,8 +176,9 @@ Read the confirmed `delivery_policy` before remote closure. A proposed or
 pending policy grants no merge authority. With `human_merge`, stop before merge
 and return exact remote truth. With confirmed `agent_after_green`, the coding
 agent owns exact-head squash merge, direct-main CI verification, the external
-post-merge handoff, and branch deletion only after verification. Never infer a
-CI-unavailable override or silently change the confirmed mode.
+post-merge handoff, and branch deletion only after verification through
+`scripts/statedd_finish_slice.py`. Never infer a CI-unavailable override or
+silently change the confirmed mode.
 """
 
 
@@ -192,11 +193,37 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  branch-head:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Check out the direct branch head
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{{{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}}}
+          fetch-depth: 0
+      - name: Assert branch-head subject identity
+        env:
+          EXPECTED_HEAD: ${{{{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}}}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.13"
+      - run: python3 scripts/statedd_quality_gate.py --gate-level {required_gate_level} --conformance
+
+  merge-candidate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the synthetic pull-request merge candidate
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+      - name: Assert merge-candidate subject identity
+        env:
+          EXPECTED_MERGE: ${{{{ github.sha }}}}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.13"
