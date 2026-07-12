@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-07-12T18:11:31+02:00",
+  "captured_at": "2026-07-12T18:13:15+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "eac202b6eaebde91a4079ecf48702cc6dd47cc99",
+  "git_head": "a10e8a21d9fede8105eb9820be5ae95089aa0cb1",
   "in_container": false,
   "kernel": "7.1.3-200.fc44.x86_64",
   "limits": [],
@@ -14,15 +14,15 @@
   "python": "3.14.6",
   "repo": {
     "branch": "agent/record-cto-acceptance",
-    "head": "eac202b6eaebde91a4079ecf48702cc6dd47cc99",
+    "head": "a10e8a21d9fede8105eb9820be5ae95089aa0cb1",
     "path": ".",
-    "status_porcelain": "M PROJECT_STATE.yaml\n?? docs/evidence/2026-07-12-cto-architecture-acceptance/",
-    "worktree_clean": false
+    "status_porcelain": "",
+    "worktree_clean": true
   },
   "runtime": {
     "reason": "CTO acceptance recording is docs/state-only; the template root has no deployable application runtime.",
     "required": false
   },
   "schema": "statedd.runtime_identity.v2",
-  "timestamp": "2026-07-12T16:11:31.714928Z"
+  "timestamp": "2026-07-12T16:13:15.417805Z"
 }

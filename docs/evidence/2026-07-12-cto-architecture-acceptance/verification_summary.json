@@ -11,6 +11,18 @@
       "result": "passed"
     },
     {
+      "command": "python3 -m pytest scripts/ -q",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m pytest schemas/examples/ -q",
+      "result": "passed"
+    },
+    {
+      "command": "ruff check .",
+      "result": "passed"
+    },
+    {
       "command": "git diff --check",
       "result": "passed"
     }

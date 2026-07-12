@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "b8f156531079ebf7d2e53a11e154d643a6251bd347b96c895de099e374cf6769"
+      "sha256": "ca4e3c804f09afb1b0e0671e72149c2277f1e9d8d2230da8d8fd2a1d9d290fe8"
     },
     {
       "kind": "doc",
@@ -19,14 +19,14 @@
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "cefa76e3d38ef8b362d69e503ad8e6877168d23876bc97f8c50d5cd0dce53cb0"
+      "sha256": "9a4f76b1d737f3005544d3bcebeeee8a78749b7aee283a807e2bd4259dcfa3f3"
     },
     {
       "kind": "runtime_identity",
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "baa861a40793c2dc693f8393470f2c1e3388a912d81167e3b7f414f39038966d"
+      "sha256": "11bbbfcce0481d8df7e0efa8469da4e49da8170851020275d7edb0fc0e01028f"
     }
   ],
   "claims": [

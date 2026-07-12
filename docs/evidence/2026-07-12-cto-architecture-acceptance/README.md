@@ -31,6 +31,9 @@ label.
 
 - `python3 scripts/statedd_validate_schema.py` — pass
 - `python3 scripts/check_state_docs.py` — pass
+- `python3 -m pytest scripts/ -q` — pass
+- `python3 -m pytest schemas/examples/ -q` — pass
+- `ruff check .` — pass
 - `git diff --check` — pass
 - Accepted GitHub baseline: `5779baf293a9b5357f896d9725fd7edae2528445`
 - Runtime verification: not applicable for the template root
