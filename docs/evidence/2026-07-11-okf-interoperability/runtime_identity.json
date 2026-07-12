@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-07-11T20:56:24+02:00",
+  "captured_at": "2026-07-12T09:10:36+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "d4127b11823c3b7e27a94ac6d8119717ad522fb6",
+  "git_head": "e658dde9603156537c3e025b4994f438eb2f5048",
   "in_container": false,
   "kernel": "7.1.3-200.fc44.x86_64",
   "limits": [],
@@ -14,7 +14,7 @@
   "python": "3.14.6",
   "repo": {
     "branch": "bl-okf-001",
-    "head": "d4127b11823c3b7e27a94ac6d8119717ad522fb6",
+    "head": "e658dde9603156537c3e025b4994f438eb2f5048",
     "path": ".",
     "status_porcelain": "",
     "worktree_clean": true
@@ -24,5 +24,5 @@
     "required": false
   },
   "schema": "statedd.runtime_identity.v2",
-  "timestamp": "2026-07-11T18:56:24.356166Z"
+  "timestamp": "2026-07-12T07:10:36.477978Z"
 }
