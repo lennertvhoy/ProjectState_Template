@@ -6,6 +6,7 @@ from pathlib import Path
 from statedd_profile_metrics import (
     DEFAULT_SOURCE_DATE_EPOCH,
     build_metrics,
+    metrics_match_after_squash,
     normalized_file_blobs,
 )
 from statedd_contracts import load_profile_catalog
@@ -58,3 +59,26 @@ def test_profile_metrics_normalize_dirty_generated_lock_to_proof_commit(tmp_path
     blobs = normalized_file_blobs([managed, lock], target, proof_commit)
     normalized_lock = json.loads(blobs["STATEDD_ASSETS.json"].decode("utf-8"))
     assert normalized_lock["template_commit"] == proof_commit
+
+
+def test_profile_metrics_accept_content_preserving_squash_identity() -> None:
+    root = Path(__file__).resolve().parents[1]
+    import subprocess
+
+    source_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    original = build_metrics(root, template_commit=source_commit, epoch=DEFAULT_SOURCE_DATE_EPOCH)
+    squashed = json.loads(json.dumps(original))
+    squashed["template_commit"] = "a" * 40
+    squashed["generation_command"] = "python3 scripts/statedd_profile_metrics.py --template-commit " + "a" * 40
+    squashed["provenance"] = {
+        "commit_exists": False,
+        "commit_is_ancestor_of_head": False,
+        "mismatched_inputs": [],
+        "source_inputs_match_commit": False,
+    }
+
+    assert metrics_match_after_squash(squashed, original)
+    squashed["source_tree_sha256"] = "b" * 64
+    assert not metrics_match_after_squash(squashed, original)
