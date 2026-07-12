@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "4aff73f8923855ed5e23fc71892be92d0b619599b3536ea7da86d141c7bd74dc"
+      "sha256": "3240999e5fed872eabac7f417fbebe34caa505e4f8a8de35d44845ce079a570f"
     },
     {
       "kind": "runtime_identity",

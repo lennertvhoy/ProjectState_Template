@@ -107,12 +107,13 @@ post-merge verification, and self-reconciling remote truth
 
 - Implemented: yes
 - Validated locally: yes
-- Global local quality gates passed: pending final evidence/state commit rerun
+- Global local quality gates passed: yes
 - Remote closure: pending
 - Human product acceptance: pending
 
-Provider-created merge/default-head/CI identities belong only in the external
-finish handoff. This tracked README intentionally contains no future merge identity.
+The PR body binds this immutable Proof head to the Final PR head. Provider-created
+merge/default-head/CI identities belong only in the external finish handoff. This
+tracked README intentionally contains no future merge identity.
 
 ## Human Override
 
@@ -123,7 +124,7 @@ finish handoff. This tracked README intentionally contains no future merge ident
   `agent_after_green` golden path without routine human Git actions
 - Remaining risk: remote PR/CI/merge/default-branch truth is pending until the
   finish command completes
-- Still closure-grade at tracked proof: no
+- Still closure-grade: no (at tracked proof; remote closure is pending)
 
 ## Risks / What Remains Partial
 
