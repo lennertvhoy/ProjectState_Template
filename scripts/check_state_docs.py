@@ -11,8 +11,10 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from statedd_generated_controls import confirmed_delivery_policy_refusal
     from statedd_validate_schema import StateDDYamlError, parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - module import path under pytest
+    from scripts.statedd_generated_controls import confirmed_delivery_policy_refusal
     from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
 
 
@@ -1067,6 +1069,15 @@ def check_bootstrap_gate(root: Path) -> list[str]:
         issues.append("Bootstrap gate failed: system investigation is still false in PROJECT_STATE.yaml")
     if "repo_investigated: false" in project_state:
         issues.append("Bootstrap gate failed: repo investigation is still false in PROJECT_STATE.yaml")
+    try:
+        parsed_state = parse_yaml_text(project_state)
+    except StateDDYamlError as exc:
+        issues.append(f"Bootstrap gate failed: PROJECT_STATE.yaml is invalid: {exc}")
+    else:
+        policy = parsed_state.get("delivery_policy") if isinstance(parsed_state, dict) else None
+        policy_refusal = confirmed_delivery_policy_refusal(policy)
+        if policy_refusal is not None:
+            issues.append(f"Bootstrap gate failed: {policy_refusal}")
     if next_actions_count(next_actions) == 0:
         issues.append("Bootstrap gate failed: NEXT_ACTIONS.md does not contain a real active queue")
     if "No active work yet." in next_actions or "No active template maintenance work is queued right now." in next_actions:

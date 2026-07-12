@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 try:
+    import check_state_docs as state_docs
     import statedd_bootstrap_apply as bootstrap_apply
     from statedd_generated_controls import (
         DELIVERY_MERGE_REQUIREMENTS,
@@ -23,6 +24,7 @@ try:
     )
     from statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
+    from scripts import check_state_docs as state_docs
     from scripts import statedd_bootstrap_apply as bootstrap_apply
     from scripts.statedd_generated_controls import (
         DELIVERY_MERGE_REQUIREMENTS,
@@ -135,6 +137,10 @@ def test_generated_profile_policy_is_only_a_non_authorizing_proposal(
     assert policy["confirmation"] == "pending_during_bootstrap"
     assert policy["merge"]["mode"] == expected_mode
     assert agent_merge_policy_refusal(policy) == "delivery policy status is not confirmed"
+    assert any(
+        issue == "Bootstrap gate failed: delivery policy status is not confirmed"
+        for issue in state_docs.check_bootstrap_gate(target)
+    )
 
 
 @pytest.mark.parametrize("mode", ["human_merge", "agent_after_green"])
@@ -159,6 +165,9 @@ def test_structured_bootstrap_policy_round_trips_through_schema_and_apply(
     assert all(policy["merge"][key] is True for key in DELIVERY_MERGE_REQUIREMENTS)
     assert policy["merge"]["delete_branch_after_verification"] is True
     assert confirmed_delivery_policy_refusal(policy) is None
+    assert not any(
+        "delivery policy" in issue for issue in state_docs.check_bootstrap_gate(target)
+    )
     issues = validate_json_schema(state, load_schema(PROJECT_STATE_SCHEMA))
     assert issues == []
     if mode == "agent_after_green":
