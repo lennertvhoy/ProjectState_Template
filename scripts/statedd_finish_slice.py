@@ -1078,7 +1078,12 @@ class FinishSlice:
         if require_open and snapshot.state != "OPEN":
             raise FinishRefused(f"PR is not open: state={snapshot.state or 'missing'}")
 
-    def _validate_mutable_merge_truth(self, snapshot: PullRequestSnapshot) -> None:
+    def _validate_mutable_merge_truth(
+        self,
+        snapshot: PullRequestSnapshot,
+        *,
+        allow_pending_ci_instability: bool = False,
+    ) -> None:
         self._validate_pr_identity(snapshot, require_open=True)
         if snapshot.draft:
             raise FinishRefused("PR is still draft")
@@ -1088,7 +1093,16 @@ class FinishSlice:
             raise FinishRefused(
                 f"PR has {snapshot.unresolved_threads} unresolved current review thread(s)"
             )
-        if snapshot.merge_state not in {"CLEAN", "HAS_HOOKS"}:
+        ci_is_pending = any(
+            observation.state in {PENDING, MISSING}
+            for observation in (snapshot.branch_head_ci, snapshot.merge_candidate_ci)
+        )
+        transient_ci_state = (
+            allow_pending_ci_instability
+            and snapshot.merge_state == "UNSTABLE"
+            and ci_is_pending
+        )
+        if snapshot.merge_state not in {"CLEAN", "HAS_HOOKS"} and not transient_ci_state:
             raise FinishRefused(
                 f"merge state is not clean: {snapshot.merge_state or 'missing'}"
             )
@@ -1108,7 +1122,7 @@ class FinishSlice:
         deadline = self.clock() + self.pr_ci_timeout
         while True:
             snapshot = self.provider.pull_request(self.pr_number)
-            self._validate_mutable_merge_truth(snapshot)
+            self._validate_mutable_merge_truth(snapshot, allow_pending_ci_instability=True)
             self._record_ci(snapshot)
             observations = (
                 ("branch-head", snapshot.branch_head_ci),

@@ -329,6 +329,40 @@ def test_dirty_merge_state_blocks_merge(tmp_path: Path) -> None:
     assert not provider.merge_calls
 
 
+def test_unstable_merge_state_waits_while_required_ci_is_pending(tmp_path: Path) -> None:
+    pending = pr_snapshot(
+        merge_state="UNSTABLE",
+        branch_head_ci=ci("PENDING"),
+        merge_candidate_ci=ci("PENDING", name="merge-candidate"),
+    )
+    finish, _, provider, _, _ = build(tmp_path, snapshot=pending, pr_timeout=1)
+    original = provider.pull_request
+    queries = 0
+
+    def pull_request(number: int) -> PullRequestSnapshot:
+        nonlocal queries
+        queries += 1
+        if queries == 4:
+            provider.snapshot = pr_snapshot()
+        return original(number)
+
+    provider.pull_request = pull_request  # type: ignore[method-assign]
+
+    assert finish.run() == 0
+    assert queries >= 4
+    assert provider.merge_calls == [(17, HEAD, "squash")]
+
+
+def test_unstable_merge_state_still_blocks_after_ci_is_green(tmp_path: Path) -> None:
+    finish, _, provider, _, _ = build(
+        tmp_path,
+        snapshot=pr_snapshot(merge_state="UNSTABLE"),
+    )
+    assert finish.run() == 1
+    assert "merge state" in (finish.report.failure or "")
+    assert not provider.merge_calls
+
+
 def test_unexpected_pr_head_movement_blocks_push_and_merge(tmp_path: Path) -> None:
     finish, local, provider, _, _ = build(tmp_path, snapshot=pr_snapshot(head="9" * 40))
     assert finish.run() == 1
