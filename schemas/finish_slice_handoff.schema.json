@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.finish_slice_handoff.v1",
+  "title": "StateDD agent-owned finish-slice external handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at",
+    "status",
+    "transitions",
+    "repository",
+    "pr_number",
+    "pr_url",
+    "expected_pr_head",
+    "proof_head",
+    "evidence_folder",
+    "delivery_policy_mode",
+    "merge_method",
+    "branch",
+    "branch_head_ci",
+    "merge_candidate_ci",
+    "merge_commit",
+    "default_branch",
+    "default_branch_head",
+    "main_ci",
+    "remote_closure_output",
+    "post_merge_output",
+    "post_merge_verified",
+    "remote_branch_absent",
+    "isolation_released",
+    "recoverable_state_retained",
+    "failure"
+  ],
+  "properties": {
+    "schema": {"type": "string", "const": "statedd.finish_slice_handoff.v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "status": {
+      "type": "string",
+      "enum": [
+        "NOT_STARTED",
+        "LOCAL_VALIDATED",
+        "PUSHED",
+        "PR_OPEN",
+        "PR_READY",
+        "REMOTE_CLOSURE_VERIFIED",
+        "MERGED",
+        "MAIN_CI_VERIFIED",
+        "HANDOFF_COMPLETE"
+      ]
+    },
+    "transitions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "LOCAL_VALIDATED",
+          "PUSHED",
+          "PR_OPEN",
+          "PR_READY",
+          "REMOTE_CLOSURE_VERIFIED",
+          "MERGED",
+          "MAIN_CI_VERIFIED",
+          "HANDOFF_COMPLETE"
+        ]
+      }
+    },
+    "repository": {"type": "string"},
+    "pr_number": {"type": "integer", "minimum": 1},
+    "pr_url": {"type": ["string", "null"]},
+    "expected_pr_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "proof_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "evidence_folder": {"type": "string", "minLength": 1},
+    "delivery_policy_mode": {"type": "string"},
+    "merge_method": {"type": "string", "enum": ["", "merge", "rebase", "squash"]},
+    "branch": {"type": ["string", "null"]},
+    "branch_head_ci": {"$ref": "#/$defs/ci_observation"},
+    "merge_candidate_ci": {"$ref": "#/$defs/ci_observation"},
+    "merge_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "default_branch": {"type": ["string", "null"]},
+    "default_branch_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "main_ci": {"$ref": "#/$defs/ci_observation"},
+    "remote_closure_output": {"type": ["string", "null"]},
+    "post_merge_output": {"type": ["string", "null"]},
+    "post_merge_verified": {"type": "boolean"},
+    "remote_branch_absent": {"type": "boolean"},
+    "isolation_released": {"type": "boolean"},
+    "recoverable_state_retained": {"type": "boolean"},
+    "failure": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "ci_observation": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "subject_sha",
+        "run_id",
+        "run_url",
+        "workflow_path",
+        "check_name",
+        "detail"
+      ],
+      "properties": {
+        "state": {"type": "string", "enum": ["SUCCESS", "PENDING", "FAILURE", "MISSING"]},
+        "subject_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "run_id": {"type": ["string", "null"]},
+        "run_url": {"type": ["string", "null"]},
+        "workflow_path": {"type": ["string", "null"]},
+        "check_name": {"type": ["string", "null"]},
+        "detail": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
