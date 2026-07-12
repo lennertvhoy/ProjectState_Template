@@ -10,7 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from check_state_docs import check_backlog_structure, check_cross_file_rules, check_file, extract_backlog_sections  # noqa: E402
+from check_state_docs import (  # noqa: E402
+    check_backlog_structure,
+    check_cross_file_rules,
+    check_file,
+    check_template_maintenance_gate,
+    extract_backlog_sections,
+)
 
 
 def write_lifecycle_repo(
@@ -254,6 +260,38 @@ def test_stable_post_merge_target_state_passes_without_containing_sha() -> None:
             ),
         )
         assert not check_cross_file_rules(root)
+
+
+def test_template_gate_accepts_stable_empty_queue_after_final_closure() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "docs").mkdir()
+        (root / "PROJECT_STATE.yaml").write_text(
+            "workflow:\n"
+            "  repo_role: template_repository\n"
+            "  statedd_mode: template-maintenance\n"
+            "current_state:\n"
+            "  execution_mode:\n"
+            "    mode: template-maintenance\n"
+            "  open_p0_failures: []\n"
+            "active_problems: []\n",
+            encoding="utf-8",
+        )
+        (root / "NEXT_ACTIONS.md").write_text(
+            "## Active Work\n\nNo mandatory implementation item.\n", encoding="utf-8"
+        )
+        (root / "BACKLOG.md").write_text(
+            "## NOW\n\n## NEXT\n- [BL-002] research\n- [BL-003] migration\n"
+            "## CLOSED\n- [BL-001] final closure\n",
+            encoding="utf-8",
+        )
+        (root / "WORKLOG.md").write_text(
+            "## 2026-07-12 - Final closure\n", encoding="utf-8"
+        )
+        (root / "docs" / "EVIDENCE_LOG.md").write_text(
+            "## EV-2026-07-12-001: Final closure\n", encoding="utf-8"
+        )
+        assert check_template_maintenance_gate(root) == []
 
 
 def test_merged_item_can_reopen_when_correctness_is_not_closure_grade() -> None:

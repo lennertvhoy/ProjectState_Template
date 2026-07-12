@@ -1110,7 +1110,21 @@ def check_template_maintenance_gate(root: Path) -> list[str]:
         issues.append("Template gate failed: PROJECT_STATE.yaml does not declare statedd_mode: template-maintenance")
     if "Your Project" in project_state:
         issues.append("Template gate failed: PROJECT_STATE.yaml still contains downstream placeholder text")
-    if next_actions_count(next_actions) == 0:
+    try:
+        parsed_state = parse_yaml_text(project_state)
+    except StateDDYamlError:
+        parsed_state = {}
+    current = parsed_state.get("current_state") if isinstance(parsed_state, dict) else None
+    current = current if isinstance(current, dict) else {}
+    execution = current.get("execution_mode")
+    execution = execution if isinstance(execution, dict) else {}
+    stable_empty_queue = (
+        parsed_state.get("active_problems") == []
+        and current.get("open_p0_failures") == []
+        and execution.get("mode") != "quality_freeze"
+        and backlog_now_count(backlog) == 0
+    )
+    if next_actions_count(next_actions) == 0 and not stable_empty_queue:
         issues.append("Template gate failed: NEXT_ACTIONS.md does not contain a real active queue")
     if len(extract_backlog_ids(backlog)) < 3:
         issues.append("Template gate failed: BACKLOG.md does not contain enough stable backlog IDs")
