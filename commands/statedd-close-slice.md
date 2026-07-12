@@ -2,9 +2,9 @@
 command: "statedd-close-slice"
 gate_level: 2
 evidence_max: 8
-cheapest_proof: "Authoritative local quality gate plus exact-head remote finalizer"
+cheapest_proof: "Authoritative local gate plus policy-governed exact-head merge and post-merge verification"
 escalate_when: "Release gate requires level 3 with CI proof"
-description: "Execute the close-slice skill: run quality gates, update state, freeze acceptance"
+description: "Close a slice through confirmed delivery policy, remote truth, and final handoff"
 ---
 
 # /statedd-close-slice — Close Implementation Slice
@@ -21,32 +21,36 @@ description: "Execute the close-slice skill: run quality gates, update state, fr
 2. If the local gate passes:
    - Update `PROJECT_STATE.yaml` to `validated_local_remote_pending` (or an
      equivalent closure-candidate state), never completion
-   - Keep the slice active in `BACKLOG.md` until exact-head remote proof exists
+   - Keep the slice active in `BACKLOG.md` until the remote transition completes
    - Append the local validation boundary to `WORKLOG.md` without calling it closed
    - Update `docs/ACCEPTANCE_FREEZES.md` only after actual human acceptance
-   - Commit the implementation proof, then commit only state/evidence finalization metadata
-   - Push and open/update the PR without merging
-   - Wait for CI on the exact final head
-   - Run `scripts/statedd_remote_closure_finalizer.py` with the PR and evidence folder
-   - Run `scripts/statedd_handoff.py` for the final handoff
-   - Treat the external finalizer receipt as exact-head remote truth. Any later
-     in-repo `done`/CI-verified state update creates a new head and needs its own CI
-     and finalizer proof.
+   - Commit the implementation proof and stable tracked evidence; never predict a
+     provider-created merge commit
+   - Push and open/update one draft PR with proof head, final PR head, and evidence folder
+   - Read the human-confirmed delivery policy; never change its merge mode silently
+   - For confirmed `agent_after_green`, run `scripts/statedd_finish_slice.py` with
+     the exact expected PR head, policy, evidence folder, squash method, and an
+     external handoff path
+   - Let that command own PR readiness, exact-head branch and merge-candidate CI,
+     review/thread/merge-state checks, remote finalization, merge, direct main CI,
+     post-merge verification, cleanup, and isolation release
+   - For `human_merge`, stop after exact-head remote closure and report that the
+     configured policy intentionally requires the human merge
+   - Keep merge commit, default-branch head, main-CI run, and cleanup result in the
+     external handoff. Do not open a metadata PR to put future identities in tracked files.
 3. If any local or remote gate fails:
-   - Report specific failure
-   - Do not close slice
-   - Return to implementation
+   - Report the exact state-machine transition and observed blocker
+   - Retain the branch and isolation state for recovery
+   - Resume idempotently after repair; never repeat an existing merge
 
 **Required evidence:**
 - All quality gate outputs (exit 0)
-- Updated state files
-- Acceptance freeze entry (if user-facing)
-- Handoff text for CTO
+- Updated stable state files and strict tracked evidence
+- Exact-head remote finalizer output
+- External post-merge handoff for `agent_after_green`
+- Acceptance freeze entry only when the human accepted a user-facing milestone
 
-**Failure cases:**
-- Quality gate fails: fix code/tests, re-run gate
-- State update fails: fix YAML/schemas
-- Acceptance freeze missing: add entry for user-facing changes
-- Handoff generation fails: check handoff script
-
-**Exit criteria:** Local gate and exact-head remote finalizer pass, state/evidence agree, and the handoff reports every truth boundary separately.
+**Exit criteria:** Under `agent_after_green`, the local gate, exact-head remote
+finalizer, exact expected-head merge, direct main CI, post-merge verifier, cleanup,
+and external handoff all pass. Under `human_merge`, the handoff truthfully stops at
+the configured manual boundary. Human product acceptance remains separate.

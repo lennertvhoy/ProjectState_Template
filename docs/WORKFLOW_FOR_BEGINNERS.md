@@ -4,18 +4,21 @@ This guide explains the State Driven Development (StateDD) workflow in plain
 language, with a diagram, and shows exactly where to get each prompt and where
 to paste it.
 
-## The human is always in the loop
+## The human remains the product decision-maker
 
 StateDD is not "let an AI agent run loose." It is a human-in-the-loop system
 with three roles:
 
-1. **Human / product owner** — decides what matters, approves tradeoffs, and
-can override workflow steps when necessary. The workflow is a strong default,
-not a prison.
+1. **Human / product owner** — decides what matters, confirms the delivery policy
+once, approves tradeoffs, and accepts or rejects the product result. With the
+recommended `agent_after_green` mode, the human is not the routine Git release
+operator.
 2. **CTO AI / product-architecture lead** — chooses the next slice, reviews
 handoffs, resolves contradictions, and writes the next coding-agent prompt.
 3. **Coding agent** — implements one coherent slice, verifies it with evidence,
-and returns a final handoff to the CTO lane.
+commits, pushes, opens the PR, and—when the confirmed policy is
+`agent_after_green`—merges the exact green head, verifies direct main CI, cleans
+the branch/isolation, and returns one final handoff to the CTO lane.
 
 The human can override any workflow step, but the agent must record the
 override honestly. An override does not turn partial work into closure-grade
@@ -25,20 +28,26 @@ work.
 
 ```mermaid
 flowchart LR
-    A[Human has an idea or problem] --> B[CTO AI picks next slice]
+    A[Human names project and confirms delivery policy once] --> B[CTO AI picks next slice]
     B --> C[Coding agent writes slice contract]
     C --> D[Coding agent implements + verifies]
-    D --> E[Coding agent creates evidence + updates state docs]
-    D --> F[Run statedd_audit.py]
+    D --> E[Coding agent creates tracked proof + updates stable state]
+    D --> F[Run authoritative local gate]
     F --> G{Audit passes?}
     G -->|No| D
-    G -->|Yes| H[Coding agent final handoff]
-    H --> I[CTO AI reviews with checklist]
-    I --> J{Accept?}
-    J -->|Reject| D
-    J -->|Conditionally accept| K[Fix conditions then return]
-    J -->|Accept| L[Update NEXT_ACTIONS + BACKLOG]
-    L --> B
+    G -->|Yes| H[Push + draft PR + exact-head CI]
+    H --> I{Confirmed merge mode?}
+    I -->|human_merge| J[Human performs configured merge]
+    I -->|agent_after_green| K[Agent rechecks and merges exact head]
+    J --> L[Agent verifies direct main CI + post-merge truth]
+    K --> L
+    L --> M[External final handoff + verified cleanup]
+    M --> N[CTO AI reviews product result]
+    N --> O{Accept?}
+    O -->|Reject| D
+    O -->|Conditionally accept| P[Fix conditions then return]
+    O -->|Accept| Q[CTO scopes next slice]
+    Q --> B
 ```
 
 ## Where to start — prompts and where to paste them
@@ -72,8 +81,11 @@ flowchart LR
    `prompts/EVIDENCE_README_TEMPLATE.md`.
 8. Update only the state files where truth changed.
 9. Run `python3 scripts/statedd_audit.py`.
-10. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` to write the handoff back to the CTO
-    lane.
+10. Push and open the PR. If policy is `agent_after_green`, use
+    `scripts/statedd_finish_slice.py` to finish through exact-head merge, direct
+    main CI, post-merge verification, and cleanup.
+11. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` to write the remote-first handoff back
+    to the CTO lane.
 
 ### I am checking runtime identity before accepting UI changes
 
@@ -108,6 +120,10 @@ flowchart LR
    python3 scripts/statedd_audit.py
    python3 scripts/statedd_doctor.py
    ```
+
+   For confirmed `agent_after_green`, the final handoff comes only after the
+   finish command verifies the merged default branch. Local tests never stand in
+   for unavailable CI; an exception requires a separate explicit human override.
 
 7. **Review with the checklist.** The CTO AI must explicitly answer the
    `prompts/CTO_REVIEW_CHECKLIST.md` questions.
