@@ -44,6 +44,23 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def squash_stable_metrics(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return metric content excluding commit identities that squash merges change."""
+    stable = json.loads(json.dumps(payload))
+    stable.pop("template_commit", None)
+    stable.pop("generation_command", None)
+    stable.pop("provenance", None)
+    return stable
+
+
+def metrics_match_after_squash(existing: dict[str, Any], regenerated: dict[str, Any]) -> bool:
+    """Accept a content-identical metric proof when GitHub rewrote commit ancestry."""
+    return (
+        existing.get("source_tree_sha256") == regenerated.get("source_tree_sha256")
+        and squash_stable_metrics(existing) == squash_stable_metrics(regenerated)
+    )
+
+
 def run(args: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         args,
@@ -387,14 +404,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Profile metrics failed: {exc}", file=sys.stderr)
         return 1
 
-    if not payload["provenance"]["source_inputs_match_commit"] and not args.allow_dirty_source:
+    squash_equivalent = (
+        args.check
+        and isinstance(existing, dict)
+        and metrics_match_after_squash(existing, payload)
+    )
+    if not payload["provenance"]["source_inputs_match_commit"] and not args.allow_dirty_source and not squash_equivalent:
         print(
             "Profile metrics refused: source inputs do not match the recorded template commit",
             file=sys.stderr,
         )
         return 1
     if args.check:
-        if existing == payload:
+        if existing == payload or squash_equivalent:
             print(f"Profile metrics reproducible: {output}")
             return 0
         print(f"Profile metrics drift: {output}", file=sys.stderr)
