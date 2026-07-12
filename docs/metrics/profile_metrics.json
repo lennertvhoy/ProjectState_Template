@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 919591743468e412ed4b70c88954f66660c0e35b",
+  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit bb325e7f46e3a19d2a69f70ead75bf8e5f749b30",
   "profiles": [
     {
-      "actual_tokens": 88430,
+      "actual_tokens": 88435,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5279,
@@ -156,7 +156,7 @@
       "total_bytes": 378507
     },
     {
-      "actual_tokens": 172796,
+      "actual_tokens": 172801,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5289,
@@ -309,7 +309,7 @@
       "total_bytes": 743908
     },
     {
-      "actual_tokens": 222989,
+      "actual_tokens": 223095,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5293,
@@ -441,7 +441,7 @@
           "total_bytes": 10217
         }
       },
-      "estimated_tokens": 241868,
+      "estimated_tokens": 241990,
       "generated_file_count": 85,
       "profile": "team",
       "quality_gate": {
@@ -460,10 +460,10 @@
       "startup_bytes": 8373,
       "startup_estimated_tokens": 2094,
       "startup_file_count": 4,
-      "total_bytes": 967345
+      "total_bytes": 967833
     },
     {
-      "actual_tokens": 223043,
+      "actual_tokens": 223149,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5308,
@@ -595,7 +595,7 @@
           "total_bytes": 10375
         }
       },
-      "estimated_tokens": 241981,
+      "estimated_tokens": 242103,
       "generated_file_count": 85,
       "profile": "regulated",
       "quality_gate": {
@@ -615,7 +615,7 @@
       "startup_bytes": 8531,
       "startup_estimated_tokens": 2134,
       "startup_file_count": 4,
-      "total_bytes": 967793
+      "total_bytes": 968281
     }
   ],
   "provenance": {
@@ -707,8 +707,8 @@
     "scripts/statedd_version_check.py",
     "scripts/statedd_worktree_guard.py"
   ],
-  "source_tree_sha256": "0b2bcaf0599ac7108e1612f2fa4505ca4073cd4cdb0d7c35d11189a8392a94f8",
-  "template_commit": "919591743468e412ed4b70c88954f66660c0e35b",
+  "source_tree_sha256": "2b89b8d03f715423631923d3491b1fe5652b4862f6b3164f86ce9fc44dbd07fb",
+  "template_commit": "bb325e7f46e3a19d2a69f70ead75bf8e5f749b30",
   "template_version": "statedd-template-v5",
   "tokenizer": {
     "actual_counts_available": true,

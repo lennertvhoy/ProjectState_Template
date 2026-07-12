@@ -4,8 +4,8 @@
 **Date:** 2026-07-12  
 **Agent:** integration defect-repair agent  
 **Branch:** `fix-finish-branch-delete`  
-**HEAD:** 919591743468e412ed4b70c88954f66660c0e35b  
-**Proof head:** 919591743468e412ed4b70c88954f66660c0e35b
+**HEAD:** bb325e7f46e3a19d2a69f70ead75bf8e5f749b30  
+**Proof head:** bb325e7f46e3a19d2a69f70ead75bf8e5f749b30
 
 ## Claims
 
@@ -17,6 +17,9 @@
   Evidence: `verification_summary.json`
 - Claim: cleanup remains ordered after post-merge verification and before
   isolation release.
+  Evidence: `verification_summary.json`
+- Claim: GitHub's transient `UNSTABLE` merge state is boundedly tolerated only
+  while a required CI subject is pending; it still blocks after CI is green.
   Evidence: `verification_summary.json`
 
 ## Defect Reproduction
@@ -30,10 +33,12 @@ CI, or post-merge verification.
 ## Verification Log
 
 - `ruff check scripts/statedd_finish_slice.py scripts/test_finish_slice.py` — pass
-- `python3 -m pytest scripts/test_finish_slice.py -q` — pass (23 tests)
+- `python3 -m pytest scripts/test_finish_slice.py -q` — pass (25 tests)
 - Provider regression asserts the exact singular-read/plural-delete/singular-read
   request sequence — pass
 - Already-absent regression proves cleanup idempotency — pass
+- Pending-CI regression proves the command waits through transient `UNSTABLE`
+  state and re-applies strict clean-state validation after CI — pass
 - Full level-2 closure gate — pending final evidence commit
 
 ## Runtime Identity

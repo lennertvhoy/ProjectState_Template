@@ -1,8 +1,8 @@
 {
   "schema": "statedd.source_hashes.v1",
-  "proof_head": "919591743468e412ed4b70c88954f66660c0e35b",
+  "proof_head": "bb325e7f46e3a19d2a69f70ead75bf8e5f749b30",
   "sha256": {
-    "scripts/statedd_finish_slice.py": "6004e82316d55a879ad1add26f158512a77fd83e4d2f7f3c56a977bd5b084cd1",
-    "scripts/test_finish_slice.py": "0a976f94c5715c8aeb95f7bd576b4f65b3cae28dd046b281e0de40af0d6bdef7"
+    "scripts/statedd_finish_slice.py": "94f8d39951903043b78d03ce94e2ff58b0c02a91dee3b6a8a66e236f8ee21c63",
+    "scripts/test_finish_slice.py": "4dd1f12ee40b6ebb8b1b041ae48cd63f7288ad6b5f332181a964eb21f61dd08d"
   }
 }

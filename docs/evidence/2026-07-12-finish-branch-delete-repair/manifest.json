@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "9732d58d439ac3b7e80d761f2edd3d55ec8124017c4cb101a8ac6fdb8c294969"
+      "sha256": "2a212e1f117601376e4582dbf17dce813a637204c5a81fc69d29edd051c0eb9f"
     },
     {
       "kind": "runtime_identity",
@@ -19,14 +19,14 @@
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "e2d08a364fee67d61d655e8cb03bf665bcc692fb2f00c213a6686409174f8bda"
+      "sha256": "4d90e5aabeca324ad14b507cbf91a4834a9864c514f8bc8577c8440eb080fc50"
     },
     {
       "kind": "doc",
       "path": "source_hashes.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "c9e16cd6c15a9c10ae5fd4664832b3a505bf5f6324c952df775bbfba0752fb38"
+      "sha256": "f2da87538ada2aba2f7f1f8a6f46f890573d6612974ee761918620377b111320"
     }
   ],
   "claims": [
@@ -45,6 +45,14 @@
         "verification_summary.json"
       ],
       "id": "safe-idempotent-cleanup",
+      "status": "validated"
+    },
+    {
+      "claim": "Transient UNSTABLE merge state is tolerated only while required CI is pending and remains blocking after green CI.",
+      "evidence": [
+        "verification_summary.json"
+      ],
+      "id": "pending-ci-merge-state",
       "status": "validated"
     },
     {
@@ -72,7 +80,7 @@
   },
   "repo": {
     "branch": "fix-finish-branch-delete",
-    "head": "919591743468e412ed4b70c88954f66660c0e35b"
+    "head": "bb325e7f46e3a19d2a69f70ead75bf8e5f749b30"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",
