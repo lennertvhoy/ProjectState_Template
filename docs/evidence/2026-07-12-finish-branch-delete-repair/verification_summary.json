@@ -1,0 +1,28 @@
+{
+  "schema": "statedd.verification_summary.v1",
+  "proof_head": "919591743468e412ed4b70c88954f66660c0e35b",
+  "defect": {
+    "observed_failure": "GitHub DELETE through singular git/ref endpoint returned HTTP 404",
+    "remote_ref_remained": true,
+    "plural_refs_endpoint_succeeded": true
+  },
+  "checks": [
+    {
+      "command": "ruff check scripts/statedd_finish_slice.py scripts/test_finish_slice.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m pytest scripts/test_finish_slice.py -q",
+      "result": "passed",
+      "tests": 23
+    },
+    {
+      "claim": "production provider uses singular read, plural delete, singular absence verification",
+      "result": "passed"
+    },
+    {
+      "claim": "already-absent deletion is idempotent",
+      "result": "passed"
+    }
+  ]
+}

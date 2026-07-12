@@ -1,0 +1,8 @@
+{
+  "schema": "statedd.source_hashes.v1",
+  "proof_head": "919591743468e412ed4b70c88954f66660c0e35b",
+  "sha256": {
+    "scripts/statedd_finish_slice.py": "6004e82316d55a879ad1add26f158512a77fd83e4d2f7f3c56a977bd5b084cd1",
+    "scripts/test_finish_slice.py": "0a976f94c5715c8aeb95f7bd576b4f65b3cae28dd046b281e0de40af0d6bdef7"
+  }
+}

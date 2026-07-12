@@ -1,0 +1,63 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "unchecked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "unchecked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "kind": "command_output",
+      "path": "verification_summary.json",
+      "redaction_status": "unchecked",
+      "sensitive_data": "none_found"
+    },
+    {
+      "kind": "doc",
+      "path": "source_hashes.json",
+      "redaction_status": "unchecked",
+      "sensitive_data": "none_found"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "GitHub branch deletion uses the plural refs endpoint while exact-head reads use the singular ref endpoint.",
+      "evidence": ["source_hashes.json", "verification_summary.json"],
+      "id": "github-delete-endpoint",
+      "status": "validated"
+    },
+    {
+      "claim": "Remote branch deletion is exact-head constrained and idempotent when the ref is absent.",
+      "evidence": ["verification_summary.json"],
+      "id": "safe-idempotent-cleanup",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-12T11:03:49+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "not_applicable",
+    "known_limits": [
+      "Manifest created; redaction review not yet performed."
+    ],
+    "manual_review": "required",
+    "status": "unchecked"
+  },
+  "repo": {
+    "branch": "fix-finish-branch-delete",
+    "head": "919591743468e412ed4b70c88954f66660c0e35b"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "DEF-FINISH-BRANCH-DELETE-001"
+}
