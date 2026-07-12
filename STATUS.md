@@ -7,27 +7,30 @@
 
 ## Snapshot
 
-- `BL-STATEDD-INTEGRATION-001` is the single superseding integration slice.
-- The integration branch starts from PR #6 head `84a6710…` and has a locally validated integrated head; the exact final PR head is not yet published.
+- `BL-STATEDD-INTEGRATION-001` remains the superseding integration slice; this branch is the separate `BL-OKF-001` follow-on.
+- `BL-OKF-001` starts from the published PR #8 head `b9712a5…` and will not modify PR #8.
 - PR #6 remains the lifecycle/profile/gate/evidence authority; PR #7 remains the Git-safety and coding-agent golden-path source candidate.
 - The original checkout was inspected read-only and left untouched; its local repair is reported, not independently verified as the former `main` checkout.
 
 ## Current Truth
 
 - The template root has no application runtime; runtime truth is not applicable here.
-- The integration clone and branch are pushed; draft PR #8 is open, and both direct branch-head and synthetic merge-candidate CI have passed for the published candidate.
+- PR #8 remains open/draft and unchanged by this slice; its direct branch-head and synthetic merge-candidate CI passed at its published head.
+- OKF work is isolated, locally validated, pushed on `bl-okf-001`, and open as draft PR #9 at `e8500374dbcdf4518f1ee420fdc79c366fc3ac3b`.
+- Direct branch-head CI and synthetic PR merge-candidate CI both pass for the final PR head; the remote closure finalizer remains non-closure-grade because PR #9 is still draft.
 - Neither PR #6 nor PR #7 is being merged independently.
 - Verified copyright owner: not proven. Benchmark superiority: not proven.
 
 ## Open P0/P1 Failures
 
-- [BL-STATEDD-INTEGRATION-001] Obtain CTO review and human acceptance for draft PR #8; do not merge until the remaining ownership and acceptance boundaries are resolved.
+- [BL-OKF-001] Keep PR #9 in draft for human review; do not merge until the optional/evidence-gated scope and ownership boundaries are accepted.
+- [BL-STATEDD-INTEGRATION-001] PR #8 still requires human acceptance and ownership-boundary resolution before merge.
 
 ## Immediate Priorities
 
-1. Review draft PR #8 against the integrated evidence and CI subjects.
-2. Resolve or explicitly accept the unproven copyright owner boundary.
-3. Keep PR #6 and PR #7 unmerged; human acceptance remains required.
+1. Review draft PR #9 and its remote closure evidence; keep it unmerged.
+2. Keep PR #8, PR #6, and PR #7 unchanged and unmerged.
+3. Decide whether measured OKF value justifies a future BL-OKF-002 retrieval slice.
 
 ## Notes
 

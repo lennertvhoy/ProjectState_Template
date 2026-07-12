@@ -1,0 +1,47 @@
+Initialized State Driven Development Template repo
+Target: /tmp/tmp.EbxM1Juj9P/project
+Mode: bootstrap
+Profile: minimal (42 declared assets)
+Next:
+1. Read README.md and AGENTS.md
+2. Fill bootstrap truth and create a real backlog-linked queue
+3. Run python3 scripts/statedd_quality_gate.py --gate-level 1
+4. Run python3 scripts/check_state_docs.py --bootstrap-gate before operating mode
+$ /usr/bin/python3 -m compileall -q scripts
+$ /usr/bin/python3 /tmp/tmp.EbxM1Juj9P/project/scripts/statedd_okf_validate.py /tmp/tmp.EbxM1Juj9P/project/knowledge --source-root /tmp/tmp.EbxM1Juj9P/project --strict
+$ /usr/bin/python3 scripts/check_state_docs.py
+$ /usr/bin/python3 scripts/statedd_validate_schema.py
+$ /usr/bin/python3 scripts/statedd_instruction_lint.py --fail-on error
+$ /usr/bin/python3 scripts/statedd_efficiency_check.py --gate-level 1
+==================================================
+StateDD Quality Gate
+Mode: template/profile conformance — NOT SLICE CLOSURE
+==================================================
+🧩 Compiling Python sources...
+  ✓ Python sources compile
+  ✓ Profile policy permits gate level 1
+  ✓ OKF v0.1 bundle and StateDD governance validated
+  ✓ Dispatched 3 profile validation contract(s)
+🧪 Running tests...
+🔍 Running static analysis...
+📋 Validating state files...
+  ✓ State files valid
+📐 Validating schemas...
+  ✓ Schemas valid
+📦 Checking evidence...
+  ✓ Evidence log has content (level 1)
+🧊 Checking acceptance freezes...
+  ✓ Acceptance freezes present
+🔎 Linting instructions...
+  ✓ No instruction smells (errors)
+⚡ Running efficiency check...
+  ✓ Efficiency check passed
+🧹 Checking diff whitespace...
+
+==================================================
+Warnings:
+  ⚠ No project test command detected
+  ⚠ No configured static-analysis command detected
+  ⚠ Git diff check not applicable outside a Git worktree
+✅ CONFORMANCE PASS — NOT SLICE CLOSURE
+==================================================

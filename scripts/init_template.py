@@ -1706,6 +1706,13 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
     new_parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     new_parser.add_argument("--target", default=".", help="Repo root to initialize")
     new_parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
+    new_parser.add_argument(
+        "--asset-set",
+        action="append",
+        default=[],
+        choices=OPTIONAL_ASSET_SETS,
+        help="Install an optional catalog asset set; repeat for multiple sets",
+    )
     new_parser.add_argument("--minimal", action="store_true", help="Use the core-gates-only footprint (legacy alias for --profile minimal)")
     new_parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     new_parser.add_argument(
@@ -1765,6 +1772,13 @@ def build_legacy_parser() -> argparse.ArgumentParser:
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
     parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
+    parser.add_argument(
+        "--asset-set",
+        action="append",
+        default=[],
+        choices=OPTIONAL_ASSET_SETS,
+        help="Install an optional catalog asset set; repeat for multiple sets",
+    )
     parser.add_argument("--minimal", action="store_true", help="Use the core-gates-only footprint")
     parser.add_argument("--dry-run", action="store_true", help="Preview actions without writing files")
     parser.add_argument(
@@ -1805,6 +1819,7 @@ def main(argv: list[str] | None = None) -> int:
     stamp = now.isoformat(timespec="seconds")
     human_timestamp = now.strftime("%Y-%m-%d %H:%M %Z")
     profile = validate_profile("minimal" if getattr(args, "minimal", False) else args.profile)
+    optional_asset_sets = tuple(sorted(set(getattr(args, "asset_set", []))))
     try:
         target = safe_root_path(
             args.target,
@@ -1819,9 +1834,15 @@ def main(argv: list[str] | None = None) -> int:
                 "Refusing to initialize into the template root itself. "
                 "Choose a different target directory."
             )
-        asset_paths = assets_for_profile(profile)
+        asset_paths = assets_for_profile(profile, optional_asset_sets=optional_asset_sets)
         managed_files = build_managed_files_for_new(args.name, target, today, stamp, human_timestamp, profile=profile)
-        add_asset_manifest(managed_files, asset_paths, profile=profile, generation_mode="new")
+        add_asset_manifest(
+            managed_files,
+            asset_paths,
+            profile=profile,
+            generation_mode="new",
+            optional_asset_sets=optional_asset_sets,
+        )
         transaction = (
             nullcontext()
             if args.dry_run

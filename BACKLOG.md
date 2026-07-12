@@ -12,6 +12,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 ## NOW
 
 - [BL-STATEDD-INTEGRATION-001] Integrate PR #6's lifecycle/profile/gate/evidence correctness with PR #7's Git-safety and coding-agent golden path without downgrading either branch's strongest invariants.
+- [BL-OKF-001] Add optional OKF v0.1 knowledge interoperability with StateDD authority, provenance, and staleness governance without changing the canonical operational-state model.
 
 ## NEXT
 

@@ -123,6 +123,23 @@
       "validation": ["quality_gate_level_2", "post_merge_contract"],
       "assets": ["scripts/statedd_post_merge_verify.py"]
     },
+    "knowledge_okf": {
+      "version": 1,
+      "depends_on": ["core"],
+      "conflicts_with": [],
+      "capabilities": [
+        "okf_knowledge_bundle",
+        "knowledge_source_provenance",
+        "knowledge_staleness_detection"
+      ],
+      "validation": ["okf_v0_1_conformance"],
+      "optional": true,
+      "assets": [
+        "scripts/statedd_okf_validate.py",
+        "schemas/statedd_okf_extension.schema.json",
+        "knowledge/index.md"
+      ]
+    },
     "github": {
       "version": 1,
       "depends_on": [],

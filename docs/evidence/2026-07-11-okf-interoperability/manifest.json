@@ -1,0 +1,180 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2c7bd0e5c66870a20a18b912cf5da28c275410550e0d2a39399addcc41e06402"
+    },
+    {
+      "kind": "command_output",
+      "path": "git_safety_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "a6074c0bb61a5f5e49f913e1459e22caf5b1ccbf646cf946846321c4eb8c884d"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "87f5a5e112c6b855824af09ff4514f0c815b6bfd8d7457276bd1e13c7551f213"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/pytest_scripts.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "ebc2989eb514307c0e7a84994c7f6cb3194bf8969e9ffb27b3f95612d1ecab16"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/pytest_schema_examples.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b79b5882225729837a8b1f041170493009e27ce2d85691247fb25e6d0f37c21c"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/okf_validator.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "83e2a8d5ad5130ccf85c458a54bf56f17951633060bed3165a161c5ce42fd5e3"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/optional_profile.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e66278fcdfe511226bce5e44f760dbbcde314b4c11ee0b9dc881133453eaabe2"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/quality_gate.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "d5af474a26ec97ee2101c45099b9a1b79011d07d2b890dd9faca650d0f5d796a"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/state_hygiene.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b94ff4d9be7c33fb54ae7ea31293c2d13aab98b6f65978232b211980f847070d"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/schema.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "0d18be899b2df58aa46ce30b350e4fb84056368be8a525a8b4694a3ec1501648"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/instruction_lint.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "c9cdd4bdf96ada41faa5c893d7ca3f0ddeb78cf8b76af672dc371b5ce2165b43"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/efficiency.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "267c0af7b96454f3b348e4da4dc6524dffdee77b0fb8575049b770bdc80e1f74"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/audit.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "d7e9f6c6ae436553060dff4daa7cb5dc27ad369ec185600af5b7ad5048b05783"
+    },
+    {
+      "kind": "command_output",
+      "path": "command_outputs/evidence_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "0f19962024b8b5d9aa6093014042af92a815b44c84b33172b4359b1de9a07ec3"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "OKF v0.1 and StateDD governance validation pass for the optional knowledge layer.",
+      "evidence": [
+        "command_outputs/okf_validator.txt",
+        "command_outputs/pytest_scripts.txt"
+      ],
+      "id": "okf-conformance",
+      "status": "validated"
+    },
+    {
+      "claim": "Explicit knowledge_okf profile generation passes its declared validation and footprint budget without changing ordinary minimal output.",
+      "evidence": [
+        "command_outputs/optional_profile.txt",
+        "command_outputs/efficiency.txt"
+      ],
+      "id": "optional-profile",
+      "status": "validated"
+    },
+    {
+      "claim": "StateDD state, schema, quality, and safety preflights pass locally.",
+      "evidence": [
+        "README.md",
+        "command_outputs/quality_gate.txt",
+        "command_outputs/state_hygiene.txt",
+        "command_outputs/schema.txt",
+        "command_outputs/pytest_schema_examples.txt",
+        "command_outputs/instruction_lint.txt",
+        "command_outputs/audit.txt",
+        "command_outputs/evidence_check.txt",
+        "git_safety_summary.json"
+      ],
+      "id": "state-and-gates",
+      "status": "validated"
+    },
+    {
+      "claim": "Template-root runtime is not applicable to this docs/scripts slice.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-not-applicable",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-11T20:30:55+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in git_safety_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/pytest_scripts.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/pytest_schema_examples.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/okf_validator.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/optional_profile.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/quality_gate.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/state_hygiene.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/schema.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/instruction_lint.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/efficiency.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/audit.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in command_outputs/evidence_check.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-okf-001",
+    "head": "d4127b11823c3b7e27a94ac6d8119717ad522fb6"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-OKF-001"
+}

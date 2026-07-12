@@ -88,6 +88,14 @@ VALIDATION_REQUIREMENTS: dict[str, dict[str, Any]] = {
             ".github/ISSUE_TEMPLATE/architecture-change.md",
         ),
     },
+    "okf_v0_1_conformance": {
+        "minimum_gate_level": 1,
+        "required_paths": (
+            "scripts/statedd_okf_validate.py",
+            "schemas/statedd_okf_extension.schema.json",
+            "knowledge/index.md",
+        ),
+    },
 }
 
 

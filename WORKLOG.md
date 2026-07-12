@@ -864,3 +864,73 @@
 
 ### Next
 - Run remote-mutation safety preflight, push the branch, open one draft PR, and observe automatic CI without reruns.
+
+## 2026-07-11 - Open BL-OKF-001
+
+**Type:** architecture_slice_opening
+**Status:** OPEN
+**Git Head:** b9712a514d25b799a35a10bac35e00fc713a620e
+**Worktree:** clean before state-opening edit
+
+### What changed
+- Opened a separate OKF interoperability slice from the published PR #8 head.
+- Preserved StateDD as the canonical operational-state authority and kept PR #8 narrow.
+- Recorded OKF v0.1 as a pinned draft upstream specification and limited this slice to the optional contained knowledge layer.
+- Recorded the user-directed override to proceed while the PR #8 draft remains unsettled.
+
+### Next
+- Implement the optional `knowledge_okf` module, contained scaffold, validator, provenance extension, and staleness checks.
+
+## 2026-07-11 - Locally validate BL-OKF-001
+
+**Type:** architecture_slice_local_validation
+**Status:** VALIDATED_LOCALLY_REMOTE_PENDING
+**Git Head:** 1210947c1ed551e47fd700318f4e9254ba42f0a5
+**Proof Head:** 1e434d4e5b2dae2e91146d81c5eb430cc0d6e21d
+**Worktree:** clean before publication
+
+### What changed
+- Added the optional `knowledge_okf` asset set with explicit `new` and `adopt` selection.
+- Added the contained OKF v0.1 scaffold, standard-library-only validator, StateDD extension schema, source-hash staleness checks, and permissive base-format behavior.
+- Preserved ordinary profile assets and startup context; the optional module is not installed unless selected.
+
+### Verification
+- `python3 -m pytest scripts/ -q`: passed.
+- `python3 -m pytest schemas/examples/ -q`: 5 passed.
+- `python3 scripts/test_okf_validate.py`: 10 passed.
+- Explicit minimal `knowledge_okf` generation and level-1 conformance: passed.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose`: passed.
+- `python3 scripts/statedd_audit.py --strict --evidence-folder docs/evidence/2026-07-11-okf-interoperability`: passed.
+- Strict evidence pack, schema validation, state hygiene, and efficiency checks: passed.
+
+### Evidence
+- `docs/evidence/2026-07-11-okf-interoperability/README.md`
+- `docs/evidence/2026-07-11-okf-interoperability/manifest.json`
+- `docs/metrics/profile_metrics.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-11-004`
+
+### Next
+- Run remote-mutation safety preflight, push the branch, open one separate draft PR, and observe automatic CI without reruns.
+
+## 2026-07-11 - Publish and remotely validate BL-OKF-001
+
+**Type:** architecture_slice_remote_validation
+**Status:** PUSHED_DRAFT_PR_CI_PASSING
+**Proof Head:** 98c53265c36649d3c58b0e61a8e8d7ecba8beb48
+**Final PR Head:** e8500374dbcdf4518f1ee420fdc79c366fc3ac3b
+**Branch:** bl-okf-001
+**PR:** https://github.com/lennertvhoy/StateDD_Template/pull/9
+
+### What changed
+- Corrected the template footprint budget after CI measured the final committed tree at 2,173,706 bytes.
+- Refreshed reproducible profile metrics and advanced the proof head after the source/configuration correction.
+- Published one separate draft PR; PR #8, PR #6, and PR #7 remain unchanged and unmerged.
+
+### Verification
+- Direct branch-head CI passed for final head; run `29164232824`.
+- Synthetic PR merge-candidate CI passed; run `29164234097`.
+- Remote closure finalizer proved local/remote/PR/CI/merge agreement and stopped only because PR #9 remains draft.
+- Worktree clean and remote branch contains local HEAD `e8500374dbcdf4518f1ee420fdc79c366fc3ac3b`.
+
+### Next
+- Human review of draft PR #9; keep unmerged until scope, ownership, and evidence-gated promotion are accepted.

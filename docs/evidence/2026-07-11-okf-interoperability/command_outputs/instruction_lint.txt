@@ -1,0 +1,7 @@
+Found 1 configuration smell(s):
+
+## SKILL_LEAKAGE (1)
+  [WARNING] README.md:188 - Inline procedure detected (should be a skill): Then run 
+    → Create skill in skills/<name>/SKILL.md and invoke via /<name>
+
+Summary: 0 errors, 1 warnings, 0 info

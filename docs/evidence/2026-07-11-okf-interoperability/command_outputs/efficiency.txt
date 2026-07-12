@@ -1,0 +1,18 @@
+==================================================
+StateDD Efficiency Check
+==================================================
+
+Gate level: 2
+Budget file: EFFICIENCY_BUDGET.yaml
+
+## measured_context_and_footprint
+  profile: template_repository
+  startup_files: 4
+  startup_bytes: 26100
+  startup_estimated_tokens: 6525
+  token_estimator: utf8_bytes_div_4_ceiling
+  footprint_scope: repository
+  footprint_files: 302
+  footprint_bytes: 2173706
+
+✅ All efficiency checks passed

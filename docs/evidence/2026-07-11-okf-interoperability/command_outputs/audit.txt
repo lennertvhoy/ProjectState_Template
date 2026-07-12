@@ -1,0 +1,80 @@
+============================================================
+STATEDD AUDIT
+============================================================
+
+required_files
+  ✅ AGENTS.md exists
+  ✅ STATUS.md exists
+  ✅ PROJECT_STATE.yaml exists
+  ✅ PROJECT_DNA.yaml exists
+  ✅ PROJECT_ADAPTER.yaml exists
+  ✅ NEXT_ACTIONS.md exists
+  ✅ BACKLOG.md exists
+  ✅ WORKLOG.md exists
+  ✅ docs/EVIDENCE_LOG.md exists
+  ✅ docs/ACCEPTANCE_FREEZES.md exists
+
+repo_role_mode
+  ✅ repo_role: template_repository
+  ✅ statedd_mode: template-maintenance
+  ✅ Template repository uses template-maintenance mode
+  ✅ Template-maintenance PROJECT_STATE.yaml has no downstream project placeholder
+
+state_freshness
+  ✅ STATUS.md updated within the last 14 days
+  ✅ PROJECT_STATE.yaml updated within the last 14 days
+  ✅ NEXT_ACTIONS.md updated within the last 14 days
+  ✅ BACKLOG.md updated within the last 14 days
+
+evidence_folder
+  ✅ Latest evidence folder: docs/evidence/2026-07-11-okf-interoperability
+
+evidence_readme
+  ✅ Evidence README exists: docs/evidence/2026-07-11-okf-interoperability/README.md
+  ✅ Evidence README contains branch/head and claim markers
+
+evidence_size
+  ✅ Evidence folder has 15 files
+
+worktree_clean
+  ✅ Worktree is clean
+
+worktree_guard
+  ✅ scripts/statedd_worktree_guard.py available for pre-slice and closure worktree checks
+
+branch_head_recorded
+  ✅ HEAD 63cd65f not recorded directly, but evidence README declares a Proof/Final head split with an ancestor commit
+  ✅ Branch 'bl-okf-001' recorded in evidence README
+
+user_facing_evidence
+  ✅ No user-facing file changes detected
+
+runtime_identity
+  ✅ runtime_identity.json schema: statedd.runtime_identity.v2
+  ✅ Runtime marked not required for this evidence slice
+
+schema_validation
+  ✅ StateDD schema validation passed
+
+schema_ownership
+  ✅ No schema file changes detected
+
+tests_recorded
+  ✅ Evidence README records test/build/lint results
+
+evidence_manifest
+  ✅ manifest.json schema: statedd.evidence_manifest.v1
+  ✅ manifest.json redaction status: checked_with_limits
+
+browser_verification
+  ✅ Browser verification not required for this slice
+
+anti_brittleness_review
+  ✅ Anti-brittleness review not required by latest evidence markers
+
+human_override
+  ✅ Human override declared; verify the override is recorded with rule, requester, rationale, and remaining risk
+
+============================================================
+Summary: 37 pass, 0 warn, 0 fail, 0 override
+AUDIT RESULT: PASS — local readiness only; remote closure not checked

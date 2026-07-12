@@ -64,13 +64,19 @@ context_budgets:
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
       max_footprint_files: 330
-      max_footprint_bytes: 2000000
+      # Includes the optional OKF validator, extension schema, and contained scaffold.
+      # Includes the committed OKF evidence/state finalization surface; keep
+      # this above the measured full-template footprint without changing
+      # ordinary startup selection.
+      max_footprint_bytes: 2250000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
       max_startup_estimated_tokens: 2250
       max_footprint_files: 42
-      max_footprint_bytes: 360000
+      # Optional knowledge_okf adds the validator, extension schema, and one
+      # contained index without changing the startup file selection.
+      max_footprint_bytes: 380000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000

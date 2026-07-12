@@ -1,0 +1,44 @@
+$ /usr/bin/python3 -m compileall -q scripts schemas/examples
+$ /usr/bin/python3 /home/ff/Documents/Projects/StateDD_Template-OKF-BL-OKF-001/scripts/statedd_profile_metrics.py --root /home/ff/Documents/Projects/StateDD_Template-OKF-BL-OKF-001 --check
+$ /usr/bin/python3 -m pytest scripts/ -q
+$ /usr/bin/python3 -m pytest schemas/examples/ -q
+$ ruff check .
+$ /usr/bin/python3 scripts/check_state_docs.py
+$ /usr/bin/python3 scripts/statedd_validate_schema.py
+$ /usr/bin/python3 scripts/statedd_evidence_pack.py check --strict /home/ff/Documents/Projects/StateDD_Template-OKF-BL-OKF-001/docs/evidence/2026-07-11-okf-interoperability
+$ /usr/bin/python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/2026-07-11-okf-interoperability/runtime_identity.json
+$ /usr/bin/python3 scripts/statedd_instruction_lint.py --fail-on error
+$ /usr/bin/python3 scripts/statedd_efficiency_check.py --gate-level 2
+$ git rev-parse --verify HEAD
+$ git diff --check HEAD
+==================================================
+StateDD Quality Gate
+==================================================
+🧩 Compiling Python sources...
+  ✓ Python sources compile
+📏 Reproducing profile metrics...
+  ✓ Profile/context metrics reproduce from their recorded proof commit
+🧪 Running tests...
+  ✓ Tests passed (/usr/bin/python3 -m pytest scripts/ -q)
+  ✓ Tests passed (/usr/bin/python3 -m pytest schemas/examples/ -q)
+🔍 Running static analysis...
+  ✓ ruff passed
+📋 Validating state files...
+  ✓ State files valid
+📐 Validating schemas...
+  ✓ Schemas valid
+📦 Checking evidence...
+  ✓ Runtime truth checked (docs/evidence/2026-07-11-okf-interoperability/runtime_identity.json)
+  ✓ Strict evidence pack valid (docs/evidence/2026-07-11-okf-interoperability)
+🧊 Checking acceptance freezes...
+  ✓ Acceptance freezes present
+🔎 Linting instructions...
+  ✓ No instruction smells (errors)
+⚡ Running efficiency check...
+  ✓ Efficiency check passed
+🧹 Checking diff whitespace...
+  ✓ Git diff whitespace clean
+
+==================================================
+✅ ALL QUALITY GATES PASSED
+==================================================

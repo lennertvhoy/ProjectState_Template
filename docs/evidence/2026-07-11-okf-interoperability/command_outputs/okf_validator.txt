@@ -1,0 +1,4 @@
+OKF v0.1 validation: passed
+Bundle: /home/ff/Documents/Projects/StateDD_Template-OKF-BL-OKF-001/knowledge
+Concepts: 0
+Base OKF conformance and StateDD governance checks passed.

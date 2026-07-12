@@ -1,0 +1,2233 @@
+.................................................................... [ 21%]
+........................................................................ [ 43%]
+........................................................................ [ 65%]
+........................................................................ [ 87%]
+.......................................                                  [100%]
+==================================== PASSES ====================================
+___________ TestBrowserVerification.test_no_single_provider_required ___________
+----------------------------- Captured stdout call -----------------------------
+uuuu
+__________ test_handoff_exits_nonzero_when_direct_verification_fails ___________
+----------------------------- Captured stdout call -----------------------------
+# StateDD Handoff Snapshot
+
+Generated: 2026-07-11T20:34:33+02:00
+
+## Remote-First Status
+
+- repository URL: not proven
+- branch: not proven
+- exact local HEAD: not proven
+- remote branch HEAD: not proven
+- remote contains exact local HEAD: yes
+- delivery status: pushed
+- PR URL: not currently locatable by this local helper
+- CI status: not verified by this local helper
+
+## Repo Identity
+
+- repo path: /tmp/pytest-of-ff/pytest-56/test_handoff_exits_nonzero_whe0
+- branch: not proven
+- head: not proven
+- origin remote URL: not proven
+- upstream branch: not proven
+- upstream HEAD: not proven
+- local HEAD: not proven
+- local remote-tracking ref parity: not proven
+- direct remote branch HEAD: not proven
+- local HEAD equals direct remote branch: not proven
+- worktree: clean
+- dirty files classified: not applicable
+- GitHub-visible deliverables: not proven by this helper; use the remote closure finalizer
+- local-only files claimed: not proven
+
+## Worktree Topology
+
+- worktree topology captured: yes
+- current worktree path: /tmp/pytest-of-ff/pytest-56/test_handoff_exits_nonzero_whe0
+- linked worktrees: none
+- git worktree list --porcelain:
+  worktree /tmp/pytest-of-ff/pytest-56/test_handoff_exits_nonzero_whe0
+  HEAD 0000000000000000000000000000000000000000
+  branch refs/heads/master
+
+## Changed Files
+
+- none
+
+## Evidence and Continuation
+
+- selected evidence ref: not proven
+- selected evidence absolute path: not proven
+- next action: not proven
+
+## Runtime Identity
+
+- process/container: not proven by this helper
+- port/base URL: not proven by this helper
+- rebuilt in this slice: not proven by this helper
+- duplicate runtimes checked: not proven by this helper
+
+## Direct Verification
+
+- command: false
+  exit: 1
+  output: none
+
+At least one verification command failed.
+
+## Handoff Reminder
+
+- Use prompts/FINAL_HANDOFF_TEMPLATE.md for the final human-facing handoff.
+- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.
+- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.
+
+## Residual / Partial Risks
+
+- exact local-to-remote branch parity is not proven
+- PR, CI, runtime, and human acceptance are not proven by this helper
+
+## CTO-Pasteable Handoff
+
+Repo /tmp/pytest-of-ff/pytest-56/test_handoff_exits_nonzero_whe0 on not proven at not proven: boundary=local-only or unverified; worktree=clean; evidence=not proven; next=not proven; PR/CI/runtime/acceptance remain separately unproven.
+___________ test_handoff_exits_zero_when_direct_verification_passes ____________
+----------------------------- Captured stdout call -----------------------------
+# StateDD Handoff Snapshot
+
+Generated: 2026-07-11T20:34:33+02:00
+
+## Remote-First Status
+
+- repository URL: not proven
+- branch: not proven
+- exact local HEAD: not proven
+- remote branch HEAD: not proven
+- remote contains exact local HEAD: yes
+- delivery status: pushed
+- PR URL: not currently locatable by this local helper
+- CI status: not verified by this local helper
+
+## Repo Identity
+
+- repo path: /tmp/pytest-of-ff/pytest-56/test_handoff_exits_zero_when_d0
+- branch: not proven
+- head: not proven
+- origin remote URL: not proven
+- upstream branch: not proven
+- upstream HEAD: not proven
+- local HEAD: not proven
+- local remote-tracking ref parity: not proven
+- direct remote branch HEAD: not proven
+- local HEAD equals direct remote branch: not proven
+- worktree: clean
+- dirty files classified: not applicable
+- GitHub-visible deliverables: not proven by this helper; use the remote closure finalizer
+- local-only files claimed: not proven
+
+## Worktree Topology
+
+- worktree topology captured: yes
+- current worktree path: /tmp/pytest-of-ff/pytest-56/test_handoff_exits_zero_when_d0
+- linked worktrees: none
+- git worktree list --porcelain:
+  worktree /tmp/pytest-of-ff/pytest-56/test_handoff_exits_zero_when_d0
+  HEAD 0000000000000000000000000000000000000000
+  branch refs/heads/master
+
+## Changed Files
+
+- none
+
+## Evidence and Continuation
+
+- selected evidence ref: not proven
+- selected evidence absolute path: not proven
+- next action: not proven
+
+## Runtime Identity
+
+- process/container: not proven by this helper
+- port/base URL: not proven by this helper
+- rebuilt in this slice: not proven by this helper
+- duplicate runtimes checked: not proven by this helper
+
+## Direct Verification
+
+- command: true
+  exit: 0
+  output: none
+
+## Handoff Reminder
+
+- Use prompts/FINAL_HANDOFF_TEMPLATE.md for the final human-facing handoff.
+- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.
+- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.
+
+## Residual / Partial Risks
+
+- exact local-to-remote branch parity is not proven
+- PR, CI, runtime, and human acceptance are not proven by this helper
+
+## CTO-Pasteable Handoff
+
+Repo /tmp/pytest-of-ff/pytest-56/test_handoff_exits_zero_when_d0 on not proven at not proven: boundary=local-only or unverified; worktree=clean; evidence=not proven; next=not proven; PR/CI/runtime/acceptance remain separately unproven.
+____________ test_handoff_fails_when_requested_audit_is_unavailable ____________
+----------------------------- Captured stdout call -----------------------------
+# StateDD Handoff Snapshot
+
+Generated: 2026-07-11T20:34:33+02:00
+
+## Remote-First Status
+
+- repository URL: not proven
+- branch: not proven
+- exact local HEAD: not proven
+- remote branch HEAD: not proven
+- remote contains exact local HEAD: yes
+- delivery status: pushed
+- PR URL: not currently locatable by this local helper
+- CI status: not verified by this local helper
+
+## Repo Identity
+
+- repo path: /tmp/pytest-of-ff/pytest-56/test_handoff_fails_when_reques0
+- branch: not proven
+- head: not proven
+- origin remote URL: not proven
+- upstream branch: not proven
+- upstream HEAD: not proven
+- local HEAD: not proven
+- local remote-tracking ref parity: not proven
+- direct remote branch HEAD: not proven
+- local HEAD equals direct remote branch: not proven
+- worktree: clean
+- dirty files classified: not applicable
+- GitHub-visible deliverables: not proven by this helper; use the remote closure finalizer
+- local-only files claimed: not proven
+
+## Worktree Topology
+
+- worktree topology captured: yes
+- current worktree path: /tmp/pytest-of-ff/pytest-56/test_handoff_fails_when_reques0
+- linked worktrees: none
+- git worktree list --porcelain:
+  worktree /tmp/pytest-of-ff/pytest-56/test_handoff_fails_when_reques0
+  HEAD 0000000000000000000000000000000000000000
+  branch refs/heads/master
+
+## Changed Files
+
+- none
+
+## Evidence and Continuation
+
+- selected evidence ref: not proven
+- selected evidence absolute path: not proven
+- next action: not proven
+
+## Runtime Identity
+
+- process/container: not proven by this helper
+- port/base URL: not proven by this helper
+- rebuilt in this slice: not proven by this helper
+- duplicate runtimes checked: not proven by this helper
+
+## Direct Verification
+
+- not run by this helper; pass `--test-command` to include command output
+
+## StateDD Audit
+
+- scripts/statedd_audit.py not found
+
+## Handoff Reminder
+
+- Use prompts/FINAL_HANDOFF_TEMPLATE.md for the final human-facing handoff.
+- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.
+- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.
+
+## Residual / Partial Risks
+
+- exact local-to-remote branch parity is not proven
+- PR, CI, runtime, and human acceptance are not proven by this helper
+
+## CTO-Pasteable Handoff
+
+Repo /tmp/pytest-of-ff/pytest-56/test_handoff_fails_when_reques0 on not proven at not proven: boundary=local-only or unverified; worktree=clean; evidence=not proven; next=not proven; PR/CI/runtime/acceptance remain separately unproven.
+_________ test_handoff_fails_closed_on_malformed_active_agent_context __________
+----------------------------- Captured stdout call -----------------------------
+# StateDD Handoff Snapshot
+
+Generated: 2026-07-11T20:34:33+02:00
+
+## Remote-First Status
+
+- repository URL: not proven
+- branch: not proven
+- exact local HEAD: not proven
+- remote branch HEAD: not proven
+- remote contains exact local HEAD: yes
+- delivery status: local changes not ready to push
+- PR URL: not currently locatable by this local helper
+- CI status: not verified by this local helper
+
+## Repo Identity
+
+- repo path: /tmp/pytest-of-ff/pytest-56/test_handoff_fails_closed_on_m0
+- branch: not proven
+- head: not proven
+- origin remote URL: not proven
+- upstream branch: not proven
+- upstream HEAD: not proven
+- local HEAD: not proven
+- local remote-tracking ref parity: not proven
+- direct remote branch HEAD: not proven
+- local HEAD equals direct remote branch: not proven
+- worktree: dirty
+- dirty files classified: no
+- GitHub-visible deliverables: not proven by this helper; use the remote closure finalizer
+- local-only files claimed: yes
+
+## Agent Context
+
+- invalid active context: duplicate JSON key 'schema'
+
+## Worktree Topology
+
+- worktree topology captured: yes
+- current worktree path: /tmp/pytest-of-ff/pytest-56/test_handoff_fails_closed_on_m0
+- linked worktrees: none
+- git worktree list --porcelain:
+  worktree /tmp/pytest-of-ff/pytest-56/test_handoff_fails_closed_on_m0
+  HEAD 0000000000000000000000000000000000000000
+  branch refs/heads/master
+
+## Changed Files
+
+- ?? .statedd/
+
+## Evidence and Continuation
+
+- selected evidence ref: not proven
+- selected evidence absolute path: not proven
+- next action: not proven
+
+## Runtime Identity
+
+- process/container: not proven by this helper
+- port/base URL: not proven by this helper
+- rebuilt in this slice: not proven by this helper
+- duplicate runtimes checked: not proven by this helper
+
+## Direct Verification
+
+- not run by this helper; pass `--test-command` to include command output
+
+## Handoff Reminder
+
+- Use prompts/FINAL_HANDOFF_TEMPLATE.md for the final human-facing handoff.
+- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.
+- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.
+
+## Residual / Partial Risks
+
+- worktree is dirty; changes are local worktree truth only
+- exact local-to-remote branch parity is not proven
+- PR, CI, runtime, and human acceptance are not proven by this helper
+- active agent context is invalid: duplicate JSON key 'schema'
+
+## CTO-Pasteable Handoff
+
+Repo /tmp/pytest-of-ff/pytest-56/test_handoff_fails_closed_on_m0 on not proven at not proven: boundary=local-only or unverified; worktree=dirty; evidence=not proven; next=not proven; PR/CI/runtime/acceptance remain separately unproven.
+____________ test_all_applicable_suites_run_and_failures_aggregate _____________
+----------------------------- Captured stdout call -----------------------------
+🧪 Running tests...
+  ✓ Tests passed (/usr/bin/python3 -m pytest -q)
+  ✓ Tests passed (npm test)
+______ test_unavailable_declared_runner_fails_but_later_suite_still_runs _______
+----------------------------- Captured stdout call -----------------------------
+🧪 Running tests...
+  ✓ Tests passed (npm test)
+______________ test_no_suite_is_distinct_from_unavailable_tooling ______________
+----------------------------- Captured stdout call -----------------------------
+🧪 Running tests...
+_______________ test_malformed_package_json_fails_configuration ________________
+----------------------------- Captured stdout call -----------------------------
+🧪 Running tests...
+_____________ test_internal_python_checks_use_current_interpreter ______________
+----------------------------- Captured stdout call -----------------------------
+📋 Validating state files...
+  ✓ State files valid
+📐 Validating schemas...
+  ✓ Schemas valid
+🔎 Linting instructions...
+  ✓ No instruction smells (errors)
+⚡ Running efficiency check...
+  ✓ Efficiency check passed
+____________________ test_regulated_lock_requires_level_two ____________________
+----------------------------- Captured stdout call -----------------------------
+  ✓ Profile policy permits gate level 2
+__ test_profile_validation_ids_dispatch_and_fail_on_unknown_or_missing_assets __
+----------------------------- Captured stdout call -----------------------------
+  ✓ Dispatched 1 profile validation contract(s)
+________ test_level_two_requires_slice_evidence_unless_conformance_mode ________
+----------------------------- Captured stdout call -----------------------------
+📦 Checking evidence...
+📦 Checking evidence...
+  ✓ Evidence log has content (conformance mode; no active slice)
+________ test_setup_cfg_without_flake8_section_does_not_declare_runner _________
+----------------------------- Captured stdout call -----------------------------
+🔍 Running static analysis...
+_______________ test_failure_output_preserves_stdout_and_stderr ________________
+----------------------------- Captured stdout call -----------------------------
+🧪 Running tests...
+________________________________ test_all_green ________________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp6o9l886w
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+__________________________ test_dirty_worktree_fails ___________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpz18ik11p
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: no
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - Worktree is dirty:
+M file.txt
+
+  - Worktree became dirty during finalization:
+M file.txt
+
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Worktree is dirty:
+M file.txt
+
+  ✗ Worktree became dirty during finalization:
+M file.txt
+
+__________________________ test_unpushed_branch_fails __________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp3ubdm7y5
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - Branch 'feature/remote-closure' not found on origin
+  - Could not re-check remote HEAD for branch 'feature/remote-closure'
+  - Remote HEAD changed before final label: expected 20b446d6401fff3d74fe4beb64cc0c45aea90b5e, found not found
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Branch 'feature/remote-closure' not found on origin
+  ✗ Could not re-check remote HEAD for branch 'feature/remote-closure'
+  ✗ Remote HEAD changed before final label: expected 20b446d6401fff3d74fe4beb64cc0c45aea90b5e, found not found
+_______________________________ test_no_pr_fails _______________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpq20_px9v
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - No open PR found for branch 'feature/remote-closure'
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ No open PR found for branch 'feature/remote-closure'
+_________________________ test_pr_head_mismatch_fails __________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmprg_8sflc
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - GitHub commit query returned oid '2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e', expected 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  - PR head (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e) does not match local HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+  - GitHub commit query returned oid '2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e', expected 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  - PR head (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e) does not match local HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ GitHub commit query returned oid '2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e', expected 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  ✗ PR head (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e) does not match local HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+  ✗ GitHub commit query returned oid '2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e', expected 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  ✗ PR head (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e) does not match local HEAD (20b446d6401fff3d74fe4beb64cc0c45aea90b5e)
+___________________________ test_stale_pr_body_fails ___________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpm4twlxsj
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - PR body must contain exactly one full `Final PR head:` marker
+  - PR body must reference exactly one docs/evidence/<folder> path
+  - Cannot select evidence without one explicit PR-body evidence reference
+  - PR body must contain exactly one full `Final PR head:` marker
+  - PR body must reference exactly one docs/evidence/<folder> path
+  - Final GitHub PR body no longer matches the validated evidence proof head
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR body must contain exactly one full `Final PR head:` marker
+  ✗ PR body must reference exactly one docs/evidence/<folder> path
+  ✗ Cannot select evidence without one explicit PR-body evidence reference
+  ✗ PR body must contain exactly one full `Final PR head:` marker
+  ✗ PR body must reference exactly one docs/evidence/<folder> path
+  ✗ Final GitHub PR body no longer matches the validated evidence proof head
+____________________ test_pr_body_proof_final_split_passes _____________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpexs9ubmu
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+__________ test_changes_requested_or_unresolved_review_blocks_closure __________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpm63vn6_6
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - PR review decision is CHANGES_REQUESTED
+  - PR has 1 unresolved current review thread(s)
+  - PR review decision is CHANGES_REQUESTED
+  - PR has 1 unresolved current review thread(s)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR review decision is CHANGES_REQUESTED
+  ✗ PR has 1 unresolved current review thread(s)
+  ✗ PR review decision is CHANGES_REQUESTED
+  ✗ PR has 1 unresolved current review thread(s)
+____________ test_same_sha_on_different_pr_branch_fails_attribution ____________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpbvadzetv
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - PR branch 'other-branch' does not match current branch 'feature/remote-closure'
+  - PR branch 'other-branch' does not match current branch 'feature/remote-closure'
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR branch 'other-branch' does not match current branch 'feature/remote-closure'
+  ✗ PR branch 'other-branch' does not match current branch 'feature/remote-closure'
+______________ test_review_and_check_suite_pagination_fail_closed ______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp2izq6bk7
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - More than 100 review threads exist; closure refuses incomplete review enumeration
+  - More than 100 review threads exist; closure refuses incomplete review enumeration
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ More than 100 review threads exist; closure refuses incomplete review enumeration
+  ✗ More than 100 review threads exist; closure refuses incomplete review enumeration
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp8iuwdaqf
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - More than 100 check suites exist; closure refuses incomplete CI enumeration
+  - More than 100 check suites exist; closure refuses incomplete CI enumeration
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ More than 100 check suites exist; closure refuses incomplete CI enumeration
+  ✗ More than 100 check suites exist; closure refuses incomplete CI enumeration
+________ test_unrelated_successful_actions_workflow_does_not_satisfy_ci ________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Workflow: not found
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpq6paw156
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+  - No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+  ✗ No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+________ test_noop_or_wrong_level_standard_workflow_cannot_be_ci_proof _________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpt0_cr3zd
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - Authoritative workflow must invoke exactly one unconditional StateDD quality gate at level 2 with --conformance
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Authoritative workflow must invoke exactly one unconditional StateDD quality gate at level 2 with --conformance
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpvps27kxw
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - Authoritative workflow must invoke exactly one unconditional StateDD quality gate at level 2 with --conformance
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Authoritative workflow must invoke exactly one unconditional StateDD quality gate at level 2 with --conformance
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpm2sdlqmo
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - Authoritative workflow must invoke exactly one unconditional StateDD quality gate at level 2 with --conformance
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Authoritative workflow must invoke exactly one unconditional StateDD quality gate at level 2 with --conformance
+________ test_workflow_path_override_cannot_select_undeclared_workflow _________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpxrbl2u20
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - --workflow-path .github/workflows/unrelated.yml is not the declared authoritative workflow .github/workflows/validate.yml
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ --workflow-path .github/workflows/unrelated.yml is not the declared authoritative workflow .github/workflows/validate.yml
+___________ test_final_github_requery_detects_new_unresolved_thread ____________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp5p8fdd4a
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - PR has 1 unresolved current review thread(s)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR has 1 unresolved current review thread(s)
+____________________________ test_ci_pending_fails _____________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     PENDING
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpyedsf9m6
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: PENDING
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - CI is still pending on current HEAD (PENDING)
+  - CI is still pending on current HEAD (PENDING)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ CI is still pending on current HEAD (PENDING)
+  ✗ CI is still pending on current HEAD (PENDING)
+____________________________ test_ci_failure_fails _____________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     FAILURE
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp5kckhssv
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: FAILURE
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - CI did not succeed on current HEAD (FAILURE)
+  - CI did not succeed on current HEAD (FAILURE)
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ CI did not succeed on current HEAD (FAILURE)
+  ✗ CI did not succeed on current HEAD (FAILURE)
+__________________________ test_no_actions_run_fails ___________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Workflow: not found
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp17p5i19j
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+  - No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+  ✗ No successful authoritative GitHub Actions run for .github/workflows/validate.yml at current HEAD
+________________________ test_merge_state_blocked_fails ________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  BLOCKED
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpn9bcix14
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: BLOCKED
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - mergeStateStatus is 'BLOCKED', expected one of {'CLEAN', 'HAS_HOOKS', 'MERGED'}
+  - mergeStateStatus is 'BLOCKED', expected one of {'CLEAN', 'HAS_HOOKS', 'MERGED'}
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ mergeStateStatus is 'BLOCKED', expected one of {'CLEAN', 'HAS_HOOKS', 'MERGED'}
+  ✗ mergeStateStatus is 'BLOCKED', expected one of {'CLEAN', 'HAS_HOOKS', 'MERGED'}
+______________________ test_evidence_head_mismatch_fails _______________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp5m4jwfz5
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 1111111111111111111111111111111111111111
+- remaining_risks:
+  - PR body proof head (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e) does not match evidence proof head (1111111111111111111111111111111111111111)
+  - Evidence proof head 1111111111111111111111111111111111111111 is not an ancestor of final head 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  - Final GitHub PR body no longer matches the validated evidence proof head
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR body proof head (2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e) does not match evidence proof head (1111111111111111111111111111111111111111)
+  ✗ Evidence proof head 1111111111111111111111111111111111111111 is not an ancestor of final head 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  ✗ Final GitHub PR body no longer matches the validated evidence proof head
+____________________ test_evidence_proof_final_split_passes ____________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpbaqo2r_0
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+___________________________ test_explicit_pr_number ____________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp7r_5rmix
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+___________________________ test_writes_output_json ____________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+Wrote remote closure handoff: /tmp/tmpu059fzvu/closure.json
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpu059fzvu/repo
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: CI verified
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - none
+
+✅ REMOTE CLOSURE FINALIZER PASSED — CI verified
+____________________ test_rejects_output_inside_repository _____________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp2smnm281
+- branch: 
+- local_head: 
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - Remote closure output must be an external sidecar; writing inside the repository would create post-proof dirt
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Remote closure output must be an external sidecar; writing inside the repository would create post-proof dirt
+___________________ test_missing_evidence_is_a_hard_failure ____________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp9zjby18g
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - PR-referenced evidence folder is missing or unsafe: docs/evidence/2026-06-29-remote-closure
+  - Final GitHub PR body no longer matches the validated evidence proof head
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ PR-referenced evidence folder is missing or unsafe: docs/evidence/2026-06-29-remote-closure
+  ✗ Final GitHub PR body no longer matches the validated evidence proof head
+_____________ test_invalid_or_headless_evidence_is_a_hard_failure ______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpo_dj5lcv
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/invalid
+- evidence_proof_head: not found
+- remaining_risks:
+  - Evidence manifest schema failure $: missing required property 'slice_id'
+  - Evidence manifest schema failure $: missing required property 'created_at'
+  - Evidence manifest schema failure $: missing required property 'repo'
+  - Evidence manifest schema failure $: missing required property 'claims'
+  - Evidence manifest schema failure $: missing required property 'artifacts'
+  - Evidence manifest schema failure $: missing required property 'redaction'
+  - Final GitHub PR body no longer matches the validated evidence proof head
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Evidence manifest schema failure $: missing required property 'slice_id'
+  ✗ Evidence manifest schema failure $: missing required property 'created_at'
+  ✗ Evidence manifest schema failure $: missing required property 'repo'
+  ✗ Evidence manifest schema failure $: missing required property 'claims'
+  ✗ Evidence manifest schema failure $: missing required property 'artifacts'
+  ✗ Evidence manifest schema failure $: missing required property 'redaction'
+  ✗ Final GitHub PR body no longer matches the validated evidence proof head
+_______________ test_untracked_evidence_fails_exact_head_binding _______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmplpgf1ug7
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: not found
+- pr_number: not found
+- pr_url: not found
+- ci_run_id: not found
+- ci_run_url: not found
+- ci_workflow_path: not found
+- github_final_requery: no
+- ci_state: not found
+- merge_state: not found
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: not found
+- evidence_proof_head: not found
+- remaining_risks:
+  - Authoritative workflow is not tracked at exact HEAD: .github/workflows/validate.yml
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Authoritative workflow is not tracked at exact HEAD: .github/workflows/validate.yml
+________________ test_evidence_branch_must_match_current_branch ________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpjt1smux_
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - Evidence manifest branch ('different-branch') does not match current branch ('feature/remote-closure')
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Evidence manifest branch ('different-branch') does not match current branch ('feature/remote-closure')
+_____________ test_non_finalization_change_after_proof_head_fails ______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmp0cqf5s2f
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - Proof-to-final commits contain non-finalization changes: scripts/changed_after_proof.py
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Proof-to-final commits contain non-finalization changes: scripts/changed_after_proof.py
+_____________ test_finalization_metadata_secret_scan_fails_closed ______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Closure Finalizer
+============================================================
+
+Local truth:
+  branch: feature/remote-closure
+  head:   20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  remote: https://github.com/statedd/template.git
+
+GitHub truth:
+  PR:     #42 — https://github.com/statedd/template/pull/42
+  PR head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+  CI:     SUCCESS
+  Run:    https://github.com/statedd/template/actions/runs/12345
+  Workflow: .github/workflows/validate.yml
+  Merge:  CLEAN
+Manifest check passed.
+
+============================================================
+Remote Closure Handoff
+============================================================
+- generated_at: 2026-07-11T20:34:43+02:00
+- repo_path: /tmp/tmpv002tfiw
+- branch: feature/remote-closure
+- local_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_head: 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
+- pr_number: 42
+- pr_url: https://github.com/statedd/template/pull/42
+- ci_run_id: 12345
+- ci_run_url: https://github.com/statedd/template/actions/runs/12345
+- ci_workflow_path: .github/workflows/validate.yml
+- github_final_requery: yes
+- ci_state: SUCCESS
+- merge_state: CLEAN
+- worktree_clean: yes
+- closure_label: NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+- evidence_folder: docs/evidence/2026-06-29-remote-closure
+- evidence_proof_head: 2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e
+- remaining_risks:
+  - Finalization metadata privacy scan failed for STATUS.md: ['Possible API key / token pattern found in STATUS.md', 'Possible env-like secret pattern found in STATUS.md']
+
+❌ REMOTE CLOSURE FINALIZER FAILED — NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM
+  ✗ Finalization metadata privacy scan failed for STATUS.md: ['Possible API key / token pattern found in STATUS.md', 'Possible env-like secret pattern found in STATUS.md']
+________________ test_clean_pushed_branch_stops_at_pushed_state ________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Truth Check
+============================================================
+
+Truth Boundaries:
+------------------------------------------------------------
+  ✓ repo_identity: git rev-parse --show-toplevel
+  ✓ git_remote: git remote get-url origin
+  ✓ current_branch: git branch --show-current
+  ✓ git_status: git status --short
+  ✓ git_log: git log --oneline -8
+  ✓ head_sha: git rev-parse HEAD
+  ✓ remote_contains_head: git ls-remote origin slice
+  ✓ claimed_files_tracked: git ls-files tracked.txt
+
+Remote Branch State: pushed
+PR, CI, merge state, and closure evidence: not checked
+============================================================
+✅ REMOTE BRANCH PREFLIGHT PASSED — pushed
+______________ test_dirty_worktree_fails_remote_branch_preflight _______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Truth Check
+============================================================
+
+Truth Boundaries:
+------------------------------------------------------------
+  ✓ repo_identity: git rev-parse --show-toplevel
+  ✓ git_remote: git remote get-url origin
+  ✓ current_branch: git branch --show-current
+  ✗ git_status: git status --short
+  ✓ git_log: git log --oneline -8
+  ✓ head_sha: git rev-parse HEAD
+  ✓ remote_contains_head: git ls-remote origin slice
+
+Failures (1):
+  ✗ Boundary 'git_status' failed: worktree is dirty
+
+Remote Branch State: local-only
+PR, CI, merge state, and closure evidence: not checked
+============================================================
+❌ REMOTE BRANCH PREFLIGHT FAILED — local-only
+______________ test_unpushed_commit_fails_remote_branch_preflight ______________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Truth Check
+============================================================
+
+Truth Boundaries:
+------------------------------------------------------------
+  ✓ repo_identity: git rev-parse --show-toplevel
+  ✓ git_remote: git remote get-url origin
+  ✓ current_branch: git branch --show-current
+  ✓ git_status: git status --short
+  ✓ git_log: git log --oneline -8
+  ✓ head_sha: git rev-parse HEAD
+  ✗ remote_contains_head: git ls-remote origin slice
+
+Failures (1):
+  ✗ Boundary 'remote_contains_head' failed: remote SHA 5d3643b6407a1f1a852aff2cc6b8902764eccee7 != local HEAD a3f4d28e8ac6bfb499c227f6c65222c567be4679
+
+Remote Branch State: local-only
+PR, CI, merge state, and closure evidence: not checked
+============================================================
+❌ REMOTE BRANCH PREFLIGHT FAILED — local-only
+__________________________ test_untracked_claim_fails __________________________
+----------------------------- Captured stdout call -----------------------------
+============================================================
+StateDD Remote Truth Check
+============================================================
+
+Truth Boundaries:
+------------------------------------------------------------
+  ✓ repo_identity: git rev-parse --show-toplevel
+  ✓ git_remote: git remote get-url origin
+  ✓ current_branch: git branch --show-current
+  ✓ git_status: git status --short
+  ✓ git_log: git log --oneline -8
+  ✓ head_sha: git rev-parse HEAD
+  ✓ remote_contains_head: git ls-remote origin slice
+  ✓ claimed_files_tracked: git ls-files missing.txt
+
+Failures (1):
+  ✗ Claimed file not tracked: missing.txt
+
+Remote Branch State: local-only
+PR, CI, merge state, and closure evidence: not checked
+============================================================
+❌ REMOTE BRANCH PREFLIGHT FAILED — local-only
+___________ test_closure_preflight_invokes_explicit_runtime_artifact ___________
+----------------------------- Captured stdout call -----------------------------
+🖥️  Checking runtime proof...
+  ✓ Runtime truth re-probed (docs/evidence/slice/runtime_identity.json)
+_____________ test_interrupted_apply_rolls_back_files_and_manifest _____________
+----------------------------- Captured stdout call -----------------------------
+Applied EFFICIENCY_BUDGET.yaml
+=========================== short test summary info ============================
+PASSED scripts/test_adoption_profiles.py::test_new_profile_minimal
+PASSED scripts/test_adoption_profiles.py::test_new_profile_solo
+PASSED scripts/test_adoption_profiles.py::test_new_profile_team
+PASSED scripts/test_adoption_profiles.py::test_new_profile_regulated
+PASSED scripts/test_adoption_profiles.py::test_legacy_minimal_flag_maps_to_profile
+PASSED scripts/test_adoption_profiles.py::test_profile_footprints_are_bounded_and_minimal_is_smallest
+PASSED scripts/test_adoption_profiles.py::test_adopt_with_profile_preserves_readme
+PASSED scripts/test_adoption_profiles.py::test_wizard_answers_generates_files
+PASSED scripts/test_adoption_profiles.py::test_wizard_dry_run_writes_nothing
+PASSED scripts/test_agent_worktree.py::test_default_start_creates_independent_clone
+PASSED scripts/test_agent_worktree.py::test_worktree_creation_is_blocked_without_explicit_opt_in
+PASSED scripts/test_agent_worktree.py::test_explicit_same_user_worktree_creates_reservation
+PASSED scripts/test_agent_worktree.py::test_duplicate_worktree_reservation_fails_without_cleanup
+PASSED scripts/test_agent_worktree.py::test_dry_run_does_not_create_isolation_path
+PASSED scripts/test_agent_worktree.py::test_guard_passes_in_independent_clone_with_dirty_slice_files
+PASSED scripts/test_agent_worktree.py::test_lock_detection_blocks_opt_in_worktree_without_wait_or_cleanup
+PASSED scripts/test_agent_worktree.py::test_handoff_includes_clone_agent_context
+PASSED scripts/test_agent_worktree.py::test_close_dry_run_retains_clone
+PASSED scripts/test_agent_worktree.py::test_cleanup_is_report_only_for_stale_and_dirty_worktrees
+PASSED scripts/test_agent_worktree.py::test_missing_worktree_is_reported_not_pruned
+PASSED scripts/test_agent_worktree.py::test_existing_audit_does_not_treat_clone_context_dirt_as_shared_worktree_dirt
+PASSED scripts/test_agent_worktree.py::test_forged_context_unknown_field_is_rejected
+PASSED scripts/test_agent_worktree.py::test_copied_context_from_another_clone_is_rejected
+PASSED scripts/test_agent_worktree.py::test_symlinked_context_path_is_rejected
+PASSED scripts/test_agent_worktree.py::test_close_requires_explicit_remote_mutation_authorization
+PASSED scripts/test_agent_worktree.py::test_dirty_close_cannot_reach_push_path
+PASSED scripts/test_brittleness_check.py::test_warns_on_large_keyword_bucket_and_exact_prompt_string
+PASSED scripts/test_brittleness_check.py::test_warns_on_many_includes_and_sleep
+PASSED scripts/test_brittleness_check.py::test_warns_on_fixture_only_exact_prompt_test
+PASSED scripts/test_brittleness_check.py::test_no_warning_output_does_not_claim_quality_proof
+PASSED scripts/test_brittleness_check.py::test_anti_brittleness_evidence_marker_passes_audit_check
+PASSED scripts/test_brittleness_check.py::test_missing_anti_brittleness_marker_warns_and_fails_strict
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_agent_native_browser_accepted
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_custom_provider_accepted_when_valid
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_custom_provider_fails_strict_without_tool_or_command
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_existing_e2e_accepted
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_hash_command_updates_hashes
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_hash_mismatch_fails
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_init_creates_skeleton
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_init_not_applicable_passes_strict
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_kimi_webbridge_accepted
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_manual_browser_accepted_with_limits
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_manual_browser_fails_strict_without_limits
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_missing_referenced_artifact_fails
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_missing_runtime_identity_fails_when_required
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_no_single_provider_required
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_not_applicable_for_docs_only
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_path_traversal_rejected
+PASSED scripts/test_browser_verification.py::TestBrowserVerification::test_playwright_accepted
+PASSED scripts/test_check_state_docs.py::test_duplicate_section_detected
+PASSED scripts/test_check_state_docs.py::test_duplicate_backlog_id_detected
+PASSED scripts/test_check_state_docs.py::test_duplicate_id_in_same_section_detected
+PASSED scripts/test_check_state_docs.py::test_clean_backlog_passes
+PASSED scripts/test_check_state_docs.py::test_extract_backlog_sections
+PASSED scripts/test_check_state_docs.py::test_root_backlog_has_no_structure_issues
+PASSED scripts/test_check_state_docs.py::test_next_action_must_be_in_now
+PASSED scripts/test_check_state_docs.py::test_status_must_match_canonical_active_problems
+PASSED scripts/test_check_state_docs.py::test_terminal_worklog_item_cannot_remain_active
+PASSED scripts/test_check_state_docs.py::test_merged_item_can_reopen_when_correctness_is_not_closure_grade
+PASSED scripts/test_check_state_docs.py::test_consistent_lifecycle_passes
+PASSED scripts/test_contracts.py::test_strict_json_rejects_duplicate_keys_and_non_finite_numbers
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[/absolute]
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[../escape]
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[a/../escape]
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[a//b]
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[./a]
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[C:\\escape]
+PASSED scripts/test_contracts.py::test_normalize_relative_path_rejects_nonportable_or_unsafe_paths[a\\b]
+PASSED scripts/test_contracts.py::test_safe_root_rejects_root_and_parent_symlinks
+PASSED scripts/test_contracts.py::test_confined_path_rejects_nested_symlink_even_when_referent_is_inside
+PASSED scripts/test_contracts.py::test_profile_catalog_expands_dependencies_and_enforces_capabilities
+PASSED scripts/test_contracts.py::test_profile_catalog_rejects_missing_dependency
+PASSED scripts/test_contracts.py::test_profile_catalog_rejects_schema_valid_and_semantic_corruption[<lambda>0]
+PASSED scripts/test_contracts.py::test_profile_catalog_rejects_schema_valid_and_semantic_corruption[<lambda>1]
+PASSED scripts/test_contracts.py::test_profile_catalog_rejects_schema_valid_and_semantic_corruption[<lambda>2]
+PASSED scripts/test_contracts.py::test_profile_catalog_rejects_schema_valid_and_semantic_corruption[<lambda>3]
+PASSED scripts/test_contracts.py::test_profile_catalog_rejects_schema_valid_and_semantic_corruption[<lambda>4]
+PASSED scripts/test_efficiency_check.py::test_oversized_root_agents_fails
+PASSED scripts/test_efficiency_check.py::test_oversized_skill_fails
+PASSED scripts/test_efficiency_check.py::test_missing_gate_level_fails
+PASSED scripts/test_efficiency_check.py::test_full_gate_at_level_one_fails
+PASSED scripts/test_efficiency_check.py::test_too_many_steps_fails
+PASSED scripts/test_efficiency_check.py::test_duplicate_instructions_fails
+PASSED scripts/test_efficiency_check.py::test_active_queue_too_long_fails
+PASSED scripts/test_efficiency_check.py::test_evidence_bundle_too_large_fails
+PASSED scripts/test_efficiency_check.py::test_bloat_fixture_fails
+PASSED scripts/test_efficiency_check.py::test_clean_repo_passes
+PASSED scripts/test_efficiency_check.py::test_context_metrics_are_reported_and_enforced
+PASSED scripts/test_efficiency_check.py::test_duplicate_budget_key_fails
+PASSED scripts/test_efficiency_check.py::test_context_footprint_rejects_manifest_asset_through_symlink_parent
+PASSED scripts/test_efficiency_check.py::test_evidence_budget_selects_active_slice_not_mutable_mtime
+PASSED scripts/test_evidence_pack.py::test_init_creates_manifest
+PASSED scripts/test_evidence_pack.py::test_init_detects_runtime_identity
+PASSED scripts/test_evidence_pack.py::test_valid_manifest_passes_check
+PASSED scripts/test_evidence_pack.py::test_missing_artifact_fails
+PASSED scripts/test_evidence_pack.py::test_hash_mismatch_fails
+PASSED scripts/test_evidence_pack.py::test_claim_without_evidence_fails
+PASSED scripts/test_evidence_pack.py::test_unchecked_redaction_fails_strict
+PASSED scripts/test_evidence_pack.py::test_checked_with_limits_passes_strict
+PASSED scripts/test_evidence_pack.py::test_binary_artifact_without_manual_review_fails_strict
+PASSED scripts/test_evidence_pack.py::test_hash_command_updates_hashes
+PASSED scripts/test_evidence_pack.py::test_scan_flags_possible_secret
+PASSED scripts/test_evidence_pack.py::test_empty_claims_and_artifacts_fails_strict
+PASSED scripts/test_evidence_pack.py::test_skeleton_status_never_passes_strict_closure
+PASSED scripts/test_evidence_pack.py::test_strict_rejects_unvalidated_unhashed_sensitive_and_directory_artifacts
+PASSED scripts/test_evidence_pack.py::test_strict_validates_required_runtime_identity_contract
+PASSED scripts/test_evidence_pack.py::test_strict_requires_known_limits_when_manual_review_required
+PASSED scripts/test_evidence_pack.py::test_strict_rejects_unlisted_disk_file_and_secret_manifest_metadata
+PASSED scripts/test_evidence_pack.py::test_strict_rescans_hashed_artifact_even_when_manifest_claims_clean
+PASSED scripts/test_evidence_pack.py::test_strict_requires_explicit_completion_runtime_and_real_redaction_review
+PASSED scripts/test_evidence_pack.py::test_init_rejects_symlinked_parent_before_creating_external_pack
+PASSED scripts/test_evidence_pack.py::test_absolute_traversal_and_windows_paths_fail_before_artifact_io
+PASSED scripts/test_evidence_pack.py::test_nested_artifact_symlink_is_rejected_for_all_commands
+PASSED scripts/test_evidence_pack.py::test_duplicate_json_keys_fail_closed
+PASSED scripts/test_evidence_pack.py::test_symlinked_evidence_root_is_rejected
+PASSED scripts/test_git_safety_check.py::test_normal_same_user_clone_passes
+PASSED scripts/test_git_safety_check.py::test_same_user_linked_worktree_requires_explicit_opt_in
+PASSED scripts/test_git_safety_check.py::test_unwritable_objects_fails
+PASSED scripts/test_git_safety_check.py::test_root_owned_nested_object_prefix_fails_policy
+PASSED scripts/test_git_safety_check.py::test_unwritable_refs_logs_and_worktrees_fail
+PASSED scripts/test_git_safety_check.py::test_fetch_failure_latches_read_only_before_state_writes
+PASSED scripts/test_git_safety_check.py::test_unknown_or_mismatched_uid_blocks_worktree_mode
+PASSED scripts/test_git_safety_check.py::test_root_container_blocks_worktree_mode
+PASSED scripts/test_git_safety_check.py::test_clone_mode_has_independent_common_directory
+PASSED scripts/test_git_safety_check.py::test_read_only_mode_does_not_mutate_repository
+PASSED scripts/test_git_safety_check.py::test_dirty_and_stale_worktrees_are_reported_without_cleanup
+PASSED scripts/test_git_safety_check.py::test_no_automatic_dangerous_git_or_permission_repair_path
+PASSED scripts/test_git_safety_check.py::test_json_output_validates_against_schema
+PASSED scripts/test_git_safety_check.py::test_exact_git_object_permission_error_is_reproduced_safely
+PASSED scripts/test_git_safety_check.py::test_failed_critical_git_reads_cannot_become_clean_results
+PASSED scripts/test_git_safety_check.py::test_git_lock_blocks_central_preflight
+PASSED scripts/test_git_safety_check.py::test_fsck_failure_blocks_writable_mode
+PASSED scripts/test_golden_path.py::test_golden_path
+PASSED scripts/test_handoff.py::test_handoff_exits_nonzero_when_direct_verification_fails
+PASSED scripts/test_handoff.py::test_handoff_exits_zero_when_direct_verification_passes
+PASSED scripts/test_handoff.py::test_handoff_fails_when_requested_audit_is_unavailable
+PASSED scripts/test_handoff.py::test_handoff_distinguishes_stale_tracking_ref_from_direct_remote
+PASSED scripts/test_handoff.py::test_handoff_fails_closed_on_malformed_active_agent_context
+PASSED scripts/test_init_template.py::test_adopt_rejects_symlinked_managed_directory
+PASSED scripts/test_init_template.py::test_new_rejects_symlinked_existing_directory
+PASSED scripts/test_init_template.py::test_new_rejects_symlinked_target_root
+PASSED scripts/test_init_template.py::test_new_rejects_directory_destination_before_any_write
+PASSED scripts/test_init_template.py::test_new_rejects_file_parent_before_any_write
+PASSED scripts/test_init_template.py::test_new_replaces_hardlinked_managed_file_without_mutating_external_inode
+PASSED scripts/test_init_template.py::test_new_replaces_hardlinked_copied_asset_without_mutating_external_inode
+PASSED scripts/test_init_template.py::test_new_materialization_failure_rolls_back_every_write
+PASSED scripts/test_init_template.py::test_template_commit_provenance_is_null_when_source_tree_is_dirty
+PASSED scripts/test_init_template.py::test_new_rejects_template_root
+PASSED scripts/test_init_template.py::test_readme_link_rejects_symlinked_readme_before_writes
+PASSED scripts/test_init_template.py::test_top_level_help_shows_subcommands
+PASSED scripts/test_init_template.py::test_legacy_new_invocation_still_works
+PASSED scripts/test_init_template.py::test_new_copies_curated_template_surface_only
+PASSED scripts/test_init_template.py::test_new_includes_tool_model_routing_guide
+PASSED scripts/test_init_template.py::test_new_includes_usability_assets
+PASSED scripts/test_init_template.py::test_new_includes_version_assets_and_passes_version_check
+PASSED scripts/test_init_template.py::test_new_includes_runtime_proof_asset
+PASSED scripts/test_init_template.py::test_new_includes_quality_firewall_assets
+PASSED scripts/test_init_template.py::test_new_includes_schema_validation_assets_and_passes_schema_validation
+PASSED scripts/test_init_template.py::test_new_repo_still_fails_bootstrap_gate_until_investigated
+PASSED scripts/test_init_template.py::test_new_includes_v2_executable_workflow_assets
+PASSED scripts/test_init_template.py::test_new_excludes_template_only_payload_and_manifest_is_exact
+PASSED scripts/test_init_template.py::test_adopt_installs_tool_model_routing_guide
+PASSED scripts/test_init_template.py::test_adopt_installs_usability_assets
+PASSED scripts/test_init_template.py::test_adopt_installs_version_assets_and_passes_version_check
+PASSED scripts/test_init_template.py::test_adopt_installs_runtime_proof_asset
+PASSED scripts/test_init_template.py::test_adopt_installs_quality_firewall_assets
+PASSED scripts/test_init_template.py::test_adopt_installs_schema_validation_assets_and_passes_schema_validation
+PASSED scripts/test_init_template.py::test_template_root_uses_template_maintenance_mode
+PASSED scripts/test_init_template.py::test_template_root_bootstrap_gate_passes
+PASSED scripts/test_init_template.py::test_adopt_installs_v2_executable_workflow_assets
+PASSED scripts/test_init_template.py::test_optional_github_assets_are_recorded_in_resolved_lock
+PASSED scripts/test_init_template.py::test_handoff_snapshot_runs
+PASSED scripts/test_init_template.py::test_doctor_runs
+PASSED scripts/test_instruction_lint.py::test_context_bloat
+PASSED scripts/test_instruction_lint.py::test_conflicting_instructions
+PASSED scripts/test_instruction_lint.py::test_lint_leakage
+PASSED scripts/test_instruction_lint.py::test_skill_leakage
+PASSED scripts/test_instruction_lint.py::test_missing_failure_cases
+PASSED scripts/test_instruction_lint.py::test_structured_failure_cases_are_recognized
+PASSED scripts/test_instruction_lint.py::test_outdated_claims
+PASSED scripts/test_instruction_lint.py::test_cross_file_lint_leakage
+PASSED scripts/test_instruction_lint.py::test_no_smells_clean_file
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings0-Severity.ERROR-True]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings1-Severity.WARNING-True]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings2-Severity.INFO-True]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings3-Severity.ERROR-False]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings4-Severity.WARNING-True]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings5-Severity.WARNING-False]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings6-Severity.INFO-True]
+PASSED scripts/test_instruction_lint.py::test_failure_threshold_uses_numeric_severity_order[findings7-Severity.INFO-False]
+PASSED scripts/test_okf_validate.py::test_template_scaffold_passes
+PASSED scripts/test_okf_validate.py::test_unknown_type_broken_link_and_missing_index_are_permissive
+PASSED scripts/test_okf_validate.py::test_root_and_nested_reserved_files_have_distinct_contracts
+PASSED scripts/test_okf_validate.py::test_canonical_and_reference_governance_are_checked
+PASSED scripts/test_okf_validate.py::test_derived_source_hash_is_validated_and_stale_sources_fail
+PASSED scripts/test_okf_validate.py::test_duplicate_keys_missing_type_and_unsafe_source_fail
+PASSED scripts/test_okf_validate.py::test_case_collision_local_path_and_secret_like_values_fail
+PASSED scripts/test_okf_validate.py::test_symlinked_bundle_content_fails_closed_when_supported
+PASSED scripts/test_okf_validate.py::test_json_report_is_machine_readable
+PASSED scripts/test_okf_validate.py::test_optional_module_is_explicit_and_profile_conformance_passes
+PASSED scripts/test_post_merge_verify.py::test_help_runs
+PASSED scripts/test_post_merge_verify.py::test_missing_pr_number_fails
+PASSED scripts/test_profile_metrics.py::test_profile_metrics_are_deterministic_and_validate_every_profile
+PASSED scripts/test_profile_metrics.py::test_profile_metrics_normalize_dirty_generated_lock_to_proof_commit
+PASSED scripts/test_quality_gate.py::test_all_applicable_suites_run_and_failures_aggregate
+PASSED scripts/test_quality_gate.py::test_unavailable_declared_runner_fails_but_later_suite_still_runs
+PASSED scripts/test_quality_gate.py::test_no_suite_is_distinct_from_unavailable_tooling
+PASSED scripts/test_quality_gate.py::test_malformed_package_json_fails_configuration
+PASSED scripts/test_quality_gate.py::test_internal_python_checks_use_current_interpreter
+PASSED scripts/test_quality_gate.py::test_regulated_lock_requires_level_two
+PASSED scripts/test_quality_gate.py::test_profile_validation_ids_dispatch_and_fail_on_unknown_or_missing_assets
+PASSED scripts/test_quality_gate.py::test_level_two_requires_slice_evidence_unless_conformance_mode
+PASSED scripts/test_quality_gate.py::test_setup_cfg_without_flake8_section_does_not_declare_runner
+PASSED scripts/test_quality_gate.py::test_failure_output_preserves_stdout_and_stderr
+PASSED scripts/test_remote_closure_finalizer.py::test_all_green
+PASSED scripts/test_remote_closure_finalizer.py::test_dirty_worktree_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_unpushed_branch_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_no_pr_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_pr_head_mismatch_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_stale_pr_body_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_pr_body_proof_final_split_passes
+PASSED scripts/test_remote_closure_finalizer.py::test_changes_requested_or_unresolved_review_blocks_closure
+PASSED scripts/test_remote_closure_finalizer.py::test_same_sha_on_different_pr_branch_fails_attribution
+PASSED scripts/test_remote_closure_finalizer.py::test_review_and_check_suite_pagination_fail_closed
+PASSED scripts/test_remote_closure_finalizer.py::test_unrelated_successful_actions_workflow_does_not_satisfy_ci
+PASSED scripts/test_remote_closure_finalizer.py::test_noop_or_wrong_level_standard_workflow_cannot_be_ci_proof
+PASSED scripts/test_remote_closure_finalizer.py::test_workflow_path_override_cannot_select_undeclared_workflow
+PASSED scripts/test_remote_closure_finalizer.py::test_final_github_requery_detects_new_unresolved_thread
+PASSED scripts/test_remote_closure_finalizer.py::test_lookalike_github_host_is_rejected
+PASSED scripts/test_remote_closure_finalizer.py::test_malformed_agent_context_fails_closed
+PASSED scripts/test_remote_closure_finalizer.py::test_clone_v2_agent_context_is_accepted
+PASSED scripts/test_remote_closure_finalizer.py::test_ci_pending_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_ci_failure_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_no_actions_run_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_merge_state_blocked_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_evidence_head_mismatch_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_evidence_proof_final_split_passes
+PASSED scripts/test_remote_closure_finalizer.py::test_explicit_pr_number
+PASSED scripts/test_remote_closure_finalizer.py::test_writes_output_json
+PASSED scripts/test_remote_closure_finalizer.py::test_rejects_output_inside_repository
+PASSED scripts/test_remote_closure_finalizer.py::test_missing_evidence_is_a_hard_failure
+PASSED scripts/test_remote_closure_finalizer.py::test_invalid_or_headless_evidence_is_a_hard_failure
+PASSED scripts/test_remote_closure_finalizer.py::test_untracked_evidence_fails_exact_head_binding
+PASSED scripts/test_remote_closure_finalizer.py::test_evidence_branch_must_match_current_branch
+PASSED scripts/test_remote_closure_finalizer.py::test_non_finalization_change_after_proof_head_fails
+PASSED scripts/test_remote_closure_finalizer.py::test_finalization_metadata_secret_scan_fails_closed
+PASSED scripts/test_remote_truth_check.py::test_clean_pushed_branch_stops_at_pushed_state
+PASSED scripts/test_remote_truth_check.py::test_dirty_worktree_fails_remote_branch_preflight
+PASSED scripts/test_remote_truth_check.py::test_unpushed_commit_fails_remote_branch_preflight
+PASSED scripts/test_remote_truth_check.py::test_untracked_claim_fails
+PASSED scripts/test_runtime_proof.py::test_localhost_attempts_process_detection
+PASSED scripts/test_runtime_proof.py::test_loopback_attempts_process_detection
+PASSED scripts/test_runtime_proof.py::test_remote_url_skips_local_port_detection
+PASSED scripts/test_runtime_proof.py::test_remote_url_can_be_explicitly_treated_as_local
+PASSED scripts/test_runtime_proof.py::test_runtime_artifact_omits_absolute_repo_and_raw_process_arguments
+PASSED scripts/test_runtime_proof.py::test_remote_runtime_without_revision_binding_fails_proof
+PASSED scripts/test_runtime_proof.py::test_runtime_endpoint_rejects_serialized_secrets
+PASSED scripts/test_runtime_proof.py::test_generated_v2_artifact_is_strict_and_schema_valid
+PASSED scripts/test_runtime_truth_check.py::test_dirty_same_head_is_rejected
+PASSED scripts/test_runtime_truth_check.py::test_endpoint_port_and_process_digest_must_match
+PASSED scripts/test_runtime_truth_check.py::test_remote_artifact_cannot_trigger_implicit_probe
+PASSED scripts/test_runtime_truth_check.py::test_nested_symlink_artifact_is_rejected
+PASSED scripts/test_runtime_truth_check.py::test_v1_is_migration_only_for_runtime_truth
+PASSED scripts/test_runtime_truth_check.py::test_audit_accepts_v2_schema_label
+PASSED scripts/test_runtime_truth_check.py::test_closure_preflight_invokes_explicit_runtime_artifact
+PASSED scripts/test_schema_validation.py::test_root_schema_validation_passes
+PASSED scripts/test_schema_validation.py::test_invalid_project_state_fails_with_actionable_message
+PASSED scripts/test_schema_validation.py::test_invalid_evidence_readme_fails_contract
+PASSED scripts/test_schema_validation.py::test_runtime_not_applicable_fixture_passes
+PASSED scripts/test_schema_validation.py::test_runtime_required_unreachable_fixture_fails
+PASSED scripts/test_schema_validation.py::test_duplicate_root_yaml_key_fails
+PASSED scripts/test_schema_validation.py::test_duplicate_nested_yaml_key_fails
+PASSED scripts/test_schema_validation.py::test_local_ref_shapes_unique_items_and_safe_paths_are_enforced
+PASSED scripts/test_schema_validation.py::test_duplicate_json_keys_fail_schema_validation
+PASSED scripts/test_schema_validation.py::test_numeric_and_object_size_constraints_are_enforced
+PASSED scripts/test_schema_validation.py::test_repo_validation_rejects_symlinked_evidence_folder_without_reading_outside
+PASSED scripts/test_schema_validation.py::test_generated_new_repo_includes_schema_validation_assets_and_passes
+PASSED scripts/test_schema_validation.py::test_adopted_repo_includes_schema_validation_assets_and_passes
+PASSED scripts/test_upgrade.py::test_dry_run_on_current_repo_refuses_template_root
+PASSED scripts/test_upgrade.py::test_dry_run_on_generated_repo_is_no_op_or_safe
+PASSED scripts/test_upgrade.py::test_dry_run_on_older_fixture_reports_missing_assets
+PASSED scripts/test_upgrade.py::test_apply_adds_safe_missing_assets
+PASSED scripts/test_upgrade.py::test_apply_preserves_readme_and_project_truth
+PASSED scripts/test_upgrade.py::test_conflict_fixture_refuses_unsafe_overwrite
+PASSED scripts/test_upgrade.py::test_force_managed_replaces_outdated_safe_asset
+PASSED scripts/test_upgrade.py::test_force_managed_never_overwrites_truth_files
+PASSED scripts/test_upgrade.py::test_upgrade_never_installs_template_tests_or_history
+PASSED scripts/test_upgrade.py::test_report_writes_json
+PASSED scripts/test_upgrade.py::test_report_reflects_dry_run_value
+PASSED scripts/test_upgrade.py::test_report_cannot_overwrite_target_truth_or_existing_sidecar
+PASSED scripts/test_upgrade.py::test_no_lock_apply_refuses_false_profile_capabilities
+PASSED scripts/test_upgrade.py::test_missing_manifest_fails_closed_without_explicit_profile
+PASSED scripts/test_upgrade.py::test_old_manifest_does_not_suppress_new_profile_asset
+PASSED scripts/test_upgrade.py::test_malformed_or_unsafe_manifest_fails_closed_without_writes[{broken]
+PASSED scripts/test_upgrade.py::test_malformed_or_unsafe_manifest_fails_closed_without_writes[{"schema":"wrong"}]
+PASSED scripts/test_upgrade.py::test_malformed_or_unsafe_manifest_fails_closed_without_writes[{"schema":"statedd.runtime_assets.v1","schema":"statedd.runtime_assets.v1"}]
+PASSED scripts/test_upgrade.py::test_malformed_or_unsafe_manifest_fails_closed_without_writes[{"schema": "statedd.runtime_assets.v1", "template_version": "statedd-template-v4", "profile": "minimal", "generation_mode": "new", "assets": ["../escape"], "excluded_classes": ["template_tests"]}]
+PASSED scripts/test_upgrade.py::test_malformed_or_unsafe_manifest_fails_closed_without_writes[{"schema": "statedd.runtime_assets.v1", "template_version": "statedd-template-v4", "profile": "minimal", "generation_mode": "new", "assets": ["/absolute"], "excluded_classes": ["template_tests"]}]
+PASSED scripts/test_upgrade.py::test_upgrade_rejects_symlinked_root_before_writes
+PASSED scripts/test_upgrade.py::test_nested_symlink_preflight_causes_zero_partial_writes
+PASSED scripts/test_upgrade.py::test_pristine_old_base_updates_without_force_but_local_change_conflicts
+PASSED scripts/test_upgrade.py::test_removed_asset_is_reported_retained_and_locked_as_retired
+PASSED scripts/test_upgrade.py::test_interrupted_apply_rolls_back_files_and_manifest
+PASSED scripts/test_upgrade.py::test_manifest_change_after_planning_blocks_all_upgrade_writes
+PASSED scripts/test_upgrade.py::test_observed_skip_or_protected_change_after_planning_blocks_all_writes[VERSION]
+PASSED scripts/test_upgrade.py::test_observed_skip_or_protected_change_after_planning_blocks_all_writes[PROJECT_STATE.yaml]
+PASSED scripts/test_upgrade.py::test_missing_required_project_truth_blocks_apply
+PASSED scripts/test_upgrade.py::test_successful_apply_updates_manifest_and_second_run_is_idempotent
+PASSED scripts/test_upgrade.py::test_malformed_v2_top_level_and_history_fail_before_writes
+PASSED scripts/test_upgrade.py::test_profile_transition_is_rejected_until_semantic_migration_exists
+PASSED scripts/test_upgrade.py::test_reintroduced_retired_asset_recovers_ownership_and_is_not_still_retired
+PASSED scripts/test_upgrade.py::test_modified_generated_control_conflicts_then_force_regenerates_and_locks_hash
+PASSED scripts/test_worktree_guard.py::test_clean_repo_passes_start_slice
+PASSED scripts/test_worktree_guard.py::test_dirty_repo_fails_start_slice_without_classification
+PASSED scripts/test_worktree_guard.py::test_dirty_repo_can_warn_only_for_diagnostics
+PASSED scripts/test_worktree_guard.py::test_dirty_repo_with_classification_reports_classified_state
+PASSED scripts/test_worktree_guard.py::test_closure_mode_fails_dirty_worktree
+PASSED scripts/test_worktree_guard.py::test_detached_head_and_missing_origin_are_reported_not_proven
+PASSED scripts/test_worktree_guard.py::test_classify_dirty_prints_template_table
+PASSED scripts/test_worktree_guard.py::test_linked_worktrees_are_printed
+PASSED scripts/test_worktree_guard.py::test_unknown_do_not_touch_blocks_start
+PASSED scripts/test_worktree_guard.py::test_feature_branch_is_not_shared_default
+PASSED scripts/test_worktree_guard.py::test_unstaged_hidden_path_preserves_porcelain_columns
