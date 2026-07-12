@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-07-12T10:39:11+02:00",
+  "captured_at": "2026-07-12T10:50:29+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "19c660e9b9602cad1c995e39a06e804747f47395",
+  "git_head": "04a95afe02236622136853e6a756f03bd9eb2535",
   "in_container": false,
   "kernel": "7.1.3-200.fc44.x86_64",
   "limits": [],
@@ -14,15 +14,15 @@
   "python": "3.14.6",
   "repo": {
     "branch": "bl-golden-path-closure-001",
-    "head": "19c660e9b9602cad1c995e39a06e804747f47395",
+    "head": "04a95afe02236622136853e6a756f03bd9eb2535",
     "path": ".",
     "status_porcelain": "",
     "worktree_clean": true
   },
   "runtime": {
-    "reason": "docs/scripts-only slice",
+    "reason": "Template root has no deployable runtime; executable gates and generated-profile validation establish closure.",
     "required": false
   },
   "schema": "statedd.runtime_identity.v2",
-  "timestamp": "2026-07-12T08:39:11.943893Z"
+  "timestamp": "2026-07-12T08:50:29.747286Z"
 }

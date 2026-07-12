@@ -12,7 +12,7 @@
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "e92aa24eb93c51f28ae02bb49a89e3f409128e673ee1f715ccdb142b8cfff415"
+      "sha256": "e9428b0d31341d513192999f7009c9c7442725852549c3348b593a1ba68ed08b"
     },
     {
       "kind": "command_output",
