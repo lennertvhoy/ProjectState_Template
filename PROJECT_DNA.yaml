@@ -150,6 +150,7 @@ governance:
   slice_contract_template: prompts/SLICE_CONTRACT_TEMPLATE.md
   evidence_readme_template: prompts/EVIDENCE_README_TEMPLATE.md
   schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
+  delivery_policy_adr: docs/adr/0002-agent-owned-delivery-closure.md
   subagent_review_template: prompts/SUBAGENT_REVIEW_TEMPLATE.md
   cto_review_checklist: prompts/CTO_REVIEW_CHECKLIST.md
   quality_firewall: QUALITY_FIREWALL.md
