@@ -56,12 +56,14 @@
     },
     "claims": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/claim"
       }
     },
     "artifacts": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/artifact"
       }
@@ -113,6 +115,7 @@
         "evidence": {
           "type": "array",
           "minItems": 1,
+          "uniqueItems": true,
           "items": {
             "type": "string",
             "minLength": 1
@@ -140,7 +143,8 @@
           "enum": ["command_output", "runtime_identity", "screenshot", "log", "doc", "other"]
         },
         "sha256": {
-          "type": ["string", "null"]
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
         },
         "redaction_status": {
           "type": "string",
@@ -152,5 +156,8 @@
         }
       }
     }
+  },
+  "statedd_semantics": {
+    "evidence_paths_safe_and_unique": true
   }
 }

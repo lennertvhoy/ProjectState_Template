@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://statedd.dev/schemas/profile_metrics.schema.json",
+  "title": "StateDD reproducible profile metrics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "template_version",
+    "template_commit",
+    "source_tree_sha256",
+    "source_inputs",
+    "generated_at",
+    "generation_command",
+    "provenance",
+    "reproducibility",
+    "tokenizer",
+    "profiles"
+  ],
+  "properties": {
+    "schema": {"const": "statedd.profile_metrics.v1"},
+    "schema_version": {"const": 1},
+    "template_version": {"type": "string", "minLength": 1},
+    "template_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_inputs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "generated_at": {"type": "string", "minLength": 1},
+    "generation_command": {"type": "string", "minLength": 1},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_exists", "commit_is_ancestor_of_head", "source_inputs_match_commit", "mismatched_inputs"],
+      "properties": {
+        "commit_exists": {"type": "boolean"},
+        "commit_is_ancestor_of_head": {"type": "boolean"},
+        "source_inputs_match_commit": {"type": "boolean"},
+        "mismatched_inputs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "reproducibility": {"type": "object"},
+    "tokenizer": {
+      "type": "object",
+      "required": ["estimated_method", "actual_encoding", "actual_counts_available"],
+      "properties": {
+        "estimated_method": {"type": "string"},
+        "actual_encoding": {"type": "string"},
+        "actual_tokenizer_package": {"type": ["string", "null"]},
+        "actual_tokenizer_version": {"type": ["string", "null"]},
+        "actual_counts_available": {"type": "boolean"}
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/profile"}
+    }
+  },
+  "$defs": {
+    "nullableCount": {"type": ["integer", "null"], "minimum": 0},
+    "context": {
+      "type": "object",
+      "required": ["requested_files", "included_files", "missing_optional_files", "file_count", "total_bytes", "estimated_tokens", "actual_tokens"],
+      "properties": {
+        "requested_files": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "included_files": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "missing_optional_files": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "file_count": {"type": "integer", "minimum": 0},
+        "total_bytes": {"type": "integer", "minimum": 0},
+        "estimated_tokens": {"type": "integer", "minimum": 0},
+        "actual_tokens": {"$ref": "#/$defs/nullableCount"}
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile", "resolved_asset_sets", "required_gate_level", "generated_file_count",
+        "total_bytes", "estimated_tokens", "actual_tokens", "startup_file_count",
+        "startup_bytes", "startup_estimated_tokens", "startup_actual_tokens",
+        "quality_gate", "contexts"
+      ],
+      "properties": {
+        "profile": {"type": "string", "minLength": 1},
+        "resolved_asset_sets": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "required_gate_level": {"type": "integer", "minimum": 0, "maximum": 3},
+        "generated_file_count": {"type": "integer", "minimum": 1},
+        "total_bytes": {"type": "integer", "minimum": 1},
+        "estimated_tokens": {"type": "integer", "minimum": 1},
+        "actual_tokens": {"$ref": "#/$defs/nullableCount"},
+        "startup_file_count": {"type": "integer", "minimum": 1},
+        "startup_bytes": {"type": "integer", "minimum": 1},
+        "startup_estimated_tokens": {"type": "integer", "minimum": 1},
+        "startup_actual_tokens": {"$ref": "#/$defs/nullableCount"},
+        "quality_gate": {
+          "type": "object",
+          "required": ["result", "exit_code", "gate_level", "command"],
+          "properties": {
+            "result": {"const": "pass"},
+            "exit_code": {"const": 0},
+            "gate_level": {"type": "integer", "minimum": 0, "maximum": 3},
+            "command": {"type": "string"}
+          }
+        },
+        "contexts": {
+          "type": "object",
+          "minProperties": 6,
+          "additionalProperties": {"$ref": "#/$defs/context"}
+        }
+      }
+    }
+  }
+}

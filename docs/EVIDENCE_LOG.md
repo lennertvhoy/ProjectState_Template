@@ -30,6 +30,25 @@
 - Treat handoffs as claims; link them to evidence or gate results before accepting closure.
 - For user-facing or operator-facing work, prefer product behavior, runtime truth, adversarial, known bad event, and post-deploy evidence over command output alone.
 
+## EV-2026-07-11-003: Integrated lifecycle and Git-safety slice
+
+- File: docs/evidence/2026-07-11-statedd-integration/README.md
+- File: docs/evidence/2026-07-11-statedd-integration/manifest.json
+- File: docs/metrics/profile_metrics.json
+- Title: BL-STATEDD-INTEGRATION-001 local integration evidence
+- Source/System: test | log | state_update
+- Action: Integrated the PR #6 correctness architecture with the PR #7 Git-safety and coding-agent workflow, then ran the authoritative local gates and strict evidence checks.
+- Shows:
+  - declarative profile and v2 lifecycle authorities remain active
+  - centralized Git-safety and clone-default agent isolation are regression-covered
+  - structured bootstrap, isolated-agent integration, profile conformance, and strict evidence pass locally
+  - remote branch, GitHub PR, CI, license ownership, benchmark superiority, and human acceptance remain unproven
+- Proves:
+  - local implementation and validation truth for the integration slice
+- Type: test
+- as_of: 2026-07-11T18:30:00+02:00
+- Notes: Proof head is immutable in the evidence README; the final PR head is mutable remote handoff authority.
+
 ## EV-2026-07-07-001: Template logic-hole repair failure scan (BL-SANITY-002)
 
 - File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
@@ -561,3 +580,42 @@
 - Type: post_deploy
 - as_of: 2026-07-10T22:18:00+02:00
 - Notes: The final closure label is not claimed by this entry; the remote closure finalizer remains authoritative for the final state head.
+
+## EV-2026-07-11-001: Merged correctness blockers and failure scan (BL-MAX-VALUE-001)
+
+- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-MAX-VALUE-001.md
+- Title: Upgrade, validation, path-confinement, context, and closure risks reopened after PR #5 merge
+- Source/System: GitHub review and local repository inspection
+- Action: Verified PR #4 and PR #5 merge truth, confirmed that PR #5 merged after an owner review recorded unresolved blockers, reopened the failures in canonical state, and completed the pre-implementation failure scan.
+- Shows:
+  - PR #4 merged as `a0ac268d186d9ec71ffefab6970dc1d40add5b06`
+  - PR #5 merged as `c2fe7b25625cc855a47deff721251cdb5d4141b2`
+  - unresolved upgrade, test aggregation, CI enumeration, root-symlink, metrics, and exact-head closure risks are classified with prevention and rollback requirements
+- Proves:
+  - BL-MAX-VALUE-001 starts from recorded remote truth and an explicit pre-mortem rather than retrofitting state after implementation
+- Type: known_bad_event
+- as_of: 2026-07-11T09:13:22+02:00
+- Notes: This is orientation and risk evidence only; no implementation or closure claim is made.
+
+## EV-2026-07-11-002: Maximum-value correctness repair locally validated (BL-MAX-VALUE-001)
+
+- File: docs/evidence/2026-07-11-maximum-value-correctness/README.md
+- File: docs/evidence/2026-07-11-maximum-value-correctness/manifest.json
+- File: docs/evidence/2026-07-11-maximum-value-correctness/runtime_identity.json
+- File: docs/metrics/profile_metrics.json
+- Title: Lifecycle, gate, path, metrics, runtime, and closure-truth repair
+- Source/System: test and local executable gates
+- Action: Repaired the reopened PR #5 correctness blockers, added adjacent-case
+  regressions, measured the immutable implementation proof, and built strict typed evidence.
+- Shows:
+  - 289 automatically discovered script tests plus 4 subtests pass
+  - 5 schema-example tests pass
+  - all generated profiles pass their required conformance gates
+  - canonical metrics reproduce against proof head `ae851d05aa8113c3cde90d122d1723be123d9e37`
+  - the level-2 quality gate, strict evidence pack, and runtime-not-applicable check pass locally
+- Proves:
+  - the repaired implementation and local proof artifacts satisfy the executable
+    slice contracts on Linux at the recorded proof head
+- Type: test
+- as_of: 2026-07-11T14:50:00+02:00
+- Notes: Remote branch, PR, exact-head CI, finalizer, merge, and human acceptance are not proven.

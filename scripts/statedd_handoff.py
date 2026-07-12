@@ -5,17 +5,25 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import shlex
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from statedd_contracts import ContractError, UnsafePathError, load_json_file, safe_root_path
+except ModuleNotFoundError:  # pragma: no cover - pytest package import path
+    from scripts.statedd_contracts import ContractError, UnsafePathError, load_json_file, safe_root_path
+try:
+    from statedd_git_safety_session import sanitized_git_environment
+except ModuleNotFoundError:  # pragma: no cover
+    from scripts.statedd_git_safety_session import sanitized_git_environment
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
-AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v1"
+AGENT_CONTEXT_SCHEMA = "statedd.agent_context.v2"
 AGENT_CONTEXT_PATH = ".statedd/agent.context"
 
 
@@ -24,6 +32,7 @@ def run_command(args: list[str], cwd: Path) -> tuple[int, str, str]:
         completed = subprocess.run(
             args,
             cwd=cwd,
+            env=sanitized_git_environment(),
             capture_output=True,
             text=True,
             check=False,
@@ -60,12 +69,16 @@ def git_changed_files(repo: Path) -> list[str]:
 
 def latest_evidence_readme(repo: Path) -> Path | None:
     evidence_root = repo / "docs" / "evidence"
-    if not evidence_root.exists():
+    if not evidence_root.is_dir() or evidence_root.is_symlink():
         return None
     candidates = [
         entry / "README.md"
         for entry in evidence_root.iterdir()
-        if entry.is_dir() and not entry.name.startswith(".") and (entry / "README.md").exists()
+        if entry.is_dir()
+        and not entry.is_symlink()
+        and not entry.name.startswith(".")
+        and (entry / "README.md").is_file()
+        and not (entry / "README.md").is_symlink()
     ]
     if not candidates:
         return None
@@ -90,13 +103,10 @@ def default_agent_context_path(repo: Path) -> Path:
     return repo / AGENT_CONTEXT_PATH
 
 
-def load_agent_context(path: Path) -> dict | None:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
+def load_agent_context(path: Path) -> dict:
+    data = load_json_file(path)
     if not isinstance(data, dict):
-        return None
+        raise ContractError("agent context root must be an object")
     required_keys = {
         "schema",
         "agent_id",
@@ -105,17 +115,26 @@ def load_agent_context(path: Path) -> dict | None:
         "worktree_path",
         "branch",
         "base_branch",
+        "isolation_mode",
     }
     if not required_keys.issubset(data.keys()):
-        return None
+        raise ContractError("agent context is missing required fields")
     if data.get("schema") != AGENT_CONTEXT_SCHEMA:
-        return None
+        raise ContractError("agent context has an unsupported schema")
+    for key in required_keys - {"schema", "reservation_ref"}:
+        if not isinstance(data.get(key), str) or not data[key]:
+            raise ContractError(f"agent context field {key!r} must be a non-empty string")
+    if not isinstance(data.get("reservation_ref"), str):
+        raise ContractError("agent context reservation_ref must be a string")
+    if data.get("isolation_mode") == "worktree" and not data["reservation_ref"]:
+        raise ContractError("worktree agent context requires a reservation ref")
     return data
 
 
 def find_agent_contexts(repo: Path) -> tuple[dict | None, list[dict]]:
     """Return (current_worktree_context, sibling_worktree_contexts)."""
-    current = load_agent_context(default_agent_context_path(repo))
+    current_path = default_agent_context_path(repo)
+    current = load_agent_context(current_path) if current_path.exists() else None
     siblings: list[dict] = []
     code, stdout, _ = run_command(["git", "worktree", "list", "--porcelain"], repo)
     if code != 0:
@@ -126,9 +145,15 @@ def find_agent_contexts(repo: Path) -> tuple[dict | None, list[dict]]:
         wt_path = Path(line.removeprefix("worktree ").strip()).resolve()
         if wt_path == repo:
             continue
-        ctx = load_agent_context(wt_path / AGENT_CONTEXT_PATH)
-        if ctx:
-            siblings.append(ctx)
+        sibling_path = wt_path / AGENT_CONTEXT_PATH
+        if not sibling_path.exists():
+            continue
+        try:
+            siblings.append(load_agent_context(sibling_path))
+        except ContractError:
+            # Sibling corruption must not hide current-worktree truth. Its owner
+            # will fail when handing off from that worktree.
+            continue
     return current, siblings
 
 
@@ -151,14 +176,49 @@ def head_equals_upstream(local_head: str, upstream_head: str) -> str:
     return "yes" if local_head == upstream_head else "no"
 
 
-def github_visible_deliverables(local_equals_upstream: str, changed_files: list[str]) -> str:
-    if changed_files:
-        return "no"
-    if local_equals_upstream == "yes":
-        return "yes"
-    if local_equals_upstream == "no":
-        return "no"
-    return "not proven"
+def remote_branch_head(repo: Path, branch: str) -> str:
+    if branch == "not proven":
+        return "not proven"
+    code, stdout, _ = run_command(
+        ["git", "ls-remote", "origin", f"refs/heads/{branch}"], repo
+    )
+    if code != 0 or not stdout:
+        return "not proven"
+    rows = [line.split("\t", 1) for line in stdout.splitlines() if "\t" in line]
+    matches = [sha for sha, ref in rows if ref == f"refs/heads/{branch}"]
+    return matches[0] if len(matches) == 1 else "not proven"
+
+
+def selected_evidence(repo: Path, agent_context: dict | None) -> Path | None:
+    if not agent_context:
+        return None
+    evidence_root = repo / "docs" / "evidence"
+    if not evidence_root.is_dir() or evidence_root.is_symlink():
+        return None
+    matches: list[Path] = []
+    for entry in evidence_root.iterdir():
+        manifest = entry / "manifest.json"
+        if entry.is_symlink() or not entry.is_dir() or manifest.is_symlink() or not manifest.is_file():
+            continue
+        try:
+            payload = load_json_file(manifest)
+        except ContractError:
+            continue
+        if isinstance(payload, dict) and payload.get("slice_id") == agent_context.get("slice_id"):
+            matches.append(entry)
+    return matches[0] if len(matches) == 1 else None
+
+
+def first_next_action(repo: Path) -> str:
+    path = repo / "NEXT_ACTIONS.md"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return "not proven"
+    for line in text.splitlines():
+        if line.startswith("### "):
+            return line.removeprefix("### ").strip()
+    return "not found"
 
 
 def active_listeners(repo: Path) -> tuple[str, list[str]]:
@@ -220,7 +280,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
-    repo = Path(args.repo).resolve()
+    try:
+        repo = safe_root_path(args.repo, must_exist=True)
+    except UnsafePathError as exc:
+        print(f"Handoff refused: {exc}")
+        return 1
     now = dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds")
 
     branch = git_value(repo, ["rev-parse", "--abbrev-ref", "HEAD"])
@@ -230,17 +294,27 @@ def main(argv: list[str] | None = None) -> int:
     upstream_head = "not proven"
     if upstream_branch != "not proven":
         upstream_head = git_value(repo, ["rev-parse", "@{u}"])
-    local_equals_upstream = head_equals_upstream(head, upstream_head)
+    local_equals_tracking_ref = head_equals_upstream(head, upstream_head)
+    direct_remote_head = remote_branch_head(repo, branch)
+    local_equals_remote = head_equals_upstream(head, direct_remote_head)
+    verification_failed = False
     short_status = git_value(repo, ["status", "--short"], fallback="")
     worktree = "clean" if not short_status.strip() else "dirty"
     changed_files = git_changed_files(repo)
-    agent_context, sibling_contexts = find_agent_contexts(repo)
+    context_error: str | None = None
+    try:
+        agent_context, sibling_contexts = find_agent_contexts(repo)
+    except ContractError as exc:
+        agent_context, sibling_contexts = None, []
+        context_error = str(exc)
+        verification_failed = True
     topology_captured, topology_raw, linked_worktrees = worktree_topology(repo)
     dirty_classified = dirty_classification_status(repo, changed_files)
-    github_visible = github_visible_deliverables(local_equals_upstream, changed_files)
-    if changed_files or local_equals_upstream == "no":
+    evidence = selected_evidence(repo, agent_context)
+    next_action = first_next_action(repo)
+    if changed_files or local_equals_remote == "no":
         local_only_claimed = "yes"
-    elif local_equals_upstream == "yes":
+    elif local_equals_remote == "yes":
         local_only_claimed = "no"
     else:
         local_only_claimed = "not proven"
@@ -248,6 +322,30 @@ def main(argv: list[str] | None = None) -> int:
     print("# StateDD Handoff Snapshot")
     print()
     print(f"Generated: {now}")
+    print()
+    remote_contains_head = (
+        "yes"
+        if direct_remote_head == head
+        else "no"
+        if direct_remote_head != "not proven"
+        else "not proven"
+    )
+    if worktree == "clean" and remote_contains_head == "yes":
+        delivery_status = "pushed"
+    elif worktree == "clean":
+        delivery_status = "local-only"
+    else:
+        delivery_status = "local changes not ready to push"
+    print("## Remote-First Status")
+    print()
+    print(f"- repository URL: {origin_url}")
+    print(f"- branch: {branch}")
+    print(f"- exact local HEAD: {head}")
+    print(f"- remote branch HEAD: {direct_remote_head}")
+    print(f"- remote contains exact local HEAD: {remote_contains_head}")
+    print(f"- delivery status: {delivery_status}")
+    print("- PR URL: not currently locatable by this local helper")
+    print("- CI status: not verified by this local helper")
     print()
     print("## Repo Identity")
     print()
@@ -258,10 +356,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"- upstream branch: {upstream_branch}")
     print(f"- upstream HEAD: {upstream_head}")
     print(f"- local HEAD: {head}")
-    print(f"- local HEAD equals upstream: {local_equals_upstream}")
+    print(f"- local remote-tracking ref parity: {local_equals_tracking_ref}")
+    print(f"- direct remote branch HEAD: {direct_remote_head}")
+    print(f"- local HEAD equals direct remote branch: {local_equals_remote}")
     print(f"- worktree: {worktree}")
     print(f"- dirty files classified: {dirty_classified}")
-    print(f"- GitHub-visible deliverables: {github_visible}")
+    print("- GitHub-visible deliverables: not proven by this helper; use the remote closure finalizer")
     print(f"- local-only files claimed: {local_only_claimed}")
     if agent_context:
         print()
@@ -287,6 +387,11 @@ def main(argv: list[str] | None = None) -> int:
                     f"  - {ctx.get('worktree_path', 'not proven')} "
                     f"({ctx.get('agent_id', 'unknown')}/{ctx.get('slice_id', 'unknown')})"
                 )
+    elif context_error:
+        print()
+        print("## Agent Context")
+        print()
+        print(f"- invalid active context: {context_error}")
     print()
     print("## Worktree Topology")
     print()
@@ -309,6 +414,16 @@ def main(argv: list[str] | None = None) -> int:
     print()
     print_list(changed_files, empty="none")
     print()
+    print("## Evidence and Continuation")
+    print()
+    if evidence:
+        print(f"- selected evidence ref: {evidence.relative_to(repo)}")
+        print(f"- selected evidence absolute path: {evidence.resolve()}")
+    else:
+        print("- selected evidence ref: not proven")
+        print("- selected evidence absolute path: not proven")
+    print(f"- next action: {next_action}")
+    print()
     print("## Runtime Identity")
     print()
     print("- process/container: not proven by this helper")
@@ -328,10 +443,9 @@ def main(argv: list[str] | None = None) -> int:
     if not args.test_command:
         print("- not run by this helper; pass `--test-command` to include command output")
     else:
-        failed = False
         for command in args.test_command:
             code, output = run_shell_command(command, repo)
-            failed = failed or code != 0
+            verification_failed = verification_failed or code != 0
             print(f"- command: {shlex.quote(command)}")
             print(f"  exit: {code}")
             if output:
@@ -340,7 +454,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"    {line}")
             else:
                 print("  output: none")
-        if failed:
+        if verification_failed:
             print()
             print("At least one verification command failed.")
 
@@ -351,11 +465,13 @@ def main(argv: list[str] | None = None) -> int:
         audit_script = repo / "scripts" / "statedd_audit.py"
         if audit_script.exists():
             code, output, _ = run_command([sys.executable, str(audit_script)], repo)
+            verification_failed = verification_failed or code != 0
             print(f"- audit exit code: {code}")
             for line in trim_lines(output, args.max_output_lines):
                 print(f"  {line}")
         else:
             print("- scripts/statedd_audit.py not found")
+            verification_failed = True
 
     print()
     print("## Handoff Reminder")
@@ -363,8 +479,27 @@ def main(argv: list[str] | None = None) -> int:
     print("- Use prompts/FINAL_HANDOFF_TEMPLATE.md for the final human-facing handoff.")
     print("- Attach evidence refs from docs/EVIDENCE_LOG.md when user-facing behavior was verified.")
     print("- Keep unresolved searches as `not found`, `not currently locatable`, or `not proven`.")
+    print()
+    print("## Residual / Partial Risks")
+    print()
+    if changed_files:
+        print("- worktree is dirty; changes are local worktree truth only")
+    if local_equals_remote != "yes":
+        print("- exact local-to-remote branch parity is not proven")
+    print("- PR, CI, runtime, and human acceptance are not proven by this helper")
+    if context_error:
+        print(f"- active agent context is invalid: {context_error}")
+    print()
+    print("## CTO-Pasteable Handoff")
+    print()
+    boundary = "pushed" if not changed_files and local_equals_remote == "yes" else "local-only or unverified"
+    print(
+        f"Repo {repo} on {branch} at {head}: boundary={boundary}; "
+        f"worktree={worktree}; evidence={evidence.relative_to(repo) if evidence else 'not proven'}; "
+        f"next={next_action}; PR/CI/runtime/acceptance remain separately unproven."
+    )
 
-    return 0
+    return 1 if verification_failed else 0
 
 
 if __name__ == "__main__":

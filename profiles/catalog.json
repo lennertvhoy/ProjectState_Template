@@ -1,0 +1,211 @@
+{
+  "schema": "statedd.profile_catalog.v1",
+  "catalog_version": 1,
+  "template_version": "statedd-template-v5",
+  "asset_sets": {
+    "core": {
+      "version": 1,
+      "depends_on": [],
+      "conflicts_with": [],
+      "capabilities": [
+        "state_hygiene",
+        "schema_validation",
+        "efficiency_budget",
+        "project_test_detection",
+        "git_safety"
+      ],
+      "validation": ["quality_gate_level_1", "git_safety_contract"],
+      "assets": [
+        ".gitignore",
+        "VERSION",
+        "EFFICIENCY_BUDGET.yaml",
+        "profiles/catalog.json",
+        "scripts/AGENTS.md",
+        "scripts/statedd_contracts.py",
+        "scripts/statedd_generated_controls.py",
+        "scripts/check_state_docs.py",
+        "scripts/statedd_version_check.py",
+        "scripts/statedd_validate_schema.py",
+        "scripts/statedd_instruction_lint.py",
+        "scripts/statedd_efficiency_check.py",
+        "scripts/statedd_quality_gate.py",
+        "scripts/statedd_git_safety_check.py",
+        "scripts/statedd_git_safety_session.py",
+        "scripts/statedd_bootstrap_apply.py",
+        "schemas/profile_catalog.schema.json",
+        "schemas/project_state.schema.json",
+        "schemas/project_dna.schema.json",
+        "schemas/project_adapter.schema.json",
+        "schemas/statedd_assets.schema.json",
+        "schemas/git_safety_report.schema.json",
+        "schemas/bootstrap_answers.schema.json"
+      ]
+    },
+    "proof": {
+      "version": 1,
+      "depends_on": ["core"],
+      "conflicts_with": [],
+      "capabilities": [
+        "runtime_identity",
+        "evidence_manifest",
+        "browser_evidence",
+        "local_closure_preflight"
+      ],
+      "validation": ["runtime_contracts", "evidence_contracts"],
+      "assets": [
+        "QUALITY_FIREWALL.md",
+        "FAILURE_TAXONOMY.md",
+        "INCIDENT_RESPONSE.md",
+        "ANTI_BRITTLENESS_GUARD.md",
+        "scripts/statedd_handoff.py",
+        "scripts/statedd_audit.py",
+        "scripts/statedd_doctor.py",
+        "scripts/statedd_worktree_guard.py",
+        "scripts/statedd_brittleness_check.py",
+        "scripts/statedd_runtime_proof.py",
+        "scripts/statedd_evidence_pack.py",
+        "scripts/statedd_browser_verify.py",
+        "scripts/statedd_closure_check.py",
+        "scripts/statedd_runtime_truth_check.py",
+        "scripts/statedd_evidence_type_check.py",
+        "scripts/statedd_remote_truth_check.py",
+        "scripts/statedd_upgrade.py",
+        "schemas/runtime_identity.schema.json",
+        "schemas/runtime_identity_v2.schema.json",
+        "schemas/evidence_readme_contract.json",
+        "schemas/evidence_manifest.schema.json",
+        "schemas/final_handoff_contract.json",
+        "schemas/browser_verification.schema.json",
+        "prompts/FINAL_HANDOFF_TEMPLATE.md",
+        "prompts/RUNTIME_IDENTITY_CHECKLIST.md",
+        "prompts/ACCEPTANCE_FREEZE_TEMPLATE.md",
+        "prompts/SLICE_CONTRACT_TEMPLATE.md",
+        "prompts/EVIDENCE_README_TEMPLATE.md",
+        "prompts/SCHEMA_OWNERSHIP_TEMPLATE.md",
+        "docs/failure_scans/TEMPLATE.md",
+        "docs/incidents/README.md",
+        "docs/quality_gates/README.md",
+        "docs/quality_gates/ANTI_BRITTLENESS_GATE.md",
+        "docs/BROWSER_VERIFICATION.md"
+      ]
+    },
+    "collaboration": {
+      "version": 1,
+      "depends_on": ["proof"],
+      "conflicts_with": [],
+      "capabilities": [
+        "parallel_worktree_isolation",
+        "remote_closure",
+        "review_handoff",
+        "upgrade_guidance"
+      ],
+      "validation": ["remote_closure_contract", "worktree_contract"],
+      "assets": [
+        "scripts/statedd_agent_worktree.py",
+        "scripts/statedd_remote_closure_finalizer.py",
+        "prompts/CTO_SESSION_PROMPT.md",
+        "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
+        "prompts/SUBAGENT_REVIEW_TEMPLATE.md",
+        "prompts/CTO_REVIEW_CHECKLIST.md",
+        "docs/UPGRADING.md",
+        "docs/adr/README.md",
+        "docs/adr/0000-adr-template.md"
+      ]
+    },
+    "regulated_controls": {
+      "version": 1,
+      "depends_on": ["collaboration"],
+      "conflicts_with": [],
+      "capabilities": [
+        "post_merge_verification",
+        "level_2_validation_default"
+      ],
+      "validation": ["quality_gate_level_2", "post_merge_contract"],
+      "assets": ["scripts/statedd_post_merge_verify.py"]
+    },
+    "github": {
+      "version": 1,
+      "depends_on": [],
+      "conflicts_with": [],
+      "capabilities": ["github_issue_and_pr_templates"],
+      "validation": ["github_asset_presence"],
+      "optional": true,
+      "assets": [
+        ".github/pull_request_template.md",
+        ".github/ISSUE_TEMPLATE/config.yml",
+        ".github/ISSUE_TEMPLATE/bootstrap-init.md",
+        ".github/ISSUE_TEMPLATE/bug-regression.md",
+        ".github/ISSUE_TEMPLATE/backlog-item.md",
+        ".github/ISSUE_TEMPLATE/architecture-change.md"
+      ]
+    }
+  },
+  "profiles": {
+      "minimal": {
+      "depends_on": [],
+      "asset_sets": ["core"],
+      "required_capabilities": ["state_hygiene", "schema_validation", "project_test_detection", "git_safety"],
+      "required_gate_level": 1
+    },
+    "solo": {
+      "depends_on": ["minimal"],
+      "asset_sets": ["proof"],
+      "required_capabilities": ["runtime_identity", "evidence_manifest", "local_closure_preflight"],
+      "required_gate_level": 1
+    },
+    "team": {
+      "depends_on": ["solo"],
+      "asset_sets": ["collaboration"],
+      "required_capabilities": ["parallel_worktree_isolation", "remote_closure", "review_handoff"],
+      "required_gate_level": 1
+    },
+    "regulated": {
+      "depends_on": ["team"],
+      "asset_sets": ["regulated_controls"],
+      "required_capabilities": ["post_merge_verification", "level_2_validation_default"],
+      "required_gate_level": 2
+    }
+  },
+  "lifecycle_defaults": {
+    "template_asset": {
+      "role": "workflow_asset",
+      "owner": "template",
+      "required": true,
+      "provision": "copy",
+      "merge_strategy": "replace-if-unmodified",
+      "sensitivity": "public",
+      "protected": false,
+      "append_only": false
+    },
+    "project_truth": {
+      "role": "project_truth",
+      "owner": "project",
+      "required": true,
+      "provision": "generate-or-preserve",
+      "merge_strategy": "preserve",
+      "sensitivity": "project",
+      "protected": true,
+      "append_only": false
+    },
+    "append_only": {
+      "role": "project_history",
+      "owner": "project",
+      "required": true,
+      "provision": "create-if-missing",
+      "merge_strategy": "append-only",
+      "sensitivity": "project",
+      "protected": true,
+      "append_only": true
+    },
+    "generated": {
+      "role": "generated_control",
+      "owner": "template",
+      "required": true,
+      "provision": "regenerate",
+      "merge_strategy": "regenerate",
+      "sensitivity": "project",
+      "protected": true,
+      "append_only": false
+    }
+  }
+}

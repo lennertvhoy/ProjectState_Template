@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -256,6 +257,51 @@ def test_duplicate_budget_key_fails() -> None:
         completed = run_check(["--root", str(root)], expect_success=False)
         if "duplicate mapping key 'schema'" not in completed.stdout:
             raise AssertionError(f"Expected duplicate YAML key failure:\n{completed.stdout}")
+
+
+def test_context_footprint_rejects_manifest_asset_through_symlink_parent() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "root"
+        outside = Path(tmp) / "outside"
+        root.mkdir()
+        outside.mkdir()
+        write_budget(root)
+        add_context_budget(root, max_startup_bytes=20)
+        write_minimal_context_fixture(root)
+        (outside / "secret.txt").write_text("private\n", encoding="utf-8")
+        os.symlink(outside, root / "linked")
+        manifest = json.loads((root / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+        manifest["assets"].append("linked/secret.txt")
+        (root / "STATEDD_ASSETS.json").write_text(json.dumps(manifest), encoding="utf-8")
+        completed = run_check(["--root", str(root)], expect_success=False)
+        if "symlink" not in completed.stdout.lower():
+            raise AssertionError(f"Symlinked manifest asset was not rejected:\n{completed.stdout}")
+
+
+def test_evidence_budget_selects_active_slice_not_mutable_mtime() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_budget(root, default_max_files=2)
+        (root / "AGENTS.md").write_text("short.\n", encoding="utf-8")
+        context = root / ".statedd" / "agent.context"
+        context.parent.mkdir()
+        context.write_text(json.dumps({"slice_id": "BL-ACTIVE"}), encoding="utf-8")
+        active = root / "docs" / "evidence" / "2026-01-01-active"
+        active.mkdir(parents=True)
+        (active / "manifest.json").write_text(
+            json.dumps({"slice_id": "BL-ACTIVE"}), encoding="utf-8"
+        )
+        for index in range(4):
+            (active / f"artifact-{index}.txt").write_text("x\n", encoding="utf-8")
+        decoy = root / "docs" / "evidence" / "9999-12-31-small"
+        decoy.mkdir()
+        (decoy / "manifest.json").write_text(
+            json.dumps({"slice_id": "BL-DECOY"}), encoding="utf-8"
+        )
+        os.utime(decoy, None)
+        completed = run_check(["--root", str(root)], expect_success=False)
+        if "2026-01-01-active" not in completed.stdout:
+            raise AssertionError(f"Evidence budget did not bind active slice:\n{completed.stdout}")
 
 
 if __name__ == "__main__":

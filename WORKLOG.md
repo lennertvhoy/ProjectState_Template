@@ -774,3 +774,93 @@
 - The SkillSignal-specific canonical schema/export/import loop is a downstream application of the new `SCHEMA_OWNERSHIP_TEMPLATE.md`, not implemented in this slice.
 - The Human Override Rule was added explicitly so the workflow stays a strong default, not a prison.
 - Subagent review feedback was integrated: fixed `.jpg` suffix detection, expanded override marker checks, hardened `statedd_doctor.py` file reads, added `AGENTS.md` freshness to doctor output, and aligned generated `PROJECT_DNA.yaml` / `PROJECT_ADAPTER.yaml` versions to v4.
+
+## 2026-07-11 - BL-MAX-VALUE-001 local implementation proof
+
+**Type:** correctness_and_lifecycle_repair
+**Status:** LOCALLY_VALIDATED_REMOTE_PENDING
+**Git Head:** ae851d05aa8113c3cde90d122d1723be123d9e37
+**Worktree:** isolated; finalization metadata pending commit
+
+### What changed
+- Replaced historical-manifest-driven upgrades with current-catalog desired state,
+  strict ownership validation, transactional writes/rollback, and idempotent reruns.
+- Made the quality gate automatically discover and aggregate applicable suites;
+  CI invokes that single authority path instead of enumerating test files.
+- Hardened initializer/upgrade/evidence/runtime paths against absolute, traversal,
+  root/nested symlink, unsafe-source, and outside-root behavior.
+- Added reproducible proof-head profile/context metrics and strict runtime identity
+  v2 records without absolute checkout paths or raw process arguments.
+- Strengthened exact-head remote closure, agent worktree attribution, evidence
+  contracts, architecture review, and the controlled benchmark specification.
+
+### Verification
+- `python3 -m pytest scripts/ -q`: 289 passed, 4 subtests passed.
+- `python3 -m pytest schemas/examples/ -q`: 5 passed.
+- Canonical profile metrics reproduce against `ae851d05`.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2` passed.
+- Strict evidence and runtime-not-applicable truth checks passed locally.
+
+### Evidence
+- `docs/evidence/2026-07-11-maximum-value-correctness/README.md`
+- `docs/evidence/2026-07-11-maximum-value-correctness/manifest.json`
+- `docs/metrics/profile_metrics.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-11-002`
+
+### Notes
+- This is local implementation/evidence truth only. Remote branch, PR, exact-head
+  CI, finalizer agreement, merge, and human acceptance remain unproven.
+## 2026-07-11 - Open BL-STATEDD-INTEGRATION-001
+
+**Type:** integration_slice_opening
+**Status:** OPEN
+**Git Head:** 84a67100fee324f6716a5c966500b0c0eeb59699
+**Worktree:** clean before state-opening edit
+
+### What changed
+- Opened one superseding integration slice from PR #6's exact head.
+- Recorded PR #6 as the lifecycle/profile/gate/evidence authority and PR #7 as the Git-safety and coding-agent golden-path source candidate.
+- Preserved the original checkout outside this clone and recorded its local repair as reported, not closure-grade truth.
+- Added the mandatory integration failure scan and kept license ownership and benchmark superiority unproven.
+
+### Verification
+- Fresh full clone has an independent Git common directory.
+- Clone-mode Git-safety preflight passed with zero ownership mismatches, fsck pass, synchronization pass, and write probe pass.
+- Branch `bl-statedd-integration-001` points to PR #6 head before state-opening edits.
+
+### Next
+- Commit this state opening, then port PR #7 semantically without downgrading PR #6 architecture.
+
+## 2026-07-11 - Locally validate BL-STATEDD-INTEGRATION-001
+
+**Type:** integration_slice_local_validation
+**Status:** VALIDATED_LOCALLY_REMOTE_PENDING
+**Git Head:** 2644f438d40e38f87adc3ca52e678452233430d3
+**Proof Head:** 437fc01d589a72a42aa75b12357ae49586302f34
+**Worktree:** clean before publication
+
+### What changed
+- Ported PR #7 Git-safety, mutation permits, clone-default agent isolation,
+  agent-first startup workflow, delivery policy, and structured golden-path
+  regression onto PR #6's declarative profile/lifecycle/gate/evidence base.
+- Repaired the confirmed quality-gate aggregation, root-symlink, profile-lock,
+  CI-subject, and bootstrap-coverage regressions.
+- Added structured bootstrap application, complete isolation/integration proof,
+  v2 profile conformance, strict evidence, and local finalizer boundaries.
+
+### Verification
+- `python3 -m pytest scripts/ -q`: 312 tests passed.
+- `python3 -m pytest schemas/examples/ -q`: 5 tests passed.
+- `python3 scripts/test_golden_path.py`: passed.
+- `python3 scripts/statedd_quality_gate.py --gate-level 2 --verbose`: passed.
+- `python3 scripts/statedd_audit.py --strict --evidence-folder docs/evidence/2026-07-11-statedd-integration`: passed.
+- All profile metrics reproduce from the recorded proof head; strict evidence and runtime-not-applicable checks pass.
+
+### Evidence
+- `docs/evidence/2026-07-11-statedd-integration/README.md`
+- `docs/evidence/2026-07-11-statedd-integration/manifest.json`
+- `docs/metrics/profile_metrics.json`
+- `docs/EVIDENCE_LOG.md` entry `EV-2026-07-11-003`
+
+### Next
+- Run remote-mutation safety preflight, push the branch, open one draft PR, and observe automatic CI without reruns.

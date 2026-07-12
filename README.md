@@ -14,6 +14,13 @@ The template repository itself uses `repo_role: template_repository` and
 
 ## Start here
 
+StateDD is agent-operated. The human supplies intent, permissions, feedback,
+and acceptance; the coding agent inspects the repository, makes scoped changes,
+runs the executable gates, pushes a branch, and returns a remote-first handoff.
+For an empty folder, use the canonical URL startup prompt in
+`prompts/NEW_PROJECT_FROM_URL.md`; it explicitly selects the `team` profile,
+creates a fresh `main`, and enters truthful bootstrap mode.
+
 New project:
 
 ```bash
@@ -111,6 +118,9 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `docs/WORKFLOW_FOR_BEGINNERS.md` | Beginner-friendly diagram, prompt map, and quality checklist |
 | `docs/adr/` | Architecture decision records |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
+| `scripts/statedd_bootstrap_apply.py` | Apply a validated structured bootstrap answer document and integration result |
+| `scripts/statedd_git_safety_check.py` | Fail-closed repository identity, ownership, fsck, synchronization, and isolation preflight |
+| `scripts/statedd_git_safety_session.py` | External latch and context-bound mutation permit enforcement |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
 | `scripts/statedd_version_check.py` | Verify StateDD spec-version alignment |
 | `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
@@ -119,6 +129,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `scripts/statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard |
 | `scripts/statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scanner |
 | `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
+| `scripts/statedd_runtime_truth_check.py` | Re-probe an explicit v2 runtime artifact against current Git/runtime truth |
 | `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
 | `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
 | `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
@@ -153,6 +164,7 @@ This repository publishes the template itself. It keeps the workflow contract pu
 - executable schemas: `statedd_validate_schema.py` checks state, evidence README, runtime identity, and handoff contracts
 - `bootstrap vs operating`: discovery is a real phase, not a formality
 - `adopt` path for inherited repos: bring the workflow into existing codebases without blindly overwriting them
+- agent-first delivery: clone-default isolation, standing permissions, and remote-first handoffs keep routine work automatic while merge/acceptance remain human boundaries
 - short active queue: open work stays small and backlog-linked
 
 ## Quick Start
@@ -315,6 +327,8 @@ Use `python3 scripts/statedd_handoff.py` near the end of a slice to print a loca
 Before accepting user-facing behavior, first prove which repo, branch, HEAD commit, process or container, and endpoint were actually under test, plus whether the artifact was rebuilt and whether duplicate runtimes were checked.
 
 Use `python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url http://localhost:<port>` to write `runtime_identity.json` for runtime slices. For docs/scripts-only slices, use `python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>`.
+
+Re-probe the exact artifact with `python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json --expected-endpoint http://localhost:<port>`. Remote endpoints additionally require `--allow-remote` and a proof captured with `--revision-header <header>` whose response value equals the current Git HEAD.
 
 StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider. Kimi WebBridge is a preferred provider when available, not a required dependency. Acceptable providers include Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots with explicit limits, or custom project tooling, as long as the evidence is durable and linked to runtime identity.
 

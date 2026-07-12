@@ -16,6 +16,7 @@ import ipaddress
 import json
 import os
 import platform
+import re
 import subprocess
 import sys
 import tempfile
@@ -26,7 +27,7 @@ from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = "statedd.runtime_identity.v1"
+SCHEMA = "statedd.runtime_identity.v2"
 
 
 def runtime_identity_compat_block(head: str | None = None) -> dict[str, object]:
@@ -38,7 +39,6 @@ def runtime_identity_compat_block(head: str | None = None) -> dict[str, object]:
         "kernel": platform.release(),
         "arch": platform.machine(),
         "python": platform.python_version(),
-        "hostname": platform.node(),
         "git_head": head or "not proven",
         "in_container": Path("/.dockerenv").exists(),
     }
@@ -80,7 +80,9 @@ def git_value(repo: Path, args: list[str]) -> str | None:
 def repo_block(repo: Path) -> dict[str, object]:
     status = git_value(repo, ["status", "--short"]) or ""
     return {
-        "path": str(repo),
+        # Public evidence records repository-relative identity. The caller's
+        # absolute checkout path is local diagnostic data, not portable proof.
+        "path": ".",
         "branch": git_value(repo, ["rev-parse", "--abbrev-ref", "HEAD"]),
         "head": git_value(repo, ["rev-parse", "HEAD"]),
         "worktree_clean": status.strip() == "",
@@ -94,52 +96,112 @@ def sha256_bytes(data: bytes) -> str:
     return digest.hexdigest()
 
 
-def fetch_url(url: str, timeout: float) -> tuple[dict[str, object], list[str]]:
+REVISION_HEADER_PATTERN = re.compile(r"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$")
+
+
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Keep a trusted probe endpoint from redirecting to an untrusted target."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
+        return None
+
+
+def validate_endpoint(url: str) -> None:
+    """Reject endpoint forms that are unsafe to serialize or probe as public evidence."""
+    if not isinstance(url, str) or not url or any(char in url for char in "\r\n"):
+        raise ValueError("runtime endpoint must be a non-empty single-line URL")
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("runtime endpoint scheme must be http or https")
+    if not parsed.hostname:
+        raise ValueError("runtime endpoint must include a hostname")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError("runtime endpoint must not contain userinfo or credentials")
+    if parsed.query or parsed.fragment:
+        raise ValueError("runtime endpoint must not contain a query string or fragment")
+    try:
+        parsed.port
+    except ValueError as exc:
+        raise ValueError("runtime endpoint contains an invalid port") from exc
+
+
+def validate_revision_header(name: str) -> None:
+    if not REVISION_HEADER_PATTERN.fullmatch(name):
+        raise ValueError("revision header must be a valid HTTP field name")
+
+
+def response_probe(
+    url: str,
+    status: int | None,
+    headers: object,
+    body: bytes,
+    revision_header: str | None,
+    expected_revision: str | None,
+) -> dict[str, object]:
+    get_header = getattr(headers, "get", lambda _name: None)
+    probe: dict[str, object] = {
+        "url": url,
+        "http_status": status,
+        "content_type": get_header("Content-Type"),
+        "response_sha256": sha256_bytes(body),
+        "response_bytes": len(body),
+    }
+    if revision_header:
+        probe["revision_header"] = revision_header
+        probe["revision_matches_expected"] = bool(
+            expected_revision and get_header(revision_header) == expected_revision
+        )
+    return probe
+
+
+def fetch_url(
+    url: str,
+    timeout: float,
+    revision_header: str | None = None,
+    expected_revision: str | None = None,
+) -> tuple[dict[str, object], list[str]]:
     limits: list[str] = []
     request = urllib.request.Request(url, headers={"User-Agent": "StateDD-runtime-proof/1"})
+    opener = urllib.request.build_opener(NoRedirectHandler())
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with opener.open(request, timeout=timeout) as response:
             body = response.read()
-            content_type = response.headers.get("Content-Type")
             status = getattr(response, "status", None)
-            return (
-                {
-                    "url": url,
-                    "http_status": status,
-                    "content_type": content_type,
-                    "response_sha256": sha256_bytes(body),
-                    "response_bytes": len(body),
-                },
-                limits,
-            )
+            return response_probe(
+                url,
+                status,
+                response.headers,
+                body,
+                revision_header,
+                expected_revision,
+            ), limits
     except urllib.error.HTTPError as exc:
         body = exc.read()
-        return (
-            {
-                "url": url,
-                "http_status": exc.code,
-                "content_type": exc.headers.get("Content-Type"),
-                "response_sha256": sha256_bytes(body),
-                "response_bytes": len(body),
-            },
-            limits,
-        )
+        return response_probe(
+            url,
+            exc.code,
+            exc.headers,
+            body,
+            revision_header,
+            expected_revision,
+        ), limits
     except urllib.error.URLError as exc:
         limits.append(f"Endpoint fetch failed: {exc.reason}")
     except TimeoutError:
         limits.append("Endpoint fetch timed out.")
     except OSError as exc:
         limits.append(f"Endpoint fetch failed: {exc}")
-    return (
-        {
-            "url": url,
-            "http_status": None,
-            "content_type": None,
-            "response_sha256": None,
-            "response_bytes": 0,
-        },
-        limits,
-    )
+    probe: dict[str, object] = {
+        "url": url,
+        "http_status": None,
+        "content_type": None,
+        "response_sha256": None,
+        "response_bytes": 0,
+    }
+    if revision_header:
+        probe["revision_header"] = revision_header
+        probe["revision_matches_expected"] = False
+    return probe, limits
 
 
 def port_from_url(url: str) -> int | None:
@@ -234,14 +296,14 @@ def pids_for_socket_inodes(inodes: set[str]) -> set[int]:
     return pids
 
 
-def process_command(pid: int) -> str | None:
+def process_argv(pid: int) -> list[str] | None:
     cmdline = Path("/proc") / str(pid) / "cmdline"
     try:
         raw = cmdline.read_bytes()
     except OSError:
         return None
     parts = [part.decode("utf-8", errors="replace") for part in raw.split(b"\0") if part]
-    return " ".join(parts) if parts else None
+    return parts or None
 
 
 def process_cwd(pid: int) -> str | None:
@@ -263,6 +325,33 @@ def path_matches_repo(cwd: str | None, repo: Path) -> bool | None:
     except ValueError:
         return False
     return True
+
+
+def cwd_relation(cwd: str | None, repo: Path) -> str:
+    """Describe process ownership without serializing an absolute local path."""
+    if cwd is None:
+        return "unavailable"
+    cwd_path = Path(cwd).resolve()
+    repo_path = repo.resolve()
+    if cwd_path == repo_path:
+        return "repo_root"
+    try:
+        cwd_path.relative_to(repo_path)
+    except ValueError:
+        return "outside_repo"
+    return "within_repo"
+
+
+def sanitized_process_identity(argv: list[str] | None) -> dict[str, object]:
+    """Return non-secret process identity; raw arguments never enter evidence."""
+    if not argv:
+        return {"executable": None, "argv_sha256": None, "argv_count": 0}
+    encoded = b"\0".join(argument.encode("utf-8", errors="replace") for argument in argv)
+    return {
+        "executable": Path(argv[0]).name or None,
+        "argv_sha256": sha256_bytes(encoded),
+        "argv_count": len(argv),
+    }
 
 
 def detect_process(port: int | None, expected_repo: Path, expected_name: str | None) -> tuple[dict[str, object], list[str], bool]:
@@ -309,22 +398,24 @@ def detect_process(port: int | None, expected_repo: Path, expected_name: str | N
         limits.append(f"Multiple listener processes were found for port {port}: {pids}.")
 
     pid = pids[0]
-    command = process_command(pid)
+    argv = process_argv(pid)
     cwd = process_cwd(pid)
-    if command is None:
+    if argv is None:
         limits.append(f"Command line could not be read for PID {pid}.")
     if cwd is None:
         limits.append(f"Process cwd could not be determined for PID {pid}.")
-    if expected_name and command and expected_name not in command:
-        limits.append(f"Process command did not include expected name '{expected_name}'.")
+    if expected_name and argv and expected_name not in " ".join(argv):
+        limits.append("Process command did not include the configured expected process name.")
+
+    command_identity = sanitized_process_identity(argv)
 
     return (
         {
             "detected": True,
             "pid": pid,
             "port": port,
-            "cwd": cwd,
-            "command": command,
+            "cwd_relation": cwd_relation(cwd, expected_repo),
+            **command_identity,
             "cwd_matches_repo": path_matches_repo(cwd, expected_repo),
             "all_candidate_pids": pids,
         },
@@ -343,6 +434,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--kind", default="web", help="Runtime kind for URL proof")
     parser.add_argument("--expected-repo", default=str(ROOT), help="Repo path expected to own the runtime")
     parser.add_argument("--process-name", help="Optional command substring expected for the runtime process")
+    parser.add_argument(
+        "--revision-header",
+        help="HTTP response header that must equal the current Git HEAD (required for remote runtime truth)",
+    )
     parser.add_argument("--port", type=int, help="Port to inspect for process ownership")
     parser.add_argument(
         "--expect-local",
@@ -385,8 +480,20 @@ def build_not_applicable_artifact(repo: Path, reason: str) -> dict[str, object]:
 def build_url_artifact(args: argparse.Namespace, repo: Path) -> tuple[dict[str, object], int]:
     url = args.url
     assert url is not None
-    probe, probe_limits = fetch_url(url, args.timeout)
-    if should_attempt_local_process_detection(url, args.expect_local):
+    validate_endpoint(url)
+    revision_header = getattr(args, "revision_header", None)
+    if revision_header:
+        validate_revision_header(revision_header)
+    repo_info = repo_block(repo)
+    expected_head = repo_info.get("head")
+    probe, probe_limits = fetch_url(
+        url,
+        args.timeout,
+        revision_header,
+        expected_head if isinstance(expected_head, str) else None,
+    )
+    local_process_expected = should_attempt_local_process_detection(url, args.expect_local)
+    if local_process_expected:
         port = args.port if args.port is not None else port_from_url(url)
         process, process_limits, duplicate_checked = detect_process(port, repo, args.process_name)
     else:
@@ -397,30 +504,46 @@ def build_url_artifact(args: argparse.Namespace, repo: Path) -> tuple[dict[str, 
     if isinstance(process, dict):
         cwd_matches = process.get("cwd_matches_repo")
     limits = [*probe_limits, *process_limits]
-    repo_info = repo_block(repo)
+    revision_matches_head = probe.get("revision_matches_expected") is True
+    if not local_process_expected and not revision_header:
+        limits.append(
+            "Remote endpoint has no revision-header binding; runtime-to-HEAD identity is not proven."
+        )
+    elif revision_header and not revision_matches_head:
+        limits.append("Configured runtime revision header did not equal the current Git HEAD.")
+
+    runtime: dict[str, object] = {
+        "required": True,
+        "kind": args.kind,
+        "endpoint": url,
+        "ownership_mode": "local_process" if local_process_expected else "remote_revision",
+        "process": process,
+    }
+    if revision_header:
+        runtime["revision_header"] = revision_header
+
+    checks: dict[str, object] = {
+        "endpoint_reachable": endpoint_reachable,
+        "process_cwd_matches_repo": cwd_matches if cwd_matches is not None else "unknown",
+        "head_recorded": bool(repo_info.get("head")),
+        "duplicate_runtime_checked": duplicate_checked,
+        "process_detected": bool(process.get("detected")) if isinstance(process, dict) else False,
+    }
+    if revision_header:
+        checks["revision_matches_head"] = revision_matches_head
 
     artifact = {
         "schema": SCHEMA,
         "captured_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
         "repo": repo_info,
-        "runtime": {
-            "required": True,
-            "kind": args.kind,
-            "endpoint": url,
-            "process": process,
-        },
+        "runtime": runtime,
         "probe": probe,
-        "checks": {
-            "endpoint_reachable": endpoint_reachable,
-            "process_cwd_matches_repo": cwd_matches if cwd_matches is not None else "unknown",
-            "head_recorded": bool(repo_info.get("head")),
-            "duplicate_runtime_checked": duplicate_checked,
-            "process_detected": bool(process.get("detected")) if isinstance(process, dict) else False,
-        },
+        "checks": checks,
         "limits": limits,
         **runtime_identity_compat_block(repo_info.get("head")),
     }
-    return artifact, 0 if endpoint_reachable else 1
+    identity_bound = local_process_expected or bool(revision_header and revision_matches_head)
+    return artifact, 0 if endpoint_reachable and identity_bound else 1
 
 
 def write_artifact(path: Path, artifact: dict[str, object]) -> None:
@@ -446,6 +569,13 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--url cannot be combined with --no-runtime-required.")
     if not args.no_runtime_required and not args.url:
         raise SystemExit("Provide --url for runtime proof or --no-runtime-required for docs/scripts-only proof.")
+    try:
+        if args.url:
+            validate_endpoint(args.url)
+        if args.revision_header:
+            validate_revision_header(args.revision_header)
+    except ValueError as exc:
+        raise SystemExit(f"Invalid runtime proof input: {exc}") from exc
 
     path = output_path(args)
     if args.no_runtime_required:

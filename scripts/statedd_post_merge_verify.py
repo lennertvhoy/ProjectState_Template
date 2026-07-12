@@ -219,17 +219,17 @@ class PostMergeVerifier:
         self._print_handoff()
 
         if self.failures:
-            print(f"\n❌ POST-MERGE VERIFICATION FAILED")
+            print("\n❌ POST-MERGE VERIFICATION FAILED")
             for failure in self.failures:
                 print(f"  ✗ {failure}")
             return 1
 
         if self.warnings:
-            print(f"\n⚠️  POST-MERGE VERIFICATION PASSED WITH WARNINGS")
+            print("\n⚠️  POST-MERGE VERIFICATION PASSED WITH WARNINGS")
             for warning in self.warnings:
                 print(f"  ⚠ {warning}")
         else:
-            print(f"\n✅ POST-MERGE VERIFICATION PASSED — main is the source of truth")
+            print("\n✅ POST-MERGE VERIFICATION PASSED — main is the source of truth")
 
         return 0
 
@@ -243,7 +243,7 @@ class PostMergeVerifier:
         if not self.remote_url:
             raise RuntimeError("Could not determine origin remote URL")
 
-        print(f"\nLocal truth:")
+        print("\nLocal truth:")
         print(f"  branch: {self.branch}")
         print(f"  head:   {self.local_head}")
         print(f"  remote: {self.remote_url}")
@@ -275,7 +275,7 @@ class PostMergeVerifier:
         if not self.default_branch_head:
             raise RuntimeError("Could not determine default branch HEAD from GitHub")
 
-        print(f"\nGitHub default branch:")
+        print("\nGitHub default branch:")
         print(f"  branch: {self.default_branch}")
         print(f"  head:   {self.default_branch_head}")
 
@@ -360,7 +360,7 @@ class PostMergeVerifier:
                 f"Merge commit {merge_commit} is not an ancestor of default branch HEAD {self.default_branch_head}"
             )
         elif self.verbose:
-            print(f"  ✓ merge commit is on default branch")
+            print("  ✓ merge commit is on default branch")
 
     def _check_ci_on_final_commit(self) -> None:
         if not self.ci_state:

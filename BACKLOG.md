@@ -2,7 +2,7 @@
 
 **Product:** StateDD_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-07-10
+**Updated At:** 2026-07-11
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-PARALLEL-001] Complete remote push/PR/CI closure for the implemented parallel-agent worktree orchestrator; local implementation and gates are already recorded in WORKLOG.md.
+- [BL-STATEDD-INTEGRATION-001] Integrate PR #6's lifecycle/profile/gate/evidence correctness with PR #7's Git-safety and coding-agent golden path without downgrading either branch's strongest invariants.
 
 ## NEXT
 
@@ -19,7 +19,8 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## CLOSED
 
-- [BL-CONTEXT-001] Repair generated-repo correctness and context hygiene with explicit profile asset manifests, generated self-gates, strict YAML keys, measurable footprint budgets, semantic lifecycle checks, and preserved Git porcelain columns; implementation proof head `8840a3c` is CI-verified on PR #5 and the final state head is governed by the remote closure finalizer.
+- [BL-CONTEXT-001] Implement generated-repo correctness and context hygiene. Merged in PR #5 as `c2fe7b2`; unresolved lifecycle and closure defects are reopened under BL-MAX-VALUE-001.
+- [BL-PARALLEL-001] Implement the parallel-agent worktree orchestrator. Merged through PR #4 as `a0ac268`; independent closure-grade agreement was not proven and is reviewed under BL-MAX-VALUE-001.
 - [BL-WORKFLOW-002] Re-validate and close worktree isolation and anti-brittleness guardrails after BL-SANITY-002 repairs; evidence, PR body, CI, and remote closure all agree on final head `0c2a136`.
 - [BL-SANITY-002] Repair template logic holes discovered by the 2026-07-07 ultra-critical sanity check: close false-positive closure-grade audit/handoff/doctor paths, align runtime-identity consumers with the canonical schema, harden worktree/brittleness guards, and remove unsafe file operations in init/upgrade/browser/remote-closure/probe scripts.
 - [BL-SANITY-001] StateDD repo coherence and efficiency repair: reconcile PR #2 efficiency layer, add backlog duplicate validation, repair truth files, fix closure evidence, add post-merge verifier, update CI.

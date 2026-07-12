@@ -12,11 +12,10 @@ Detects configuration "smells" in AGENTS.md, SKILL.md, and command files:
 """
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -34,6 +33,14 @@ class Severity(Enum):
     ERROR = "error"
     WARNING = "warning"
     INFO = "info"
+
+
+SEVERITY_ORDER = {Severity.INFO: 0, Severity.WARNING: 1, Severity.ERROR: 2}
+
+
+def meets_failure_threshold(severities: List[Severity], threshold: Severity) -> bool:
+    """Return true when any finding is at least as severe as the threshold."""
+    return any(SEVERITY_ORDER[severity] >= SEVERITY_ORDER[threshold] for severity in severities)
 
 
 @dataclass
@@ -87,13 +94,19 @@ class InstructionLinter:
             r"finally\s+run\s+",
         ]
 
-        self.failure_case_keywords = [
-            "failure case", "failure cases", "if.*fail", "on failure",
-            "error handling", "rollback", "retry", "fallback"
+        self.failure_case_patterns = [
+            r"(?m)^\s*failure[_ -]cases?\s*:",
+            r"(?im)^#{1,6}\s+failure cases?\b",
+            r"(?im)^\s*\*\*failure cases?:\*\*",
+            r"(?i)\bif\b[^\n]{0,80}\bfails?\b",
+            r"\bon failure\b",
+            r"\berror handling\b",
+            r"\brollback\b",
+            r"\bretr(?:y|ies)\b",
+            r"\bfallback\b",
         ]
 
         self.outdated_claim_patterns = [
-            r"202\d[-/]\d{1,2}[-/]\d{1,2}",  # dates
             r"version\s+\d+\.\d+\.\d+",  # versions
             r"latest\s+version",  # "latest" claims
             r"as of\s+202\d",  # "as of" dates
@@ -107,27 +120,29 @@ class InstructionLinter:
         ]
 
     def find_files(self) -> List[Path]:
-        """Find all instruction files to lint."""
-        patterns = [
-            "AGENTS.md",
-            "CLAUDE.md",
-            "GEMINI.md",
-            "*.md",
-        ]
-        files = []
-        for pattern in patterns:
-            files.extend(self.root.rglob(pattern))
-        # Filter to relevant files
-        relevant = []
-        for f in files:
-            if f.is_file():
-                rel = f.relative_to(self.root)
-                # Include root AGENTS.md, skills, commands, prompts, docs
-                if any(str(rel).startswith(p) for p in ["", "skills/", "commands/", "prompts/", "docs/", "scripts/"]):
-                    if rel.name in {"AGENTS.md", "CLAUDE.md", "GEMINI.md"} or \
-                       rel.suffix == ".md" and not str(rel).startswith(".git"):
-                        relevant.append(f)
-        return list(set(relevant))  # dedupe
+        """Find active guidance, excluding history, fixtures, and proof output."""
+        excluded_prefixes = (
+            ".git/",
+            ".worktrees/",
+            "fixtures/",
+            "docs/evidence/",
+            "docs/incidents/",
+            "docs/failure_scans/",
+            "docs/superpowers/",
+        )
+        relevant: set[Path] = set()
+        for path in self.root.rglob("*.md"):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(self.root).as_posix()
+            if rel.startswith(excluded_prefixes) or Path(rel).name.startswith("RELEASE_NOTES_"):
+                continue
+            is_contract = Path(rel).name in {"AGENTS.md", "CLAUDE.md", "GEMINI.md", "Copilot.md"}
+            is_workflow = rel.startswith(("skills/", "commands/", "prompts/"))
+            is_active_doc = rel == "README.md" or rel.startswith("docs/")
+            if is_contract or is_workflow or is_active_doc:
+                relevant.add(path)
+        return sorted(relevant)
 
     def analyze_file(self, path: Path) -> FileAnalysis:
         """Analyze a single file."""
@@ -154,6 +169,11 @@ class InstructionLinter:
 
     def _check_context_bloat(self, analysis: FileAnalysis):
         """Check for context bloat (too many lines/words)."""
+        if not (
+            Path(analysis.path).name in {"AGENTS.md", "CLAUDE.md", "GEMINI.md", "Copilot.md"}
+            or analysis.path.startswith(("skills/", "commands/", "prompts/"))
+        ):
+            return
         if analysis.line_count > self.max_lines:
             self._add_smell(analysis, Smell(
                 type=SmellType.CONTEXT_BLOAT,
@@ -161,7 +181,7 @@ class InstructionLinter:
                 file=analysis.path,
                 line=analysis.line_count,
                 message=f"File has {analysis.line_count} lines (limit: {self.max_lines})",
-                suggestion=f"Split into smaller files or move procedures to skills/commands"
+                suggestion="Split into smaller files or move procedures to skills/commands"
             ))
         if analysis.word_count > self.max_words:
             self._add_smell(analysis, Smell(
@@ -220,7 +240,7 @@ class InstructionLinter:
                         file=analysis.path,
                         line=line,
                         message=f"Inline procedure detected (should be a skill): {m.group()[:80]}",
-                        suggestion=f"Create skill in skills/<name>/SKILL.md and invoke via /<name>"
+                        suggestion="Create skill in skills/<name>/SKILL.md and invoke via /<name>"
                     ))
 
     def _check_missing_failure_cases(self, analysis: FileAnalysis):
@@ -228,7 +248,7 @@ class InstructionLinter:
         if not (analysis.path.startswith("skills/") or analysis.path.startswith("commands/")):
             return
         content = "\n".join(analysis.lines).lower()
-        has_failure = any(kw in content for kw in self.failure_case_keywords)
+        has_failure = any(re.search(pattern, content) for pattern in self.failure_case_patterns)
         if not has_failure:
             self._add_smell(analysis, Smell(
                 type=SmellType.MISSING_FAILURE_CASES,
@@ -362,12 +382,8 @@ def main():
     # Exit code logic
     threshold = {"error": Severity.ERROR, "warning": Severity.WARNING, "info": Severity.INFO}[args.fail_on]
     severities = [s.severity for s in smells]
-    if any(s.value >= threshold.value for s in [Severity.ERROR, Severity.WARNING, Severity.INFO]
-           if s in severities):
-        # Check if any smell meets or exceeds threshold
-        order = {Severity.INFO: 0, Severity.WARNING: 1, Severity.ERROR: 2}
-        if any(order[s] >= order[threshold] for s in severities):
-            sys.exit(1)
+    if meets_failure_threshold(severities, threshold):
+        sys.exit(1)
 
     sys.exit(0)
 

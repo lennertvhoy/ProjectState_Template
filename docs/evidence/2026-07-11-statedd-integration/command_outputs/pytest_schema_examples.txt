@@ -1,0 +1,8 @@
+.....                                                                    [100%]
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py::test_valid_slice_passes
+PASSED schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py::test_invalid_slice_fails
+PASSED schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py::test_generated_prompt_includes_required_fields
+PASSED schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py::test_generated_prompt_fixture_is_up_to_date
+PASSED schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py::test_example_scripts_use_stdlib_only

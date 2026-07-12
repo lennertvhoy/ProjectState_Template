@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""
-StateDD Closure Check
+"""Run local slice-readiness checks.
 
-Validates that closure criteria are truly met before marking a slice closure-grade.
-Checks: no unproven claims, no broken links, runtime proof captured, REMOTE TRUTH VERIFIED.
+The filename remains for compatibility, but this command cannot establish remote
+closure. Only ``statedd_remote_closure_finalizer.py`` binds the final pushed head,
+pull request, evidence, and exact-head CI result.
 """
 
 import argparse
@@ -97,12 +97,25 @@ def parse_classification_file(path: Path) -> Dict[str, str]:
 
 
 class ClosureCheck:
-    def __init__(self, root: Path, verbose: bool = False, claimed_files: List[str] = None, gate_level: int = 2, agent_context: dict | None = None):
+    def __init__(
+        self,
+        root: Path,
+        verbose: bool = False,
+        claimed_files: List[str] = None,
+        gate_level: int = 2,
+        agent_context: dict | None = None,
+        evidence_folder: Path | None = None,
+        runtime_endpoint: str | None = None,
+        allow_remote_runtime: bool = False,
+    ):
         self.root = root
         self.verbose = verbose
         self.claimed_files = claimed_files or []
         self.gate_level = gate_level
         self.agent_context = agent_context
+        self.evidence_folder = evidence_folder
+        self.runtime_endpoint = runtime_endpoint
+        self.allow_remote_runtime = allow_remote_runtime
         self.failures: List[str] = []
         self.warnings: List[str] = []
 
@@ -157,6 +170,8 @@ class ClosureCheck:
         return True
 
     def latest_evidence_folder(self) -> Path | None:
+        if self.evidence_folder is not None:
+            return self.evidence_folder
         evidence_root = self.root / "docs" / "evidence"
         if not evidence_root.exists():
             return None
@@ -174,28 +189,42 @@ class ClosureCheck:
         return self.root / "runtime_identity.json"
 
     def check_runtime_proof(self) -> bool:
-        """Verify runtime identity proof exists for user-facing changes."""
+        """Re-probe the explicitly selected runtime identity artifact."""
         print("🖥️  Checking runtime proof...")
         runtime_identity = self.runtime_identity_path()
         if not runtime_identity.exists():
             self.failures.append("runtime_identity.json not found")
             return False
-        try:
-            data = json.loads(runtime_identity.read_text())
-            required = ["os", "kernel", "git_head", "timestamp"]
-            for field in required:
-                if field not in data:
-                    self.failures.append(f"runtime_identity.json missing field: {field}")
-                    return False
-            print(f"  ✓ Runtime identity present and complete ({runtime_identity.relative_to(self.root)})")
-            return True
-        except json.JSONDecodeError:
-            self.failures.append("runtime_identity.json is invalid JSON")
+        command = [
+            sys.executable,
+            "scripts/statedd_runtime_truth_check.py",
+            "--artifact",
+            str(runtime_identity.relative_to(self.root)),
+        ]
+        if self.runtime_endpoint:
+            command.extend(["--expected-endpoint", self.runtime_endpoint])
+        if self.allow_remote_runtime:
+            command.append("--allow-remote")
+        code, out, err = self.run_cmd(command)
+        if code != 0:
+            self.failures.append(f"Runtime truth check failed:\n{err or out}")
             return False
+        print(f"  ✓ Runtime truth re-probed ({runtime_identity.relative_to(self.root)})")
+        return True
 
     def check_evidence_bundle(self) -> bool:
-        """Check evidence bundle exists and is complete."""
+        """Validate the selected local evidence pack, not just its prose log."""
         print("📦 Checking evidence bundle...")
+        folder = self.latest_evidence_folder()
+        if folder is None:
+            self.failures.append("No local evidence folder found")
+            return False
+        code, out, err = self.run_cmd(
+            [sys.executable, "scripts/statedd_evidence_pack.py", "check", "--strict", str(folder)]
+        )
+        if code != 0:
+            self.failures.append(f"Evidence pack validation failed:\n{err or out}")
+            return False
         evidence_log = self.root / "docs" / "EVIDENCE_LOG.md"
         if not evidence_log.exists():
             self.failures.append("EVIDENCE_LOG.md not found")
@@ -204,7 +233,7 @@ class ClosureCheck:
         if len(content.strip()) < 100:
             self.failures.append("EVIDENCE_LOG.md appears minimal")
             return False
-        print("  ✓ Evidence log has content")
+        print(f"  ✓ Strict evidence pack validation passed ({folder.relative_to(self.root)})")
         return True
 
     def check_acceptance_freeze(self) -> bool:
@@ -279,33 +308,11 @@ class ClosureCheck:
         print("  ✓ Dirty worktree classified as intended slice work or generated artifact")
         return True
 
-    def check_remote_truth(self) -> bool:
-        """Verify remote GitHub state matches local claims (Truth Boundary Gate)."""
-        print("🌐 Checking remote truth (Truth Boundary Gate)...")
-        # Import and run remote truth check
-        sys.path.insert(0, str(self.root / "scripts"))
-        try:
-            from statedd_remote_truth_check import RemoteTruthCheck
-            checker = RemoteTruthCheck(self.root, self.verbose, self.claimed_files)
-            result = checker.run()
-            if result != 0:
-                self.failures.extend([f"Remote truth: {f}" for f in checker.failures])
-                self.closure_label = checker.closure_label
-                return False
-            self.closure_label = checker.closure_label
-            return True
-        except ImportError as e:
-            self.failures.append(f"Remote truth check module not found: {e}")
-            return False
-        except Exception as e:
-            self.failures.append(f"Remote truth check crashed: {e}")
-            return False
-
     def check_efficiency(self) -> bool:
         """Run efficiency budget check."""
         print("⚡ Running efficiency check...")
         code, out, err = self.run_cmd(
-            ["python", "scripts/statedd_efficiency_check.py", "--gate-level", str(self.gate_level)]
+            [sys.executable, "scripts/statedd_efficiency_check.py", "--gate-level", str(self.gate_level)]
         )
         if code == 0:
             print("  ✓ Efficiency check passed")
@@ -315,7 +322,7 @@ class ClosureCheck:
 
     def run(self) -> int:
         print("=" * 50)
-        print("StateDD Closure Check")
+        print("StateDD Local Slice Preflight")
         print("=" * 50)
 
         self.closure_label = "NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM"
@@ -328,18 +335,14 @@ class ClosureCheck:
             ("Acceptance Freeze", self.check_acceptance_freeze),
             ("Handoff Complete", self.check_handoff_complete),
             ("Dirty Worktree", self.check_dirty_worktree),
-            ("Remote Truth", self.check_remote_truth),
             ("Efficiency", self.check_efficiency),
         ]
 
-        all_passed = True
         for name, check in checks:
             try:
-                if not check():
-                    all_passed = False
+                check()
             except Exception as e:
                 self.failures.append(f"{name} check crashed: {e}")
-                all_passed = False
 
         print("\n" + "=" * 50)
         if self.warnings:
@@ -352,20 +355,33 @@ class ClosureCheck:
             for f in self.failures:
                 print(f"  ✗ {f}")
             print("=" * 50)
-            print("❌ CLOSURE CHECK FAILED - Not closure-grade")
+            print("❌ LOCAL SLICE PREFLIGHT FAILED — NOT CLOSURE-GRADE")
             return 1
 
-        print("✅ ALL CLOSURE CRITERIA MET - Closure-grade")
+        print("✅ LOCAL SLICE PREFLIGHT PASSED")
+        print("Remote branch, PR, exact-head CI, and final evidence agreement: not checked")
+        print("Run statedd_remote_closure_finalizer.py after commit, push, and CI.")
         print("=" * 50)
         return 0
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Closure Check")
+    parser = argparse.ArgumentParser(description="StateDD local slice preflight (not remote closure)")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--claimed-files", nargs="*", default=[], help="Files claimed as deliverables")
     parser.add_argument("--gate-level", type=int, default=2, help="Gate level being proven")
+    parser.add_argument(
+        "--evidence-folder",
+        required=True,
+        help="Explicit evidence folder; modification-time selection is not closure proof",
+    )
+    parser.add_argument("--runtime-endpoint", help="Trusted endpoint for runtime-required evidence")
+    parser.add_argument(
+        "--allow-remote-runtime",
+        action="store_true",
+        help="Permit remote re-probe when revision-header binding is present",
+    )
     parser.add_argument(
         "--agent-context",
         default=None,
@@ -374,9 +390,30 @@ def main():
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
+    requested_evidence = Path(args.evidence_folder)
+    evidence_folder = (
+        requested_evidence.resolve()
+        if requested_evidence.is_absolute()
+        else (root / requested_evidence).resolve()
+    )
+    try:
+        evidence_folder.relative_to(root)
+    except ValueError:
+        parser.error("--evidence-folder must stay inside the repository")
+    if not evidence_folder.is_dir():
+        parser.error("--evidence-folder must identify an existing directory")
     agent_context_path = find_agent_context(root, args.agent_context)
     agent_context = load_agent_context(agent_context_path) if agent_context_path else None
-    checker = ClosureCheck(root, args.verbose, args.claimed_files, args.gate_level, agent_context)
+    checker = ClosureCheck(
+        root,
+        args.verbose,
+        args.claimed_files,
+        args.gate_level,
+        agent_context,
+        evidence_folder,
+        args.runtime_endpoint,
+        args.allow_remote_runtime,
+    )
     sys.exit(checker.run())
 
 

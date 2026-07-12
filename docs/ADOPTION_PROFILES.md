@@ -1,9 +1,12 @@
 # StateDD Adoption Profiles
 
 Profiles let you initialize or adopt a repo with a StateDD footprint matched to
-the project's needs. They do not change the core StateDD rules; they change which
-default assets are included and how strongly the generated docs emphasize certain
-practices.
+the project's needs. `profiles/catalog.json` is the machine-readable authority
+for dependencies, asset sets, capabilities, validation, and required gate level.
+Capability IDs describe the interface a profile intends to expose; they are not
+proof by themselves. Resolved validation IDs dispatch executable/presence
+contracts in the generated quality gate and are the enforceable capability proof.
+Profiles do not change core truth rules.
 
 ## Which profile should I choose?
 
@@ -87,9 +90,10 @@ python3 scripts/init_template.py adopt --name "Your Project" --profile team
 The `--minimal` flag is a legacy alias for `--profile minimal`.
 
 Every profile is generated from an explicit allowlist and records its installed
-files in `STATEDD_ASSETS.json`. No profile receives template-maintenance tests,
+files and lifecycle hashes in `STATEDD_ASSETS.json`. No profile receives template-maintenance tests,
 fixtures, historical evidence, incident records, changelog, or release history.
 CI runs each generated profile's own quality gate. `EFFICIENCY_BUDGET.yaml`
 enforces startup files/bytes/estimated tokens and managed footprint files/bytes.
-Profile regressions use identical project names and equal-length target paths and
-require `minimal` to remain the smallest mandatory startup payload.
+Reproducible profile and task-context measurements live only in
+`docs/metrics/profile_metrics.json`; prose intentionally does not copy their
+exact values.

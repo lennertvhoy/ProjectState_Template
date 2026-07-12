@@ -19,39 +19,78 @@ context_budgets:
     - AGENTS.md
     - STATUS.md
     - PROJECT_STATE.yaml
-    - PROJECT_DNA.yaml
     - NEXT_ACTIONS.md
+  selection_policies:
+    initial_orientation:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+    normal_implementation:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - scripts/AGENTS.md
+    interrupted_resume:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+    closure_review:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - prompts/EVIDENCE_README_TEMPLATE.md
+    ci_diagnosis:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - .github/workflows/validate.yml
+      - scripts/statedd_quality_gate.py
+    architecture_audit:
+      - AGENTS.md
+      - STATUS.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - PROJECT_DNA.yaml
+      - EFFICIENCY_BUDGET.yaml
+      - profiles/catalog.json
   profiles:
     template_repository:
       max_startup_files: 5
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
       max_footprint_files: 330
-      max_footprint_bytes: 1800000
+      max_footprint_bytes: 2000000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
       max_startup_estimated_tokens: 2250
-      max_footprint_files: 32
-      max_footprint_bytes: 180000
+      max_footprint_files: 42
+      max_footprint_bytes: 360000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
-      max_footprint_files: 64
-      max_footprint_bytes: 520000
+      max_footprint_files: 76
+      max_footprint_bytes: 730000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
       max_startup_estimated_tokens: 2625
-      max_footprint_files: 72
-      max_footprint_bytes: 700000
+      # Includes strict runtime-truth, Git-safety, structured bootstrap, and
+      # exact-head collaboration controls required by the agent-first contract.
+      max_footprint_files: 90
+      max_footprint_bytes: 850000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
       max_startup_estimated_tokens: 2750
-      max_footprint_files: 75
-      max_footprint_bytes: 760000
+      max_footprint_files: 92
+      max_footprint_bytes: 900000
 
 evidence_budgets:
   default_max_files: 15

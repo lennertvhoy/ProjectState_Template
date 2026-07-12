@@ -1,15 +1,21 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-07-10
-**Execution Mode:** template-maintenance
+**Updated At:** 2026-07-11
+**Execution Mode:** quality_freeze
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-PARALLEL-001] Parallel-Agent Remote Closure
-Owner: coding agent + human reviewer
-Next: push the already implemented local slice, align PR/evidence/CI on one head, and run the remote closure finalizer.
-Exit: BL-PARALLEL-001 has GitHub-visible CI success and remote closure agreement
+### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration
+Owner: integration agent
+Next: review draft PR #8 with the successful direct branch-head and synthetic merge-candidate CI results; resolve ownership and human-acceptance boundaries before any merge decision.
+Exit: authoritative local gates, generated-profile conformance, strict evidence, clean pushed branch, and a draft PR exist with branch-head and merge-candidate CI reported separately.
+
+## Source candidates
+
+- PR #6 / `bl-max-value-001`: `84a67100fee324f6716a5c966500b0c0eeb59699`; lifecycle/profile/gate/evidence authority.
+- PR #7 / `bl-git-isolation-001`: `99f401110d9c5d130e8524d1cca4873649a84cbe`; Git-safety and coding-agent golden-path candidate.
+- Neither source PR is independently merge-ready; license ownership and benchmark superiority remain unproven.
 
 ## Queue Rules
 

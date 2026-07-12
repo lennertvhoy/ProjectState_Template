@@ -1,0 +1,8 @@
+StateDD Brittleness Check
+This scan is advisory. It can warn about brittle shapes, but it cannot prove absence of brittleness.
+
+Added lines scanned: 48
+Warnings: 0
+
+No heuristic warnings found; this does not prove absence of brittleness.
+Result: complete the anti-brittleness review before claiming closure-grade.

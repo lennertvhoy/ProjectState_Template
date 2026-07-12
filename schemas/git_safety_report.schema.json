@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.git_safety_report.v1",
+  "title": "StateDD Git safety preflight report",
+  "type": "object",
+  "required": [
+    "schema",
+    "generated_at",
+    "request",
+    "repository",
+    "identity",
+    "runtime",
+    "metadata",
+    "worktrees",
+    "write_probe",
+    "fsck",
+    "synchronization",
+    "isolation",
+    "latch",
+    "decision"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"type": "string", "const": "statedd.git_safety_report.v1"},
+    "generated_at": {"type": "string", "minLength": 10},
+    "request": {
+      "type": "object",
+      "required": ["path", "mode", "sync", "remote", "worktree_opt_in", "trusted_local_machine", "restart_session", "source_repo"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "mode": {"type": "string", "enum": ["normal_branch", "worktree", "clone", "read_only"]},
+        "sync": {"type": "string", "const": "fetch"},
+        "remote": {"type": "string", "minLength": 1},
+        "worktree_opt_in": {"type": "boolean"},
+        "trusted_local_machine": {"type": "boolean"},
+        "restart_session": {"type": "boolean"},
+        "source_repo": {"type": ["string", "null"]},
+        "operation_class": {"type": "string", "enum": ["read_only", "local_mutation", "remote_mutation"]},
+        "operator_authorized": {"type": "boolean"},
+        "slice_id": {"type": ["string", "null"]},
+        "agent_id": {"type": ["string", "null"]},
+        "context_hash": {"type": ["string", "null"]},
+        "reservation_ref": {"type": ["string", "null"]},
+        "expected_branch": {"type": ["string", "null"]},
+        "expected_head": {"type": ["string", "null"]}
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": ["canonical_root", "git_dir", "git_common_dir", "git_dir_equals_common_dir", "common_dir_inside_repo", "branch", "head", "default_branch", "origin_url", "worktree_clean"],
+      "additionalProperties": false,
+      "properties": {
+        "canonical_root": {"type": "string", "minLength": 1},
+        "git_dir": {"type": "string", "minLength": 1},
+        "git_common_dir": {"type": "string", "minLength": 1},
+        "git_dir_equals_common_dir": {"type": "boolean"},
+        "common_dir_inside_repo": {"type": "boolean"},
+        "branch": {"type": "string", "minLength": 1},
+        "head": {"type": "string", "minLength": 1},
+        "default_branch": {"type": "string", "minLength": 1},
+        "origin_url": {"type": "string", "minLength": 1},
+        "worktree_clean": {"type": "boolean"}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": ["real_uid", "effective_uid", "real_gid", "effective_gid", "supplementary_gids", "user", "group", "known", "is_root"],
+      "additionalProperties": false,
+      "properties": {
+        "real_uid": {"type": ["integer", "null"]},
+        "effective_uid": {"type": ["integer", "null"]},
+        "real_gid": {"type": ["integer", "null"]},
+        "effective_gid": {"type": ["integer", "null"]},
+        "supplementary_gids": {"type": "array", "items": {"type": "integer"}},
+        "user": {"type": "string", "minLength": 1},
+        "group": {"type": "string", "minLength": 1},
+        "known": {"type": "boolean"},
+        "is_root": {"type": "boolean"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["classification", "container_runtime", "privilege", "proof_complete", "machine_fingerprint_sha256", "signals", "detection_errors", "effective_capabilities_hex", "risky_capabilities", "git_environment_overrides"],
+      "additionalProperties": false,
+      "properties": {
+        "classification": {"type": "string", "enum": ["host", "container", "unknown"]},
+        "container_runtime": {"type": ["string", "null"]},
+        "privilege": {"type": "string", "enum": ["unprivileged", "privileged", "unknown"]},
+        "proof_complete": {"type": "boolean"},
+        "machine_fingerprint_sha256": {"type": "string", "minLength": 1},
+        "signals": {"type": "array", "items": {"type": "string"}},
+        "detection_errors": {"type": "array", "items": {"type": "string"}},
+        "effective_capabilities_hex": {"type": ["string", "null"]},
+        "risky_capabilities": {"type": "array", "items": {"type": "string"}},
+        "git_environment_overrides": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["common_dir", "git_dir", "critical_trees", "special_entries", "entries_scanned", "scan_complete", "mismatches", "unreadable", "unwritable", "symlinks", "locks"],
+      "additionalProperties": false,
+      "properties": {
+        "common_dir": {"type": "object", "additionalProperties": true},
+        "git_dir": {"type": "object", "additionalProperties": true},
+        "critical_trees": {"type": "object", "additionalProperties": {"type": "object"}},
+        "special_entries": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "entries_scanned": {"type": "integer"},
+        "scan_complete": {"type": "boolean"},
+        "mismatches": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "unreadable": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "unwritable": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "symlinks": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "locks": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
+      }
+    },
+    "worktrees": {
+      "type": "object",
+      "required": ["total_count", "linked_count", "unknown_identity_count", "mismatched_identity_count", "entries"],
+      "additionalProperties": false,
+      "properties": {
+        "total_count": {"type": "integer"},
+        "linked_count": {"type": "integer"},
+        "unknown_identity_count": {"type": "integer"},
+        "mismatched_identity_count": {"type": "integer"},
+        "entries": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
+      }
+    },
+    "write_probe": {
+      "type": "object",
+      "required": ["required", "result", "targets", "residue"],
+      "additionalProperties": false,
+      "properties": {
+        "required": {"type": "boolean"},
+        "result": {"type": "string", "enum": ["pass", "fail", "not_run_read_only", "not_attempted_blocked", "not_attempted_latched"]},
+        "targets": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "residue": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "fsck": {
+      "type": "object",
+      "required": ["command", "result", "exit_code", "duration_ms", "stderr"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {"type": "array", "items": {"type": "string"}},
+        "result": {"type": "string", "enum": ["pass", "fail"]},
+        "exit_code": {"type": "integer"},
+        "duration_ms": {"type": "integer"},
+        "stderr": {"type": "string"}
+      }
+    },
+    "synchronization": {
+      "type": "object",
+      "required": ["required", "operation", "remote", "attempted", "result", "exit_code", "duration_ms", "stderr"],
+      "additionalProperties": false,
+      "properties": {
+        "required": {"type": "boolean"},
+        "operation": {"type": "string", "const": "fetch"},
+        "remote": {"type": "string", "minLength": 1},
+        "attempted": {"type": "boolean"},
+        "result": {"type": "string", "enum": ["pass", "fail", "not_run_read_only", "not_attempted_blocked", "not_attempted_latched"]},
+        "exit_code": {"type": ["integer", "null"]},
+        "duration_ms": {"type": "integer"},
+        "stderr": {"type": "string"}
+      }
+    },
+    "isolation": {
+      "type": "object",
+      "required": ["requested_mode", "selected_mode", "independent_common_dir", "source_common_dir", "alternates_present", "hardlinked_object_files", "rules"],
+      "additionalProperties": false,
+      "properties": {
+        "requested_mode": {"type": "string", "enum": ["normal_branch", "worktree", "clone", "read_only"]},
+        "selected_mode": {"type": "string", "enum": ["normal_branch", "worktree", "clone", "read_only"]},
+        "independent_common_dir": {"type": "boolean"},
+        "source_common_dir": {"type": ["string", "null"]},
+        "alternates_present": {"type": "boolean"},
+        "hardlinked_object_files": {"type": "integer"},
+        "rules": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "latch": {
+      "type": "object",
+      "required": ["path", "global_path", "active_before", "active_after", "written", "cleared", "error", "permit_path", "permit_active_before", "permit_active_after", "permit_written", "permit_cleared"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "global_path": {"type": "string", "minLength": 1},
+        "active_before": {"type": "boolean"},
+        "active_after": {"type": "boolean"},
+        "written": {"type": "boolean"},
+        "cleared": {"type": "boolean"},
+        "error": {"type": ["string", "null"]},
+        "permit_path": {"type": "string", "minLength": 1},
+        "permit_active_before": {"type": "boolean"},
+        "permit_active_after": {"type": "boolean"},
+        "permit_written": {"type": "boolean"},
+        "permit_cleared": {"type": "boolean"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": ["permitted", "mutation_permitted", "effective_mode", "restart_required", "enforcement_scope", "blockers", "warnings"],
+      "additionalProperties": false,
+      "properties": {
+        "permitted": {"type": "boolean"},
+        "mutation_permitted": {"type": "boolean"},
+        "effective_mode": {"type": "string", "enum": ["normal_branch", "worktree", "clone", "read_only"]},
+        "restart_required": {"type": "boolean"},
+        "enforcement_scope": {"type": "string", "enum": ["statedd_managed_session_permit", "filesystem_enforced"]},
+        "operation_class": {"type": "string", "enum": ["read_only", "local_mutation", "remote_mutation"]},
+        "authorized_operations": {"type": "array", "items": {"type": "string", "enum": ["read_only", "local_mutation", "remote_mutation"]}},
+        "exact_authorization_boundary": {
+          "type": "object",
+          "required": ["operator_authorized", "expected_branch", "expected_head", "slice_id", "agent_id", "context_hash", "reservation_ref"],
+          "additionalProperties": false,
+          "properties": {
+            "operator_authorized": {"type": "boolean"},
+            "expected_branch": {"type": ["string", "null"]},
+            "expected_head": {"type": ["string", "null"]},
+            "slice_id": {"type": ["string", "null"]},
+            "agent_id": {"type": ["string", "null"]},
+            "context_hash": {"type": ["string", "null"]},
+            "reservation_ref": {"type": ["string", "null"]}
+          }
+        },
+        "blockers": {"type": "array", "items": {"type": "string"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

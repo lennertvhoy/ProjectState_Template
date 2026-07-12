@@ -1,0 +1,17 @@
+{
+  "schema": "statedd.git_safety_summary.v1",
+  "requested_isolation_mode": "clone",
+  "effective_isolation_mode": "clone",
+  "mutation_permitted": true,
+  "effective_uid": 1000,
+  "effective_gid": 1000,
+  "ownership_mismatch_count": 0,
+  "unwritable_metadata_count": 0,
+  "write_probe": "pass",
+  "git_fsck": "pass",
+  "synchronization": "pass",
+  "active_git_environment_overrides": [],
+  "read_only_latch_active": false,
+  "restart_required": false,
+  "source_checkout_repair": "reported; original checkout preserved and not modified"
+}

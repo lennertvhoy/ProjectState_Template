@@ -8,14 +8,13 @@ Creates fake issues/tasks and checks if agent follows correct workflow.
 
 import argparse
 import json
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from enum import Enum
 
 
@@ -92,8 +91,14 @@ PROBES = [
         expected_skills=["runtime-truth"],
         expected_commands=[],
         expected_gates=["statedd_runtime_truth_check.py"],
-        setup="",
-        verify="python scripts/statedd_runtime_truth_check.py"
+        setup=(
+            "python scripts/statedd_runtime_proof.py --no-runtime-required "
+            "--evidence-dir docs/evidence/runtime-proof-probe"
+        ),
+        verify=(
+            "python scripts/statedd_runtime_truth_check.py "
+            "--artifact docs/evidence/runtime-proof-probe/runtime_identity.json"
+        )
     ),
 ]
 

@@ -27,21 +27,50 @@
       "additionalProperties": true,
       "properties": {
         "required": {"type": "boolean"},
+        "reason": {"type": "string", "minLength": 1},
         "kind": {"type": "string", "minLength": 1},
+        "endpoint": {"type": "string", "minLength": 1},
         "url": {"type": ["string", "null"]},
         "process": {
           "type": "object",
           "required": ["detected"],
           "additionalProperties": true,
           "properties": {
-            "detected": {"type": "boolean"}
+            "detected": {"type": "boolean"},
+            "pid": {"type": "integer", "minimum": 1},
+            "port": {"type": ["integer", "null"], "minimum": 1, "maximum": 65535},
+            "host": {"type": "string", "minLength": 1},
+            "reason": {"type": "string", "minLength": 1},
+            "impact": {"type": "string", "minLength": 1},
+            "cwd_relation": {"enum": ["repo_root", "within_repo", "outside_repo", "unavailable"]},
+            "cwd_matches_repo": {"type": ["boolean", "null"]},
+            "executable": {"type": ["string", "null"]},
+            "argv_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+            "argv_count": {"type": "integer", "minimum": 0},
+            "all_candidate_pids": {
+              "type": "array",
+              "items": {"type": "integer", "minimum": 1},
+              "uniqueItems": true
+            }
           }
         }
       }
     },
-    "checks": {
+    "probe": {
       "type": "object",
       "additionalProperties": true,
+      "required": ["url", "http_status", "content_type", "response_sha256", "response_bytes"],
+      "properties": {
+        "url": {"type": "string", "minLength": 1},
+        "http_status": {"type": ["integer", "null"]},
+        "content_type": {"type": ["string", "null"]},
+        "response_sha256": {"type": ["string", "null"]},
+        "response_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "endpoint_reachable": {"type": "boolean"},
         "process_detected": {"type": "boolean"},
