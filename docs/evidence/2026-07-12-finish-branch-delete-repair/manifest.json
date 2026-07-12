@@ -1,0 +1,92 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2a212e1f117601376e4582dbf17dce813a637204c5a81fc69d29edd051c0eb9f"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "bd0bbbb56ff53f127b459ee466d0a67ff7d42a42915f94b97c90fb1000c8c9ab"
+    },
+    {
+      "kind": "command_output",
+      "path": "verification_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "4d90e5aabeca324ad14b507cbf91a4834a9864c514f8bc8577c8440eb080fc50"
+    },
+    {
+      "kind": "doc",
+      "path": "source_hashes.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f2da87538ada2aba2f7f1f8a6f46f890573d6612974ee761918620377b111320"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "GitHub branch deletion uses the plural refs endpoint while exact-head reads use the singular ref endpoint.",
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
+      "id": "github-delete-endpoint",
+      "status": "validated"
+    },
+    {
+      "claim": "Remote branch deletion is exact-head constrained and idempotent when the ref is absent.",
+      "evidence": [
+        "verification_summary.json"
+      ],
+      "id": "safe-idempotent-cleanup",
+      "status": "validated"
+    },
+    {
+      "claim": "Transient UNSTABLE merge state is tolerated only while required CI is pending and remains blocking after green CI.",
+      "evidence": [
+        "verification_summary.json"
+      ],
+      "id": "pending-ci-merge-state",
+      "status": "validated"
+    },
+    {
+      "claim": "Tracked proof records the defect boundary and runtime-not-applicable truth without predicting remote identities.",
+      "evidence": [
+        "README.md",
+        "runtime_identity.json"
+      ],
+      "id": "evidence-runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-12T11:03:49+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in source_hashes.json; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "fix-finish-branch-delete",
+    "head": "bb325e7f46e3a19d2a69f70ead75bf8e5f749b30"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "DEF-FINISH-BRANCH-DELETE-001"
+}

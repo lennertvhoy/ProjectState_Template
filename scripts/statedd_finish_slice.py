@@ -984,8 +984,9 @@ class GitHubProvider:
 
     def delete_branch(self, branch: str, expected_head: str) -> bool:
         encoded = quote(branch, safe="")
-        path = f"repos/{self.owner}/{self.repo}/git/ref/heads/{encoded}"
-        current = self._gh(["api", path], allow_not_found=True)
+        read_path = f"repos/{self.owner}/{self.repo}/git/ref/heads/{encoded}"
+        delete_path = f"repos/{self.owner}/{self.repo}/git/refs/heads/{encoded}"
+        current = self._gh(["api", read_path], allow_not_found=True)
         if current.get("_not_found"):
             return False
         actual = ((current.get("object") or {}).get("sha"))
@@ -993,8 +994,8 @@ class GitHubProvider:
             raise FinishRefused(
                 f"remote branch moved before deletion: expected {expected_head}, found {actual or 'not found'}"
             )
-        self._gh(["api", "--method", "DELETE", path])
-        absent = self._gh(["api", path], allow_not_found=True)
+        self._gh(["api", "--method", "DELETE", delete_path])
+        absent = self._gh(["api", read_path], allow_not_found=True)
         if not absent.get("_not_found"):
             raise FinishRefused("remote branch still exists after deletion request")
         return True
@@ -1077,7 +1078,12 @@ class FinishSlice:
         if require_open and snapshot.state != "OPEN":
             raise FinishRefused(f"PR is not open: state={snapshot.state or 'missing'}")
 
-    def _validate_mutable_merge_truth(self, snapshot: PullRequestSnapshot) -> None:
+    def _validate_mutable_merge_truth(
+        self,
+        snapshot: PullRequestSnapshot,
+        *,
+        allow_pending_ci_instability: bool = False,
+    ) -> None:
         self._validate_pr_identity(snapshot, require_open=True)
         if snapshot.draft:
             raise FinishRefused("PR is still draft")
@@ -1087,7 +1093,16 @@ class FinishSlice:
             raise FinishRefused(
                 f"PR has {snapshot.unresolved_threads} unresolved current review thread(s)"
             )
-        if snapshot.merge_state not in {"CLEAN", "HAS_HOOKS"}:
+        ci_is_pending = any(
+            observation.state in {PENDING, MISSING}
+            for observation in (snapshot.branch_head_ci, snapshot.merge_candidate_ci)
+        )
+        transient_ci_state = (
+            allow_pending_ci_instability
+            and snapshot.merge_state == "UNSTABLE"
+            and ci_is_pending
+        )
+        if snapshot.merge_state not in {"CLEAN", "HAS_HOOKS"} and not transient_ci_state:
             raise FinishRefused(
                 f"merge state is not clean: {snapshot.merge_state or 'missing'}"
             )
@@ -1107,7 +1122,7 @@ class FinishSlice:
         deadline = self.clock() + self.pr_ci_timeout
         while True:
             snapshot = self.provider.pull_request(self.pr_number)
-            self._validate_mutable_merge_truth(snapshot)
+            self._validate_mutable_merge_truth(snapshot, allow_pending_ci_instability=True)
             self._record_ci(snapshot)
             observations = (
                 ("branch-head", snapshot.branch_head_ci),

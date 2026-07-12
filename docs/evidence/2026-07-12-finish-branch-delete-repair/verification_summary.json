@@ -1,0 +1,36 @@
+{
+  "schema": "statedd.verification_summary.v1",
+  "proof_head": "bb325e7f46e3a19d2a69f70ead75bf8e5f749b30",
+  "defect": {
+    "observed_failure": "GitHub DELETE through singular git/ref endpoint returned HTTP 404",
+    "remote_ref_remained": true,
+    "plural_refs_endpoint_succeeded": true
+  },
+  "checks": [
+    {
+      "command": "ruff check scripts/statedd_finish_slice.py scripts/test_finish_slice.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m pytest scripts/test_finish_slice.py -q",
+      "result": "passed",
+      "tests": 25
+    },
+    {
+      "claim": "production provider uses singular read, plural delete, singular absence verification",
+      "result": "passed"
+    },
+    {
+      "claim": "already-absent deletion is idempotent",
+      "result": "passed"
+    },
+    {
+      "claim": "transient UNSTABLE merge state waits only while required CI is pending",
+      "result": "passed"
+    },
+    {
+      "claim": "UNSTABLE merge state blocks once required CI is green",
+      "result": "passed"
+    }
+  ]
+}

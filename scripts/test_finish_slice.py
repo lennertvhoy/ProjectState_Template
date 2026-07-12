@@ -22,6 +22,7 @@ from statedd_finish_slice import (  # noqa: E402
     DeliveryPolicy,
     FinishRefused,
     FinishSlice,
+    GitHubProvider,
     LocalTruth,
     MergeResult,
     PostMergeProof,
@@ -328,6 +329,40 @@ def test_dirty_merge_state_blocks_merge(tmp_path: Path) -> None:
     assert not provider.merge_calls
 
 
+def test_unstable_merge_state_waits_while_required_ci_is_pending(tmp_path: Path) -> None:
+    pending = pr_snapshot(
+        merge_state="UNSTABLE",
+        branch_head_ci=ci("PENDING"),
+        merge_candidate_ci=ci("PENDING", name="merge-candidate"),
+    )
+    finish, _, provider, _, _ = build(tmp_path, snapshot=pending, pr_timeout=1)
+    original = provider.pull_request
+    queries = 0
+
+    def pull_request(number: int) -> PullRequestSnapshot:
+        nonlocal queries
+        queries += 1
+        if queries == 4:
+            provider.snapshot = pr_snapshot()
+        return original(number)
+
+    provider.pull_request = pull_request  # type: ignore[method-assign]
+
+    assert finish.run() == 0
+    assert queries >= 4
+    assert provider.merge_calls == [(17, HEAD, "squash")]
+
+
+def test_unstable_merge_state_still_blocks_after_ci_is_green(tmp_path: Path) -> None:
+    finish, _, provider, _, _ = build(
+        tmp_path,
+        snapshot=pr_snapshot(merge_state="UNSTABLE"),
+    )
+    assert finish.run() == 1
+    assert "merge state" in (finish.report.failure or "")
+    assert not provider.merge_calls
+
+
 def test_unexpected_pr_head_movement_blocks_push_and_merge(tmp_path: Path) -> None:
     finish, local, provider, _, _ = build(tmp_path, snapshot=pr_snapshot(head="9" * 40))
     assert finish.run() == 1
@@ -385,6 +420,66 @@ def test_branch_deletion_and_release_follow_post_merge_verification(tmp_path: Pa
     assert finish.run() == 0
     assert events.index("post-merge-verify") < events.index("delete-branch")
     assert events.index("delete-branch") < events.index("release")
+
+
+def test_github_branch_deletion_uses_plural_refs_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    provider = object.__new__(GitHubProvider)
+    provider.owner = "owner"
+    provider.repo = "repository"
+    calls: list[tuple[list[str], bool]] = []
+    responses = iter(
+        [
+            {"object": {"sha": HEAD}},
+            {},
+            {"_not_found": True},
+        ]
+    )
+
+    def fake_gh(
+        args: list[str], *, timeout: int = 120, allow_not_found: bool = False
+    ) -> dict[str, object]:
+        del timeout
+        calls.append((args, allow_not_found))
+        return next(responses)
+
+    monkeypatch.setattr(provider, "_gh", fake_gh)
+
+    assert provider.delete_branch("slice-branch", HEAD) is True
+    assert calls == [
+        (["api", "repos/owner/repository/git/ref/heads/slice-branch"], True),
+        (
+            [
+                "api",
+                "--method",
+                "DELETE",
+                "repos/owner/repository/git/refs/heads/slice-branch",
+            ],
+            False,
+        ),
+        (["api", "repos/owner/repository/git/ref/heads/slice-branch"], True),
+    ]
+
+
+def test_github_branch_deletion_is_idempotent_when_ref_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    provider = object.__new__(GitHubProvider)
+    provider.owner = "owner"
+    provider.repo = "repository"
+    calls: list[list[str]] = []
+
+    def fake_gh(
+        args: list[str], *, timeout: int = 120, allow_not_found: bool = False
+    ) -> dict[str, object]:
+        del timeout
+        assert allow_not_found is True
+        calls.append(args)
+        return {"_not_found": True}
+
+    monkeypatch.setattr(provider, "_gh", fake_gh)
+
+    assert provider.delete_branch("slice-branch", HEAD) is False
+    assert calls == [["api", "repos/owner/repository/git/ref/heads/slice-branch"]]
 
 
 def test_final_external_handoff_records_remote_first_truth(tmp_path: Path) -> None:
