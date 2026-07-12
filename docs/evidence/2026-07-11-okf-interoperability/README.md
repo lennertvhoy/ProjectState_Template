@@ -6,7 +6,7 @@
 **HEAD:** d4127b11823c3b7e27a94ac6d8119717ad522fb6 (proof tree)
 **Branch:** `bl-okf-001`
 **Proof head:** d4127b11823c3b7e27a94ac6d8119717ad522fb6
-**Final PR head:** intentionally not embedded in tracked evidence; the mutable PR body owns the final head.
+**Final PR head:** merged into `main` as `840ebaa69b95c1ecda1c2113d53011e4e3dde77d`; post-merge metrics finalization is `886710edc9032465302f8bc6c390fe470f1fde3d`.
 
 ## Claims
 
@@ -34,17 +34,17 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 | `python3 scripts/check_state_docs.py` | pass |
 | `python3 scripts/statedd_validate_schema.py` | pass |
 | Strict audit | pass |
-| Remote branch, PR, and CI | verified for final PR head; branch-head run 29164232824 and merge-candidate run 29164234097 |
+| Remote branch, PR, and CI | merged into `main`; post-merge main validation passed in run 29184051017 |
 
 ## Closure State
 
 - Implemented: yes
 - Validated locally: yes
 - Pushed: yes
-- PR opened: yes — draft PR #9
-- Branch-head CI verified: yes — run 29164232824
-- PR merge-candidate CI verified: yes — run 29164234097
-- Closure-grade: no
+- PR opened: yes — PR #9 merged
+- Branch-head CI verified: yes — main run 29184051017
+- PR merge-candidate CI verified: yes — run 29183819393 before merge
+- Closure-grade: yes for merged mainline CI; human acceptance recorded by explicit user directive
 - Human accepted: no
 - Runtime: not applicable for this template docs/scripts slice
 
@@ -54,7 +54,7 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 - rule overridden: feature work during the PR #8 quality-freeze boundary
 - requested by: user
 - reason accepted: proceed with BL-OKF-001 in a separate isolated branch without modifying PR #8
-- remaining risk: PR #8 and PR #9 remain draft; OKF value and human acceptance are unproven
+- remaining risk: OKF retrieval value and benchmark superiority remain unproven; PR #6/#7 remain superseded drafts
 - still closure-grade: no
 
 ## Risks / What Remains Partial
@@ -62,7 +62,7 @@ Evidence: `command_outputs/optional_profile.txt`, `command_outputs/quality_gate.
 - OKF v0.1 remains a draft upstream specification pinned to commit `ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a`.
 - Optional knowledge value, startup-context impact, and promotion to any default profile are not benchmark-proven.
 - Real project concepts remain project-owned; this bundle contains only a generic scaffold.
-- Human acceptance, OKF value, promotion to a default profile, and benchmark superiority remain unproven; remote closure is intentionally blocked while PR #9 remains draft.
+- The user explicitly directed merging the integrated golden path; OKF retrieval value and promotion beyond opt-in asset selection remain evidence-gated.
 
 ## Anti-Brittleness Review
 

@@ -1,20 +1,20 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-07-11
+**Updated At:** 2026-07-12
 **Execution Mode:** quality_freeze
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-OKF-001] Optional OKF knowledge interoperability
+### P1 [BL-OKF-001] Measure OKF task-context value
 Owner: integration agent
-Next: keep draft PR #9 open for human review; do not merge until scope, ownership, and evidence-gated promotion are accepted.
-Exit: optional generated profile passes OKF/base-format and StateDD governance checks; minimal/solo/team footprints and startup context remain unchanged.
+Next: design benchmark-backed StateIR/StatePack retrieval experiments; do not make OKF installation mandatory yet.
+Exit: deterministic task selection, provenance manifests, context-cost measurements, and a justified default-profile decision.
 
-### P0 [BL-STATEDD-INTEGRATION-001] Superseding StateDD integration
+### P0 [BL-STATEDD-INTEGRATION-001] Merged StateDD integration baseline
 Owner: integration agent
-Next: review draft PR #8 with the successful direct branch-head and synthetic merge-candidate CI results; resolve ownership and human-acceptance boundaries before any merge decision.
-Exit: authoritative local gates, generated-profile conformance, strict evidence, clean pushed branch, and a draft PR exist with branch-head and merge-candidate CI reported separately.
+Next: preserve the merged mainline; retain PR #6 and PR #7 only as superseded historical candidates.
+Exit: main remains green and no obsolete candidate branch is merged independently.
 
 ## Source candidates
 

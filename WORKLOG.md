@@ -934,3 +934,14 @@
 
 ### Next
 - Human review of draft PR #9; keep unmerged until scope, ownership, and evidence-gated promotion are accepted.
+
+## 2026-07-12 - Promote integrated golden path to main
+
+**Type:** mainline_promotion
+**Status:** MERGED_MAIN_CI_PASSING
+
+- Merged PR #8 as `f92d2610a5d2616b71ee40a4e5358cf3f45cc6a2`.
+- Merged PR #9 as `840ebaa69b95c1ecda1c2113d53011e4e3dde77d`.
+- Merged PR #10 as `886710edc9032465302f8bc6c390fe470f1fde3d` to refresh profile metrics after squash history.
+- Main branch-head validation passed in run `29184051017`.
+- PR #6 and PR #7 remain superseded draft source candidates and were not merged independently.
