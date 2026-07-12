@@ -572,13 +572,14 @@ def test_golden_path() -> None:
             raise AssertionError(f"finish transitions drifted: {finish.report.transitions}")
         if provider.open_pr_count != 0 or provider.human_git_actions != 0:
             raise AssertionError("golden path still requires a human Git action or leaves an open PR")
-        if git(
-            remote,
-            "show-ref",
-            "--verify",
-            f"refs/heads/{integration_branch}",
-            expected=1,
-        ):
+        deleted_branch_probe = subprocess.run(
+            ["git", "show-ref", "--verify", f"refs/heads/{integration_branch}"],
+            cwd=remote,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if deleted_branch_probe.returncode == 0:
             raise AssertionError("golden path retained the verified remote slice branch")
         if provider.follow_up_metadata_prs != 0:
             raise AssertionError("golden path created a follow-up metadata PR")
