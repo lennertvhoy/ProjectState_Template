@@ -27,7 +27,7 @@ the documented plural endpoint deleted it successfully. This isolated the
 defect to the production adapter path rather than policy, permissions, merge,
 CI, or post-merge verification.
 
-## Verification
+## Verification Log
 
 - `ruff check scripts/statedd_finish_slice.py scripts/test_finish_slice.py` — pass
 - `python3 -m pytest scripts/test_finish_slice.py -q` — pass (23 tests)
@@ -53,7 +53,7 @@ CI, or post-merge verification.
 - No sleeps, fixture-keyword shortcuts, force operations, or history rewrites
   were added.
 
-## Closure Boundary
+## Closure State
 
 The PR body binds this immutable Proof head to the final PR head. Provider-created
 merge/default-head/CI identities belong only in the external finish handoff.
@@ -63,7 +63,7 @@ This tracked evidence predicts no future merge identity.
 
 - Human override used: no
 
-## Remaining Boundaries
+## Risks / What Remains Partial
 
 - Verified legal copyright owner remains not proven; `LICENSE` is unchanged.
 - Human product acceptance remains pending.
