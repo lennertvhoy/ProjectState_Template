@@ -1,0 +1,25 @@
+{
+  "artifacts": [],
+  "claims": [],
+  "created_at": "2026-07-12T10:38:32+02:00",
+  "manifest_status": "skeleton",
+  "redaction": {
+    "automated_scan": "not_applicable",
+    "known_limits": [
+      "Manifest created; redaction review not yet performed."
+    ],
+    "manual_review": "required",
+    "status": "unchecked"
+  },
+  "repo": {
+    "branch": "bl-golden-path-closure-001",
+    "head": "2248f1edd656d58869f700e0419c9f32d06929ea"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-GOLDEN-PATH-CLOSURE-001"
+}
