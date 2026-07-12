@@ -209,3 +209,50 @@ and must be protected from quiet regression.
 - known_limits:
   - The example is intentionally small and educational.
   - The generated prompt uses only schema field names and descriptions.
+
+## AF-2026-07-12-001: StateDD v5 operational core accepted
+
+- Milestone: StateDD v5 operational template completion
+- Scope: CTO engineering and architecture acceptance of the compact, repo-native
+  StateDD operational core, including structured bootstrap, bounded parallel-agent
+  integration, confirmed agent-owned exact-head delivery, direct-main CI,
+  post-merge verification, self-reconciling canonical state, and stable maintenance.
+- Closure-grade: yes
+- Accepted: yes
+- Acceptance authority: human CTO
+- Acceptance type: engineering_and_architecture
+- Accepted on: 2026-07-12
+- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- branch: main
+- accepted_head: 5779baf293a9b5357f896d9725fd7edae2528445
+- process_or_container: not applicable; template repository has no application runtime
+- port_or_base_url: not applicable
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: not applicable
+- evidence_refs:
+  - EV-2026-07-12-002
+- accepted_capabilities:
+  - structured bootstrap and profile generation
+  - bounded parallel-agent integration with one integration owner
+  - confirmed `agent_after_green` exact-head squash merge
+  - branch-head, merge-candidate, and direct-main CI proof
+  - post-merge source-tree equivalence and external handoff
+  - verified remote-branch cleanup and isolation release
+  - canonical state with no active P0/P1 implementation work
+  - opt-in OKF interoperability
+- regression_guard:
+  - Do not open an unmeasured generic core-improvement slice.
+  - Accept core changes only for a reproduced defect, compatibility/security
+    migration, measured improvement against this baseline, explicitly selected
+    optional research, or the verified legal copyright-holder decision.
+  - Preserve routine agent ownership of branch, commit, push, PR, exact-head merge,
+    direct-main verification, and post-merge cleanup under confirmed policy.
+  - Preserve force-push, shared-history rewrite, CI-bypass, and human product-
+    acceptance boundaries.
+- known_limits:
+  - Human product acceptance remains separately pending.
+  - The verified legal copyright holder is not proven; `LICENSE` is unchanged.
+  - Comparative benchmark superiority is not proven.
+  - StateIR, StatePack, and OKF retrieval benchmarks remain optional research.
+- human_override:
+  used: no

@@ -1041,3 +1041,26 @@
   canonical only if the exact head passes every remote gate and merges.
 - Provider-created merge/default-head/CI identities remain external; no
   post-merge metadata PR is planned or required by the architecture.
+
+## 2026-07-12 - Record CTO engineering and architecture acceptance
+
+**Type:** human_acceptance_record
+**Status:** ACCEPTED_CORE_FROZEN
+**Accepted baseline:** 5779baf293a9b5357f896d9725fd7edae2528445
+
+### Decision
+
+- The human CTO granted engineering and architecture acceptance for the StateDD
+  v5 operational core after independently verifying PRs #13 and #14, exact-head
+  CI, direct-main CI, branch cleanup, and coherent canonical state.
+- The core moves from construction to stable maintenance.
+- Future core work requires a reproduced defect, compatibility/security migration,
+  measured improvement, explicitly selected optional research, or the verified
+  legal copyright-holder decision.
+
+### Preserved boundaries
+
+- Human product acceptance remains separately pending.
+- The verified copyright owner is not proven; `LICENSE` remains unchanged.
+- Comparative benchmark superiority is not proven.
+- No generic unmeasured core-expansion slice is active.

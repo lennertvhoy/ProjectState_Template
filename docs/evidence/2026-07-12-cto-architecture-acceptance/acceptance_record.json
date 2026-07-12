@@ -1,0 +1,29 @@
+{
+  "schema": "statedd.human_acceptance_record.v1",
+  "accepted_on": "2026-07-12",
+  "authority": "human_cto",
+  "acceptance_type": "engineering_and_architecture",
+  "scope": "statedd_v5_operational_core",
+  "status": "accepted",
+  "accepted_baseline": {
+    "repository": "https://github.com/lennertvhoy/StateDD_Template",
+    "branch": "main",
+    "head": "5779baf293a9b5357f896d9725fd7edae2528445"
+  },
+  "freeze": {
+    "status": "active",
+    "permitted_change_classes": [
+      "reproduced_defect",
+      "compatibility_or_security_migration",
+      "measured_improvement_against_current_baseline",
+      "explicitly_selected_optional_research",
+      "verified_legal_copyright_holder_decision"
+    ],
+    "forbidden_default": "unmeasured_generic_core_expansion"
+  },
+  "not_claimed": {
+    "human_product_acceptance": "pending",
+    "verified_legal_copyright_owner": "not_proven",
+    "benchmark_superiority": "not_proven"
+  }
+}

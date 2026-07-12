@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-07-12T18:13:15+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "a10e8a21d9fede8105eb9820be5ae95089aa0cb1",
+  "in_container": false,
+  "kernel": "7.1.3-200.fc44.x86_64",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Sat Jul  4 19:20:12 UTC 2026",
+  "python": "3.14.6",
+  "repo": {
+    "branch": "agent/record-cto-acceptance",
+    "head": "a10e8a21d9fede8105eb9820be5ae95089aa0cb1",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "CTO acceptance recording is docs/state-only; the template root has no deployable application runtime.",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v2",
+  "timestamp": "2026-07-12T16:13:15.417805Z"
+}

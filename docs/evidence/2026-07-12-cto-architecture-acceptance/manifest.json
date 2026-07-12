@@ -1,0 +1,76 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "ca4e3c804f09afb1b0e0671e72149c2277f1e9d8d2230da8d8fd2a1d9d290fe8"
+    },
+    {
+      "kind": "doc",
+      "path": "acceptance_record.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "63d179bde62aa20080cfe1b8cc0336a1382d72b4ba6f4775413ef5e6f7ed781f"
+    },
+    {
+      "kind": "command_output",
+      "path": "verification_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "9a4f76b1d737f3005544d3bcebeeee8a78749b7aee283a807e2bd4259dcfa3f3"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "11bbbfcce0481d8df7e0efa8469da4e49da8170851020275d7edb0fc0e01028f"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "The human CTO granted engineering and architecture acceptance for the StateDD v5 operational core.",
+      "evidence": [
+        "README.md",
+        "acceptance_record.json"
+      ],
+      "id": "cto-architecture-acceptance",
+      "status": "validated"
+    },
+    {
+      "claim": "The accepted core is frozen under explicit maintenance-only change categories while product, legal-owner, and benchmark boundaries remain separate.",
+      "evidence": [
+        "verification_summary.json",
+        "runtime_identity.json"
+      ],
+      "id": "stable-maintenance-freeze",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-12T18:10:29+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in acceptance_record.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "agent/record-cto-acceptance",
+    "head": "eac202b6eaebde91a4079ecf48702cc6dd47cc99"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "DOC-CTO-ACCEPTANCE-001"
+}
