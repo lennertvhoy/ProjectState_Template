@@ -34,8 +34,8 @@
   "generated_profile_phase": "pass_all_declared_profile_gates",
   "level_2_quality_gate": {
     "result": "pass",
-    "evidence_head": "bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e",
-    "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-closure --head bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e"
+    "evidence_head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3",
+    "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-closure --head 5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3"
   },
   "remote_phase": "pending",
   "runtime": "not_applicable_for_template_root",

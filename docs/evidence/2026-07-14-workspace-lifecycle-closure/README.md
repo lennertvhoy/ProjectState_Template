@@ -70,7 +70,7 @@
 | state/schema | `check_state_docs.py` (regular/bootstrap); `statedd_validate_schema.py` | pass |
 | efficiency / instruction lint | level 2; fail-on-error | pass; one pre-existing non-error README warning |
 | generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pass; minimal/solo/team/regulated declared gates pass |
-| level-2 quality gate | explicit slice/evidence/head binding at `bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e` | pass |
+| level-2 quality gate | explicit slice/evidence/head binding at `5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3` | pass |
 | remote closure | exact-head PR/CI/merge/main verification | pending |
 
 ## Evidence Pack Manifest

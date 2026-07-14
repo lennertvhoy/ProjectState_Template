@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "4cc80f484d6abf8dabeb51e2c9633a00efe610aeca237a32b2abe9c5ac6cd00d"
+      "sha256": "15a169318d94ee4160361ecf9ad1d987365ef89a67069fabb5dfc66e882c481f"
     },
     {
       "kind": "doc",
@@ -19,7 +19,7 @@
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "42aec6bbdad93315f97198b62e902452806432bc614cd6e01ad9a9b8d085e584"
+      "sha256": "340d744fc075cd55418e2da43a59bce97e2d94ea2fac73439485cac31f33d6a7"
     },
     {
       "kind": "doc",
@@ -33,7 +33,7 @@
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "1831d57ddd74cf20bef523b9ae2f2c3d9674a9b1a562f08487a29a66f8b42d29"
+      "sha256": "2a15649cb0a6e8c53ca6dccd669550ddd5d7ef46a4c09b78cbb8abae2fdc35a3"
     }
   ],
   "claims": [
@@ -97,7 +97,7 @@
   },
   "repo": {
     "branch": "fix/workspace-lifecycle-closure",
-    "head": "bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e"
+    "head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",
