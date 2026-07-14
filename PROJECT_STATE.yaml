@@ -82,12 +82,12 @@ current_state:
       repair and the repair workspace itself is physically released.
 
   quality_gates:
-    status: active_with_open_p0
+    status: passing_local_remote_pending_with_open_p0
     product_quality_gate: not_applicable_for_template_root
     runtime_truth_gate: not_applicable_for_template_root
     live_canary_gate: not_applicable_for_template_root
     redteam_gate: passing_for_golden_path_regressions
-    known_bad_events_gate: focused_workspace_lifecycle_regressions_passing_full_closure_pending
+    known_bad_events_gate: workspace_lifecycle_level2_regressions_passing_remote_closure_pending
     authoritative_local_gate:
       script: scripts/statedd_quality_gate.py
       default_slice_level: 2
@@ -111,7 +111,7 @@ current_state:
     evidence: docs/evidence/2026-07-12-golden-path-closure/runtime_identity.json
 
   known_bad_events:
-    status: active_incident_mitigated_local_validation_in_progress
+    status: active_incident_validated_local_remote_pending
     incident: docs/incidents/2026-07-14-workspace-lifecycle-false-cleanup.md
     failure_scan: docs/failure_scans/BL-WORKSPACE-LIFECYCLE-001.md
     classes:
@@ -124,7 +124,7 @@ current_state:
     - BL-WORKSPACE-LIFECYCLE-001
 
   golden_path:
-    status: workspace_lifecycle_defect_reproduced_repair_in_progress
+    status: workspace_lifecycle_repair_validated_local_remote_pending
     delivery_mode: agent_after_green
     evidence: docs/evidence/2026-07-12-golden-path-closure/README.md
     finish_state_machine:
@@ -164,8 +164,6 @@ current_state:
       evidence: docs/evidence/2026-07-12-golden-path-closure/README.md
 
   closure_blockers:
-    - full script, schema, generated-profile, and level-2 local gates
-    - immutable evidence and profile metrics bound to the final PR head
     - exact-head branch and merge-candidate CI
     - merge, direct-main CI, and post-merge equivalence
     - release receipt proving the repair workspace original path absent
@@ -228,7 +226,7 @@ current_state:
 active_problems:
   - id: BL-WORKSPACE-LIFECYCLE-001
     severity: P0
-    status: repair_in_progress
+    status: validated_local_remote_pending
     failure_classes:
       - workflow
       - state_truth

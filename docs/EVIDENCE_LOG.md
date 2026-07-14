@@ -711,3 +711,24 @@
 - as_of: 2026-07-14T17:23:11+02:00
 - Notes: Focused regressions pass locally. Full gates, immutable proof, PR/CI,
   merge, direct-main CI, and final release proof remain pending.
+
+## EV-2026-07-14-002: Workspace lifecycle repair passes authoritative local gate
+
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/README.md
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/manifest.json
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/verification_summary.json
+- Title: Non-recursive managed workspace and physical-release repair validated locally
+- Source/System: executable StateDD level-2 gate
+- Action: Ran the authoritative gate with explicit slice, evidence-directory, and
+  evidence-head binding after restoring those fail-closed CLI inputs.
+- Shows:
+  - 393 script tests and 5 schema-example tests pass
+  - all generated profiles pass their declared conformance gate
+  - strict evidence/redaction and runtime-not-applicable truth pass
+  - Ruff, compile, state/schema, efficiency, and diff hygiene pass
+- Proves:
+  - local implementation and validation truth for BL-WORKSPACE-LIFECYCLE-001
+- Type: test, adversarial, state_update
+- as_of: 2026-07-14T17:50:00+02:00
+- Notes: Exact-head remote CI, merge, direct-main CI, and physical release of the
+  repair clone remain pending; this is not closure-grade.

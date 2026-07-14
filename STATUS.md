@@ -17,7 +17,8 @@
 - The repair centralizes managed clone paths, blocks recursive/arbitrary
   provisioning, inventories unexpected same-origin siblings, and requires a
   physical release receipt before `HANDOFF_COMPLETE`.
-- Focused lifecycle regressions pass locally; full profile, quality, PR, merge,
+- The full level-2 local gate passes, including 393 script tests, generated-profile
+  reproduction, strict evidence, and runtime-not-applicable truth. PR, merge,
   direct-main CI, and repair-workspace release proof remain pending.
 
 ## Acceptance And Freeze
@@ -31,7 +32,7 @@
 ## Open P0/P1 Failures
 
 - [BL-WORKSPACE-LIFECYCLE-001] False isolation release and recursive clone
-  proliferation; repair is implemented with focused tests, not closure-grade yet.
+  proliferation; repair is validated locally but not remotely closure-grade yet.
 
 ## Operating Boundary
 

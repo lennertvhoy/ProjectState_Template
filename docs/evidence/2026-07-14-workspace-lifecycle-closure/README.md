@@ -70,7 +70,7 @@
 | state/schema | `check_state_docs.py` (regular/bootstrap); `statedd_validate_schema.py` | pass |
 | efficiency / instruction lint | level 2; fail-on-error | pass; one pre-existing non-error README warning |
 | generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pass; minimal/solo/team/regulated declared gates pass |
-| level-2 quality gate | `python3 scripts/statedd_quality_gate.py --gate-level 2 ...` | pending |
+| level-2 quality gate | explicit slice/evidence/head binding at `bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e` | pass |
 | remote closure | exact-head PR/CI/merge/main verification | pending |
 
 ## Evidence Pack Manifest
@@ -93,7 +93,7 @@
 ## Closure State At Current Worktree
 
 - Implemented: yes at immutable proof head
-- Validated locally: full scripts/schema/state/efficiency/profile suites pass; level-2 aggregate pending
+- Validated locally: yes; authoritative level-2 aggregate passes
 - Closure-grade: no
 - Remote closure: pending
 - Human product acceptance: pending
@@ -109,8 +109,8 @@
 
 ## Risks / What Remains Partial
 
-- Level-2 aggregate gate, PR CI, merge, direct-main CI, and the repair
-  workspace's own release receipt remain pending.
+- PR CI, merge, direct-main CI, and the repair workspace's own release receipt
+  remain pending.
 - Raw external `git clone` cannot be prevented globally; managed starts and
   handoffs detect immediate same-origin siblings and refuse silently clean status.
 - BL-BROWSER-002 dirty WIP remains preserved and intentionally unintegrated.

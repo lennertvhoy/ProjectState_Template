@@ -70,7 +70,7 @@ This was a workflow and state-truth defect, not a Git feature integration gap.
 - Path: `scripts/test_agent_worktree.py`, `scripts/test_finish_slice.py`,
   `scripts/test_handoff.py`, `scripts/test_quality_gate.py`, and
   `scripts/test_closure_check.py`
-- Status: present_valid locally; full closure and remote CI pending
+- Status: present_valid locally; level-2 gate passes and remote CI/closure is pending
 
 ## Runtime/Live Proof
 
@@ -89,7 +89,7 @@ This was a workflow and state-truth defect, not a Git feature integration gap.
 ## Closure Conditions
 
 - All archived clone work is proven integrated or intentionally not integrated.
-- All workspace lifecycle regressions and full repository/profile gates pass.
+- All workspace lifecycle regressions and full repository/profile gates pass. (met locally)
 - Generated downstream profiles contain the inventory dependency and lifecycle
   invariant.
 - Exact-head PR, branch-head and merge-candidate CI, merge, direct-main CI, and

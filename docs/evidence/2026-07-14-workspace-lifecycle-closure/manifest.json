@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "2c51a16415d0da3260821c2588d797cb6c7c26d6113a0a08e6d203e65a4d2454"
+      "sha256": "4cc80f484d6abf8dabeb51e2c9633a00efe610aeca237a32b2abe9c5ac6cd00d"
     },
     {
       "kind": "doc",
@@ -19,21 +19,21 @@
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "df7ea788a597c65ee2fc9a59f8c19b7ece48618c4a2d24462a71a12447a9f9b8"
+      "sha256": "42aec6bbdad93315f97198b62e902452806432bc614cd6e01ad9a9b8d085e584"
     },
     {
       "kind": "doc",
       "path": "source_hashes.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "c5b1f8fe425ad6f5d149f9cd20e9c90e880f63ce74acc83111dbc51126fc034b"
+      "sha256": "c765d2b7fb113d8b11bcc1f5060f22907670047f787c50ba123582887f678483"
     },
     {
       "kind": "runtime_identity",
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "58594a1cea95f8f54ab6fc0f63720a0be88502576e066f5bba5239a33cf6ca6c"
+      "sha256": "1831d57ddd74cf20bef523b9ae2f2c3d9674a9b1a562f08487a29a66f8b42d29"
     }
   ],
   "claims": [
@@ -97,7 +97,7 @@
   },
   "repo": {
     "branch": "fix/workspace-lifecycle-closure",
-    "head": "32eadcddd50a841016d59aa181eef2aecb90b267"
+    "head": "bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",

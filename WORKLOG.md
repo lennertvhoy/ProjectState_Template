@@ -1064,3 +1064,35 @@
 - The verified copyright owner is not proven; `LICENSE` remains unchanged.
 - Comparative benchmark superiority is not proven.
 - No generic unmeasured core-expansion slice is active.
+
+## 2026-07-14 - Validate BL-WORKSPACE-LIFECYCLE-001 locally
+
+**Type:** p0_incident_repair_local_validation
+**Status:** VALIDATED_LOCALLY_REMOTE_PENDING
+**Backlog item:** [BL-WORKSPACE-LIFECYCLE-001]
+**Proof Head:** 2286367a360d05a25cbf98e906830895a4f560b4
+
+### What changed
+
+- Replaced metadata-only isolation release with a physical, receipt-backed state
+  transition and made `HANDOFF_COMPLETE` consume that proof.
+- Centralized managed clone paths outside the project parent, blocked recursive
+  and arbitrary provisioning, and added same-origin sibling/quarantine inventory.
+- Audited and reversibly archived nine historical sibling clones; all clone work
+  is integrated. Preserved dirty BL-BROWSER-002 WIP for redesign.
+- Ported bounded audit safeguards for false-without-diagnostic gate results and
+  restored explicit strict slice/evidence/head binding to the level-2 gate.
+
+### Verification
+
+- The authoritative level-2 gate passed with 393 script tests, 5 schema-example
+  tests, generated-profile reproduction, strict evidence/redaction, runtime-not-
+  applicable truth, Ruff, compile, state/schema, efficiency, and diff hygiene.
+- Physical integration regressions prove clean clone quarantine, no-force clean
+  worktree removal, reservation absence, and dirty-state retention.
+
+### Remaining boundary
+
+- The P0 remains open through exact-head PR CI, merge, direct-main CI, post-merge
+  verification, remote-branch deletion, and a release receipt proving this repair
+  workspace's original path absent.

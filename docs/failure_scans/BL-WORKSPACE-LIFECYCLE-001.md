@@ -83,6 +83,5 @@
 
 ## Closure Blockers
 
-- Full local quality/profile gates.
 - Exact-head remote CI and direct-main post-merge verification.
 - External release receipt proving the repair clone's original path absent.

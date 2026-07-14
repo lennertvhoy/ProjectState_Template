@@ -3,7 +3,7 @@
   "slice_id": "BL-WORKSPACE-LIFECYCLE-001",
   "proof_head": "2286367a360d05a25cbf98e906830895a4f560b4",
   "proof_tree": "9fb1779b6dcc0cb12218b03c5730310c8e5d1be0",
-  "status": "validated_local_level2_gate_pending",
+  "status": "validated_local_remote_pending",
   "checks": [
     {"command": "python3 -m compileall -q scripts schemas/examples", "result": "pass"},
     {"command": "ruff check scripts", "result": "pass"},
@@ -32,7 +32,11 @@
     "generated_team_golden_path": "pass"
   },
   "generated_profile_phase": "pass_all_declared_profile_gates",
-  "level_2_quality_gate": "pending",
+  "level_2_quality_gate": {
+    "result": "pass",
+    "evidence_head": "bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e",
+    "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-closure --head bd5769a71d1988e3a6cb6ff6c3fd9e5a1660559e"
+  },
   "remote_phase": "pending",
   "runtime": "not_applicable_for_template_root",
   "human_product_acceptance": "pending"
