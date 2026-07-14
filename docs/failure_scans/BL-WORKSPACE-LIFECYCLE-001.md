@@ -79,9 +79,10 @@
 - Required: yes
 - Duration or trigger: the first managed agent slice after merge and the repair
   slice's own final release.
-- Artifact: external finish handoff plus `statedd_workspace_inventory.py` output.
+- Artifact: `docs/evidence/2026-07-14-workspace-lifecycle-closure/finish_slice_handoff.json`
+  plus `statedd_workspace_inventory.py` output.
 
 ## Closure Blockers
 
-- Exact-head remote CI and direct-main post-merge verification.
-- External release receipt proving the repair clone's original path absent.
+- None. Exact-head remote CI, merge, direct-main verification, remote branch
+  deletion, and physical original-path absence are proven by the finish receipt.
