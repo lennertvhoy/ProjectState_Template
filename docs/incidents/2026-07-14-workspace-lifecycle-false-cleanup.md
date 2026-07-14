@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-14
 **Severity:** P0
-**Status:** mitigated
+**Status:** resolved
 **Related backlog:** [BL-WORKSPACE-LIFECYCLE-001]
 **Related failure scan:** `docs/failure_scans/BL-WORKSPACE-LIFECYCLE-001.md`
 **Evidence folder:** `docs/evidence/2026-07-14-workspace-lifecycle-closure`
@@ -47,6 +47,9 @@
    truth.
 5. Tests verified call order and reported booleans, but never asserted that the
    exact original isolation path was absent.
+6. A failed finish preflight initially had no truthful cleanup command for its
+   clean managed clone; explicit recoverable `abandon` now closes that path
+   without claiming post-merge validation.
 
 This was a workflow and state-truth defect, not a Git feature integration gap.
 
@@ -70,7 +73,10 @@ This was a workflow and state-truth defect, not a Git feature integration gap.
 - Path: `scripts/test_agent_worktree.py`, `scripts/test_finish_slice.py`,
   `scripts/test_handoff.py`, `scripts/test_quality_gate.py`, and
   `scripts/test_closure_check.py`
-- Status: present_valid locally; level-2 gate passes and remote CI/closure is pending
+- Status: present_valid; level-2, exact-head PR, merge-candidate, and direct-main
+  CI all pass
+- Abort-path status: clean abandon quarantine and dirty abandon retention pass
+  focused regressions
 
 ## Runtime/Live Proof
 
@@ -103,5 +109,5 @@ This was a workflow and state-truth defect, not a Git feature integration gap.
   same-origin sibling.
 - The dirty BL-BROWSER-002 worktree remains preserved and is not merged because
   its provider assertions and artifact-redaction behavior require redesign.
-- The incident remains open at the remote truth boundary until this repair is
-  merged and direct-main CI is verified.
+- The repair self-verified the new lifecycle: its managed clone was quarantined,
+  the exact original active path is absent, and the release receipt is durable.

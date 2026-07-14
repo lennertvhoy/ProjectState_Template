@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "0c70fc241a373df960e81075ca345701faf55badf865e551354bbc6313dfe513"
+      "sha256": "682e659e0fab84d4b120f1e06524e133ae0be36877b8e0ddd03c128de98c4b1e"
     },
     {
       "kind": "doc",
@@ -19,7 +19,14 @@
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "caaff56c7a87b93e1f69bed96a844c18a985b29f13215ca2697805f9e0172db8"
+      "sha256": "513e094d44a5bcb1e721f4cdcf272d565ee41caff1d7f082ae0bbd9907fff15c"
+    },
+    {
+      "kind": "command_output",
+      "path": "finish_slice_handoff.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e3ecdba9f9ba77e8735d052147d93e8493f7c31eed3f06c8e07f4b5b3960d386"
     },
     {
       "kind": "doc",
@@ -73,6 +80,14 @@
       "status": "validated"
     },
     {
+      "claim": "The exact PR head passed branch and merge-candidate CI, merged, passed direct-main CI, deleted its remote branch, and physically released its managed clone.",
+      "evidence": [
+        "finish_slice_handoff.json"
+      ],
+      "id": "remote-and-physical-closure",
+      "status": "validated"
+    },
+    {
       "claim": "The template root has no application runtime for this local Git/filesystem workflow repair.",
       "evidence": [
         "runtime_identity.json"
@@ -89,6 +104,7 @@
       "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
       "Automated scan found no obvious patterns in clone_audit.json; this does not prove absence of secrets.",
       "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in finish_slice_handoff.json; this does not prove absence of secrets.",
       "Automated scan found no obvious patterns in source_hashes.json; this does not prove absence of secrets.",
       "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets."
     ],

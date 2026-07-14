@@ -547,6 +547,61 @@ def test_dirty_clone_release_is_fail_closed_and_retained() -> None:
         assert (clone / "dirty.txt").read_text(encoding="utf-8") == "preserve\n"
 
 
+def test_clean_failed_clone_can_be_explicitly_abandoned_to_quarantine() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-024", "agent-a1b2")
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "abandon",
+                "--worktree",
+                str(clone),
+                "--reason",
+                "failed_preflight",
+                "--format",
+                "json",
+            ],
+            cwd=repo,
+            expect_code=0,
+        )
+        receipt = json.loads(completed.stdout)
+        schema = json.loads(
+            (ROOT / "schemas" / "isolation_release.schema.json").read_text(encoding="utf-8")
+        )
+        assert validate_json_schema(receipt, schema) == []
+        assert receipt["release_reason"] == "failed_preflight"
+        assert receipt["disposition"] == "quarantined"
+        assert receipt["original_path_absent"] is True
+        assert receipt["recoverable_state_retained"] is True
+        assert not clone.exists()
+        assert Path(receipt["quarantine_path"]).is_dir()
+
+
+def test_dirty_clone_abandon_is_fail_closed_and_retained() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-025", "agent-a1b2")
+        (clone / "dirty.txt").write_text("preserve\n", encoding="utf-8")
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "abandon",
+                "--worktree",
+                str(clone),
+                "--reason",
+                "failed_preflight",
+            ],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(completed.stderr, "abandon requires a clean worktree")
+        assert clone.exists()
+        assert (clone / "dirty.txt").read_text(encoding="utf-8") == "preserve\n"
+
+
 def test_clean_worktree_release_removes_path_and_reservation_without_force() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
@@ -617,6 +672,8 @@ def main() -> int:
         test_unmanaged_same_origin_sibling_blocks_start_and_handoff,
         test_clean_clone_release_quarantines_and_proves_original_absent,
         test_dirty_clone_release_is_fail_closed_and_retained,
+        test_clean_failed_clone_can_be_explicitly_abandoned_to_quarantine,
+        test_dirty_clone_abandon_is_fail_closed_and_retained,
         test_clean_worktree_release_removes_path_and_reservation_without_force,
         test_remote_identity_normalizes_transport_and_credentials,
         test_local_remote_identity_resolves_relative_to_repository,

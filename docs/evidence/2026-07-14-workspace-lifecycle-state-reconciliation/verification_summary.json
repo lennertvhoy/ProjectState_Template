@@ -1,0 +1,37 @@
+{
+  "schema": "statedd.verification_summary.v1",
+  "slice_id": "BL-WORKSPACE-LIFECYCLE-STATE-001",
+  "proof_head": "0671bd65adc47f8148b8fb231f187c093bbd23a2",
+  "proof_tree": "669f37fd65f8a68e55652836734e834d888ed7f7",
+  "status": "validated_local_remote_pending",
+  "scope": "state_reconciliation_and_explicit_clean_clone_abandonment",
+  "checks": [
+    {
+      "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-STATE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation --head 0671bd65adc47f8148b8fb231f187c093bbd23a2",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/check_state_docs.py .",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/check_state_docs.py --bootstrap-gate .",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/statedd_validate_schema.py .",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/statedd_profile_metrics.py --check",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "result": "pass"
+    }
+  ],
+  "implementation_receipt": "docs/evidence/2026-07-14-workspace-lifecycle-closure/finish_slice_handoff.json",
+  "runtime": "not_applicable_for_template_root",
+  "remote_phase": "pending"
+}

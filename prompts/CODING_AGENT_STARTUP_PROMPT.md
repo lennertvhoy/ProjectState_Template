@@ -90,6 +90,8 @@ Always:
   absent before accepting `HANDOFF_COMPLETE`; a released clone is recoverably
   quarantined outside the project parent, while a clean opted-in worktree is
   removed without force
+- if a clone cannot finish, use explicit `abandon --reason ...` quarantine only
+  when clean; never label that path post-merge validated
 - never silently change a confirmed delivery mode or infer a CI-unavailable
   override; force-push and shared-history rewrite remain forbidden
 - leave final product acceptance to the human even when delivery is agent-owned

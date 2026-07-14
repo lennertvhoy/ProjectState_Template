@@ -732,3 +732,26 @@
 - as_of: 2026-07-14T17:50:00+02:00
 - Notes: Exact-head remote CI, merge, direct-main CI, and physical release of the
   repair clone remain pending; this is not closure-grade.
+
+## EV-2026-07-14-003: Workspace lifecycle repair closes remotely and self-releases
+
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/finish_slice_handoff.json
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/manifest.json
+- Title: Exact-head remote closure and physical managed-clone release
+- Source/System: GitHub Actions plus `scripts/statedd_finish_slice.py`
+- Action: Verified the exact PR head and evidence binding, passed branch-head and
+  merge-candidate CI, squash-merged PR #16, passed direct-main CI, verified the
+  post-merge tree, deleted the remote branch, and released the managed clone.
+- Shows:
+  - PR head `400624ae6616403fcc768ceb5ba7a15bf471bb85` passed exact-head CI
+  - merge/default head `d495589cfde23aae73aa83259f2381f78662cff1`
+    passed direct-main CI
+  - the remote feature branch is absent
+  - the managed clone was quarantined and its original active path is absent
+- Proves:
+  - remote, CI, post-merge, branch-cleanup, and physical-release closure for
+    BL-WORKSPACE-LIFECYCLE-001
+- Type: remote_ci, post_merge, release_receipt, state_update
+- as_of: 2026-07-14T18:09:24+02:00
+- Notes: Human product acceptance remains separate; raw non-StateDD clones are
+  detectable at managed boundaries but cannot be globally prohibited.

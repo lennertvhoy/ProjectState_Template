@@ -1096,3 +1096,36 @@
 - The P0 remains open through exact-head PR CI, merge, direct-main CI, post-merge
   verification, remote-branch deletion, and a release receipt proving this repair
   workspace's original path absent.
+
+## 2026-07-14 - Close BL-WORKSPACE-LIFECYCLE-001 remotely
+
+**Type:** p0_incident_remote_closure
+**Status:** COMPLETE
+**Backlog item:** [BL-WORKSPACE-LIFECYCLE-001]
+**Reconciliation slice:** [BL-WORKSPACE-LIFECYCLE-STATE-001]
+
+### Verified remote truth
+
+- PR #16 bound proof head `5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3`
+  to final PR head `400624ae6616403fcc768ceb5ba7a15bf471bb85`.
+- Branch-head and merge-candidate CI passed in run `29348194033`.
+- Squash merge `d495589cfde23aae73aa83259f2381f78662cff1` became
+  the verified default-branch head and direct-main CI passed in run `29348333932`.
+- Post-merge equivalence passed and the remote feature branch is absent.
+
+### Physical closure
+
+- The repaired finish path quarantined its own managed clone and returned a typed
+  receipt proving the exact original active path absent.
+- A later failed preflight exposed and closed the remaining abort-path gap: clean
+  failed/superseded/cancelled clones can be explicitly abandoned to recoverable
+  quarantine without a false post-merge-validation claim; dirty clones are retained.
+- No unmanaged same-origin sibling clone remains beside the integration checkout.
+- Nine historical sibling clones remain reversibly archived outside the project
+  parent; dirty BL-BROWSER-002 worktree state remains intentionally preserved.
+
+### Stable boundary
+
+- The P0 and incident quality freeze are closed; template-maintenance mode resumes.
+- Raw external clones cannot be globally blocked, but managed starts and every
+  handoff now detect immediate same-origin sibling clones and fail closed.

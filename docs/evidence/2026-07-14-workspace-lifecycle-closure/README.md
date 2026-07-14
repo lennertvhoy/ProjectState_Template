@@ -71,11 +71,12 @@
 | efficiency / instruction lint | level 2; fail-on-error | pass; one pre-existing non-error README warning |
 | generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pass; minimal/solo/team/regulated declared gates pass |
 | level-2 quality gate | explicit slice/evidence/head binding at `5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3` | pass |
-| remote closure | exact-head PR/CI/merge/main verification | pending |
+| remote closure | PR #16 exact-head/merge-candidate CI, squash merge, direct-main CI, post-merge verification, branch deletion | pass; `finish_slice_handoff.json` |
 
 ## Evidence Pack Manifest
 
 - Manifest: `manifest.json`
+- Finish receipt: `finish_slice_handoff.json`
 - Redaction status: checked with limits; automated scan passed and manual review completed
 
 ## Runtime Identity
@@ -94,8 +95,8 @@
 
 - Implemented: yes at immutable proof head
 - Validated locally: yes; authoritative level-2 aggregate passes
-- Closure-grade: no
-- Remote closure: pending
+- Closure-grade: yes for this engineering slice
+- Remote closure: complete
 - Human product acceptance: pending
 
 ## Human Override
@@ -104,13 +105,11 @@
 - Rule overridden: not applicable
 - Requested by: not applicable
 - Reason accepted: not applicable
-- Remaining risk: full local and remote closure boundaries remain pending
-- Still closure-grade: no
+- Remaining risk: raw external clones remain detectable rather than globally preventable
+- Still closure-grade: yes
 
 ## Risks / What Remains Partial
 
-- PR CI, merge, direct-main CI, and the repair workspace's own release receipt
-  remain pending.
 - Raw external `git clone` cannot be prevented globally; managed starts and
   handoffs detect immediate same-origin siblings and refuse silently clean status.
 - BL-BROWSER-002 dirty WIP remains preserved and intentionally unintegrated.

@@ -60,3 +60,7 @@ the configured manual boundary. Human product acceptance remains separate.
 original isolation path is absent. Clean managed clones move to quarantine outside
 the project parent; clean opted-in worktrees are removed without force. Dirty or
 contradictory state remains active for recovery.
+
+If a clone is explicitly cancelled after a failed preflight, use
+`statedd_agent_worktree.py abandon --reason <failed_preflight|superseded|operator_cancelled>`;
+it quarantines only a clean managed clone and never claims post-merge validation.

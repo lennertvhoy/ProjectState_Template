@@ -32,7 +32,11 @@
     "branch": {"type": "string", "minLength": 1},
     "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "reservation_ref": {"type": "string"},
-    "reservation_absent": {"type": "boolean", "const": true}
+    "reservation_absent": {"type": "boolean", "const": true},
+    "release_reason": {
+      "type": "string",
+      "enum": ["failed_preflight", "superseded", "operator_cancelled"]
+    }
   },
   "allOf": [
     {

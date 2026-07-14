@@ -39,7 +39,17 @@
     "evidence_head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3",
     "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-closure --head 5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3"
   },
-  "remote_phase": "pending",
+  "remote_phase": {
+    "result": "pass",
+    "pr_number": 16,
+    "final_pr_head": "400624ae6616403fcc768ceb5ba7a15bf471bb85",
+    "merge_commit": "d495589cfde23aae73aa83259f2381f78662cff1",
+    "branch_and_merge_candidate_ci_run": "29348194033",
+    "main_ci_run": "29348333932",
+    "post_merge_verified": true,
+    "remote_branch_absent": true,
+    "isolation_original_path_absent": true
+  },
   "runtime": "not_applicable_for_template_root",
   "human_product_acceptance": "pending"
 }

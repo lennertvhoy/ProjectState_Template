@@ -57,6 +57,7 @@ truth_rules:
     - agent_after_green_requires_exact_head_remote_and_main_ci_proof
     - agent_workspaces_have_one_managed_non_recursive_lifecycle
     - handoff_complete_requires_physical_isolation_path_absence
+    - clean_aborted_clones_require_explicit_recoverable_quarantine
     - tracked_evidence_never_predicts_provider_created_merge_identity
     - human_product_acceptance_remains_separate_from_delivery_automation
 
@@ -130,6 +131,7 @@ invariants:
   - "Remote branch cleanup and isolation release happen only after direct default-branch CI and post-merge verification pass."
   - "Agent clones live only under the per-user managed workspace root; agent workspaces cannot recursively provision clones or worktrees."
   - "HANDOFF_COMPLETE requires a closed-world release receipt and direct proof that the original isolation path is absent."
+  - "A clean failed or cancelled clone can be explicitly abandoned to recoverable quarantine without claiming post-merge validation; dirty clones remain active."
 
 governance:
   evidence_standard: browser_verification_or_test_output
