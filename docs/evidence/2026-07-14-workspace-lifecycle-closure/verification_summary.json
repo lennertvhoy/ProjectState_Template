@@ -1,0 +1,15 @@
+{
+  "schema": "statedd.workspace_lifecycle_verification.v1",
+  "captured_at": "2026-07-14T17:23:11+02:00",
+  "status": "focused_tests_passed_full_gate_pending",
+  "focused_tests": {
+    "command": "python3 -m pytest -q scripts/test_agent_worktree.py scripts/test_finish_slice.py scripts/test_handoff.py scripts/test_quality_gate.py scripts/test_closure_check.py",
+    "result": "pass",
+    "test_count": 69
+  },
+  "full_script_suite": "pending",
+  "generated_profiles": "pending",
+  "quality_gate_level_2": "pending",
+  "remote_closure": "pending",
+  "runtime": "not_applicable"
+}

@@ -33,11 +33,12 @@ description: "Close a slice through confirmed delivery policy, remote truth, and
      external handoff path
    - Let that command own PR readiness, exact-head branch and merge-candidate CI,
      review/thread/merge-state checks, remote finalization, merge, direct main CI,
-     post-merge verification, cleanup, and isolation release
+     post-merge verification, cleanup, and verified physical isolation release
    - For `human_merge`, stop after exact-head remote closure and report that the
      configured policy intentionally requires the human merge
-   - Keep merge commit, default-branch head, main-CI run, and cleanup result in the
-     external handoff. Do not open a metadata PR to put future identities in tracked files.
+   - Keep merge commit, default-branch head, main-CI run, and the closed-world
+     release receipt in the external handoff. Do not open a metadata PR to put
+     future identities in tracked files.
 3. If any local or remote gate fails:
    - Report the exact state-machine transition and observed blocker
    - Retain the branch and isolation state for recovery
@@ -54,3 +55,8 @@ description: "Close a slice through confirmed delivery policy, remote truth, and
 finalizer, exact expected-head merge, direct main CI, post-merge verifier, cleanup,
 and external handoff all pass. Under `human_merge`, the handoff truthfully stops at
 the configured manual boundary. Human product acceptance remains separate.
+
+`HANDOFF_COMPLETE` is forbidden unless the release receipt proves the exact
+original isolation path is absent. Clean managed clones move to quarantine outside
+the project parent; clean opted-in worktrees are removed without force. Dirty or
+contradictory state remains active for recovery.

@@ -248,6 +248,20 @@ class PostMergeProof:
     payload: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class IsolationRelease:
+    released: bool
+    isolation_mode: str
+    disposition: str
+    original_path: str
+    original_path_absent: bool
+    quarantine_path: str | None
+    recoverable_state_retained: bool
+    branch: str
+    head: str
+    reservation_absent: bool
+
+
 class RemoteProvider(Protocol):
     def pull_request(self, number: int) -> PullRequestSnapshot: ...
 
@@ -281,14 +295,14 @@ class LocalActions(Protocol):
         output: Path,
     ) -> PostMergeProof: ...
 
-    def release_isolation(self) -> None: ...
+    def release_isolation(self) -> IsolationRelease: ...
 
     def record_remote_failure(self, operation: str, diagnostic: str) -> None: ...
 
 
 @dataclass
 class FinishReport:
-    schema: str = "statedd.finish_slice_handoff.v1"
+    schema: str = "statedd.finish_slice_handoff.v2"
     generated_at: str = ""
     status: str = "NOT_STARTED"
     transitions: list[str] = field(default_factory=list)
@@ -312,6 +326,11 @@ class FinishReport:
     post_merge_verified: bool = False
     remote_branch_absent: bool = False
     isolation_released: bool = False
+    isolation_mode: str | None = None
+    isolation_disposition: str | None = None
+    isolation_original_path: str | None = None
+    isolation_original_path_absent: bool = False
+    isolation_quarantine_path: str | None = None
     recoverable_state_retained: bool = True
     failure: str | None = None
 
@@ -655,21 +674,88 @@ class RepositoryActions:
         _require(command, self.root, "post-merge verifier", timeout=600)
         return PostMergeProof(output=output, payload=_load_json_file(output))
 
-    def release_isolation(self) -> None:
+    def release_isolation(self) -> IsolationRelease:
         orchestrator = self.root / "scripts" / "statedd_agent_worktree.py"
-        _require(
+        output = _require(
             [
                 sys.executable,
                 str(orchestrator),
-                "handoff",
+                "release",
                 "--worktree",
                 str(self.root),
-                "--release",
                 "--validated",
+                "--format",
+                "json",
             ],
             self.root,
             "isolation release",
             timeout=300,
+        )
+        try:
+            receipt = _strict_json(output, Path("<isolation-release-stdout>"))
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise FinishRefused(f"isolation release emitted invalid JSON: {exc}") from exc
+        expected_keys = {
+            "schema",
+            "generated_at",
+            "released",
+            "isolation_mode",
+            "disposition",
+            "original_path",
+            "original_path_absent",
+            "quarantine_path",
+            "recoverable_state_retained",
+            "branch",
+            "head",
+            "reservation_ref",
+            "reservation_absent",
+        }
+        if not isinstance(receipt, dict) or set(receipt) != expected_keys:
+            raise FinishRefused("isolation release receipt is not a closed-world v1 object")
+        if receipt.get("schema") != "statedd.isolation_release.v1":
+            raise FinishRefused("isolation release receipt schema is unsupported")
+        if receipt.get("released") is not True or receipt.get("original_path_absent") is not True:
+            raise FinishRefused("isolation release receipt does not prove original-path absence")
+        if receipt.get("reservation_absent") is not True:
+            raise FinishRefused("isolation release receipt does not prove reservation absence")
+        if receipt.get("original_path") != str(self.root) or self.root.exists():
+            raise FinishRefused("isolation release path binding or physical absence check failed")
+        if not self.truth:
+            raise FinishRefused("isolation release occurred before local truth was established")
+        if receipt.get("branch") != self.truth.branch or receipt.get("head") != self.truth.head:
+            raise FinishRefused("isolation release receipt branch/HEAD differs from validated local truth")
+        mode = receipt.get("isolation_mode")
+        disposition = receipt.get("disposition")
+        quarantine = receipt.get("quarantine_path")
+        retained = receipt.get("recoverable_state_retained")
+        if mode == "clone":
+            if disposition != "quarantined" or not isinstance(quarantine, str):
+                raise FinishRefused("clone release must prove a quarantine disposition")
+            quarantine_path = Path(quarantine)
+            if (
+                not quarantine_path.is_absolute()
+                or quarantine_path.is_symlink()
+                or not quarantine_path.is_dir()
+            ):
+                raise FinishRefused("clone quarantine path is absent or unsafe")
+            if retained is not True:
+                raise FinishRefused("clone quarantine must report recoverable state retained")
+        elif mode == "worktree":
+            if disposition != "removed" or quarantine is not None or retained is not False:
+                raise FinishRefused("worktree release receipt has contradictory disposition fields")
+        else:
+            raise FinishRefused(f"unsupported released isolation mode: {mode!r}")
+        return IsolationRelease(
+            released=True,
+            isolation_mode=mode,
+            disposition=disposition,
+            original_path=receipt["original_path"],
+            original_path_absent=True,
+            quarantine_path=quarantine,
+            recoverable_state_retained=retained,
+            branch=receipt["branch"],
+            head=receipt["head"],
+            reservation_absent=True,
         )
 
     def record_remote_failure(self, operation: str, diagnostic: str) -> None:
@@ -1296,9 +1382,30 @@ class FinishSlice:
                 self.local.record_remote_failure("verified remote slice-branch deletion", str(exc))
                 raise
             self.report.remote_branch_absent = True
-            self.local.release_isolation()
+            release = self.local.release_isolation()
+            if not release.released or not release.original_path_absent:
+                raise FinishRefused("physical isolation-path release is not proven")
+            if release.original_path != str(self.truth.root):
+                raise FinishRefused("isolation release receipt is bound to a different repository path")
+            if release.branch != self.truth.branch or release.head != self.truth.head:
+                raise FinishRefused("isolation release receipt differs from validated branch/HEAD")
+            if not release.reservation_absent:
+                raise FinishRefused("isolation reservation absence is not proven")
+            if release.isolation_mode == "clone":
+                if release.disposition != "quarantined" or not release.quarantine_path:
+                    raise FinishRefused("clone release lacks a quarantine proof")
+            elif release.isolation_mode == "worktree":
+                if release.disposition != "removed" or release.quarantine_path is not None:
+                    raise FinishRefused("worktree release lacks a removal proof")
+            else:
+                raise FinishRefused("release receipt contains an unsupported isolation mode")
             self.report.isolation_released = True
-            self.report.recoverable_state_retained = False
+            self.report.isolation_mode = release.isolation_mode
+            self.report.isolation_disposition = release.disposition
+            self.report.isolation_original_path = release.original_path
+            self.report.isolation_original_path_absent = release.original_path_absent
+            self.report.isolation_quarantine_path = release.quarantine_path
+            self.report.recoverable_state_retained = release.recoverable_state_retained
             self._transition(Stage.HANDOFF_COMPLETE)
             return 0
         except FinishRefused as exc:

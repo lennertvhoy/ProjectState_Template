@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-12T18:08:58+02:00
-  updated_by: integration_agent_recording_human_cto_acceptance
+  updated_at: 2026-07-14T17:23:11+02:00
+  updated_by: integration_agent_repairing_workspace_lifecycle_incident
   version: "statedd-template-v5"
 
 workflow:
@@ -75,19 +75,19 @@ current_state:
 
   execution_mode:
     status: observed
-    mode: template-maintenance
+    mode: quality_freeze
     notes: |
-      No P0/P1 implementation item remains active. The template is stable except
-      for real defects, compatibility migrations, measured improvements, and
-      optional evidence-gated research.
+      BL-WORKSPACE-LIFECYCLE-001 is the only selected work. Unrelated feature
+      work is frozen until local and remote closure prove the workspace lifecycle
+      repair and the repair workspace itself is physically released.
 
   quality_gates:
-    status: passing
+    status: active_with_open_p0
     product_quality_gate: not_applicable_for_template_root
     runtime_truth_gate: not_applicable_for_template_root
     live_canary_gate: not_applicable_for_template_root
     redteam_gate: passing_for_golden_path_regressions
-    known_bad_events_gate: passing_for_golden_path_regressions
+    known_bad_events_gate: focused_workspace_lifecycle_regressions_passing_full_closure_pending
     authoritative_local_gate:
       script: scripts/statedd_quality_gate.py
       default_slice_level: 2
@@ -111,17 +111,20 @@ current_state:
     evidence: docs/evidence/2026-07-12-golden-path-closure/runtime_identity.json
 
   known_bad_events:
-    status: covered_by_regressions
-    failure_scan: docs/failure_scans/BL-GOLDEN-PATH-CLOSURE-001.md
+    status: active_incident_mitigated_local_validation_in_progress
+    incident: docs/incidents/2026-07-14-workspace-lifecycle-false-cleanup.md
+    failure_scan: docs/failure_scans/BL-WORKSPACE-LIFECYCLE-001.md
     classes:
       - workflow
       - state_truth
+      - observability
       - brittleness
 
-  open_p0_failures: []
+  open_p0_failures:
+    - BL-WORKSPACE-LIFECYCLE-001
 
   golden_path:
-    status: operational_complete
+    status: workspace_lifecycle_defect_reproduced_repair_in_progress
     delivery_mode: agent_after_green
     evidence: docs/evidence/2026-07-12-golden-path-closure/README.md
     finish_state_machine:
@@ -144,9 +147,10 @@ current_state:
       - branch-head, merge-candidate, and direct-main CI runs
       - post-merge result, branch deletion, and isolation release
     notes: |
-      This target state is non-canonical on a feature branch and becomes
-      canonical only when the confirmed finish command merges that exact head.
-      Failure leaves the prior default-branch state and recovery data intact.
+      The accepted baseline's merge and CI sequencing remains operational, but
+      its isolation-release transition was false: it removed only reservation
+      metadata while retaining directories. This repair is non-canonical on a
+      feature branch until exact-head remote closure and direct-main CI pass.
 
   completed_capabilities:
     integrated_statedd_baseline:
@@ -156,10 +160,15 @@ current_state:
       status: implemented_opt_in
       evidence: docs/evidence/2026-07-11-okf-interoperability/README.md
     agent_owned_remote_closure:
-      status: implemented_and_locally_validated
+      status: defect_reopened_workspace_release_transition
       evidence: docs/evidence/2026-07-12-golden-path-closure/README.md
 
-  closure_blockers: []
+  closure_blockers:
+    - full script, schema, generated-profile, and level-2 local gates
+    - immutable evidence and profile metrics bound to the final PR head
+    - exact-head branch and merge-candidate CI
+    - merge, direct-main CI, and post-merge equivalence
+    - release receipt proving the repair workspace original path absent
 
   remaining_boundaries:
     human_product_acceptance: pending
@@ -181,6 +190,10 @@ current_state:
   parallel_agent_support:
     status: active
     orchestrator: scripts/statedd_agent_worktree.py
+    workspace_inventory: scripts/statedd_workspace_inventory.py
+    managed_clone_location: per_user_state_root_outside_project_parent
+    nested_agent_provisioning: forbidden
+    handoff_complete_release_proof: exact_original_path_absence_required
     integration_owner: one agent per slice branch
     independent_agent_isolation: full_clone
     trusted_local_optional_isolation: worktree_with_same_identity_opt_in
@@ -193,8 +206,8 @@ current_state:
   project:
     name: StateDD_Template
     type: documentation_and_workflow_template
-    lifecycle_stage: operational_template_maintenance
-    truth_summary: operational_core_complete
+    lifecycle_stage: quality_freeze_incident_repair
+    truth_summary: workspace_lifecycle_p0_repair_in_progress
 
   runtime_identity:
     status: not_applicable_for_template_root
@@ -210,6 +223,16 @@ current_state:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    current_slice: docs/evidence/2026-07-12-cto-architecture-acceptance
+    current_slice: docs/evidence/2026-07-14-workspace-lifecycle-closure
 
-active_problems: []
+active_problems:
+  - id: BL-WORKSPACE-LIFECYCLE-001
+    severity: P0
+    status: repair_in_progress
+    failure_classes:
+      - workflow
+      - state_truth
+      - observability
+    incident: docs/incidents/2026-07-14-workspace-lifecycle-false-cleanup.md
+    failure_scan: docs/failure_scans/BL-WORKSPACE-LIFECYCLE-001.md
+    evidence: docs/evidence/2026-07-14-workspace-lifecycle-closure/README.md

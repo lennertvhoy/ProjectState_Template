@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -14,11 +15,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ORCHESTRATOR = ROOT / "scripts" / "statedd_agent_worktree.py"
 
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+from statedd_workspace_inventory import normalize_remote  # noqa: E402
+from statedd_validate_schema import validate_json_schema  # noqa: E402
+
 
 def run(args: list[str], *, cwd: Path, expect_code: int | None = None) -> subprocess.CompletedProcess[str]:
+    environment = os.environ.copy()
+    environment.setdefault(
+        "STATEDD_WORKSPACE_ROOT",
+        str(cwd.parent / ".statedd-test-workspaces"),
+    )
     completed = subprocess.run(
         [sys.executable, str(ORCHESTRATOR), *args],
         cwd=cwd,
+        env=environment,
         capture_output=True,
         text=True,
         check=False,
@@ -116,6 +129,8 @@ def test_default_start_creates_independent_clone() -> None:
         clone_common_raw = Path(git(clone, "rev-parse", "--git-common-dir"))
         clone_common = clone_common_raw if clone_common_raw.is_absolute() else (clone / clone_common_raw).resolve()
         assert clone_common != source_common
+        assert ".statedd-test-workspaces" in clone.parts
+        assert clone.parent.name == "active"
         alternates = clone_common / "objects" / "info" / "alternates"
         assert not alternates.exists() or not alternates.read_text(encoding="utf-8").strip()
 
@@ -426,6 +441,158 @@ def test_dirty_close_cannot_reach_push_path() -> None:
         assert (clone / "dirty.txt").exists()
 
 
+def test_nested_clone_provisioning_is_blocked() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-018", "agent-a1b2")
+        completed = run(
+            ["--repo", str(clone), "start", "--slice-id", "BL-NESTED-001"],
+            cwd=clone,
+            expect_code=1,
+        )
+        assert_contains(completed.stderr, "Nested agent isolation is forbidden")
+
+
+def test_arbitrary_sibling_clone_target_is_blocked() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        target = repo.parent / "surprise-copy"
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "start",
+                "--slice-id",
+                "BL-TEST-019",
+                "--target",
+                str(target),
+            ],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(completed.stderr, "Arbitrary clone targets are forbidden")
+        assert not target.exists()
+
+
+def test_unmanaged_same_origin_sibling_blocks_start_and_handoff() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        sibling = repo.parent / "manual-copy"
+        git(repo.parent, "clone", str(repo.parent / "origin.git"), str(sibling))
+        start = run(
+            ["--repo", str(repo), "start", "--slice-id", "BL-TEST-020"],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(start.stderr, "unmanaged same-origin sibling clone")
+        handoff = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "statedd_handoff.py"), "--repo", str(repo), "--no-include-listeners"],
+            cwd=repo,
+            env={**os.environ, "STATEDD_WORKSPACE_ROOT": str(repo.parent / ".statedd-test-workspaces")},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert handoff.returncode == 1, handoff.stdout + handoff.stderr
+        assert_contains(handoff.stdout, str(sibling))
+        assert_contains(handoff.stdout, "handoff is refused")
+
+
+def test_clean_clone_release_quarantines_and_proves_original_absent() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-021", "agent-a1b2")
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "release",
+                "--worktree",
+                str(clone),
+                "--validated",
+                "--format",
+                "json",
+            ],
+            cwd=repo,
+            expect_code=0,
+        )
+        receipt = json.loads(completed.stdout)
+        schema = json.loads(
+            (ROOT / "schemas" / "isolation_release.schema.json").read_text(encoding="utf-8")
+        )
+        assert validate_json_schema(receipt, schema) == []
+        assert receipt["released"] is True
+        assert receipt["disposition"] == "quarantined"
+        assert receipt["original_path"] == str(clone)
+        assert receipt["original_path_absent"] is True
+        assert receipt["recoverable_state_retained"] is True
+        assert not clone.exists()
+        assert Path(receipt["quarantine_path"]).is_dir()
+        listed = run(["--repo", str(repo), "list"], cwd=repo, expect_code=0)
+        assert_contains(listed.stdout, receipt["quarantine_path"])
+
+
+def test_dirty_clone_release_is_fail_closed_and_retained() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        clone = start_clone(repo, "BL-TEST-022", "agent-a1b2")
+        (clone / "dirty.txt").write_text("preserve\n", encoding="utf-8")
+        completed = run(
+            ["--repo", str(repo), "release", "--worktree", str(clone), "--validated"],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert_contains(completed.stderr, "release requires a clean worktree")
+        assert clone.exists()
+        assert (clone / "dirty.txt").read_text(encoding="utf-8") == "preserve\n"
+
+
+def test_clean_worktree_release_removes_path_and_reservation_without_force() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        worktree = start_worktree(repo, "BL-TEST-023", "agent-a1b2")
+        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "release",
+                "--worktree",
+                str(worktree),
+                "--validated",
+                "--format",
+                "json",
+            ],
+            cwd=repo,
+            expect_code=0,
+        )
+        receipt = json.loads(completed.stdout)
+        assert receipt["disposition"] == "removed"
+        assert receipt["original_path_absent"] is True
+        assert receipt["reservation_absent"] is True
+        assert not worktree.exists()
+        assert context["reservation_ref"] not in git(repo, "show-ref")
+
+
+def test_remote_identity_normalizes_transport_and_credentials() -> None:
+    repo = Path("/tmp/example-repo")
+    expected = "remote:github.com/example/StateDD_Template"
+    assert normalize_remote(
+        "git@github.com:example/StateDD_Template.git", repo=repo
+    ) == expected
+    assert normalize_remote(
+        "ssh://git@github.com/example/StateDD_Template.git", repo=repo
+    ) == expected
+    assert normalize_remote(
+        "https://secret-token@github.com/example/StateDD_Template.git", repo=repo
+    ) == expected
+
+
+def test_local_remote_identity_resolves_relative_to_repository() -> None:
+    repo = Path("/tmp/example/repo")
+    assert normalize_remote("../origin.git", repo=repo) == "local:/tmp/example/origin"
+
+
 def main() -> int:
     tests = [
         test_default_start_creates_independent_clone,
@@ -440,6 +607,19 @@ def main() -> int:
         test_cleanup_is_report_only_for_stale_and_dirty_worktrees,
         test_missing_worktree_is_reported_not_pruned,
         test_existing_audit_does_not_treat_clone_context_dirt_as_shared_worktree_dirt,
+        test_forged_context_unknown_field_is_rejected,
+        test_copied_context_from_another_clone_is_rejected,
+        test_symlinked_context_path_is_rejected,
+        test_close_requires_explicit_remote_mutation_authorization,
+        test_dirty_close_cannot_reach_push_path,
+        test_nested_clone_provisioning_is_blocked,
+        test_arbitrary_sibling_clone_target_is_blocked,
+        test_unmanaged_same_origin_sibling_blocks_start_and_handoff,
+        test_clean_clone_release_quarantines_and_proves_original_absent,
+        test_dirty_clone_release_is_fail_closed_and_retained,
+        test_clean_worktree_release_removes_path_and_reservation_without_force,
+        test_remote_identity_normalizes_transport_and_credentials,
+        test_local_remote_identity_resolves_relative_to_repository,
     ]
     failures = 0
     for test in tests:

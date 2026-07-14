@@ -4,7 +4,7 @@ statedd_mode: "template-maintenance"
 repo_mode: "template-maintenance"
 statedd_version: "statedd-template-v5"
 initialized_on: 2026-04-26
-last_updated: 2026-07-12
+last_updated: 2026-07-14
 project: "StateDD_Template"
 ---
 
@@ -51,6 +51,13 @@ non-authoritative task pack is available.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
 - **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove identity, common-directory ownership, metadata writability, fsck, synchronization, and the permitted isolation mode. A failed mandatory check latches the session read-only until repair and explicit restart.
 - **Isolation Invariant:** Containers and independent agents use full clones; linked worktrees require explicit trusted-local same-identity opt-in. No automatic permission repair, force cleanup, pruning, reset, or garbage collection.
+- **Managed Workspace Lifecycle Invariant:** Agent clones are created only by
+  `scripts/statedd_agent_worktree.py` under the per-user managed workspace root;
+  agent workspaces never provision nested agents. Every handoff inventories
+  same-origin sibling clones, and `HANDOFF_COMPLETE` requires a verified release
+  receipt proving the original isolation path is absent. Dirty or unproven state
+  is retained; clean clones are quarantined outside the project parent and clean
+  opted-in worktrees are removed without force.
 - **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones, return commits and verification summaries, do not edit global StateDD truth, and do not push the final slice.
 - **Standing Delivery Policy Invariant:** Bootstrap confirms `human_merge` or `agent_after_green` once. The latter delegates branch/commit/push/PR, exact-head merge, direct-main CI, and verified cleanup to the integration agent; the former keeps merge manual. Agents never change the mode silently; force-push/history rewrite and product acceptance remain human boundaries, and CI-unavailable merge needs a separate explicit override.
 ## Gate Levels

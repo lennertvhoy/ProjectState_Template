@@ -2,6 +2,19 @@
 
 All notable StateDD template changes are tracked here.
 
+## Unreleased
+
+- BL-WORKSPACE-LIFECYCLE-001: Replaced metadata-only isolation release with a
+  verified physical lifecycle: centrally managed non-recursive clone paths,
+  same-origin sibling inventory, clean-clone quarantine, no-force clean-worktree
+  removal, and a strict release receipt required by `HANDOFF_COMPLETE`.
+- Added regressions for nested/arbitrary provisioning, manual sibling clones,
+  dirty retention, physical path absence, reservation cleanup, transport-neutral
+  origin identity, contradictory finish receipts, fail-closed gate aggregation,
+  and non-incidental handoff evidence selection.
+- Audited and reversibly archived nine historical sibling clones; all clone work
+  is integrated. Preserved the dirty BL-BROWSER-002 prototype for redesign.
+
 ## statedd-template-v4 - 2026-06-23
 
 - Added `VERSION` as the canonical StateDD template spec-version source.

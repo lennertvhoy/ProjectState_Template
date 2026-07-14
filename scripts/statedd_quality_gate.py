@@ -532,11 +532,14 @@ class QualityGate:
             ("Diff Whitespace", self.check_diff_whitespace),
         ]
 
+        all_passed = True
         for name, check in checks:
             try:
-                check()
+                if check() is False:
+                    all_passed = False
             except Exception as e:
                 self.failures.append(f"{name} check crashed: {e}")
+                all_passed = False
 
         print("\n" + "=" * 50)
         if self.warnings:
@@ -544,7 +547,9 @@ class QualityGate:
             for w in self.warnings:
                 print(f"  ⚠ {w}")
 
-        if self.failures:
+        if self.failures or not all_passed:
+            if not self.failures:
+                self.failures.append("One or more quality checks returned failure without a diagnostic")
             print("Failures:")
             for f in self.failures:
                 print(f"  ✗ {f}")

@@ -57,6 +57,11 @@ for a post-merge metadata PR without asking tracked files to predict the future.
   than merged again.
 - Branch deletion and isolation release happen only after direct default-branch CI
   and content-preserving post-merge verification pass.
+- Isolation release is a physical, verified state transition rather than deletion
+  of a reservation ref. The finish state machine consumes a closed-world receipt
+  proving the exact original path is absent. Clean managed clones are quarantined
+  outside the project parent; clean opted-in worktrees are removed without force;
+  dirty or unproven state is retained.
 - Canonical live state stays stable and semantic; volatile provider identities live
   in GitHub, immutable evidence, history, or the external handoff.
 

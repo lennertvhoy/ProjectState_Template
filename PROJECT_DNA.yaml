@@ -55,6 +55,8 @@ truth_rules:
     - non_trivial_fixes_require_anti_brittleness_review
     - confirmed_delivery_policy_governs_merge_and_remote_branch_cleanup
     - agent_after_green_requires_exact_head_remote_and_main_ci_proof
+    - agent_workspaces_have_one_managed_non_recursive_lifecycle
+    - handoff_complete_requires_physical_isolation_path_absence
     - tracked_evidence_never_predicts_provider_created_merge_identity
     - human_product_acceptance_remains_separate_from_delivery_automation
 
@@ -126,6 +128,8 @@ invariants:
   - "Confirmed agent_after_green owns exact-head merge and post-merge closure; human_merge keeps the merge manual."
   - "Tracked PR proof ends at the immutable proof tree; provider-created merge and main-CI identities live in external handoff truth."
   - "Remote branch cleanup and isolation release happen only after direct default-branch CI and post-merge verification pass."
+  - "Agent clones live only under the per-user managed workspace root; agent workspaces cannot recursively provision clones or worktrees."
+  - "HANDOFF_COMPLETE requires a closed-world release receipt and direct proof that the original isolation path is absent."
 
 governance:
   evidence_standard: browser_verification_or_test_output
@@ -145,6 +149,7 @@ governance:
   closure_audit: scripts/statedd_audit.py
   finish_slice: scripts/statedd_finish_slice.py
   finish_slice_handoff_schema: schemas/finish_slice_handoff.schema.json
+  workspace_inventory: scripts/statedd_workspace_inventory.py
   worktree_guard: scripts/statedd_worktree_guard.py
   brittleness_check: scripts/statedd_brittleness_check.py
   health_summary: scripts/statedd_doctor.py

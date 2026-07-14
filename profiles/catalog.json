@@ -90,11 +90,12 @@
       ]
     },
     "collaboration": {
-      "version": 2,
+      "version": 3,
       "depends_on": ["proof"],
       "conflicts_with": [],
       "capabilities": [
         "parallel_worktree_isolation",
+        "managed_agent_workspace_lifecycle",
         "remote_closure",
         "agent_owned_remote_closure",
         "post_merge_verification",
@@ -104,10 +105,12 @@
       "validation": ["remote_closure_contract", "finish_slice_contract", "post_merge_contract", "worktree_contract"],
       "assets": [
         "scripts/statedd_agent_worktree.py",
+        "scripts/statedd_workspace_inventory.py",
         "scripts/statedd_remote_closure_finalizer.py",
         "scripts/statedd_finish_slice.py",
         "scripts/statedd_post_merge_verify.py",
         "schemas/finish_slice_handoff.schema.json",
+        "schemas/isolation_release.schema.json",
         "prompts/CTO_SESSION_PROMPT.md",
         "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
         "prompts/SUBAGENT_REVIEW_TEMPLATE.md",

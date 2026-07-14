@@ -111,3 +111,23 @@ def test_handoff_fails_closed_on_malformed_active_agent_context(tmp_path: Path) 
             "--no-include-listeners",
         ]
     ) == 1
+
+
+def test_dirty_classification_never_uses_incidental_latest_evidence(tmp_path: Path) -> None:
+    evidence = tmp_path / "docs" / "evidence" / "unrelated"
+    evidence.mkdir(parents=True)
+    (evidence / "README.md").write_text(
+        "## Worktree Dirty File Classification\n",
+        encoding="utf-8",
+    )
+
+    assert statedd_handoff.dirty_classification_status(
+        tmp_path,
+        [" M feature.py"],
+        None,
+    ) == "no"
+    assert statedd_handoff.dirty_classification_status(
+        tmp_path,
+        [" M feature.py"],
+        evidence,
+    ) == "yes"

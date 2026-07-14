@@ -47,6 +47,13 @@ Delivery policy and remote closure
 - external closure sidecar: /absolute/path | not_written
 - remote slice branch deleted after verification: yes | no | not_applicable
 - isolation released after verification: yes | no | not_applicable
+- isolation mode: clone | worktree | not_applicable
+- isolation disposition: quarantined | removed | retained | not_applicable
+- original isolation path absent: yes | no | not proven
+- quarantine path: /absolute/path | not_applicable | not proven
+- managed active clones: ... | none | not proven
+- quarantined inactive clones: ... | none | not proven
+- unmanaged same-origin sibling clones: ... | none | not proven
 - follow-up metadata PR required: no | yes (explain defect)
 - human Git action required: no | yes (explain confirmed policy boundary)
 

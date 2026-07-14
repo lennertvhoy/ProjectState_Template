@@ -2,7 +2,7 @@
 
 **Product:** StateDD_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-07-12
+**Updated At:** 2026-07-14
 
 ## Purpose
 
@@ -11,6 +11,9 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
+- [BL-WORKSPACE-LIFECYCLE-001] Repair false isolation release, recursive clone
+  provisioning, unmanaged sibling-copy blind spots, and finish/handoff cleanup
+  truth; prove every retained feature is integrated or deliberately preserved.
 
 ## NEXT
 

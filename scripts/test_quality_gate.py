@@ -179,3 +179,28 @@ def test_failure_output_preserves_stdout_and_stderr() -> None:
         assert gate.check_tests() is False
         assert "assertion failed" in gate.failures[0]
         assert "runner warning" in gate.failures[0]
+
+
+def test_run_fails_when_a_check_returns_false_without_diagnostic() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        gate = QualityGate(Path(tmp))
+        method_names = [
+            "check_compile",
+            "check_profile_policy",
+            "check_profile_validations",
+            "check_profile_metrics",
+            "check_tests",
+            "check_static_analysis",
+            "check_state_files",
+            "check_schemas",
+            "check_evidence",
+            "check_acceptance_freezes",
+            "check_instruction_lint",
+            "check_efficiency",
+            "check_diff_whitespace",
+        ]
+        for name in method_names:
+            setattr(gate, name, lambda: True)
+        gate.check_tests = lambda: False  # type: ignore[method-assign]
+        assert gate.run() == 1
+        assert gate.failures == ["One or more quality checks returned failure without a diagnostic"]
