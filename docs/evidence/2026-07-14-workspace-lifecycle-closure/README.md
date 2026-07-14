@@ -4,8 +4,8 @@
 **Date:** 2026-07-14  
 **Agent:** integration coding agent  
 **Branch:** `fix/workspace-lifecycle-closure`  
-**HEAD:** 040f0aebf17f27c127f7b46c24a81f432a65b169
-**Proof head:** 040f0aebf17f27c127f7b46c24a81f432a65b169
+**HEAD:** 2286367a360d05a25cbf98e906830895a4f560b4
+**Proof head:** 2286367a360d05a25cbf98e906830895a4f560b4
 
 ## Claims
 
@@ -64,24 +64,24 @@
 | Check | Command / Path | Result |
 | --- | --- | --- |
 | focused lifecycle suite | `python3 -m pytest -q scripts/test_agent_worktree.py scripts/test_finish_slice.py scripts/test_handoff.py scripts/test_quality_gate.py scripts/test_closure_check.py` | pass locally |
-| full script suite | `python3 -m pytest scripts/ -q` | pass; 391 tests collected |
+| full script suite | `python3 -m pytest scripts/ -q` | pass; 393 tests collected |
 | schema examples | `python3 -m pytest schemas/examples/ -q` | pass; 5 tests |
 | compile / lint | `python3 -m compileall -q scripts schemas/examples`; `ruff check scripts` | pass |
 | state/schema | `check_state_docs.py` (regular/bootstrap); `statedd_validate_schema.py` | pass |
 | efficiency / instruction lint | level 2; fail-on-error | pass; one pre-existing non-error README warning |
-| generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pending final regeneration after evidence metadata |
+| generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pass; minimal/solo/team/regulated declared gates pass |
 | level-2 quality gate | `python3 scripts/statedd_quality_gate.py --gate-level 2 ...` | pending |
 | remote closure | exact-head PR/CI/merge/main verification | pending |
 
 ## Evidence Pack Manifest
 
-- Manifest: `manifest.json` (pending generation after immutable proof commit)
-- Redaction status: manual review pending final artifact generation
+- Manifest: `manifest.json`
+- Redaction status: checked with limits; automated scan passed and manual review completed
 
 ## Runtime Identity
 
 - Runtime required: no
-- Artifact: `runtime_identity.json` (pending final capture)
+- Artifact: `runtime_identity.json`
 - Endpoint/process ownership: not applicable; template root has no application runtime
 
 ## Browser Verification
@@ -93,7 +93,7 @@
 ## Closure State At Current Worktree
 
 - Implemented: yes at immutable proof head
-- Validated locally: full scripts/schema/state/efficiency suites pass; final profile regeneration and level-2 aggregate pending
+- Validated locally: full scripts/schema/state/efficiency/profile suites pass; level-2 aggregate pending
 - Closure-grade: no
 - Remote closure: pending
 - Human product acceptance: pending
@@ -109,8 +109,8 @@
 
 ## Risks / What Remains Partial
 
-- Full repository/profile gates, immutable proof hashes, PR CI, merge, direct-main
-  CI, and the repair workspace's own release receipt remain pending.
+- Level-2 aggregate gate, PR CI, merge, direct-main CI, and the repair
+  workspace's own release receipt remain pending.
 - Raw external `git clone` cannot be prevented globally; managed starts and
   handoffs detect immediate same-origin siblings and refuse silently clean status.
 - BL-BROWSER-002 dirty WIP remains preserved and intentionally unintegrated.

@@ -1,7 +1,7 @@
 {
   "schema": "statedd.proof_source_hashes.v1",
-  "proof_head": "040f0aebf17f27c127f7b46c24a81f432a65b169",
-  "proof_tree": "9c89f3bc15a74a7d25ea9eb81ad0ad195b209f2d",
+  "proof_head": "2286367a360d05a25cbf98e906830895a4f560b4",
+  "proof_tree": "9fb1779b6dcc0cb12218b03c5730310c8e5d1be0",
   "algorithm": "sha256",
   "files": {
     "profiles/catalog.json": "66cb1856de8dea34b39c4dccb5184262a0e13ded8937c76cd17f61e6da66da18",
@@ -12,13 +12,13 @@
     "scripts/statedd_closure_check.py": "d1c43c72f824012c4f7f50f0609ffd66ff83b6a0e0012bb31622176f70b9fb05",
     "scripts/statedd_finish_slice.py": "3b09217b158f46cfd5ee8a671cf699a6031c3d3ad1d1a65c5ad97c7552b88b13",
     "scripts/statedd_handoff.py": "e995dfb58eff7bcb6969a0d4aafed52adf8875e6e94efa37679a52a63eb8144a",
-    "scripts/statedd_quality_gate.py": "cacdba4cc9e0dff7e6ab1645dc725cfe3205e927bd2987906e36113dfa0864f6",
+    "scripts/statedd_quality_gate.py": "3b8bde911d1d0e9abcece2a8803948428d798d04fba7c3270a492fec59b5a104",
     "scripts/statedd_workspace_inventory.py": "5f7cdd0a0a31c0bf79e562c2d81a90793df9a8d483040567f28b5570abfd9dce",
     "scripts/test_agent_worktree.py": "aa4ce06d853c6154a6a13acb4d322121f5ee08dfd994b7e973944641c12a818e",
     "scripts/test_closure_check.py": "9adef50354c9b75fe084e30ae3b7ed8e99706cf6b60e727baa0e4c84af35e219",
     "scripts/test_finish_slice.py": "2e4e346fb1a9af081ae79d6d94077c24759cff0341b18c24da0bfd29ce2f0184",
     "scripts/test_golden_path.py": "3773b5a8d63d419b6eaa0a1d5cb52c4b5bc83cf0f64346466682a0b6ec20af86",
     "scripts/test_handoff.py": "a719b37e08d017722ab53e23f7f3875065147b10279c6070ad449ea6c256d88c",
-    "scripts/test_quality_gate.py": "a0a22b94ea3de33ff1071d6adae8acf8136c11b98ed430dfc1c6b95960117a21"
+    "scripts/test_quality_gate.py": "ee085640f29372a5ccfb20f6d78cb2e0c842ba2e4dc4f24422c9ea1fd4ba2bd7"
   }
 }
