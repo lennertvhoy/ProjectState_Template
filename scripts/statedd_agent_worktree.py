@@ -5,6 +5,8 @@
 worktrees remain available only through explicit same-machine opt-in after the
 central Git safety preflight passes. ``cleanup`` is intentionally report-only:
 this tool never force-removes, prunes, resets, or deletes affected Git state.
+``abandon`` explicitly quarantines a clean managed clone without claiming that
+post-merge validation occurred.
 
 Exit codes:
   0 = requested diagnostic/operation succeeded
@@ -1047,6 +1049,52 @@ def cmd_release(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_abandon(args: argparse.Namespace) -> int:
+    """Recoverably quarantine a clean managed clone that will not finish."""
+    worktree = Path(os.path.abspath(args.worktree))
+    code, context, error = load_agent_context(worktree)
+    if code:
+        print(error, file=sys.stderr)
+        return 2
+    try:
+        verify_agent_context_binding(worktree, context)
+        if context["isolation_mode"] != "clone":
+            raise MutationBlocked(
+                "abandon supports managed clones only; non-clone isolation is retained"
+            )
+        changed = dirty_files(worktree)
+        if changed:
+            raise MutationBlocked(
+                "abandon requires a clean worktree; isolation retained: " + ", ".join(changed)
+            )
+        safety_code, report, safety_error = safety_for_context(
+            worktree,
+            context,
+            getattr(args, "restart_session", False),
+        )
+        if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+            blockers = report.get("decision", {}).get("blockers", []) if report else []
+            raise MutationBlocked(
+                "abandon Git-safety preflight failed: "
+                + "; ".join(str(item) for item in blockers or [safety_error or "no diagnostic"])
+            )
+        head = required_command(["git", "rev-parse", "HEAD"], worktree, "abandon HEAD inspection")
+        require_mutation_permit(
+            worktree,
+            "recoverable isolation abandonment",
+            authorization=_release_authorization(context, head),
+        )
+        receipt = _release_clone(worktree, context, head)
+        receipt["release_reason"] = args.reason
+        if not receipt["original_path_absent"] or not receipt["released"]:
+            raise MutationBlocked("abandon receipt cannot prove physical isolation-path absence")
+        emit_release_receipt(receipt, getattr(args, "format", "human"))
+        return 0
+    except (MutationBlocked, RuntimeError, OSError) as exc:
+        print(f"Isolation abandon refused: {exc}", file=sys.stderr)
+        return 1
+
+
 def cmd_close(args: argparse.Namespace) -> int:
     worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
     code, context, error = load_agent_context(worktree)
@@ -1327,6 +1375,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     release.add_argument("--restart-session", action="store_true")
     release.add_argument("--format", choices=("human", "json"), default="human")
 
+    abandon = subparsers.add_parser(
+        "abandon",
+        help="Recoverably quarantine a clean managed clone without claiming post-merge validation",
+    )
+    abandon.add_argument("--worktree", required=True)
+    abandon.add_argument(
+        "--reason",
+        required=True,
+        choices=("failed_preflight", "superseded", "operator_cancelled"),
+    )
+    abandon.add_argument("--restart-session", action="store_true")
+    abandon.add_argument("--format", choices=("human", "json"), default="human")
+
     close = subparsers.add_parser(
         "close",
         help="Deprecated pre-merge push/finalizer only; use statedd_finish_slice.py",
@@ -1357,6 +1418,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_handoff(args)
         if args.command == "release":
             return cmd_release(args)
+        if args.command == "abandon":
+            return cmd_abandon(args)
         if args.command == "close":
             return cmd_close(args)
         if args.command == "cleanup":

@@ -33,7 +33,7 @@ step_by_step:
     action: "For agent_after_green, run the authoritative finish command. For human_merge, stop after exact-head remote closure and report the deliberate manual boundary. Never change the confirmed mode silently."
     command: "python3 scripts/statedd_finish_slice.py --root . --pr-number <pr> --expected-pr-head <sha> --delivery-policy PROJECT_STATE.yaml --evidence-folder <folder> --merge-method squash --handoff-output <external.json>"
     expected: "For agent_after_green, exit 0 only after PR readiness, exact-head CI/review/merge checks, remote finalizer, expected-head merge, direct main CI, post-merge equivalence, external handoff, remote-branch deletion, and a release receipt proving the original isolation path is absent"
-    failure: "Retain recoverable branch and isolation state; report the last observed state-machine transition and resume idempotently after repair"
+    failure: "Retain recoverable branch and isolation state; report the last observed state-machine transition and resume idempotently after repair. If the clone is deliberately cancelled, explicit abandon may quarantine it only when clean and must not claim post-merge validation."
     notes: "The external sidecar owns merge commit, default-branch head, main CI, and cleanup truth. Clean full clones move to the recoverable quarantine outside the project parent; clean opted-in worktrees are removed without force. Dirty or unproven isolation is retained and HANDOFF_COMPLETE is refused."
 expected_outputs:
   - "Authoritative local quality gate passes"

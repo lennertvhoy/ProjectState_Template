@@ -186,6 +186,8 @@ current_state:
     managed_clone_location: per_user_state_root_outside_project_parent
     nested_agent_provisioning: forbidden
     handoff_complete_release_proof: exact_original_path_absence_required
+    clean_failed_clone_disposition: explicit_recoverable_abandon
+    dirty_failed_clone_disposition: retained_active
     integration_owner: one agent per slice branch
     independent_agent_isolation: full_clone
     trusted_local_optional_isolation: worktree_with_same_identity_opt_in

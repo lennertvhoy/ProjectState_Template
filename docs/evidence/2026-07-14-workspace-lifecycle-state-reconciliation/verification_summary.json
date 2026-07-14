@@ -4,7 +4,7 @@
   "proof_head": "7e23b43458744d0c8cffcadbd874bf97fc03f0f5",
   "proof_tree": "d1b96ed5ca25f5d09821ffd4333f81b7fc265781",
   "status": "validated_local_remote_pending",
-  "scope": "state_and_evidence_reconciliation_only",
+  "scope": "state_reconciliation_and_explicit_clean_clone_abandonment",
   "checks": [
     {
       "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-STATE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation --head 7e23b43458744d0c8cffcadbd874bf97fc03f0f5",

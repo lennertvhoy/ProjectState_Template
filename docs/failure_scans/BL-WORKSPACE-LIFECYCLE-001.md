@@ -85,4 +85,5 @@
 ## Closure Blockers
 
 - None. Exact-head remote CI, merge, direct-main verification, remote branch
-  deletion, and physical original-path absence are proven by the finish receipt.
+  deletion, physical original-path absence, and explicit failed-clone abandonment
+  are proven by the finish receipt and regressions.

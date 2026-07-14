@@ -1117,6 +1117,9 @@
 
 - The repaired finish path quarantined its own managed clone and returned a typed
   receipt proving the exact original active path absent.
+- A later failed preflight exposed and closed the remaining abort-path gap: clean
+  failed/superseded/cancelled clones can be explicitly abandoned to recoverable
+  quarantine without a false post-merge-validation claim; dirty clones are retained.
 - No unmanaged same-origin sibling clone remains beside the integration checkout.
 - Nine historical sibling clones remain reversibly archived outside the project
   parent; dirty BL-BROWSER-002 worktree state remains intentionally preserved.

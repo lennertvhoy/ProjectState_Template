@@ -47,6 +47,9 @@
    truth.
 5. Tests verified call order and reported booleans, but never asserted that the
    exact original isolation path was absent.
+6. A failed finish preflight initially had no truthful cleanup command for its
+   clean managed clone; explicit recoverable `abandon` now closes that path
+   without claiming post-merge validation.
 
 This was a workflow and state-truth defect, not a Git feature integration gap.
 
@@ -72,6 +75,8 @@ This was a workflow and state-truth defect, not a Git feature integration gap.
   `scripts/test_closure_check.py`
 - Status: present_valid; level-2, exact-head PR, merge-candidate, and direct-main
   CI all pass
+- Abort-path status: clean abandon quarantine and dirty abandon retention pass
+  focused regressions
 
 ## Runtime/Live Proof
 

@@ -5,14 +5,14 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "d6a3f6149d066e1fc43df2063bff145d9ba38899d06ac99e7cb4f774d8a2c4db"
+      "sha256": "b91e399461c34e33a4b7068dec79b8e0da60e52d9f4c20ba2863a05c29335cf0"
     },
     {
       "kind": "command_output",
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "9386e654ffa12fe26e722c4b71a644e3533c03e07c508cecf99405bc4d8fc4fa"
+      "sha256": "bdca3328ac393d95e7d39228cf9ca498382e1c93c26fae99276b24e585cbd750"
     },
     {
       "kind": "runtime_identity",
@@ -24,7 +24,7 @@
   ],
   "claims": [
     {
-      "claim": "Canonical live state reflects the already-verified workspace lifecycle closure without implementation changes.",
+      "claim": "Canonical live state reflects the verified workspace lifecycle closure.",
       "evidence": [
         "README.md",
         "verification_summary.json"
@@ -33,7 +33,16 @@
       "status": "validated"
     },
     {
-      "claim": "The template root has no application runtime for this state-only reconciliation.",
+      "claim": "Clean failed, superseded, or cancelled managed clones can be explicitly quarantined without claiming post-merge validation; dirty clones remain active.",
+      "evidence": [
+        "README.md",
+        "verification_summary.json"
+      ],
+      "id": "explicit-clean-clone-abandonment",
+      "status": "validated"
+    },
+    {
+      "claim": "The template root has no application runtime for this Git/filesystem lifecycle repair.",
       "evidence": [
         "runtime_identity.json"
       ],

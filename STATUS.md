@@ -15,6 +15,8 @@
   reconciled, while dirty BL-BROWSER-002 WIP remains safely preserved.
 - Managed clones now live under a per-user state root, nested/arbitrary starts are
   rejected, and handoff cannot complete without physical original-path absence.
+- Clean failed/superseded/cancelled clones have an explicit recoverable `abandon`
+  quarantine path; dirty clones remain active and untouched.
 - Level-2 local gates, exact-head PR CI, merge-candidate CI, direct-`main` CI,
   post-merge verification, branch deletion, and managed-clone quarantine passed.
 
