@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-07-14T18:16:42+02:00",
+  "captured_at": "2026-07-14T18:19:16+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "c33cf178e07a1d407600c31a04798406ae51614e",
+  "git_head": "7e23b43458744d0c8cffcadbd874bf97fc03f0f5",
   "in_container": false,
   "kernel": "7.1.3-200.fc44.x86_64",
   "limits": [],
@@ -14,7 +14,7 @@
   "python": "3.14.6",
   "repo": {
     "branch": "agent/reconcile-workspace-lifecycle-state",
-    "head": "c33cf178e07a1d407600c31a04798406ae51614e",
+    "head": "7e23b43458744d0c8cffcadbd874bf97fc03f0f5",
     "path": ".",
     "status_porcelain": "",
     "worktree_clean": true
@@ -24,5 +24,5 @@
     "required": false
   },
   "schema": "statedd.runtime_identity.v2",
-  "timestamp": "2026-07-14T16:16:42.044633Z"
+  "timestamp": "2026-07-14T16:19:16.093447Z"
 }

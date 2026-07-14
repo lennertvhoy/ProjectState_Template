@@ -4,8 +4,8 @@
 **Date:** 2026-07-14
 **Agent:** integration state-reconciliation agent
 **Branch:** `agent/reconcile-workspace-lifecycle-state`
-**HEAD:** c33cf178e07a1d407600c31a04798406ae51614e
-**Proof head:** c33cf178e07a1d407600c31a04798406ae51614e
+**HEAD:** 7e23b43458744d0c8cffcadbd874bf97fc03f0f5
+**Proof head:** 7e23b43458744d0c8cffcadbd874bf97fc03f0f5
 
 ## Claims
 
@@ -20,9 +20,10 @@
 
 ## Verification Log
 
-- `python3 scripts/statedd_quality_gate.py --gate-level 1` — pass, including 393
-  script tests, 5 schema-example tests, compile, Ruff, state/schema, profile,
-  efficiency, instruction, evidence-log, and diff checks.
+- Authoritative level-2 gate with explicit slice/evidence binding to proof head
+  `7e23b43458744d0c8cffcadbd874bf97fc03f0f5` — pass, including 393 script
+  tests, 5 schema-example tests, compile, Ruff, state/schema, strict evidence,
+  profile, efficiency, instruction, and diff checks.
 - `python3 scripts/check_state_docs.py .` — pass.
 - `python3 scripts/check_state_docs.py --bootstrap-gate .` — pass.
 - Strict implementation evidence and the typed finish receipt validate.
