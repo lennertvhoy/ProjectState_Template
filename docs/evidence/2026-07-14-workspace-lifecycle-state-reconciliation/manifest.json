@@ -5,14 +5,14 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "ef8ea339c895ab72f99a7b1c6ef8cacbf55542b42273dbdc481066ee2ff6399b"
+      "sha256": "d6a3f6149d066e1fc43df2063bff145d9ba38899d06ac99e7cb4f774d8a2c4db"
     },
     {
       "kind": "command_output",
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "7c2079144f90aa1d103ce6d534696f6d3ebcbd4c69028af0053252559aebc861"
+      "sha256": "9386e654ffa12fe26e722c4b71a644e3533c03e07c508cecf99405bc4d8fc4fa"
     },
     {
       "kind": "runtime_identity",
@@ -63,5 +63,5 @@
     "status": "not_applicable"
   },
   "schema": "statedd.evidence_manifest.v1",
-  "slice_id": "BL-WORKSPACE-LIFECYCLE-001"
+  "slice_id": "BL-WORKSPACE-LIFECYCLE-STATE-001"
 }

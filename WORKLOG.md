@@ -1102,6 +1102,7 @@
 **Type:** p0_incident_remote_closure
 **Status:** COMPLETE
 **Backlog item:** [BL-WORKSPACE-LIFECYCLE-001]
+**Reconciliation slice:** [BL-WORKSPACE-LIFECYCLE-STATE-001]
 
 ### Verified remote truth
 

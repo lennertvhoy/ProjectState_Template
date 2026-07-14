@@ -1,6 +1,6 @@
 # Evidence: Workspace Lifecycle State Reconciliation
 
-**Slice:** [BL-WORKSPACE-LIFECYCLE-001] Reconcile verified closure into canonical live state
+**Slice:** [BL-WORKSPACE-LIFECYCLE-STATE-001] Reconcile verified closure into canonical live state
 **Date:** 2026-07-14
 **Agent:** integration state-reconciliation agent
 **Branch:** `agent/reconcile-workspace-lifecycle-state`
