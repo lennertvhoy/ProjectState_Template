@@ -1,13 +1,13 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 040f0aebf17f27c127f7b46c24a81f432a65b169",
+  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit fb2013739393f1666a66ff459d35824a71a871e9",
   "profiles": [
     {
-      "actual_tokens": 88642,
+      "actual_tokens": 88684,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5417,
-          "estimated_tokens": 5634,
+          "actual_tokens": 5455,
+          "estimated_tokens": 5682,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -28,7 +28,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 22529
+          "total_bytes": 22719
         },
         "ci_diagnosis": {
           "actual_tokens": 7526,
@@ -136,7 +136,7 @@
           "total_bytes": 10730
         }
       },
-      "estimated_tokens": 94907,
+      "estimated_tokens": 94955,
       "generated_file_count": 39,
       "profile": "minimal",
       "quality_gate": {
@@ -153,14 +153,14 @@
       "startup_bytes": 8886,
       "startup_estimated_tokens": 2223,
       "startup_file_count": 4,
-      "total_bytes": 379574
+      "total_bytes": 379764
     },
     {
-      "actual_tokens": 173577,
+      "actual_tokens": 173567,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5427,
-          "estimated_tokens": 5641,
+          "actual_tokens": 5465,
+          "estimated_tokens": 5689,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -181,7 +181,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 22556
+          "total_bytes": 22746
         },
         "ci_diagnosis": {
           "actual_tokens": 7536,
@@ -288,7 +288,7 @@
           "total_bytes": 10760
         }
       },
-      "estimated_tokens": 186902,
+      "estimated_tokens": 186903,
       "generated_file_count": 73,
       "profile": "solo",
       "quality_gate": {
@@ -306,14 +306,14 @@
       "startup_bytes": 8916,
       "startup_estimated_tokens": 2230,
       "startup_file_count": 4,
-      "total_bytes": 747500
+      "total_bytes": 747505
     },
     {
-      "actual_tokens": 231936,
+      "actual_tokens": 231926,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5431,
-          "estimated_tokens": 5641,
+          "actual_tokens": 5469,
+          "estimated_tokens": 5689,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -334,7 +334,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 22559
+          "total_bytes": 22749
         },
         "ci_diagnosis": {
           "actual_tokens": 7540,
@@ -441,7 +441,7 @@
           "total_bytes": 10763
         }
       },
-      "estimated_tokens": 251812,
+      "estimated_tokens": 251813,
       "generated_file_count": 87,
       "profile": "team",
       "quality_gate": {
@@ -460,14 +460,14 @@
       "startup_bytes": 8919,
       "startup_estimated_tokens": 2230,
       "startup_file_count": 4,
-      "total_bytes": 1007122
+      "total_bytes": 1007127
     },
     {
-      "actual_tokens": 232002,
+      "actual_tokens": 231992,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5446,
-          "estimated_tokens": 5683,
+          "actual_tokens": 5484,
+          "estimated_tokens": 5731,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -488,7 +488,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 22722
+          "total_bytes": 22912
         },
         "ci_diagnosis": {
           "actual_tokens": 7555,
@@ -595,7 +595,7 @@
           "total_bytes": 10921
         }
       },
-      "estimated_tokens": 251926,
+      "estimated_tokens": 251927,
       "generated_file_count": 87,
       "profile": "regulated",
       "quality_gate": {
@@ -615,7 +615,7 @@
       "startup_bytes": 9077,
       "startup_estimated_tokens": 2271,
       "startup_file_count": 4,
-      "total_bytes": 1007570
+      "total_bytes": 1007575
     }
   ],
   "provenance": {
@@ -709,8 +709,8 @@
     "scripts/statedd_workspace_inventory.py",
     "scripts/statedd_worktree_guard.py"
   ],
-  "source_tree_sha256": "35233af1c8336beebd504417eacc5c774d376ef29819a534854a3bfa00116c61",
-  "template_commit": "040f0aebf17f27c127f7b46c24a81f432a65b169",
+  "source_tree_sha256": "60981121365fe202d728c8a9feaff9ef6d503912f0d37bec774d357d08c3224b",
+  "template_commit": "fb2013739393f1666a66ff459d35824a71a871e9",
   "template_version": "statedd-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
