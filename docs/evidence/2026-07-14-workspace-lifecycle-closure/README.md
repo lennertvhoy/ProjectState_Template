@@ -1,9 +1,9 @@
 # Evidence: Managed Workspace Lifecycle Closure
 
-**Slice:** [BL-WORKSPACE-LIFECYCLE-001] Repair false isolation release and clone proliferation  
-**Date:** 2026-07-14  
-**Agent:** integration coding agent  
-**Branch:** `fix/workspace-lifecycle-closure`  
+**Slice:** [BL-WORKSPACE-LIFECYCLE-001] Repair false isolation release and clone proliferation
+**Date:** 2026-07-14
+**Agent:** integration coding agent
+**Branch:** `fix/workspace-lifecycle-closure`
 **HEAD:** 2286367a360d05a25cbf98e906830895a4f560b4
 **Proof head:** 2286367a360d05a25cbf98e906830895a4f560b4
 
