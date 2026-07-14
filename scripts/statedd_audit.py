@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Machine-checkable StateDD audit command.
+"""Machine-checkable StateSpec audit command.
 
-This command converts StateDD from "please be disciplined" into
+This command converts StateSpec from "please be disciplined" into
 "the repo rejects sloppy closure". It checks required state files,
 evidence hygiene, git state, and schema ownership. Run it before
 handoff, before switching to operating mode, and in CI.
@@ -290,7 +290,7 @@ def extract_status_path(line: str) -> str:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Machine-checkable StateDD audit command",
+        description="Machine-checkable StateSpec audit command",
     )
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to audit")
     parser.add_argument(
@@ -974,13 +974,13 @@ def check_schema_validation(repo: Path, result: AuditResult) -> None:
         return
     code, stdout, stderr = run_command([sys.executable, str(script), str(repo), "--quiet"], repo)
     if code == 0:
-        result.add("schema_validation", "pass", "StateDD schema validation passed")
+        result.add("schema_validation", "pass", "StateSpec schema validation passed")
         return
     combined = f"{stdout}\n{stderr}".strip()
     result.add(
         "schema_validation",
         "fail",
-        f"StateDD schema validation failed ({code}): {combined[:600]}",
+        f"StateSpec schema validation failed ({code}): {combined[:600]}",
     )
 
 

@@ -25,7 +25,7 @@ SCHEMA_PATH = ROOT / "schemas" / "browser_verification.schema.json"
 ARTIFACT_NAME = "browser_verification.json"
 RUNTIME_IDENTITY_NAME = "runtime_identity.json"
 
-# Import the small JSON Schema subset from the StateDD validator instead of
+# Import the small JSON Schema subset from the StateSpec validator instead of
 # duplicating it. Keep the script runnable on its own by handling an absent
 # validator gracefully in development.
 try:
@@ -359,7 +359,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             require_mutation_permit(
                 evidence_dir,
-                f"StateDD browser-verification {args.command}",
+                f"StateSpec browser-verification {args.command}",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:

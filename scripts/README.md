@@ -1,4 +1,4 @@
-# StateDD Executable Controls
+# StateSpec Executable Controls
 
 Read `AGENTS.md` and follow its declared read order before using these tools.
 This page is orientation only; executable help, profile manifests, tests, and

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.browser_verification.v1",
-  "title": "StateDD browser verification",
+  "title": "StateSpec browser verification",
   "type": "object",
   "required": ["schema", "captured_at", "provider", "runtime_identity", "checks", "artifacts", "limits"],
   "additionalProperties": true,

@@ -6,7 +6,7 @@ cheapest_proof: "Schema-valid Git safety report permits the requested mode"
 escalate_when: "Any metadata, fsck, synchronization, identity, or isolation check fails"
 description: "Run the centralized fail-closed Git mutation preflight"
 when_to_use:
-  - "Before repository or StateDD mutation in an existing Git repo"
+  - "Before repository or StateSpec mutation in an existing Git repo"
   - "Before provisioning an agent worktree or clone"
   - "After repairing a latched Git safety failure"
 required_inputs:

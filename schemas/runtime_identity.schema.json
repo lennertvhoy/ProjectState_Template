@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.runtime_identity.v1",
-  "title": "StateDD runtime_identity.json",
+  "title": "StateSpec runtime_identity.json",
   "type": "object",
   "required": ["schema", "repo", "runtime", "checks", "limits"],
   "additionalProperties": true,

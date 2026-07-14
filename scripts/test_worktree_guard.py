@@ -47,7 +47,7 @@ def init_repo(root: Path, *, with_origin: bool = True) -> Path:
     repo.mkdir()
     git(repo, "init", "-b", "main")
     git(repo, "config", "user.email", "statedd@example.invalid")
-    git(repo, "config", "user.name", "StateDD Test")
+    git(repo, "config", "user.name", "StateSpec Test")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     git(repo, "add", "README.md")
     git(repo, "commit", "-m", "initial")

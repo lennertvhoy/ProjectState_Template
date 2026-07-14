@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interactive bootstrap wizard for new StateDD repos.
+"""Interactive bootstrap wizard for new StateSpec repos.
 
 This is an MVP front-end that asks the minimum strategic questions, then runs
 `scripts/init_template.py new` with the chosen profile. It stays stdlib-only and
@@ -24,7 +24,7 @@ VALID_PROFILES = {"minimal", "solo", "team", "regulated"}
 
 
 def ask_interactive() -> dict[str, str]:
-    print("StateDD Bootstrap Wizard")
+    print("StateSpec Bootstrap Wizard")
     print("Answer a few strategic questions to scaffold an honest baseline.")
     print()
 
@@ -144,7 +144,7 @@ the real runtime, deployment, and project truth are investigated and recorded.
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Interactive StateDD bootstrap wizard")
+    parser = argparse.ArgumentParser(description="Interactive StateSpec bootstrap wizard")
     parser.add_argument("--target", default=".", help="Directory to initialize")
     parser.add_argument("--answers", help="Path to a JSON file with wizard answers")
     parser.add_argument("--dry-run", action="store_true", help="Print plan without writing files")
@@ -174,7 +174,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         require_mutation_permit(
             target,
-            "StateDD bootstrap wizard notes write",
+            "StateSpec bootstrap wizard notes write",
             allow_non_git=True,
         )
     except MutationBlocked as exc:

@@ -1,7 +1,7 @@
 {
   "$schema": "statedd.markdown_contract.v1",
   "$id": "statedd.evidence_readme_contract.v1",
-  "title": "StateDD evidence README contract",
+  "title": "StateSpec evidence README contract",
   "contract_type": "markdown_contract",
   "required_headings": [
     "## Claims",

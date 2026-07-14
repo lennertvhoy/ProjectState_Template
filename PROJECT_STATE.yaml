@@ -1,9 +1,14 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-07-11T16:50:00+02:00
+  updated_at: 2026-07-14T22:30:00+02:00
   updated_by: agent
   version: "statedd-template-v5"
+
+terminology:
+  public_name: StateSpec Template
+  legacy_name: StateDD Template
+  compatibility: additive_aliases
 
 workflow:
   repo_role: template_repository
@@ -11,7 +16,7 @@ workflow:
   repo_mode: template-maintenance
   template_maintenance:
     status: observed
-    purpose: maintain the reusable StateDD template repository
+    purpose: maintain the reusable StateSpec template repository
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
@@ -175,7 +180,7 @@ current_state:
     notes: Prior propagation checks did not cover Git metadata ownership, active write probes, mandatory synchronization failure, or clone independence.
 
   residual_risks:
-    - current StateDD-managed worktree creation is disabled by policy while BL-GIT-ISOLATION-001 is open
+    - current StateSpec-managed worktree creation is disabled by policy while BL-GIT-ISOLATION-001 is open
     - existing linked worktrees share the same common Git object database and must be reported, not automatically removed
     - workflow read-only enforcement cannot constrain arbitrary external shell writes without an independently proven OS-level read-only boundary
     - downstream repos must opt into or upgrade to this template revision before quality firewall guidance applies there
@@ -223,7 +228,7 @@ current_state:
     status: observed
     mode: template-maintenance
     summary: |
-      This repository maintains the reusable StateDD template. Generated and
+      This repository maintains the reusable StateSpec template. Generated and
       adopted downstream repositories still start in bootstrap mode; the root
       template repo tracks template-maintenance truth.
 
@@ -463,11 +468,11 @@ current_state:
       audit_command:
         status: observed
         path: scripts/statedd_audit.py
-        summary: Machine-checkable StateDD closure audit, including runtime identity artifact recognition and schema validation.
+        summary: Machine-checkable StateSpec closure audit, including runtime identity artifact recognition and schema validation.
       schema_validation:
         status: observed
         path: scripts/statedd_validate_schema.py
-        summary: Stdlib-only schema-backed validation for StateDD state, evidence README, runtime identity, and final handoff contracts.
+        summary: Stdlib-only schema-backed validation for StateSpec state, evidence README, runtime identity, and final handoff contracts.
       version_check:
         status: observed
         path: scripts/statedd_version_check.py
@@ -475,7 +480,7 @@ current_state:
       doctor_command:
         status: observed
         path: scripts/statedd_doctor.py
-        summary: Fast human-readable StateDD health summary, including runtime identity status.
+        summary: Fast human-readable StateSpec health summary, including runtime identity status.
       evidence_pack:
         status: observed
         path: scripts/statedd_evidence_pack.py
@@ -540,6 +545,6 @@ active_problems:
       - centralized schema-valid Git safety preflight proves identity, metadata safety, fsck, synchronization, and isolation mode
       - worktree mode is explicit opt-in and blocked for containers, privileged runtimes, or unknown/mismatched identity
       - clone mode proves an independent common directory without alternates or hardlinked objects
-      - mandatory Git failure latches StateDD-managed mutation read-only until repaired and explicitly restarted
+      - mandatory Git failure latches StateSpec-managed mutation read-only until repaired and explicitly restarted
       - no automatic permission repair, destructive reset or clean, garbage collection, prune, or force cleanup production path remains
       - exact-event and adjacent regressions pass on the same pushed head as final GitHub Actions and remote closure

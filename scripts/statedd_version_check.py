@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check StateDD template spec-version alignment."""
+"""Check StateSpec template spec-version alignment."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ def repo_is_template_maintenance(root: Path) -> bool:
     if not readme.exists():
         return False
     try:
-        return read_text(readme).startswith("# State Driven Development Template")
+        return read_text(readme).startswith("# StateSpec Template")
     except UnicodeDecodeError:
         return False
 
@@ -152,7 +152,7 @@ def check_conflicting_versions(root: Path, version: str) -> list[str]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Check StateDD version alignment")
+    parser = argparse.ArgumentParser(description="Check StateSpec version alignment")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
     return parser.parse_args(argv[1:])
 
@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
         issues.extend(check_required_files(root, version))
         issues.extend(check_conflicting_versions(root, version))
 
-    print("StateDD Version Check")
+    print("StateSpec Version Check")
     print(f"Root: {root}")
     print(f"Expected: {version or 'not proven'}")
 

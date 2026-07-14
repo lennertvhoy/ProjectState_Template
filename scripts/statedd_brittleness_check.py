@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Advisory brittleness heuristic scan for StateDD slices.
+"""Advisory brittleness heuristic scan for StateSpec slices.
 
 This script emits warnings only. It does not prove code quality and it does not
 replace the anti-brittleness review gate.
@@ -300,7 +300,7 @@ def scan(lines: list[AddedLine]) -> list[Finding]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Advisory StateDD brittleness heuristic scan")
+    parser = argparse.ArgumentParser(description="Advisory StateSpec brittleness heuristic scan")
     parser.add_argument("--repo", default=str(ROOT), help="Repo root for git diff scanning")
     parser.add_argument("--base", help="Optional git diff base/ref")
     parser.add_argument("--diff-file", help="Unified diff file to scan instead of git diff")
@@ -311,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     code, diff_text, error = read_diff(args)
     if code != 0:
-        print("StateDD Brittleness Check")
+        print("StateSpec Brittleness Check")
         print("Result: error")
         print(f"- {error}")
         return 2
@@ -319,7 +319,7 @@ def main(argv: list[str] | None = None) -> int:
     added = parse_added_lines(diff_text)
     findings = scan(added)
 
-    print("StateDD Brittleness Check")
+    print("StateSpec Brittleness Check")
     print("This scan is advisory. It can warn about brittle shapes, but it cannot prove absence of brittleness.")
     print()
     print(f"Added lines scanned: {len(added)}")

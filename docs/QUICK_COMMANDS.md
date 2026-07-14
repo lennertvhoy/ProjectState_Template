@@ -1,4 +1,4 @@
-# StateDD Quick Commands
+# StateSpec Quick Commands
 
 This is a reference page, not a second constitution. Read `AGENTS.md` first and
 follow its declared read order and task-scoped controls.

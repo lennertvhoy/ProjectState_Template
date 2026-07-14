@@ -1,11 +1,11 @@
 ---
 scope: "scripts"
-purpose: "Agent behavior for StateDD executable scripts"
+purpose: "Agent behavior for StateSpec executable scripts"
 ---
 # Scripts Agent Instructions
 
 ## Scope
-This AGENTS.md applies to all work in `scripts/`. It defines how agents interact with StateDD executable tools.
+This AGENTS.md applies to all work in `scripts/`. It defines how agents interact with StateSpec executable tools.
 
 ## Authority
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for StateDD schema-backed validation."""
+"""Regression tests for StateSpec schema-backed validation."""
 
 from __future__ import annotations
 

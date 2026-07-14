@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate StateDD workflow docs and bootstrap readiness."""
+"""Validate StateSpec workflow docs and bootstrap readiness."""
 
 from __future__ import annotations
 
@@ -641,7 +641,7 @@ def check_template_assets(root: Path) -> list[str]:
     if handoff_helper.exists():
         handoff_helper_text = handoff_helper.read_text(encoding="utf-8")
         for phrase in (
-            "StateDD Handoff Snapshot",
+            "StateSpec Handoff Snapshot",
             "repo path",
             "not proven",
             "--test-command",
@@ -812,7 +812,7 @@ def check_template_maintenance_gate(root: Path) -> list[str]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate StateDD workflow docs and bootstrap readiness")
+    parser = argparse.ArgumentParser(description="Validate StateSpec workflow docs and bootstrap readiness")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
     parser.add_argument(
         "--bootstrap-gate",

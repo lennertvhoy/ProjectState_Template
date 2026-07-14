@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Instruction Linter
+StateSpec Instruction Linter
 
 Detects configuration "smells" in AGENTS.md, SKILL.md, and command files:
 - Context bloat: files exceeding line/token limits
@@ -329,7 +329,7 @@ class InstructionLinter:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Instruction Linter")
+    parser = argparse.ArgumentParser(description="StateSpec Instruction Linter")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--max-lines", type=int, default=180, help="Max lines per file")
     parser.add_argument("--max-words", type=int, default=4000, help="Max words per file")

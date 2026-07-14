@@ -4,11 +4,11 @@ statedd_mode: "template-maintenance"
 repo_mode: "template-maintenance"
 statedd_version: "statedd-template-v5"
 initialized_on: 2026-04-26
-last_updated: 2026-07-11
+last_updated: 2026-07-14
 project: "StateDD_Template"
 ---
 
-# StateDD v5 — Agent Operating System Constitution
+# StateSpec v5 — Agent Operating System Constitution
 
 **Purpose:** Minimal constitutional contract for AI agents. Procedural detail lives in `skills/`, `commands/`, and executable gates in `scripts/`.
 
@@ -41,11 +41,11 @@ project: "StateDD_Template"
   7. Final handoff states: `local-only` / `pushed` / `PR opened` / `merged` / `CI verified`
   Without this, every handoff must be labeled: `NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM`
 - **Remote Closure Invariant:** A slice is not done until the pushed PR head, PR body, in-repo evidence, closure handoff, and latest GitHub Actions run all agree on the same final head. Local tests are only preflight. Final closure requires GitHub-visible CI success or an explicit `NOT CI-VERIFIED` label.
-- **Efficiency Invariant:** StateDD exists to reduce agent confusion and false closure, not to create bureaucracy. Every required file, gate, command, and evidence artifact must justify its cost. Prefer the smallest proof that crosses the relevant truth boundary.
-- **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove repository/common-directory identity, effective UID/GID, critical metadata ownership and real writability, fsck, mandatory synchronization, and a permitted isolation mode. Failure latches `read_only` until repair and explicit restart.
+- **Efficiency Invariant:** StateSpec exists to reduce agent confusion and false closure, not to create bureaucracy. Every required file, gate, command, and evidence artifact must justify its cost. Prefer the smallest proof that crosses the relevant truth boundary.
+- **Git Safety Invariant:** Before repository or StateSpec mutation, `scripts/statedd_git_safety_check.py` must prove repository/common-directory identity, effective UID/GID, critical metadata ownership and real writability, fsck, mandatory synchronization, and a permitted isolation mode. Failure latches `read_only` until repair and explicit restart.
 - **Isolation Invariant:** One trusted local agent uses `normal_branch`; containers and independent agents use full `clone`; `worktree` requires explicit same-machine/same-identity opt-in. Never automatically repair permissions or force-remove, prune, reset, clean, or garbage-collect affected Git state.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
-- **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones/worktrees, return commits and verification summaries, do not edit global StateDD truth, and do not push the final slice branch.
+- **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones/worktrees, return commits and verification summaries, do not edit global StateSpec truth, and do not push the final slice branch.
 - **Standing Delivery Policy Invariant:** Downstream bootstrap records routine coding-agent permissions once. Confirmed policy allows local branches, commits, slice pushes, conflict resolution, and PR preparation; merge-to-main, force-push, history rewrite, and remote-branch deletion remain explicit human boundaries.
 
 ## Gate Levels

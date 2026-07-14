@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the StateDD Git safety preflight.
+"""Regression tests for the StateSpec Git safety preflight.
 
 The filesystem permission fixtures operate only in disposable temporary
 repositories and restore their original modes in ``finally`` blocks.
@@ -62,7 +62,7 @@ def init_remote_clone(root: Path, name: str = "repo") -> tuple[Path, Path]:
     git(root, "init", "--bare", str(bare))
     git(root, "init", "-b", "main", str(seed))
     git(seed, "config", "user.email", "tests@example.com")
-    git(seed, "config", "user.name", "StateDD Tests")
+    git(seed, "config", "user.name", "StateSpec Tests")
     (seed / "PROJECT_STATE.yaml").write_text("state: baseline\n", encoding="utf-8")
     (seed / "README.md").write_text("# Disposable safety test\n", encoding="utf-8")
     git(seed, "add", ".")
@@ -72,7 +72,7 @@ def init_remote_clone(root: Path, name: str = "repo") -> tuple[Path, Path]:
     git(bare, "symbolic-ref", "HEAD", "refs/heads/main")
     git(root, "clone", "--no-local", str(bare), str(clone))
     git(clone, "config", "user.email", "tests@example.com")
-    git(clone, "config", "user.name", "StateDD Tests")
+    git(clone, "config", "user.name", "StateSpec Tests")
     git(clone, "switch", "-c", "feature/safety-test")
     return clone, bare
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fast StateDD health summary for humans and the CTO lane.
+"""Fast StateSpec health summary for humans and the CTO lane.
 
 Run this at the start of a session, before a handoff, or whenever you need a
 shared snapshot of repo truth. It is read-only.
@@ -337,7 +337,7 @@ def closure_grade(repo: Path) -> str:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fast StateDD health summary")
+    parser = argparse.ArgumentParser(description="Fast StateSpec health summary")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to inspect")
     return parser.parse_args(argv[1:])
 
@@ -366,12 +366,12 @@ def main(argv: list[str] | None = None) -> int:
     folder = latest_evidence_folder(repo)
     folder_name = folder.relative_to(repo).as_posix() if folder else "none"
 
-    print("StateDD Health")
+    print("StateSpec Health")
     print()
     print(f"Current HEAD: {head}")
     print(f"Branch: {branch}")
     print(f"Repo role: {role}")
-    print(f"StateDD mode: {mode}")
+    print(f"StateSpec mode: {mode}")
     print(f"Worktree: {worktree_status(repo)}")
     print(f"Latest evidence: {folder_name}")
     print(f"State docs updated: {state_docs_updated(repo)}")

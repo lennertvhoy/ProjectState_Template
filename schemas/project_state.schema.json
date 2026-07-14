@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.project_state.v1",
-  "title": "StateDD PROJECT_STATE.yaml",
+  "title": "StateSpec PROJECT_STATE.yaml",
   "type": "object",
   "required": ["metadata", "workflow", "current_state", "active_problems"],
   "additionalProperties": true,

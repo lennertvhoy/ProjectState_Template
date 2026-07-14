@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the StateDD initializer.
+"""Regression tests for the StateSpec initializer.
 
 These tests intentionally stay stdlib-only so template maintainers and
 downstream repos can run them without installing a test framework.
@@ -602,7 +602,7 @@ def test_handoff_snapshot_runs() -> None:
             f"Expected handoff helper success, got {completed.returncode}\n"
             f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
-    if "StateDD Handoff Snapshot" not in completed.stdout or "repo path:" not in completed.stdout:
+    if "StateSpec Handoff Snapshot" not in completed.stdout or "repo path:" not in completed.stdout:
         raise AssertionError(f"Handoff helper output is missing required fields:\n{completed.stdout}")
 
 
@@ -619,7 +619,7 @@ def test_doctor_runs() -> None:
             f"Expected doctor helper success, got {completed.returncode}\n"
             f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
-    for phrase in ("StateDD Health", "Closure grade:", "Current HEAD:"):
+    for phrase in ("StateSpec Health", "Closure grade:", "Current HEAD:"):
         if phrase not in completed.stdout:
             raise AssertionError(f"Doctor helper output missing phrase: {phrase}")
 

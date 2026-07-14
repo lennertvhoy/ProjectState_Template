@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.project_adapter.v1",
-  "title": "StateDD PROJECT_ADAPTER.yaml",
+  "title": "StateSpec PROJECT_ADAPTER.yaml",
   "type": "object",
   "required": ["version", "project", "runtime", "integrations", "ai_execution_preferences"],
   "additionalProperties": true,

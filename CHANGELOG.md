@@ -1,6 +1,17 @@
 # Changelog
 
-All notable StateDD template changes are tracked here.
+All notable StateSpec Template changes are tracked here. Older entries retain
+the public name used when they were written.
+
+## statedd-template-v5 - 2026-07-14
+
+- Adopted StateSpec Template as the public name and State-Centric Engineering
+  as the method name.
+- Preserved `StateDD_Template`, `statedd-template-v5`, `.statedd`, `statedd_*`,
+  schemas, releases, license wording, URLs, and history as compatibility
+  identifiers.
+- Updated generated operator copy and CLI presentation without renaming or
+  invalidating executable interfaces.
 
 ## statedd-template-v4 - 2026-06-23
 

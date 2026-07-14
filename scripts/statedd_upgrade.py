@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Non-destructive downstream upgrade helper for StateDD template assets.
+"""Non-destructive downstream upgrade helper for StateSpec template assets.
 
 Default mode is dry-run. It compares the downstream repo against the template
 root and reports which managed assets are missing, outdated, or conflict with
@@ -243,7 +243,7 @@ def plan_upgrade(target: Path, assets: list[Path], force_managed: bool) -> dict[
 
 
 def print_plan(plan: dict[str, Any], target: Path, template_version: str, target_version: str | None) -> None:
-    print("StateDD Upgrade Plan")
+    print("StateSpec Upgrade Plan")
     print(f"Target: {target}")
     print(f"Template version: {template_version}")
     print(f"Target version: {target_version or 'not detected'}")
@@ -371,7 +371,7 @@ def write_report(path: Path, plan: dict[str, Any], target: Path, template_versio
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Non-destructive StateDD downstream upgrade helper"
+        description="Non-destructive StateSpec downstream upgrade helper"
     )
     parser.add_argument("target", nargs="?", default=".", help="Downstream repo root to upgrade")
     parser.add_argument(
@@ -422,7 +422,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             require_mutation_permit(
                 target,
-                "StateDD upgrade --apply",
+                "StateSpec upgrade --apply",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:
@@ -437,7 +437,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             require_mutation_permit(
                 report_path,
-                "StateDD upgrade report write",
+                "StateSpec upgrade report write",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:

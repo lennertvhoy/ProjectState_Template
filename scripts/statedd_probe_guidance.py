@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Probe Guidance
+StateSpec Probe Guidance
 
 Runs synthetic tasks to probe agent guidance completeness.
 Creates fake issues/tasks and checks if agent follows correct workflow.
@@ -231,7 +231,7 @@ class ProbeGuidance:
     def run_all(self) -> Tuple[int, List[Dict]]:
         """Run all probes."""
         print("=" * 50)
-        print("StateDD Probe Guidance")
+        print("StateSpec Probe Guidance")
         print("=" * 50)
 
         for probe in PROBES:
@@ -258,7 +258,7 @@ class ProbeGuidance:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Probe Guidance")
+    parser = argparse.ArgumentParser(description="StateSpec Probe Guidance")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--json", action="store_true", help="Output JSON results")

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.evidence_manifest.v1",
-  "title": "StateDD evidence manifest",
+  "title": "StateSpec evidence manifest",
   "type": "object",
   "required": ["schema", "slice_id", "created_at", "repo", "claims", "artifacts", "redaction"],
   "additionalProperties": true,

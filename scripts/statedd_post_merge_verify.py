@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""StateDD Post-Merge Main Verifier.
+"""StateSpec Post-Merge Main Verifier.
 
 After a PR merges, this gate proves that `main` (or the repo default branch) is
 now the source of truth and that the closure artifacts agree with GitHub truth.
@@ -198,7 +198,7 @@ class PostMergeVerifier:
 
     def run(self) -> int:
         print("=" * 60)
-        print("StateDD Post-Merge Main Verifier")
+        print("StateSpec Post-Merge Main Verifier")
         print("=" * 60)
 
         try:
@@ -444,7 +444,7 @@ class PostMergeVerifier:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="StateDD Post-Merge Main Verifier: prove main is the source of truth after a merge"
+        description="StateSpec Post-Merge Main Verifier: prove main is the source of truth after a merge"
     )
     parser.add_argument("--root", default=str(ROOT), help="Repository root to inspect")
     parser.add_argument("--pr-number", type=int, required=True, help="Merged PR number")

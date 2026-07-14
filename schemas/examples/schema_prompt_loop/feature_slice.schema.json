@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.examples.feature_slice.v1",
-  "title": "StateDD feature slice contract",
-  "description": "A small schema-driven contract for a single StateDD backlog slice.",
+  "title": "StateSpec feature slice contract",
+  "description": "A small schema-driven contract for a single StateSpec backlog slice.",
   "type": "object",
   "required": [
     "slice_id",
@@ -39,7 +39,7 @@
     "statedd_mode": {
       "type": "string",
       "enum": ["template-maintenance", "bootstrap", "operating"],
-      "description": "StateDD mode this slice runs in."
+      "description": "StateSpec mode this slice runs in."
     },
     "runtime_required": {
       "type": "boolean",

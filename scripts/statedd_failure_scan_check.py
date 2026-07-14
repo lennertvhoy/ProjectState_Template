@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Failure Scan Check
+StateSpec Failure Scan Check
 
 Scans for unhandled signals or "bad events" (errors in chat, logs, tests)
 and ensures they are ingested via the ingest-bad-event skill.
@@ -171,7 +171,7 @@ class FailureScanCheck:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Failure Scan Check")
+    parser = argparse.ArgumentParser(description="StateSpec Failure Scan Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--fail-on-unmatched", action="store_true", default=True,
                         help="Exit 1 if unmatched events found")

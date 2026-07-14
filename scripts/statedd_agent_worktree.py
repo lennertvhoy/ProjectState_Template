@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""StateDD strong-isolation orchestrator for independent coding agents.
+"""StateSpec strong-isolation orchestrator for independent coding agents.
 
 ``start`` defaults to a full clone with an independent object database. Linked
 worktrees remain available only through explicit same-machine opt-in after the
@@ -756,7 +756,7 @@ def cmd_guard(args: argparse.Namespace) -> int:
     if args.mode == "closure" and changed:
         print("Closure mode requires a clean worktree.", file=sys.stderr)
         return 1
-    print("StateDD Agent Isolation Guard")
+    print("StateSpec Agent Isolation Guard")
     print(f"Mode: {args.mode}")
     print(f"Agent context: {context.get('agent_id')} / {context.get('slice_id')}")
     print(f"Isolation mode: {context.get('isolation_mode', 'worktree')}")
@@ -980,7 +980,7 @@ def cmd_cleanup(args: argparse.Namespace) -> int:
     reservations = list_reservations(repo)
     worktrees = list_worktrees(repo)
     default = origin_default_branch(repo) or "main"
-    print("StateDD Agent Isolation Cleanup Report (non-mutating)")
+    print("StateSpec Agent Isolation Cleanup Report (non-mutating)")
     print("No automatic deletion, force removal, branch deletion, or pruning is available.")
     print("Reservations:")
     for branch, sha, context in reservations or [("none", "", {})]:
@@ -1012,7 +1012,7 @@ def cmd_list(args: argparse.Namespace) -> int:
     reservations = list_reservations(repo)
     worktrees = list_worktrees(repo)
     locks = detect_git_locks(repo)
-    print("StateDD Agent Isolation Inventory")
+    print("StateSpec Agent Isolation Inventory")
     print("Reservations:")
     for branch, sha, context in reservations:
         print(f"- {branch}: {sha} agent={context.get('agent_id', 'unknown')}")
@@ -1028,7 +1028,7 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="StateDD agent strong-isolation orchestrator")
+    parser = argparse.ArgumentParser(description="StateSpec agent strong-isolation orchestrator")
     parser.add_argument("--dry-run", action="store_true", help="Report intended action without preflight or mutation")
     parser.add_argument("--repo", default=str(ROOT), help="Source repository")
     subparsers = parser.add_subparsers(dest="command", required=True)

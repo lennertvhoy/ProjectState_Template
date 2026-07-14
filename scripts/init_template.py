@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize or adopt the StateDD template workflow."""
+"""Initialize or adopt the StateSpec template workflow."""
 
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ from statedd_generated_controls import render_coding_agent_startup_prompt
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".cache"}
 
-TEMPLATE_NAME = "State Driven Development Template"
-CONTRACT_TITLE = "State Driven Development Template Contract"
+TEMPLATE_NAME = "StateSpec Template"
+CONTRACT_TITLE = "StateSpec Template Contract"
 TEMPLATE_VERSION = "statedd-template-v5"
 VALID_PROFILES = {"minimal", "solo", "team", "regulated"}
 
@@ -33,7 +33,7 @@ def validate_profile(profile: str) -> str:
 
 def profile_summary(profile: str) -> str:
     summaries = {
-        "minimal": "Smallest useful StateDD footprint; no fake completeness; keeps the bootstrap gate.",
+        "minimal": "Smallest useful StateSpec footprint; no fake completeness; keeps the bootstrap gate.",
         "solo": "Standard single-developer workflow with evidence template, runtime proof, and schema validation.",
         "team": "Stricter handoff/evidence/audit defaults and PR/review-friendly documentation.",
         "regulated": "Strict audit defaults; runtime proof expected for user-facing work; evidence manifest/redaction gate expected; acceptance freeze guidance emphasized.",
@@ -213,13 +213,13 @@ inventory only when the task needs planning, history, proof, or repository detai
 - User-facing closure requires runtime identity plus browser verification; a
   screenshot alone is insufficient and no browser provider is mandatory.
 - P0 product failure enters `quality_freeze` or `incident_response`.
-- Repository or StateDD mutation starts only after
+- Repository or StateSpec mutation starts only after
   `scripts/statedd_git_safety_check.py` permits `normal_branch`, `worktree`, or
   `clone`; failure selects `read_only`. Containers/independent agents use clones,
   while worktrees require explicit trusted-local same-identity opt-in.
 - Non-trivial fixes name the invariant that prevents brittle example-only behavior.
 - The integration agent owns one slice branch, combines subagent commits, updates
-  global StateDD truth once, and is the only agent that pushes the final slice.
+  global StateSpec truth once, and is the only agent that pushes the final slice.
 - End implementation sessions with state hygiene, relevant gates, and a handoff.
 
 ## Current Mode: `{mode}`
@@ -511,7 +511,7 @@ invariants:
   - "Implemented, validated, closure-grade, and accepted are distinct states."
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
-  - "Repository or StateDD mutation requires a permitted centralized Git safety preflight."
+  - "Repository or StateSpec mutation requires a permitted centralized Git safety preflight."
   - "Containers and independent agents use full clones; worktrees are explicit trusted-local same-identity opt-in."
   - "A mandatory Git failure selects read-only until repair and explicit restart."
   - "Non-trivial fixes name and test a durable anti-brittleness invariant."
@@ -718,7 +718,7 @@ Use this file for dated session notes, verification summaries, and references to
 **Worktree:** unknown
 
 ### What changed
-- Installed the StateDD workflow files without replacing the existing project README by default.
+- Installed the StateSpec workflow files without replacing the existing project README by default.
 - Captured an initial bootstrap baseline from the current repo structure and documented the active queue using backlog IDs.
 
 ### Verification
@@ -834,8 +834,8 @@ and must be protected from quiet regression.
 def render_downstream_readme(project_name: str, profile: str) -> str:
     return f"""# {project_name}
 
-This repository uses StateDD `{TEMPLATE_VERSION}` with the `{profile}` profile.
-StateDD files coordinate current truth, a short queue, evidence, and executable
+This repository uses StateSpec `{TEMPLATE_VERSION}` with the `{profile}` profile.
+StateSpec files coordinate current truth, a short queue, evidence, and executable
 gates; they do not define this project's product behavior.
 
 ## Start
@@ -869,8 +869,8 @@ diagnosis only until repair and an explicit `--restart-session` succeeds.
 
 For parallel slices, one integration agent owns the slice branch. Subagents use
 isolated clones/worktrees, return commits and verification summaries, do not edit
-global StateDD files, and do not push the final slice. The integration agent
-combines commits, resolves conflicts, updates StateDD truth once, validates the
+global StateSpec files, and do not push the final slice. The integration agent
+combines commits, resolves conflicts, updates StateSpec truth once, validates the
 whole slice, and pushes the final branch.
 
 `STATEDD_ASSETS.json` records the exact workflow files installed for this
@@ -880,7 +880,7 @@ history are intentionally excluded.
 
 
 def render_downstream_workflow() -> str:
-    return """name: StateDD
+    return """name: StateSpec
 
 on:
   push:
@@ -935,7 +935,7 @@ def add_asset_manifest(
 
 def render_readme_section() -> str:
     return f"""
-## StateDD Workflow
+## StateSpec Workflow
 
 This repo now uses the {TEMPLATE_NAME} workflow.
 The workflow contract lives in `AGENTS.md`, the current truth lives in
@@ -1329,7 +1329,7 @@ def maybe_append_readme_link(target: Path, *, dry_run: bool) -> None:
         return
     if dry_run:
         print("Planned README action:")
-        print("  - append StateDD workflow section to README.md")
+        print("  - append StateSpec workflow section to README.md")
         return
     write_file(target, "README.md", text.rstrip() + "\n\n" + section + "\n")
 
@@ -1476,7 +1476,7 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
 
 
 def build_subcommand_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Initialize or adopt the StateDD workflow")
+    parser = argparse.ArgumentParser(description="Initialize or adopt the StateSpec workflow")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     new_parser = subparsers.add_parser("new", help="Create a new repo from the template")
@@ -1531,7 +1531,7 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
 
 
 def build_legacy_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create a new repo from the StateDD workflow template")
+    parser = argparse.ArgumentParser(description="Create a new repo from the StateSpec workflow template")
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
     parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
@@ -1596,7 +1596,7 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 require_mutation_permit(
                     target,
-                    "StateDD new-repository initialization",
+                    "StateSpec new-repository initialization",
                     allow_non_git=True,
                 )
             except MutationBlocked as exc:
@@ -1653,7 +1653,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             require_mutation_permit(
                 target,
-                "StateDD existing-repository adoption",
+                "StateSpec existing-repository adoption",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:

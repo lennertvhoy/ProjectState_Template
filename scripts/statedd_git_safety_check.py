@@ -760,7 +760,7 @@ def build_isolation(
         "normal_branch requires a private feature branch in one unprivileged host clone",
         "worktree requires explicit opt-in, trusted-local attestation, safe same identity, and a non-privileged host runtime",
         "clone requires a distinct common directory, no alternates, no hardlinked object files, and one worktree",
-        "read_only never permits StateDD-managed mutation",
+        "read_only never permits StateSpec-managed mutation",
     ]
     return {
         "requested_mode": mode,
@@ -1232,7 +1232,7 @@ def persist_unreported_failure(
 
 
 def print_human(report: dict[str, Any]) -> None:
-    print("StateDD Git Safety Preflight")
+    print("StateSpec Git Safety Preflight")
     print(f"Requested path: {report['request']['path']}")
     print(f"Canonical repo root: {report['repository']['canonical_root']}")
     print(f"Git dir: {report['repository']['git_dir']}")
@@ -1272,7 +1272,7 @@ def print_human(report: dict[str, Any]) -> None:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="StateDD fail-closed Git safety preflight")
+    parser = argparse.ArgumentParser(description="StateSpec fail-closed Git safety preflight")
     parser.add_argument("--repo", default=str(ROOT), help="Requested path inside the Git repository")
     parser.add_argument(
         "--mode",
@@ -1335,7 +1335,7 @@ def main(argv: list[str] | None = None) -> int:
                     locked_state_root=locked_state_root,
                 )
             except InspectionError as exc:
-                diagnostic = f"StateDD Git safety inspection failed: {exc}"
+                diagnostic = f"StateSpec Git safety inspection failed: {exc}"
                 latch_error = persist_unreported_failure(
                     locked_state_root, requested, resolved, diagnostic
                 )
@@ -1344,7 +1344,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"Read-only latch persistence also failed: {latch_error}", file=sys.stderr)
                 return 2
             except Exception as exc:
-                diagnostic = f"StateDD Git safety preflight crashed: {exc}"
+                diagnostic = f"StateSpec Git safety preflight crashed: {exc}"
                 latch_error = persist_unreported_failure(
                     locked_state_root, requested, resolved, diagnostic
                 )
@@ -1359,7 +1359,7 @@ def main(argv: list[str] | None = None) -> int:
                 latch_error = persist_unreported_failure(
                     locked_state_root, requested, resolved, diagnostic
                 )
-                print("StateDD Git safety report failed its schema:", file=sys.stderr)
+                print("StateSpec Git safety report failed its schema:", file=sys.stderr)
                 for item in schema_issues:
                     print(f"- {item}", file=sys.stderr)
                 if latch_error:
@@ -1373,14 +1373,14 @@ def main(argv: list[str] | None = None) -> int:
                 latch_error = persist_unreported_failure(
                     locked_state_root, requested, resolved, diagnostic
                 )
-                print("StateDD Git safety final report failed its schema:", file=sys.stderr)
+                print("StateSpec Git safety final report failed its schema:", file=sys.stderr)
                 for item in schema_issues:
                     print(f"- {item}", file=sys.stderr)
                 if latch_error:
                     print(f"Read-only latch persistence also failed: {latch_error}", file=sys.stderr)
                 return 2
     except (OSError, MutationBlocked) as exc:
-        print(f"StateDD Git safety session-state lock failed closed: {exc}", file=sys.stderr)
+        print(f"StateSpec Git safety session-state lock failed closed: {exc}", file=sys.stderr)
         return 2
 
     assert report is not None

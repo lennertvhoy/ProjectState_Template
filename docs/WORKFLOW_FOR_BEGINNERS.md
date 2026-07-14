@@ -1,12 +1,12 @@
-# StateDD Workflow for Beginners
+# StateSpec Workflow for Beginners
 
-This guide explains the State Driven Development (StateDD) workflow in plain
+This guide explains the State-Centric Engineering (StateSpec) workflow in plain
 language, with a diagram, and shows exactly where to get each prompt and where
 to paste it.
 
 ## The human is always in the loop
 
-StateDD is not "let an AI agent run loose." It is a human-in-the-loop system
+StateSpec is not "let an AI agent run loose." It is a human-in-the-loop system
 with three roles:
 
 1. **Human / product owner** — decides what matters, approves tradeoffs, and

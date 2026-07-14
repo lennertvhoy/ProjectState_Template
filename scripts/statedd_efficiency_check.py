@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Efficiency Check
+StateSpec Efficiency Check
 
 Enforces the Efficiency Invariant and EFFICIENCY_BUDGET.yaml.
 Fails on instruction bloat, duplicate canonical sources, unreferenced
@@ -556,7 +556,7 @@ class EfficiencyCheck:
         return (0 if not errors else 1), self.findings
 
     def report(self) -> str:
-        lines = ["=" * 50, "StateDD Efficiency Check", "=" * 50, ""]
+        lines = ["=" * 50, "StateSpec Efficiency Check", "=" * 50, ""]
         lines.append(f"Gate level: {self.gate_level}")
         lines.append(f"Budget file: {self.BUDGET_FILE}")
         lines.append("")
@@ -585,7 +585,7 @@ class EfficiencyCheck:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="StateDD Efficiency Check")
+    parser = argparse.ArgumentParser(description="StateSpec Efficiency Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--gate-level", type=int, default=1, help="Gate level being proven")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")

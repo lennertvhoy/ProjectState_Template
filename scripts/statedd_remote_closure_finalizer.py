@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""StateDD Remote Closure Finalizer.
+"""StateSpec Remote Closure Finalizer.
 
 Final closure gate: local HEAD, pushed branch, PR head, PR body, in-repo
 evidence, the latest GitHub Actions result, and merge state must all agree on
@@ -304,7 +304,7 @@ class RemoteClosureFinalizer:
 
     def run(self) -> int:
         print("=" * 60)
-        print("StateDD Remote Closure Finalizer")
+        print("StateSpec Remote Closure Finalizer")
         print("=" * 60)
 
         try:
@@ -672,7 +672,7 @@ class RemoteClosureFinalizer:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="StateDD Remote Closure Finalizer: verify pushed PR/CI state before calling a slice done"
+        description="StateSpec Remote Closure Finalizer: verify pushed PR/CI state before calling a slice done"
     )
     parser.add_argument("--root", default=str(ROOT), help="Repository root to inspect")
     parser.add_argument("--pr-number", type=int, default=None, help="Explicit PR number")
@@ -694,7 +694,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             require_mutation_permit(
                 args.output.resolve(),
-                "StateDD remote-closure handoff write",
+                "StateSpec remote-closure handoff write",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:

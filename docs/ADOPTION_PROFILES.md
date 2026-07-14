@@ -1,11 +1,11 @@
-# StateDD Adoption Profiles
+# StateSpec Adoption Profiles
 
-Profiles let you initialize or adopt a repo with a StateDD footprint matched to
-the project's needs. They do not change the core StateDD rules; they change which
+Profiles let you initialize or adopt a repo with a StateSpec footprint matched to
+the project's needs. They do not change the core StateSpec rules; they change which
 default assets are included and how strongly the generated docs emphasize certain
 practices.
 
-StateDD is agent-operated: humans choose intent, profiles, and permissions;
+StateSpec is agent-operated: humans choose intent, profiles, and permissions;
 coding agents read `AGENTS.md`, use the executable controls, maintain truth, and
 produce the handoff. Read `AGENTS.md` before using this reference page.
 
@@ -19,7 +19,7 @@ only when the project intentionally needs a smaller or stricter footprint.
 
 Use `minimal` if:
 
-- you want the smallest useful StateDD footprint
+- you want the smallest useful StateSpec footprint
 - you want core state/schema/hygiene/efficiency/quality gates without optional
   runtime, audit, evidence-pack, team, or review helpers
 
@@ -43,7 +43,7 @@ Use `regulated` if:
 
 ### `minimal`
 
-Use when you want the smallest useful StateDD footprint.
+Use when you want the smallest useful StateSpec footprint.
 
 - Core state files plus schema, hygiene, efficiency, and quality gates remain.
 - Runtime, audit, evidence-pack, browser, team, and deep-reference helpers are

@@ -2,6 +2,21 @@
 
 **Purpose:** Append-only history for completed work.
 
+## 2026-07-14 - StateSpec public-name compatibility migration
+
+**Type:** terminology_compatibility
+**Status:** VALIDATED_LOCAL_ONLY
+**Worktree:** isolated same-machine worktree with explicit Git-safety permit
+
+### What changed
+- Adopted Stateware, State-Centric Engineering, StateSpec, and StateSpec Template in current public and operator documentation.
+- Preserved `StateDD_Template`, `statedd-template-v5`, `.statedd`, `statedd_*`, schema IDs, releases, license wording, URLs, paths, and Git history as explicit compatibility identifiers.
+- Added ADR 0002 so a public naming correction cannot become an uncontrolled physical rename.
+
+### Verification
+- Focused repository gates and exact commands are recorded in the slice handoff.
+- Remote push, CI, merge, release, and human acceptance remain separate and are not claimed by this entry.
+
 ## 2026-07-10 - BL-CONTEXT-001 remote closure candidate
 
 **Type:** template_maintenance_closure

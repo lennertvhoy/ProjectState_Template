@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Evidence Type Check
+StateSpec Evidence Type Check
 
 Ensures each user-facing change has the appropriate evidence type:
 - UI changes: browser screenshots + runtime proof
@@ -214,7 +214,7 @@ class EvidenceTypeCheck:
 
     def run(self) -> int:
         print("=" * 50)
-        print("StateDD Evidence Type Check")
+        print("StateSpec Evidence Type Check")
         print("=" * 50)
 
         change = self.get_recent_changes()
@@ -248,7 +248,7 @@ class EvidenceTypeCheck:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Evidence Type Check")
+    parser = argparse.ArgumentParser(description="StateSpec Evidence Type Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()

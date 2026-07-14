@@ -1,12 +1,13 @@
-# StateDD Template Status
+# StateSpec Template Status
 
-**Updated At:** 2026-07-11 16:50 +02:00
+**Updated At:** 2026-07-14 22:30 +02:00
 **Execution Mode:** quality_freeze
 **Project State:** p0_git_isolation_candidate_local_only
 **Public URL:** https://github.com/lennertvhoy/StateDD_Template/releases/tag/v5
 
 ## Snapshot
 
+- Public name: StateSpec Template. Existing `statedd-*` and repository identifiers remain compatible.
 - The root is `repo_role: template_repository`, `statedd_mode: template-maintenance`, version `statedd-template-v5`.
 - Local branch `bl-git-isolation-001` contains the Git-safety and coding-agent-first golden-path slice.
 - The current committed base is `143843da…`; the final local slice identity is recorded by the handoff because self-describing state cannot embed its own future SHA.

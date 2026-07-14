@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Runtime Truth Check
+StateSpec Runtime Truth Check
 
 Verifies that the current runtime identity matches what's recorded in runtime_identity.json.
 Exit codes: 0=match, 1=mismatch, 2=error
@@ -141,7 +141,7 @@ class RuntimeTruthCheck:
 
     def run(self) -> int:
         print("=" * 50)
-        print("StateDD Runtime Truth Check")
+        print("StateSpec Runtime Truth Check")
         print("=" * 50)
 
         try:
@@ -182,7 +182,7 @@ class RuntimeTruthCheck:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Runtime Truth Check")
+    parser = argparse.ArgumentParser(description="StateSpec Runtime Truth Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()

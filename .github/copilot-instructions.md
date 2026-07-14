@@ -1,9 +1,9 @@
-# GitHub Copilot Instructions — StateDD Template
+# GitHub Copilot Instructions — StateSpec Template
 
-This file is auto-generated from the StateDD constitutional contract. The authoritative source is **AGENTS.md**.
+This file is auto-generated from the StateSpec constitutional contract. The authoritative source is **AGENTS.md**.
 
 ## Repository Role
-- `repo_role: template_repository` — This is the StateDD template repository
+- `repo_role: template_repository` — This is the StateSpec template repository
 - Downstream repos use `repo_role: downstream_project`
 
 ## Agent Behavior

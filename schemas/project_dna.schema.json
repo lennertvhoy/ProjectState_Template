@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.project_dna.v1",
-  "title": "StateDD PROJECT_DNA.yaml",
+  "title": "StateSpec PROJECT_DNA.yaml",
   "type": "object",
   "required": ["version", "schema_version", "product", "truth_rules", "invariants"],
   "additionalProperties": true,

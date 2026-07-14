@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture a StateDD runtime identity proof artifact.
+"""Capture a StateSpec runtime identity proof artifact.
 
 The artifact records the repo identity, runtime applicability, endpoint probe,
 and best-effort process ownership for URL-based runtime evidence. Process
@@ -336,7 +336,7 @@ def detect_process(port: int | None, expected_repo: Path, expected_name: str | N
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Capture StateDD runtime identity proof")
+    parser = argparse.ArgumentParser(description="Capture StateSpec runtime identity proof")
     parser.add_argument("--url", help="Runtime URL or endpoint to probe")
     parser.add_argument("--evidence-dir", help="Evidence directory that should receive runtime_identity.json")
     parser.add_argument("--output", help="Explicit output path for the JSON artifact")
@@ -453,7 +453,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         require_mutation_permit(
             path,
-            "StateDD runtime identity artifact write",
+            "StateSpec runtime identity artifact write",
             allow_non_git=True,
         )
     except MutationBlocked as exc:

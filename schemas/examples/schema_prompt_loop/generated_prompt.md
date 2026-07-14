@@ -1,6 +1,6 @@
-# StateDD feature slice contract
+# StateSpec feature slice contract
 
-A small schema-driven contract for a single StateDD backlog slice.
+A small schema-driven contract for a single StateSpec backlog slice.
 
 This prompt is generated from `feature_slice.schema.json`. Regenerate it with `python3 schemas/examples/schema_prompt_loop/generate_prompt.py`.
 
@@ -10,7 +10,7 @@ This prompt is generated from `feature_slice.schema.json`. Regenerate it with `p
 - **title**: Short human-readable title for the slice.
 - **goal**: One-paragraph goal statement describing the slice's intent.
 - **repo_role**: Repo role this slice applies to.
-- **statedd_mode**: StateDD mode this slice runs in.
+- **statedd_mode**: StateSpec mode this slice runs in.
 - **acceptance_criteria**: List of concrete acceptance criteria.
 - **evidence_required**: Whether evidence artifacts are required for acceptance.
 - **verification_commands**: Commands that must pass before the slice is closure-grade.

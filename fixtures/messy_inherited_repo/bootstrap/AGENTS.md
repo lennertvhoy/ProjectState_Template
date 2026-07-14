@@ -7,7 +7,7 @@ initialized_on: null
 last_updated: 2026-03-18
 ---
 
-# State Driven Development Template Contract
+# StateSpec Template Contract
 
 This fixture represents an inherited repo with contradictory signals.
 It must eventually transition from `bootstrap` to `operating` once baseline

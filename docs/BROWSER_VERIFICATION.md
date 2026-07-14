@@ -1,6 +1,6 @@
 # Provider-Agnostic Browser Verification
 
-StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider.
+StateSpec requires browser-verification evidence for user-facing closure, not a specific browser automation provider.
 
 Kimi WebBridge is a preferred provider when available, not a required dependency. The same evidence contract accepts Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots, or custom project tooling.
 

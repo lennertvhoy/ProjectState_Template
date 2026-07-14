@@ -55,7 +55,7 @@ def start_agent(repo: Path, slice_id: str, agent_id: str) -> tuple[Path, str]:
     clone = Path(line.split(":", 1)[1].strip())
     context = json.loads((clone / ".statedd" / "agent.context").read_text(encoding="utf-8"))
     git(clone, "config", "user.email", f"{agent_id}@example.invalid")
-    git(clone, "config", "user.name", f"StateDD {agent_id}")
+    git(clone, "config", "user.name", f"StateSpec {agent_id}")
     return clone, context["branch"]
 
 
@@ -127,7 +127,7 @@ def test_golden_path() -> None:
         run([sys.executable, str(downstream / "scripts" / "check_state_docs.py"), str(downstream)], downstream)
 
         git(downstream, "config", "user.email", "statedd-golden@example.invalid")
-        git(downstream, "config", "user.name", "StateDD Golden Path")
+        git(downstream, "config", "user.name", "StateSpec Golden Path")
         git(root, "init", "--bare", str(remote))
         git(downstream, "remote", "add", "origin", str(remote))
         commit(downstream, "bootstrap: establish golden-path baseline")

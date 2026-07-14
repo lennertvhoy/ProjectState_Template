@@ -1,7 +1,7 @@
 # Evidence README Template
 
 Copy this into every evidence folder as `README.md`. Replace placeholders with
-real values. The claim ledger is the core of executable StateDD.
+real values. The claim ledger is the core of executable StateSpec.
 
 ```markdown
 # Evidence: <slice-title>
@@ -50,7 +50,7 @@ real values. The claim ledger is the core of executable StateDD.
 - Selected isolation mode: normal_branch / worktree / clone / read_only
 - Mutation permitted: yes / no
 - Read-only latch/restart status:
-- Enforcement scope: StateDD-managed only / OS filesystem-enforced
+- Enforcement scope: StateSpec-managed only / OS filesystem-enforced
 
 ## Anti-Brittleness Review
 

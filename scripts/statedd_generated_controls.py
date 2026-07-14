@@ -12,7 +12,7 @@ from __future__ import annotations
 def render_coding_agent_startup_prompt() -> str:
     return """# Coding Agent Startup Prompt
 
-StateDD is an agent-operated repository workflow. Humans provide project intent,
+StateSpec is an agent-operated repository workflow. Humans provide project intent,
 priorities, permissions, feedback, and final acceptance. Coding agents read
 `AGENTS.md`, initialize and maintain repository truth, execute slices, validate
 results, integrate subagents, commit and push changes, and produce the handoff.
@@ -21,7 +21,7 @@ Read `AGENTS.md` first and follow its declared read order. Do not copy a second
 read order from this prompt. Load `skills/`, `commands/`, and `docs/` only when
 the active task requires them.
 
-Before any repository or StateDD mutation, run the centralized Git safety
+Before any repository or StateSpec mutation, run the centralized Git safety
 preflight for the selected isolation mode. A failed writable preflight means
 read-only diagnosis until repair and an explicit restart succeeds:
 
@@ -33,7 +33,7 @@ Use a full clone for containers or independent agents. Linked worktrees require
 explicit trusted-local, same-identity opt-in. Keep local, remote, GitHub, CI,
 runtime, and human-accepted truth separate; never call an unverified claim
 complete. For parallel work, one integration agent owns the slice branch;
-subagents return commits and verification summaries, do not edit global StateDD
+subagents return commits and verification summaries, do not edit global StateSpec
 files, and do not push the final branch. The integration agent combines commits,
 resolves conflicts, updates global truth once, runs the whole-project gate, and
 pushes the final branch. For a slice, use the executable quality gate:

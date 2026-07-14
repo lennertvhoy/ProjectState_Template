@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pre-slice and closure guard for StateDD git worktree state.
+"""Pre-slice and closure guard for StateSpec git worktree state.
 
 Exit codes:
   0 = guard passed or classification template printed
@@ -246,7 +246,7 @@ def run_git_safety(
 
 
 def print_git_safety_failure(report: dict, fallback: str) -> None:
-    print("StateDD Worktree Guard")
+    print("StateSpec Worktree Guard")
     print("Mode: start-slice")
     print()
     print("Git safety preflight")
@@ -375,7 +375,7 @@ def print_report(
     if dirty_paths:
         classified = "yes" if all(path in classifications for path in dirty_paths) else "no"
 
-    print("StateDD Worktree Guard")
+    print("StateSpec Worktree Guard")
     print(f"Mode: {mode}")
     print()
     print("Repo truth")
@@ -503,7 +503,7 @@ def evaluate_closure(ctx: GitContext) -> tuple[bool, list[str], list[str]]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="StateDD worktree isolation guard")
+    parser = argparse.ArgumentParser(description="StateSpec worktree isolation guard")
     parser.add_argument("--repo", default=str(ROOT), help="Repo path to inspect")
     parser.add_argument(
         "--mode",
@@ -539,19 +539,19 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     code, repo, error = resolve_repo(Path(args.repo))
     if code != 0:
-        print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {error}")
+        print(f"StateSpec Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {error}")
         return code
 
     if args.mode in ("start-slice", "closure"):
         locks_ok, lock_msg = detect_git_locks(repo)
         if not locks_ok:
-            print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {lock_msg}")
+            print(f"StateSpec Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {lock_msg}")
             return 1
 
     try:
         ctx = collect_context(repo)
     except RuntimeError as exc:
-        print(f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {exc}")
+        print(f"StateSpec Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n- {exc}")
         return 2
     if args.mode == "classify-dirty":
         print_classification_template(ctx)
@@ -562,7 +562,7 @@ def main(argv: list[str] | None = None) -> int:
         agent_context = load_agent_context(Path(os.path.abspath(args.agent_context)))
         if agent_context is None:
             print(
-                f"StateDD Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n"
+                f"StateSpec Worktree Guard\nMode: {args.mode}\n\nBlocking problems\n"
                 f"- Invalid or missing agent context file: {args.agent_context}"
             )
             return 1

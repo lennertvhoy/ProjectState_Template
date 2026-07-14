@@ -1,6 +1,6 @@
-# StateDD Template
+# StateSpec Template
 
-StateDD is an agent-operated repository workflow. Humans provide project intent,
+StateSpec is an agent-operated repository workflow. Humans provide project intent,
 priorities, permissions, feedback, and final acceptance. Coding agents initialize
 projects, maintain repository truth, execute slices, validate results, integrate
 subagents, commit and push changes, and produce CTO-ready handoffs.
@@ -47,7 +47,7 @@ development dependencies are intentionally root-only. The new-project default is
 
 ## Truth and safety
 
-Before repository or StateDD mutation, run the centralized safety transaction:
+Before repository or StateSpec mutation, run the centralized safety transaction:
 
 ```bash
 python3 scripts/statedd_git_safety_check.py --mode normal_branch
@@ -73,9 +73,10 @@ and non-trivial work requires an anti-brittleness review.
 
 ## License posture
 
-The repository uses the custom source-available StateDD Free Use License with
-teaching rights reserved; teaching/training rights are reserved. It is not a conventional permissive open-source
-license. [`LICENSE`](LICENSE) still contains an unresolved copyright-owner
+The repository still uses the custom source-available StateDD Free Use License
+(the legacy legal name) while the public product name is StateSpec. That license
+reserves teaching and training rights; it is not a conventional permissive
+open-source license. [`LICENSE`](LICENSE) still contains an unresolved copyright-owner
 placeholder; release readiness is therefore not proven. See
 [`LICENSE_FAQ.md`](LICENSE_FAQ.md) for the plain-language policy, not legal advice.
 

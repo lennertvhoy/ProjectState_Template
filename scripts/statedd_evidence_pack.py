@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Manage StateDD evidence pack manifests and a conservative redaction gate.
+"""Manage StateSpec evidence pack manifests and a conservative redaction gate.
 
 This script stays stdlib-only. It creates, validates, hashes, and scans
 artifact manifests under a single evidence folder. It never claims that an
@@ -430,7 +430,7 @@ def command_scan(evidence_dir: Path) -> int:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Manage StateDD evidence pack manifests")
+    parser = argparse.ArgumentParser(description="Manage StateSpec evidence pack manifests")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     init_parser = subparsers.add_parser("init", help="Create a manifest skeleton")
@@ -459,7 +459,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             require_mutation_permit(
                 evidence_dir,
-                f"StateDD evidence-pack {args.command}",
+                f"StateSpec evidence-pack {args.command}",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:

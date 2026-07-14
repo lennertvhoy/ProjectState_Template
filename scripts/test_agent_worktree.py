@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the StateDD strong-isolation orchestrator."""
+"""Regression tests for the StateSpec strong-isolation orchestrator."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def init_repo(root: Path) -> Path:
     repo.mkdir()
     git(repo, "init", "-b", "main")
     git(repo, "config", "user.email", "statedd@example.invalid")
-    git(repo, "config", "user.name", "StateDD Test")
+    git(repo, "config", "user.name", "StateSpec Test")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / ".gitignore").write_text((ROOT / ".gitignore").read_text(encoding="utf-8"), encoding="utf-8")
     git(repo, "add", "README.md", ".gitignore")
@@ -256,7 +256,7 @@ def test_handoff_includes_clone_agent_context() -> None:
             cwd=repo,
             expect_code=0,
         )
-        assert_contains(completed.stdout, "# StateDD Handoff Snapshot")
+        assert_contains(completed.stdout, "# StateSpec Handoff Snapshot")
         assert_contains(completed.stdout, "agent_id: agent-a1b2")
         assert_contains(completed.stdout, "slice_id: BL-TEST-007")
 

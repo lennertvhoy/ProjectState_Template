@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Session-state enforcement for the StateDD Git safety preflight.
+"""Session-state enforcement for the StateSpec Git safety preflight.
 
 The executable preflight owns the transition between an external read-only
-latch and a short-lived mutation permit. StateDD writers consume that permit;
+latch and a short-lived mutation permit. StateSpec writers consume that permit;
 they do not infer authorization from a successful process exit alone.
 
 State is deliberately stored outside the repository. A repository whose Git
@@ -61,7 +61,7 @@ UNSAFE_GIT_ENV_PREFIXES = ("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")
 
 
 class MutationBlocked(RuntimeError):
-    """A StateDD-managed write lacks a valid session mutation permit."""
+    """A StateSpec-managed write lacks a valid session mutation permit."""
 
 
 def effective_uid() -> int | None:
@@ -148,7 +148,7 @@ def _validate_state_file(path: Path) -> os.stat_result:
 @contextlib.contextmanager
 def state_lock(root: Path | None = None) -> Iterator[Path]:
     if fcntl is None:
-        raise MutationBlocked("POSIX file locking is unavailable; writable StateDD sessions are blocked")
+        raise MutationBlocked("POSIX file locking is unavailable; writable StateSpec sessions are blocked")
     state_root = ensure_state_root(root or default_state_root())
     lock_path = state_root / ".state.lock"
     flags = os.O_CREAT | os.O_RDWR
@@ -387,7 +387,7 @@ def require_mutation_permit(
     operation_class: str = "local_mutation",
     authorization: dict[str, str | None] | None = None,
 ) -> dict[str, Any] | None:
-    """Require a valid external permit before a StateDD-managed repository write."""
+    """Require a valid external permit before a StateSpec-managed repository write."""
     if operation_class not in {"local_mutation", "remote_mutation"}:
         raise MutationBlocked(f"{operation} blocked: invalid mutation operation class {operation_class!r}")
     overrides = active_git_environment_overrides()

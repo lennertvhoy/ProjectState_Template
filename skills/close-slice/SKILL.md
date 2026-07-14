@@ -38,7 +38,7 @@ step_by_step:
     failure: "Collect missing evidence, re-run."
   - name: "Update state files"
     action: "The integration agent reviews each isolated subagent commit, merges in dependency order, resolves conflicts, rejects incomplete or brittle work, then updates PROJECT_STATE.yaml, STATUS.md, NEXT_ACTIONS.md, BACKLOG.md, and WORKLOG.md once from integrated truth."
-    verify: "python scripts/check_state_docs.py; only the integration agent pushes the final slice branch; subagents do not edit global StateDD files or open competing PRs."
+    verify: "python scripts/check_state_docs.py; only the integration agent pushes the final slice branch; subagents do not edit global StateSpec files or open competing PRs."
   - name: "Generate handoff"
     command: "python scripts/statedd_handoff.py"
     expected: "Complete handoff text for CTO lane"

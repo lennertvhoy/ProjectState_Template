@@ -5,7 +5,10 @@ schema_version: "1.0"
 
 product:
   name: "StateDD_Template"
-  one_sentence: "Reusable State Driven Development workflow template for AI-assisted projects."
+  public_name: "StateSpec Template"
+  method: "State-Centric Engineering"
+  legacy_name: "StateDD Template"
+  one_sentence: "Reusable StateSpec workflow template for State-Centric Engineering projects."
   description: |
     This repository uses explicit state, a short active queue, durable history,
     and evidence-led verification for AI-assisted technical delivery.
@@ -68,7 +71,7 @@ truth_rules:
 
   repo_modes:
     template-maintenance:
-      purpose: maintain the reusable StateDD template repository
+      purpose: maintain the reusable StateSpec template repository
       exit_condition: not used by downstream projects
     bootstrap:
       purpose: discover truth and establish baseline state
@@ -79,11 +82,11 @@ truth_rules:
 
   repo_roles:
     template_repository:
-      purpose: repository that maintains and publishes StateDD itself
+      purpose: repository that maintains and publishes StateSpec itself
       allowed_modes:
         - template-maintenance
     downstream_project:
-      purpose: project repository that adopts or is generated from StateDD
+      purpose: project repository that adopts or is generated from StateSpec
       allowed_modes:
         - bootstrap
         - operating
@@ -108,7 +111,7 @@ invariants:
   - "PROJECT_DNA.yaml changes slowly."
   - "NEXT_ACTIONS.md contains open work only."
   - "BACKLOG.md assigns stable backlog IDs."
-  - "VERSION is the canonical StateDD spec-version source."
+  - "VERSION is the canonical StateSpec version source; statedd-template-v5 remains its compatibility identifier."
   - "Template root uses repo_role: template_repository and statedd_mode: template-maintenance."
   - "Generated and adopted repos use repo_role: downstream_project and start with statedd_mode: bootstrap."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
@@ -119,9 +122,9 @@ invariants:
   - "A slice cannot close only because its own checklist passed."
   - "P0 product behavior failures trigger quality_freeze or incident_response until the freeze condition is addressed."
   - "Bad observed events are converted into incidents, failure scans, fixtures or equivalent durable checks, and regression evidence."
-  - "No repository or StateDD mutation starts until the centralized Git safety preflight permits the selected isolation mode."
+  - "No repository or StateSpec mutation starts until the centralized Git safety preflight permits the selected isolation mode."
   - "Containers and independent agents use full clones; linked worktrees require explicit trusted-local same-identity opt-in."
-  - "A mandatory Git failure latches StateDD-managed mutation read-only until repair and explicit restart."
+  - "A mandatory Git failure latches StateSpec-managed mutation read-only until repair and explicit restart."
   - "Git permission anomalies are diagnosed, never automatically repaired or force-cleaned."
   - "No non-trivial fix or feature slice closes by matching only observed examples without a durable invariant."
 

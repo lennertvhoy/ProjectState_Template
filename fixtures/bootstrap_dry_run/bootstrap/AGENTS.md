@@ -7,7 +7,7 @@ initialized_on: null
 last_updated: 2026-03-18
 ---
 
-# State Driven Development Template Contract
+# StateSpec Template Contract
 
 This fixture is a sample project used to validate the bootstrap flow.
 

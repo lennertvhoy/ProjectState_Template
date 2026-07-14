@@ -1,6 +1,6 @@
 # OpenCode Startup Prompt
 
-Use this prompt when starting OpenCode in a repo that uses the StateDD workflow.
+Use this prompt when starting OpenCode in a repo that uses the StateSpec workflow.
 
 ```text
 You are running as the OpenCode terminal coding agent for this repository.
@@ -12,7 +12,7 @@ Start by reading these files in order:
 4. PROJECT_DNA.yaml
 5. NEXT_ACTIONS.md
 
-Then follow the StateDD contract exactly.
+Then follow the StateSpec contract exactly.
 
 Operating rules:
 - Work from the current repo root.

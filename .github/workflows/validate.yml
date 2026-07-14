@@ -90,7 +90,7 @@ jobs:
           python3 scripts/statedd_validate_schema.py "$tmpdir/demo"
           python3 scripts/statedd_doctor.py "$tmpdir/demo"
           git -C "$tmpdir/demo" config user.email statedd-ci@example.invalid
-          git -C "$tmpdir/demo" config user.name StateDD CI
+          git -C "$tmpdir/demo" config user.name StateSpec CI
           git -C "$tmpdir/demo" add -A
           git -C "$tmpdir/demo" commit -m "bootstrap: validate generated project"
           python3 scripts/statedd_audit.py "$tmpdir/demo"

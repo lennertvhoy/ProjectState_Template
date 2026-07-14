@@ -1,7 +1,7 @@
 # False Closure Claim Regression Fixture
 
 ## Scenario
-An agent claims "StateDD v5 AgentOS architecture is fully implemented" but:
+An agent claims "StateSpec v5 AgentOS architecture is fully implemented" but:
 - Local files exist but are not tracked/committed
 - Remote (GitHub main) does not contain the claimed deliverables
 - No remote truth proof provided

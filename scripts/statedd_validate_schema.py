@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate StateDD state, evidence, runtime, and handoff contracts.
+"""Validate StateSpec state, evidence, runtime, and handoff contracts.
 
 The validator intentionally stays stdlib-only. It implements the small JSON
-Schema subset used by this template and a tiny YAML parser for the StateDD YAML
+Schema subset used by this template and a tiny YAML parser for the StateSpec YAML
 style emitted by `scripts/init_template.py`.
 """
 
@@ -398,7 +398,7 @@ def root_targets(root: Path) -> list[tuple[Path, Path, bool]]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate StateDD schemas and markdown contracts")
+    parser = argparse.ArgumentParser(description="Validate StateSpec schemas and markdown contracts")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
     parser.add_argument("--file", help="Validate one file instead of a repo root")
     parser.add_argument("--schema", help="Schema or markdown contract for --file")
@@ -449,7 +449,7 @@ def validate_root(root: Path, quiet: bool) -> int:
         print(f"FAILED: {sum(len(issues) for _, issues in all_issues)} schema issue(s) found")
         return 1
     if not quiet:
-        print("PASSED: All StateDD schema checks passed")
+        print("PASSED: All StateSpec schema checks passed")
     return 0
 
 

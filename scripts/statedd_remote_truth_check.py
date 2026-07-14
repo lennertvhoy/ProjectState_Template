@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Remote Truth Check
+StateSpec Remote Truth Check
 
 Hard gate: No closure claim without proving remote GitHub state matches local claims.
 Truth boundaries: sandbox → local worktree → git index → local commit → remote branch → GitHub main → CI → user-accepted
@@ -59,7 +59,7 @@ class RemoteTruthCheck:
 
     def run(self) -> int:
         print("=" * 60)
-        print("StateDD Remote Truth Check")
+        print("StateSpec Remote Truth Check")
         print("=" * 60)
 
         # Boundary 1: Repo identity
@@ -195,7 +195,7 @@ class RemoteTruthCheck:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Remote Truth Check")
+    parser = argparse.ArgumentParser(description="StateSpec Remote Truth Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--claim", action="append", dest="claimed_files", help="Claimed deliverable files (repeatable)")
@@ -211,7 +211,7 @@ def main():
         try:
             require_mutation_permit(
                 output_path,
-                "StateDD remote-truth evidence write",
+                "StateSpec remote-truth evidence write",
                 allow_non_git=True,
             )
         except MutationBlocked as exc:

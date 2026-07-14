@@ -1,4 +1,4 @@
-# StateDD in Five Minutes
+# StateSpec in Five Minutes
 
 5 Minutes: choose a profile, initialize the workflow, start the coding agent,
 and review the handoff.
@@ -6,7 +6,7 @@ and review the handoff.
 This is the five-minute operator path. OpenCode users may also start with
 `prompts/OPENCODE_STARTUP_PROMPT.md`.
 
-StateDD is an agent-operated repository workflow. Humans choose intent, profile,
+StateSpec is an agent-operated repository workflow. Humans choose intent, profile,
 and permissions; coding agents read `AGENTS.md`, operate the executable controls,
 maintain truth, and produce the handoff.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Quality Gate
+StateSpec Quality Gate
 
 Post-slice quality gate: verify all tests pass, static analysis clean,
 state files updated, and new evidence recorded.
@@ -195,7 +195,7 @@ class QualityGate:
     def run(self) -> int:
         """Run all quality checks."""
         print("=" * 50)
-        print("StateDD Quality Gate")
+        print("StateSpec Quality Gate")
         print("=" * 50)
 
         checks = [
@@ -235,7 +235,7 @@ class QualityGate:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Quality Gate")
+    parser = argparse.ArgumentParser(description="StateSpec Quality Gate")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--gate-level", type=int, default=1, help="Gate level being proven")

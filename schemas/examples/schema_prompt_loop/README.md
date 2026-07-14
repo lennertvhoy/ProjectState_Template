@@ -1,6 +1,6 @@
 # Schema/Prompt Loop Example
 
-A minimal, stdlib-only demonstration of StateDD's schema-driven contract idea:
+A minimal, stdlib-only demonstration of StateSpec's schema-driven contract idea:
 **one schema validates data and generates prompt material**, so docs, prompts, and
 examples cannot quietly drift from the canonical contract.
 

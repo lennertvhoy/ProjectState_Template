@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-StateDD Closure Check
+StateSpec Closure Check
 
 Validates that closure criteria are truly met before marking a slice closure-grade.
 Checks: no unproven claims, no broken links, runtime proof captured, REMOTE TRUTH VERIFIED.
@@ -315,7 +315,7 @@ class ClosureCheck:
 
     def run(self) -> int:
         print("=" * 50)
-        print("StateDD Closure Check")
+        print("StateSpec Closure Check")
         print("=" * 50)
 
         self.closure_label = "NOT CLOSURE-GRADE — LOCAL OR UNVERIFIED CLAIM"
@@ -358,7 +358,7 @@ class ClosureCheck:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="StateDD Closure Check")
+    parser = argparse.ArgumentParser(description="StateSpec Closure Check")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--claimed-files", nargs="*", default=[], help="Files claimed as deliverables")

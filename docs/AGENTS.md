@@ -1,12 +1,12 @@
 ---
 scope: "docs"
-purpose: "StateDD reference documentation, failure taxonomy, quality gates, incidents"
+purpose: "StateSpec reference documentation, failure taxonomy, quality gates, incidents"
 ---
 
 # Docs Agent Instructions
 
 ## Scope
-This directory holds reference documentation for StateDD: failure taxonomy, quality firewall, incident response, failure scans, quality gates, and ADRs. These are **read-only reference** for agents — not executable.
+This directory holds reference documentation for StateSpec: failure taxonomy, quality firewall, incident response, failure scans, quality gates, and ADRs. These are **read-only reference** for agents — not executable.
 
 ## Document Catalog
 | File | Purpose |

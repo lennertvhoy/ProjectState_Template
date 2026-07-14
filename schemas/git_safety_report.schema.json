@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "statedd.git_safety_report.v1",
-  "title": "StateDD Git safety preflight report",
+  "title": "StateSpec Git safety preflight report",
   "type": "object",
   "required": [
     "schema",
