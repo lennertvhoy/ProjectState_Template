@@ -77,7 +77,7 @@ Default profile for a single developer.
 
 Use when multiple people will read handoffs, review evidence, or open pull requests.
 
-- `solo` assets plus isolated agent worktrees, remote closure, CTO/review prompts,
+- `solo` assets plus managed agent workspaces, remote closure, CTO/review prompts,
   upgrade guidance, and ADR templates.
 - Generated `AGENTS.md` emphasizes slice contracts, claim ledgers, and CTO review.
 - Encourages stricter evidence and audit hygiene by default.

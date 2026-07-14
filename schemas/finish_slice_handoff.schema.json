@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.finish_slice_handoff.v1",
+  "$id": "statedd.finish_slice_handoff.v2",
   "title": "StateDD agent-owned finish-slice external handoff",
   "type": "object",
   "additionalProperties": false,
@@ -29,11 +29,16 @@
     "post_merge_verified",
     "remote_branch_absent",
     "isolation_released",
+    "isolation_mode",
+    "isolation_disposition",
+    "isolation_original_path",
+    "isolation_original_path_absent",
+    "isolation_quarantine_path",
     "recoverable_state_retained",
     "failure"
   ],
   "properties": {
-    "schema": {"type": "string", "const": "statedd.finish_slice_handoff.v1"},
+    "schema": {"type": "string", "const": "statedd.finish_slice_handoff.v2"},
     "generated_at": {"type": "string", "minLength": 1},
     "status": {
       "type": "string",
@@ -86,9 +91,56 @@
     "post_merge_verified": {"type": "boolean"},
     "remote_branch_absent": {"type": "boolean"},
     "isolation_released": {"type": "boolean"},
+    "isolation_mode": {"type": ["string", "null"], "enum": ["clone", "worktree", null]},
+    "isolation_disposition": {"type": ["string", "null"], "enum": ["quarantined", "removed", null]},
+    "isolation_original_path": {"type": ["string", "null"]},
+    "isolation_original_path_absent": {"type": "boolean"},
+    "isolation_quarantine_path": {"type": ["string", "null"]},
     "recoverable_state_retained": {"type": "boolean"},
     "failure": {"type": ["string", "null"]}
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"isolation_released": {"const": true}},
+        "required": ["isolation_released"]
+      },
+      "then": {
+        "properties": {
+          "isolation_mode": {"enum": ["clone", "worktree"]},
+          "isolation_disposition": {"enum": ["quarantined", "removed"]},
+          "isolation_original_path": {"type": "string", "minLength": 1},
+          "isolation_original_path_absent": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"isolation_mode": {"const": "clone"}},
+        "required": ["isolation_mode"]
+      },
+      "then": {
+        "properties": {
+          "isolation_disposition": {"const": "quarantined"},
+          "isolation_quarantine_path": {"type": "string", "minLength": 1},
+          "recoverable_state_retained": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"isolation_mode": {"const": "worktree"}},
+        "required": ["isolation_mode"]
+      },
+      "then": {
+        "properties": {
+          "isolation_disposition": {"const": "removed"},
+          "isolation_quarantine_path": {"type": "null"},
+          "recoverable_state_retained": {"const": false}
+        }
+      }
+    }
+  ],
   "$defs": {
     "ci_observation": {
       "type": ["object", "null"],

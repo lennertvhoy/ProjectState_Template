@@ -207,6 +207,10 @@ views and never replace canonical readable state.
   `clone`; containers and independent agents use full clones.
 - One integration agent owns each slice branch; subagents return bounded commits,
   do not edit global StateDD truth, and do not push the final slice.
+- Agent clones are created only through `scripts/statedd_agent_worktree.py` under
+  the per-user managed workspace root. Agent workspaces cannot provision nested
+  agents, arbitrary isolation targets are forbidden, and every handoff inventories
+  unexpected same-origin sibling clones.
 - The human confirms `delivery_policy.merge.mode` once during bootstrap. A
   proposed or pending policy grants no merge authority, and an agent never
   silently changes a confirmed mode.
@@ -215,6 +219,10 @@ views and never replace canonical readable state.
   verified PR head, verify direct-main CI, write an external final handoff, and
   delete the remote slice branch only after post-merge verification through
   `scripts/statedd_finish_slice.py`.
+- `HANDOFF_COMPLETE` requires a closed-world release receipt proving the original
+  isolation path is absent. Clean clones are quarantined outside the project
+  parent; clean opted-in worktrees are removed without force; dirty or unproven
+  state is retained.
 - Force-push, shared-history rewrite, and CI-unavailable automatic merge remain
   forbidden; final product acceptance remains human.
 - End implementation sessions with state hygiene, relevant gates, and a handoff.

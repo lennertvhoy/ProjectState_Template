@@ -33,6 +33,27 @@ from statedd_git_safety_session import (
     sanitized_git_environment,
 )
 
+try:
+    from statedd_workspace_inventory import (
+        build_inventory,
+        managed_active_root,
+        managed_clone_path,
+        managed_quarantine_root,
+        path_is_within,
+        safe_component,
+        workspace_state_root,
+    )
+except ModuleNotFoundError:  # pragma: no cover - package-import fallback
+    from scripts.statedd_workspace_inventory import (
+        build_inventory,
+        managed_active_root,
+        managed_clone_path,
+        managed_quarantine_root,
+        path_is_within,
+        safe_component,
+        workspace_state_root,
+    )
+
 
 ROOT = Path(__file__).resolve().parents[1]
 GIT_SAFETY_SCRIPT = ROOT / "scripts" / "statedd_git_safety_check.py"
@@ -131,11 +152,44 @@ def reservation_ref(branch: str) -> str:
 
 
 def worktree_path_for_branch(repo: Path, branch: str) -> Path:
-    return (repo / WORKTREE_DIR / branch).resolve()
+    # Keep lexical components so the subsequent symlink-component guard can
+    # detect a redirected .worktrees directory instead of resolving through it.
+    return Path(os.path.abspath(repo / WORKTREE_DIR / branch))
 
 
 def clone_path_for_branch(repo: Path, branch: str) -> Path:
-    return (repo.parent / ".statedd-clones" / repo.name / branch).resolve()
+    return managed_clone_path(repo, branch)
+
+
+def reject_nested_or_unmanaged_source(source: Path) -> None:
+    """Refuse recursive orchestration and clone proliferation near the source."""
+    context_path = source / ".statedd" / "agent.context"
+    if context_path.exists():
+        raise RuntimeError(
+            "Nested agent isolation is forbidden: this repository already has an agent context. "
+            "Provision parallel work only from the canonical coordinator repository."
+        )
+    if path_is_within(source, workspace_state_root()):
+        raise RuntimeError(
+            "Nested agent isolation is forbidden from inside the managed StateDD workspace root."
+        )
+    inventory = build_inventory(source)
+    siblings = inventory["unmanaged_same_origin_siblings"]
+    if siblings:
+        paths = ", ".join(str(item["path"]) for item in siblings)
+        raise RuntimeError(
+            "Workspace provisioning blocked by unmanaged same-origin sibling clone(s): "
+            f"{paths}. Reconcile or archive them before starting another agent."
+        )
+
+
+def require_default_target(requested: str | None, expected: Path, label: str) -> Path:
+    target = Path(os.path.abspath(requested)) if requested else expected
+    if target != expected:
+        raise RuntimeError(
+            f"Arbitrary {label} targets are forbidden; expected the centrally managed path {expected}"
+        )
+    return target
 
 
 def main_worktree_root(repo: Path) -> Path:
@@ -459,7 +513,11 @@ def cmd_start_worktree(args: argparse.Namespace, source: Path, slice_id: str, ag
         return 1 if code != 2 else 2
 
     branch = args.branch or compute_branch_name(slice_id, short_id)
-    target = Path(args.target).resolve() if args.target else worktree_path_for_branch(source, branch)
+    target = require_default_target(
+        args.target,
+        worktree_path_for_branch(source, branch),
+        "worktree",
+    )
     ref = reservation_ref(branch)
     base, base_commit = resolve_base_ref(source, args.base, report)
     code, existing, _ = run_command(["git", "rev-parse", "--verify", "--quiet", ref], source)
@@ -473,6 +531,7 @@ def cmd_start_worktree(args: argparse.Namespace, source: Path, slice_id: str, ag
     if target.exists():
         print(f"Worktree path already exists: {target}", file=sys.stderr)
         return 1
+    reject_symlink_components(target.parent)
 
     code, _, stderr = run_command(
         ["git", "worktree", "add", "-b", branch, str(target), base],
@@ -546,7 +605,11 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
     if not base or base == "not proven":
         print("Clone base branch is not proven; pass --base explicitly.", file=sys.stderr)
         return 1
-    target = Path(args.target).resolve() if args.target else clone_path_for_branch(source, branch)
+    target = require_default_target(
+        args.target,
+        clone_path_for_branch(source, branch),
+        "clone",
+    )
     if target.exists():
         print(f"Clone target already exists: {target}", file=sys.stderr)
         return 1
@@ -555,6 +618,7 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
         source_url = str(source)
 
     target.parent.mkdir(parents=True, exist_ok=True)
+    reject_symlink_components(target.parent)
     code, _, stderr = run_command(
         [
             "git",
@@ -634,13 +698,14 @@ def cmd_start(args: argparse.Namespace) -> int:
     branch = args.branch or compute_branch_name(slice_id, short_id)
     isolation_mode = args.isolation_mode
 
+    if isolation_mode in {"clone", "worktree"}:
+        reject_nested_or_unmanaged_source(source)
+
     if args.dry_run:
         target = (
-            Path(args.target).resolve()
-            if args.target
-            else worktree_path_for_branch(source, branch)
+            require_default_target(args.target, worktree_path_for_branch(source, branch), "worktree")
             if isolation_mode == "worktree"
-            else clone_path_for_branch(source, branch)
+            else require_default_target(args.target, clone_path_for_branch(source, branch), "clone")
         )
         print("DRY RUN: no Git or filesystem mutation performed")
         print(f"  requested isolation mode: {isolation_mode}")
@@ -781,42 +846,9 @@ def cmd_handoff(args: argparse.Namespace) -> int:
         print(f"Agent context ownership verification failed: {exc}", file=sys.stderr)
         return 1
     if args.release:
-        if not args.validated:
-            print("Release refused: pass --validated only after the applicable local closure gate has passed.", file=sys.stderr)
-            return 1
-        changed = dirty_files(worktree)
-        if changed:
-            print("Release refused: worktree is dirty or unclassified; reservation retained.", file=sys.stderr)
-            return 1
-        safety_code, report, safety_error = safety_for_context(worktree, context, False)
-        if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
-            print_safety_failure(report, safety_error)
-            return 1
-        try:
-            require_mutation_permit(
-                worktree,
-                "reservation release",
-                authorization={
-                    "slice_id": context["slice_id"],
-                    "agent_id": context["agent_id"],
-                    "context_hash": context_hash(context),
-                    "reservation_ref": context["reservation_ref"],
-                    "expected_branch": context["branch"],
-                },
-            )
-        except MutationBlocked as exc:
-            print(str(exc), file=sys.stderr)
-            return 1
-        if context["reservation_ref"]:
-            code, _, stderr = run_command(["git", "update-ref", "-d", context["reservation_ref"]], worktree)
-            if code != 0:
-                latch_error = record_required_git_failure(worktree, "reservation release", stderr)
-                print(f"Reservation release failed; state retained: {stderr}", file=sys.stderr)
-                if latch_error:
-                    print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
-                return 1
-        print("Reservation released after clean, validated local closure; worktree retained for explicit cleanup.")
-        return 0
+        # Compatibility alias.  Unlike the historical implementation, this
+        # performs and verifies physical release of the isolation path.
+        return cmd_release(args)
     handoff_script = ROOT / "scripts" / "statedd_handoff.py"
     code, output, stderr = run_command(
         [sys.executable, str(handoff_script), "--repo", str(worktree)], worktree
@@ -826,6 +858,193 @@ def cmd_handoff(args: argparse.Namespace) -> int:
     if stderr:
         print(stderr, file=sys.stderr)
     return code
+
+
+def release_receipt(
+    *,
+    context: dict[str, Any],
+    head: str,
+    disposition: str,
+    original_path: Path,
+    quarantine_path: Path | None,
+    recoverable_state_retained: bool,
+) -> dict[str, Any]:
+    return {
+        "schema": "statedd.isolation_release.v1",
+        "generated_at": dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds"),
+        "released": True,
+        "isolation_mode": context["isolation_mode"],
+        "disposition": disposition,
+        "original_path": str(original_path),
+        "original_path_absent": not original_path.exists(),
+        "quarantine_path": str(quarantine_path) if quarantine_path else None,
+        "recoverable_state_retained": recoverable_state_retained,
+        "branch": context["branch"],
+        "head": head,
+        "reservation_ref": context["reservation_ref"],
+        "reservation_absent": True,
+    }
+
+
+def emit_release_receipt(receipt: dict[str, Any], output_format: str) -> None:
+    if output_format == "json":
+        print(json.dumps(receipt, indent=2, sort_keys=True))
+        return
+    print("StateDD Isolation Release")
+    print(f"Released: {receipt['released']}")
+    print(f"Disposition: {receipt['disposition']}")
+    print(f"Original path absent: {receipt['original_path_absent']}")
+    print(f"Original path: {receipt['original_path']}")
+    print(f"Quarantine path: {receipt['quarantine_path'] or 'none'}")
+
+
+def _release_authorization(context: dict[str, Any], head: str) -> dict[str, str]:
+    return {
+        "slice_id": context["slice_id"],
+        "agent_id": context["agent_id"],
+        "context_hash": context_hash(context),
+        "reservation_ref": context["reservation_ref"],
+        "expected_branch": context["branch"],
+        "expected_head": head,
+    }
+
+
+def _reservation_absent(repo: Path, ref: str) -> bool:
+    if not ref:
+        return True
+    code, _, _ = run_command(["git", "show-ref", "--verify", "--quiet", ref], repo)
+    return code == 1
+
+
+def _release_clone(worktree: Path, context: dict[str, Any], head: str) -> dict[str, Any]:
+    source = resolve_repo(Path(context["source_repo"]))
+    active_root = managed_active_root(source)
+    if worktree.parent != active_root or not path_is_within(worktree, active_root):
+        raise MutationBlocked(
+            "clone release refused: agent workspace is outside the centrally managed active root"
+        )
+    quarantine_root = managed_quarantine_root(source)
+    quarantine_root.mkdir(parents=True, exist_ok=True)
+    reject_symlink_components(quarantine_root)
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    target = quarantine_root / (
+        f"{safe_component(context['branch'])}-{head[:12]}-{stamp}-{uuid.uuid4().hex[:8]}"
+    )
+    if target.exists():
+        raise MutationBlocked(f"clone quarantine target unexpectedly exists: {target}")
+    os.chdir(quarantine_root)
+    try:
+        os.replace(worktree, target)
+    except OSError as exc:
+        raise MutationBlocked(f"clone quarantine move failed; original retained: {exc}") from exc
+    if worktree.exists() or not target.is_dir():
+        raise MutationBlocked(
+            "clone release verification failed: original path absence/quarantine presence is not proven"
+        )
+    return release_receipt(
+        context=context,
+        head=head,
+        disposition="quarantined",
+        original_path=worktree,
+        quarantine_path=target,
+        recoverable_state_retained=True,
+    )
+
+
+def _release_worktree(worktree: Path, context: dict[str, Any], head: str) -> dict[str, Any]:
+    source = resolve_repo(Path(context["source_repo"]))
+    expected = worktree_path_for_branch(source, context["branch"])
+    if worktree != expected:
+        raise MutationBlocked(
+            f"worktree release refused: path differs from the managed path {expected}"
+        )
+    if check_locks_or_fail(source):
+        raise MutationBlocked("worktree release refused while Git lock files are present")
+    os.chdir(source)
+    code, _, stderr = run_command(["git", "worktree", "remove", str(worktree)], source)
+    if code != 0:
+        latch_error = record_required_git_failure(source, "git worktree remove", stderr)
+        detail = f"; read-only latch persistence failed: {latch_error}" if latch_error else ""
+        raise MutationBlocked(
+            f"worktree removal failed without force; isolation retained: {stderr or 'no diagnostic'}{detail}"
+        )
+    if worktree.exists():
+        raise MutationBlocked("worktree removal returned success but the isolation path still exists")
+    ref = context["reservation_ref"]
+    code, _, stderr = run_command(["git", "update-ref", "-d", ref], source)
+    if code != 0 or not _reservation_absent(source, ref):
+        raise MutationBlocked(
+            "worktree path was removed but reservation cleanup is not proven: "
+            + (stderr or "reservation ref remains")
+        )
+    topology = required_command(
+        ["git", "worktree", "list", "--porcelain"], source, "post-release topology inspection"
+    )
+    registered = any(
+        line == f"worktree {worktree}" for line in topology.splitlines()
+    )
+    if registered:
+        raise MutationBlocked("worktree path remains registered after removal")
+    return release_receipt(
+        context=context,
+        head=head,
+        disposition="removed",
+        original_path=worktree,
+        quarantine_path=None,
+        recoverable_state_retained=False,
+    )
+
+
+def cmd_release(args: argparse.Namespace) -> int:
+    worktree = Path(os.path.abspath(args.worktree)) if args.worktree else Path.cwd().resolve()
+    if not getattr(args, "validated", False):
+        print(
+            "Release refused: pass --validated only after post-merge verification succeeds.",
+            file=sys.stderr,
+        )
+        return 1
+    code, context, error = load_agent_context(worktree)
+    if code:
+        print(error, file=sys.stderr)
+        return 2
+    try:
+        verify_agent_context_binding(worktree, context)
+        changed = dirty_files(worktree)
+        if changed:
+            raise MutationBlocked(
+                "release requires a clean worktree; isolation retained: " + ", ".join(changed)
+            )
+        safety_code, report, safety_error = safety_for_context(
+            worktree,
+            context,
+            getattr(args, "restart_session", False),
+        )
+        if safety_code != 0 or not report.get("decision", {}).get("mutation_permitted"):
+            blockers = report.get("decision", {}).get("blockers", []) if report else []
+            raise MutationBlocked(
+                "release Git-safety preflight failed: "
+                + "; ".join(str(item) for item in blockers or [safety_error or "no diagnostic"])
+            )
+        head = required_command(["git", "rev-parse", "HEAD"], worktree, "release HEAD inspection")
+        require_mutation_permit(
+            worktree,
+            "physical isolation release",
+            authorization=_release_authorization(context, head),
+        )
+        mode = context["isolation_mode"]
+        if mode == "clone":
+            receipt = _release_clone(worktree, context, head)
+        elif mode == "worktree":
+            receipt = _release_worktree(worktree, context, head)
+        else:
+            raise MutationBlocked(f"physical isolation release is unsupported for mode {mode!r}")
+        if not receipt["original_path_absent"] or not receipt["released"]:
+            raise MutationBlocked("release receipt cannot prove physical isolation-path absence")
+        emit_release_receipt(receipt, getattr(args, "format", "human"))
+        return 0
+    except (MutationBlocked, RuntimeError, OSError) as exc:
+        print(f"Isolation release refused: {exc}", file=sys.stderr)
+        return 1
 
 
 def cmd_close(args: argparse.Namespace) -> int:
@@ -982,6 +1201,7 @@ def cmd_cleanup(args: argparse.Namespace) -> int:
     repo = resolve_repo(Path(args.repo))
     reservations = list_reservations(repo)
     worktrees = list_worktrees(repo)
+    inventory = build_inventory(repo)
     default = origin_default_branch(repo) or "main"
     print("StateDD Agent Isolation Cleanup Report (non-mutating)")
     print("No automatic deletion, force removal, branch deletion, or pruning is available.")
@@ -1007,6 +1227,25 @@ def cmd_cleanup(args: argparse.Namespace) -> int:
             f"- {key}: {info.get('path')} HEAD={info.get('head', 'not proven')} "
             f"locked={info.get('locked', False)} prunable={info.get('prunable', False)}"
         )
+    print("Managed active clones:")
+    for item in inventory["managed_clones"]:
+        print(
+            f"- {item['path']}: HEAD={item['head']} slice={item['slice_id']} "
+            f"context_present={item['context_present']} "
+            f"path_binding_matches={item['path_binding_matches']}"
+        )
+    if not inventory["managed_clones"]:
+        print("- none")
+    print("Unmanaged same-origin sibling clones (must be reconciled manually):")
+    for item in inventory["unmanaged_same_origin_siblings"]:
+        print(f"- {item['path']}: HEAD={item['head']} dirty={item['dirty']}")
+    if not inventory["unmanaged_same_origin_siblings"]:
+        print("- none")
+    print("Quarantined clones (recoverable, inactive; never auto-deleted):")
+    for item in inventory["quarantined_clones"]:
+        print(f"- {item['path']}: HEAD={item['head']} slice={item['slice_id']}")
+    if not inventory["quarantined_clones"]:
+        print("- none")
     return 0
 
 
@@ -1015,6 +1254,7 @@ def cmd_list(args: argparse.Namespace) -> int:
     reservations = list_reservations(repo)
     worktrees = list_worktrees(repo)
     locks = detect_git_locks(repo)
+    inventory = build_inventory(repo)
     print("StateDD Agent Isolation Inventory")
     print("Reservations:")
     for branch, sha, context in reservations:
@@ -1027,6 +1267,22 @@ def cmd_list(args: argparse.Namespace) -> int:
     print("Git lock files:")
     for lock in locks or ["none"]:
         print(f"- {lock}")
+    print(f"Managed workspace root: {inventory['workspace_root']}")
+    print("Managed active clones:")
+    for item in inventory["managed_clones"]:
+        print(f"- {item['path']}: HEAD={item['head']} slice={item['slice_id']}")
+    if not inventory["managed_clones"]:
+        print("- none")
+    print("Unmanaged same-origin sibling clones:")
+    for item in inventory["unmanaged_same_origin_siblings"]:
+        print(f"- {item['path']}: HEAD={item['head']} dirty={item['dirty']}")
+    if not inventory["unmanaged_same_origin_siblings"]:
+        print("- none")
+    print("Quarantined clones (recoverable, inactive):")
+    for item in inventory["quarantined_clones"]:
+        print(f"- {item['path']}: HEAD={item['head']} slice={item['slice_id']}")
+    if not inventory["quarantined_clones"]:
+        print("- none")
     return 0
 
 
@@ -1057,10 +1313,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     guard.add_argument("--worktree")
     guard.add_argument("--restart-session", action="store_true")
 
-    handoff = subparsers.add_parser("handoff", help="Generate a handoff without releasing/deleting isolation state")
+    handoff = subparsers.add_parser("handoff", help="Generate a handoff; legacy --release performs physical release")
     handoff.add_argument("--worktree")
-    handoff.add_argument("--release", action="store_true", help="Release only after a clean, validated session")
-    handoff.add_argument("--validated", action="store_true", help="Assert that the applicable local closure gate passed")
+    handoff.add_argument("--release", action="store_true", help="Compatibility alias for verified physical release")
+    handoff.add_argument("--validated", action="store_true", help="Assert that post-merge verification passed")
+
+    release = subparsers.add_parser(
+        "release",
+        help="Physically remove/quarantine a clean isolation path and emit a proof receipt",
+    )
+    release.add_argument("--worktree", required=True)
+    release.add_argument("--validated", action="store_true", help="Assert that post-merge verification passed")
+    release.add_argument("--restart-session", action="store_true")
+    release.add_argument("--format", choices=("human", "json"), default="human")
 
     close = subparsers.add_parser(
         "close",
@@ -1090,6 +1355,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_guard(args)
         if args.command == "handoff":
             return cmd_handoff(args)
+        if args.command == "release":
+            return cmd_release(args)
         if args.command == "close":
             return cmd_close(args)
         if args.command == "cleanup":

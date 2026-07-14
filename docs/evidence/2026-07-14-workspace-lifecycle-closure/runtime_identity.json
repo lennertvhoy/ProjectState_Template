@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-07-14T17:56:34+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3",
+  "in_container": false,
+  "kernel": "7.1.3-200.fc44.x86_64",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Sat Jul  4 19:20:12 UTC 2026",
+  "python": "3.14.6",
+  "repo": {
+    "branch": "fix/workspace-lifecycle-closure",
+    "head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "Template root has no application runtime; local Git/filesystem lifecycle behavior is proven by executable regression and profile gates.",
+    "required": false
+  },
+  "schema": "statedd.runtime_identity.v2",
+  "timestamp": "2026-07-14T15:56:34.885637Z"
+}

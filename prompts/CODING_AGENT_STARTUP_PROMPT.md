@@ -51,16 +51,22 @@ git worktree list --porcelain
 python3 scripts/statedd_worktree_guard.py --mode start-slice
 ```
 
-For parallel-agent slices, prefer an isolated agent worktree:
+For parallel-agent slices, use the managed isolation orchestrator from the
+canonical coordinator repository:
 
 ```bash
 python3 scripts/statedd_agent_worktree.py start --slice-id <BL-XXX>
 ```
 
-This provisions a private branch, worktree, and reservation ref under
-`.worktrees/` and writes `.statedd/agent.context` so existing StateDD scripts
-recognize the agent context. Use `python3 scripts/statedd_agent_worktree.py list`
-to inspect active worktrees and reservations.
+The default is a full clone with an independent Git object database under the
+per-user StateDD workspace root (outside the project parent). It writes
+`.statedd/agent.context` so StateDD can bind the exact owner, source, branch, and
+path. Linked worktrees require both explicit trusted-local flags. Never run
+`git clone` or `git worktree add` directly for an agent slice, pass an arbitrary
+`--target`, or start another agent workspace from inside an existing agent
+workspace. Use `python3 scripts/statedd_agent_worktree.py list` to inspect
+managed clones, opted-in worktrees, reservations, and unexpected same-origin
+sibling clones.
 
 If the guard reports dirty or ambiguous state, stop implementation and produce a
 worktree recovery handoff instead. If dirty files exist, run
@@ -80,6 +86,10 @@ Always:
   remote slice branch only after verification
 - use `scripts/statedd_finish_slice.py` as the one authoritative merge,
   direct-main CI, post-merge handoff, and verified-cleanup path
+- require its isolation-release receipt to prove the original workspace path is
+  absent before accepting `HANDOFF_COMPLETE`; a released clone is recoverably
+  quarantined outside the project parent, while a clean opted-in worktree is
+  removed without force
 - never silently change a confirmed delivery mode or infer a CI-unavailable
   override; force-push and shared-history rewrite remain forbidden
 - leave final product acceptance to the human even when delivery is agent-owned

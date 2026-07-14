@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -17,6 +18,7 @@ try:
         DefaultBranchSnapshot,
         DeliveryPolicy,
         FinishSlice,
+        IsolationRelease,
         LocalTruth,
         MergeResult,
         PostMergeProof,
@@ -31,6 +33,7 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution
         DefaultBranchSnapshot,
         DeliveryPolicy,
         FinishSlice,
+        IsolationRelease,
         LocalTruth,
         MergeResult,
         PostMergeProof,
@@ -45,7 +48,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def run(args: list[str], cwd: Path, *, expected: int = 0) -> str:
-    completed = subprocess.run(args, cwd=cwd, capture_output=True, text=True, check=False)
+    environment = os.environ.copy()
+    environment.setdefault(
+        "STATEDD_WORKSPACE_ROOT",
+        str(cwd.parent / ".statedd-test-workspaces"),
+    )
+    completed = subprocess.run(
+        args,
+        cwd=cwd,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     if completed.returncode != expected:
         raise AssertionError(
             f"Command failed: {' '.join(args)}\n"
@@ -470,8 +485,20 @@ def test_golden_path() -> None:
                 output.write_text(json.dumps(payload), encoding="utf-8")
                 return PostMergeProof(output=output, payload=payload)
 
-            def release_isolation(self) -> None:
+            def release_isolation(self) -> IsolationRelease:
                 events.append("isolation-released")
+                return IsolationRelease(
+                    released=True,
+                    isolation_mode="clone",
+                    disposition="quarantined",
+                    original_path=str(downstream),
+                    original_path_absent=True,
+                    quarantine_path=str(root / "quarantine"),
+                    recoverable_state_retained=True,
+                    branch=integration_branch,
+                    head=integration_head,
+                    reservation_absent=True,
+                )
 
             def record_remote_failure(self, operation: str, diagnostic: str) -> None:
                 raise AssertionError(f"unexpected remote failure: {operation}: {diagnostic}")

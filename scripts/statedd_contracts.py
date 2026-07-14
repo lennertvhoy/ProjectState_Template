@@ -67,12 +67,14 @@ VALIDATION_REQUIREMENTS: dict[str, dict[str, Any]] = {
             "scripts/statedd_finish_slice.py",
             "scripts/statedd_post_merge_verify.py",
             "schemas/finish_slice_handoff.schema.json",
+            "schemas/isolation_release.schema.json",
         ),
     },
     "worktree_contract": {
         "required_paths": (
             "scripts/statedd_worktree_guard.py",
             "scripts/statedd_agent_worktree.py",
+            "scripts/statedd_workspace_inventory.py",
         ),
     },
     "quality_gate_level_2": {

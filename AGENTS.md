@@ -4,7 +4,7 @@ statedd_mode: "template-maintenance"
 repo_mode: "template-maintenance"
 statedd_version: "statedd-template-v5"
 initialized_on: 2026-04-26
-last_updated: 2026-07-12
+last_updated: 2026-07-14
 project: "StateDD_Template"
 ---
 
@@ -15,15 +15,12 @@ project: "StateDD_Template"
 ## Task-Scoped Read Order
 
 1. Always read `AGENTS.md`.
-2. For orientation or resumption, read `STATUS.md`, `NEXT_ACTIONS.md`, and the
-   active-slice fields in canonical `PROJECT_STATE.yaml`.
-3. Read `PROJECT_DNA.yaml` for architecture, invariants, or unfamiliar changes;
-   read backlog, history, evidence, and inventories only when the task needs them.
+2. For orientation/resumption, read `STATUS.md`, `NEXT_ACTIONS.md`, and active-slice fields in `PROJECT_STATE.yaml`.
+3. Read `PROJECT_DNA.yaml` for architecture/unfamiliar changes; load backlog, history, evidence, and inventories only as needed.
 4. Before working in a subtree, read its nearest nested `AGENTS.md` (nearest wins).
 
-Do not use one eager context bundle for implementation, CI diagnosis, audit, and
-resumption. Canonical files remain readable authority even when a generated,
-non-authoritative task pack is available.
+Do not use one eager context bundle for implementation, CI diagnosis, audit, and resumption.
+Canonical files remain authority even when a generated task pack is available.
 
 ## Invariants (Non-Negotiable)
 - No fake completeness — unverified claims = false
@@ -51,8 +48,11 @@ non-authoritative task pack is available.
 - **Anti-Brittleness Invariant:** No non-trivial fix or feature slice may pass closure if it only handles observed examples through brittle prompt-, string-, keyword-, fixture-, sleep-, fallback-, or provider-specific behavior without an explicit anti-brittleness review.
 - **Git Safety Invariant:** Before repository or StateDD mutation, `scripts/statedd_git_safety_check.py` must prove identity, common-directory ownership, metadata writability, fsck, synchronization, and the permitted isolation mode. A failed mandatory check latches the session read-only until repair and explicit restart.
 - **Isolation Invariant:** Containers and independent agents use full clones; linked worktrees require explicit trusted-local same-identity opt-in. No automatic permission repair, force cleanup, pruning, reset, or garbage collection.
+- **Managed Workspace Lifecycle Invariant:** `statedd_agent_worktree.py` alone creates non-recursive agent clones under the per-user root; handoff inventories same-origin siblings, and `HANDOFF_COMPLETE` requires a receipt proving the original path absent.
+- Dirty/unproven isolation is retained; clean clones are quarantined outside the project parent and clean opted-in worktrees are removed without force.
 - **Integration Ownership Invariant:** One integration agent owns each slice branch. Subagents use isolated clones, return commits and verification summaries, do not edit global StateDD truth, and do not push the final slice.
 - **Standing Delivery Policy Invariant:** Bootstrap confirms `human_merge` or `agent_after_green` once. The latter delegates branch/commit/push/PR, exact-head merge, direct-main CI, and verified cleanup to the integration agent; the former keeps merge manual. Agents never change the mode silently; force-push/history rewrite and product acceptance remain human boundaries, and CI-unavailable merge needs a separate explicit override.
+
 ## Gate Levels
 Use the cheapest gate that honestly proves the current claim.
 

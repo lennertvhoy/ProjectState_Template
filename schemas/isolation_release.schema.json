@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statedd.isolation_release.v1",
+  "title": "StateDD physical isolation release receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at",
+    "released",
+    "isolation_mode",
+    "disposition",
+    "original_path",
+    "original_path_absent",
+    "quarantine_path",
+    "recoverable_state_retained",
+    "branch",
+    "head",
+    "reservation_ref",
+    "reservation_absent"
+  ],
+  "properties": {
+    "schema": {"type": "string", "const": "statedd.isolation_release.v1"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "released": {"type": "boolean", "const": true},
+    "isolation_mode": {"type": "string", "enum": ["clone", "worktree"]},
+    "disposition": {"type": "string", "enum": ["quarantined", "removed"]},
+    "original_path": {"type": "string", "minLength": 1},
+    "original_path_absent": {"type": "boolean", "const": true},
+    "quarantine_path": {"type": ["string", "null"]},
+    "recoverable_state_retained": {"type": "boolean"},
+    "branch": {"type": "string", "minLength": 1},
+    "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "reservation_ref": {"type": "string"},
+    "reservation_absent": {"type": "boolean", "const": true}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"isolation_mode": {"const": "clone"}}},
+      "then": {
+        "properties": {
+          "disposition": {"const": "quarantined"},
+          "quarantine_path": {"type": "string", "minLength": 1},
+          "recoverable_state_retained": {"const": true},
+          "reservation_ref": {"const": ""}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"isolation_mode": {"const": "worktree"}}},
+      "then": {
+        "properties": {
+          "disposition": {"const": "removed"},
+          "quarantine_path": {"type": "null"},
+          "recoverable_state_retained": {"const": false},
+          "reservation_ref": {"pattern": "^refs/statedd/reservations/"}
+        }
+      }
+    }
+  ]
+}

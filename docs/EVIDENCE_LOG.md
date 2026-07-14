@@ -686,3 +686,49 @@
 - as_of: 2026-07-12T18:08:58+02:00
 - Notes: This acceptance does not guess legal identity or claim product acceptance
   or benchmark superiority.
+
+## EV-2026-07-14-001: Workspace lifecycle false-cleanup incident and clone audit
+
+- File: docs/incidents/2026-07-14-workspace-lifecycle-false-cleanup.md
+- File: docs/failure_scans/BL-WORKSPACE-LIFECYCLE-001.md
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/clone_audit.json
+- Title: Finished agent isolation was reported released while directories remained
+- Source/System: local filesystem, Git topology/reflogs/contexts, patch comparison,
+  and external finish handoffs
+- Action: Reproduced the metadata-only release defect, audited nine sibling clones
+  and five linked worktrees, reversibly archived the visible clones, and opened a
+  P0 quality-freeze repair.
+- Shows:
+  - two clone-of-clone provenance chains were created by agent sessions
+  - all nine archived clone feature branches are integrated on main
+  - three linked worktrees are integrated/superseded, bounded audit safeguards are
+    selected, and dirty BL-BROWSER-002 WIP is preserved but unsafe to merge as-is
+  - prior finish sidecars contradicted physical filesystem truth
+- Proves:
+  - the workspace lifecycle incident is a reproduced workflow/state-truth defect,
+    not missing feature work hidden in the archived clones
+- Type: known_bad_event, investigation, state_update
+- as_of: 2026-07-14T17:23:11+02:00
+- Notes: Focused regressions pass locally. Full gates, immutable proof, PR/CI,
+  merge, direct-main CI, and final release proof remain pending.
+
+## EV-2026-07-14-002: Workspace lifecycle repair passes authoritative local gate
+
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/README.md
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/manifest.json
+- File: docs/evidence/2026-07-14-workspace-lifecycle-closure/verification_summary.json
+- Title: Non-recursive managed workspace and physical-release repair validated locally
+- Source/System: executable StateDD level-2 gate
+- Action: Ran the authoritative gate with explicit slice, evidence-directory, and
+  evidence-head binding after restoring those fail-closed CLI inputs.
+- Shows:
+  - 393 script tests and 5 schema-example tests pass
+  - all generated profiles pass their declared conformance gate
+  - strict evidence/redaction and runtime-not-applicable truth pass
+  - Ruff, compile, state/schema, efficiency, and diff hygiene pass
+- Proves:
+  - local implementation and validation truth for BL-WORKSPACE-LIFECYCLE-001
+- Type: test, adversarial, state_update
+- as_of: 2026-07-14T17:50:00+02:00
+- Notes: Exact-head remote CI, merge, direct-main CI, and physical release of the
+  repair clone remain pending; this is not closure-grade.

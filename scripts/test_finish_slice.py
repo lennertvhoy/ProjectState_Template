@@ -23,6 +23,7 @@ from statedd_finish_slice import (  # noqa: E402
     FinishRefused,
     FinishSlice,
     GitHubProvider,
+    IsolationRelease,
     LocalTruth,
     MergeResult,
     PostMergeProof,
@@ -88,6 +89,18 @@ class FakeLocal:
         self.pushes: list[tuple[str, str]] = []
         self.failures: list[tuple[str, str]] = []
         self.default_head = MERGE
+        self.release_result = IsolationRelease(
+            released=True,
+            isolation_mode="clone",
+            disposition="quarantined",
+            original_path=str(root),
+            original_path_absent=True,
+            quarantine_path=str(root.parent / "quarantine"),
+            recoverable_state_retained=True,
+            branch="slice-branch",
+            head=HEAD,
+            reservation_absent=True,
+        )
 
     def validate(self, expected_head: str, evidence_folder: Path) -> LocalTruth:
         self.events.append("local-proof")
@@ -141,8 +154,9 @@ class FakeLocal:
         output.write_text(json.dumps(payload), encoding="utf-8")
         return PostMergeProof(output=output, payload=payload)
 
-    def release_isolation(self) -> None:
+    def release_isolation(self) -> IsolationRelease:
         self.events.append("release")
+        return self.release_result
 
     def record_remote_failure(self, operation: str, diagnostic: str) -> None:
         self.events.append(f"record-failure:{operation}")
@@ -422,6 +436,20 @@ def test_branch_deletion_and_release_follow_post_merge_verification(tmp_path: Pa
     assert events.index("delete-branch") < events.index("release")
 
 
+def test_unproven_physical_release_cannot_reach_handoff_complete(tmp_path: Path) -> None:
+    finish, local, _, events, _ = build(tmp_path)
+    local.release_result = replace(
+        local.release_result,
+        released=False,
+        original_path_absent=False,
+    )
+    assert finish.run() == 1
+    assert "release is not proven" in (finish.report.failure or "")
+    assert "release" in events
+    assert finish.report.status == Stage.MAIN_CI_VERIFIED.value
+    assert finish.report.isolation_released is False
+
+
 def test_github_branch_deletion_uses_plural_refs_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
     provider = object.__new__(GitHubProvider)
     provider.owner = "owner"
@@ -493,7 +521,11 @@ def test_final_external_handoff_records_remote_first_truth(tmp_path: Path) -> No
     assert payload["post_merge_verified"] is True
     assert payload["remote_branch_absent"] is True
     assert payload["isolation_released"] is True
-    assert payload["recoverable_state_retained"] is False
+    assert payload["isolation_mode"] == "clone"
+    assert payload["isolation_disposition"] == "quarantined"
+    assert payload["isolation_original_path_absent"] is True
+    assert payload["isolation_quarantine_path"]
+    assert payload["recoverable_state_retained"] is True
 
 
 def test_final_external_handoff_is_machine_checkable(tmp_path: Path) -> None:

@@ -1,0 +1,112 @@
+{
+  "schema": "statedd.workspace_clone_audit.v1",
+  "captured_at": "2026-07-14T17:23:11+02:00",
+  "canonical_remote": "https://github.com/lennertvhoy/StateDD_Template.git",
+  "audited_main_head": "917f3f35d191f120be4439ae4cd3d5ba5d50599c",
+  "archive_path": "/home/ff/Documents/Projects/_archive/StateDD_Template-clones-20260714",
+  "creator_provenance": "Hermes Agent <hermes@ff-fedora.local>",
+  "visible_clone_count_before_archive": 9,
+  "visible_clone_count_after_archive": 0,
+  "clones": [
+    {
+      "name": "StateDD_Template-integration-BL-STATEDD-INTEGRATION-001",
+      "head": "b9712a514d25b799a35a10bac35e00fc713a620e",
+      "source_repo": "/home/ff/Documents/Projects/StateDD_Template",
+      "integration_status": "integrated",
+      "integrated_via": "f92d2610a5d2616b71ee40a4e5358cf3f45cc6a2"
+    },
+    {
+      "name": "StateDD_Template-OKF-BL-OKF-001",
+      "head": "1b24e033a3605bea3cd1a5e3a481f33e139f31ff",
+      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-integration-BL-STATEDD-INTEGRATION-001",
+      "integration_status": "integrated",
+      "integrated_via": "0aab4c02b0ff2ec4c7983f4e3807983b7f1ac8c4"
+    },
+    {
+      "name": "StateDD_Template-golden-path-closure",
+      "head": "9def2b0b3477ef0d28a4667fae9ea3a866ad4212",
+      "source_repo": null,
+      "integration_status": "integrated",
+      "integrated_via": "6c43f3aaa98b0c9e4595778655585881d682b9a7"
+    },
+    {
+      "name": "StateDD_Template-golden-path-closure-managed",
+      "head": "9def2b0b3477ef0d28a4667fae9ea3a866ad4212",
+      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-golden-path-closure",
+      "integration_status": "duplicate_integrated",
+      "integrated_via": "6c43f3aaa98b0c9e4595778655585881d682b9a7"
+    },
+    {
+      "name": "StateDD_Template-agent-delivery-policy",
+      "head": "2c41d35a2c37c3419633cc4e9f32960aaad228cb",
+      "source_repo": null,
+      "integration_status": "component_integrated",
+      "integrated_via": "6c43f3aaa98b0c9e4595778655585881d682b9a7"
+    },
+    {
+      "name": "StateDD_Template-agent-finish-path",
+      "head": "e13738a0bb7baf3890bf57b76da87f981e9e1066",
+      "source_repo": null,
+      "integration_status": "component_integrated",
+      "integrated_via": "6c43f3aaa98b0c9e4595778655585881d682b9a7"
+    },
+    {
+      "name": "StateDD_Template-agent-postmerge-state",
+      "head": "a339123e3a57e989021e1973a7a83438176d948b",
+      "source_repo": null,
+      "integration_status": "component_integrated",
+      "integrated_via": "6c43f3aaa98b0c9e4595778655585881d682b9a7"
+    },
+    {
+      "name": "StateDD_Template-finish-delete-repair",
+      "head": "f7b029fd3b53597490be940b6d023661b97684f9",
+      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-golden-path-closure-managed",
+      "integration_status": "integrated",
+      "integrated_via": "5779baf293a9b5357f896d9725fd7edae2528445"
+    },
+    {
+      "name": "StateDD_Template-cto-acceptance",
+      "head": "6dc6ef8cfe116e45ee10a4dbb1a8acac0eaaeafe",
+      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-finish-delete-repair",
+      "integration_status": "integrated",
+      "integrated_via": "917f3f35d191f120be4439ae4cd3d5ba5d50599c"
+    }
+  ],
+  "linked_worktrees": [
+    {
+      "name": "bl-audit-001-state-integration",
+      "head": "eeffbc135e89848caebe55e74e3a994e9219463e",
+      "dirty_file_count": 0,
+      "integration_status": "selected_safeguards_ported",
+      "decision": "Port fail-closed gate aggregation and non-incidental handoff evidence selection; do not merge stale state rewrites."
+    },
+    {
+      "name": "bl-bl-browser-002-code-g3trh",
+      "head": "a0ac268d186d9ec71ffefab6970dc1d40add5b06",
+      "dirty_file_count": 10,
+      "integration_status": "preserved_not_integrated",
+      "decision": "Concrete provider candidate asserts runtime/head/endpoint identity without proof, under-tests failure scanning, and may expose HAR/URL secrets. Redesign under BL-BROWSER-002."
+    },
+    {
+      "name": "bl-bl-context-001-code-a1daa",
+      "head": "267f76182c8e829b82f5984437c2a8b786337041",
+      "dirty_file_count": 0,
+      "integration_status": "integrated",
+      "integrated_via": "c2fe7b25625cc855a47deff721251cdb5d4141b2"
+    },
+    {
+      "name": "bl-max-value-001",
+      "head": "84a67100fee324f6716a5c966500b0c0eeb59699",
+      "dirty_file_count": 0,
+      "integration_status": "integrated",
+      "integrated_via": "f92d2610a5d2616b71ee40a4e5358cf3f45cc6a2"
+    },
+    {
+      "name": "efficiency-layer",
+      "head": "20b446d6401fff3d74fe4beb64cc0c45aea90b5e",
+      "dirty_file_count": 0,
+      "integration_status": "integrated_or_superseded",
+      "decision": "Current main contains the effective efficiency/profile architecture; no unique patch remains selected."
+    }
+  ]
+}

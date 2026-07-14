@@ -1,0 +1,109 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "0c70fc241a373df960e81075ca345701faf55badf865e551354bbc6313dfe513"
+    },
+    {
+      "kind": "doc",
+      "path": "clone_audit.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "f847160bb0c81b466ee75251723c1be33007e7c350f87bd6be06f9794ac0b667"
+    },
+    {
+      "kind": "command_output",
+      "path": "verification_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "caaff56c7a87b93e1f69bed96a844c18a985b29f13215ca2697805f9e0172db8"
+    },
+    {
+      "kind": "doc",
+      "path": "source_hashes.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "c765d2b7fb113d8b11bcc1f5060f22907670047f787c50ba123582887f678483"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2a15649cb0a6e8c53ca6dccd669550ddd5d7ef46a4c09b78cbb8abae2fdc35a3"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "All archived clone work is integrated and remaining linked-worktree features have an explicit integration decision.",
+      "evidence": [
+        "README.md",
+        "clone_audit.json"
+      ],
+      "id": "clone-worktree-reconciliation",
+      "status": "validated"
+    },
+    {
+      "claim": "Managed provisioning rejects recursive sources, arbitrary targets, and unmanaged same-origin siblings.",
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
+      "id": "managed-non-recursive-provisioning",
+      "status": "validated"
+    },
+    {
+      "claim": "HANDOFF_COMPLETE requires a strict receipt proving the exact original isolation path absent.",
+      "evidence": [
+        "source_hashes.json",
+        "verification_summary.json"
+      ],
+      "id": "physical-release-proof",
+      "status": "validated"
+    },
+    {
+      "claim": "Dirty isolation is retained, clean clones are quarantined, and clean opted-in worktrees are removed without force.",
+      "evidence": [
+        "verification_summary.json"
+      ],
+      "id": "safe-release-dispositions",
+      "status": "validated"
+    },
+    {
+      "claim": "The template root has no application runtime for this local Git/filesystem workflow repair.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-14T17:41:55+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in clone_audit.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in source_hashes.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "fix/workspace-lifecycle-closure",
+    "head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-WORKSPACE-LIFECYCLE-001"
+}

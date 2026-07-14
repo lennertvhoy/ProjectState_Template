@@ -19,6 +19,10 @@ try:
     from statedd_git_safety_session import sanitized_git_environment
 except ModuleNotFoundError:  # pragma: no cover
     from scripts.statedd_git_safety_session import sanitized_git_environment
+try:
+    from statedd_workspace_inventory import build_inventory
+except ModuleNotFoundError:  # pragma: no cover
+    from scripts.statedd_workspace_inventory import build_inventory
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,24 +69,6 @@ def git_value(repo: Path, args: list[str], fallback: str = "not proven") -> str:
 def git_changed_files(repo: Path) -> list[str]:
     status = git_value(repo, ["status", "--short"], fallback="")
     return [line.strip() for line in status.splitlines() if line.strip()]
-
-
-def latest_evidence_readme(repo: Path) -> Path | None:
-    evidence_root = repo / "docs" / "evidence"
-    if not evidence_root.is_dir() or evidence_root.is_symlink():
-        return None
-    candidates = [
-        entry / "README.md"
-        for entry in evidence_root.iterdir()
-        if entry.is_dir()
-        and not entry.is_symlink()
-        and not entry.name.startswith(".")
-        and (entry / "README.md").is_file()
-        and not (entry / "README.md").is_symlink()
-    ]
-    if not candidates:
-        return None
-    return max(candidates, key=lambda path: path.stat().st_mtime)
 
 
 def worktree_topology(repo: Path) -> tuple[bool, str, list[str]]:
@@ -157,12 +143,16 @@ def find_agent_contexts(repo: Path) -> tuple[dict | None, list[dict]]:
     return current, siblings
 
 
-def dirty_classification_status(repo: Path, changed_files: list[str]) -> str:
+def dirty_classification_status(
+    repo: Path,
+    changed_files: list[str],
+    selected_evidence_folder: Path | None,
+) -> str:
     if not changed_files:
         return "not applicable"
-    readme = latest_evidence_readme(repo)
-    if readme is None:
+    if selected_evidence_folder is None:
         return "no"
+    readme = selected_evidence_folder / "README.md"
     try:
         text = readme.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
@@ -298,6 +288,22 @@ def main(argv: list[str] | None = None) -> int:
     direct_remote_head = remote_branch_head(repo, branch)
     local_equals_remote = head_equals_upstream(head, direct_remote_head)
     verification_failed = False
+    workspace_error: str | None = None
+    try:
+        workspace_inventory = build_inventory(repo)
+    except (OSError, ValueError) as exc:
+        workspace_inventory = {
+            "workspace_root": "not proven",
+            "managed_clones": [],
+            "quarantined_clones": [],
+            "linked_worktrees": [],
+            "unmanaged_same_origin_siblings": [],
+        }
+        workspace_error = str(exc)
+        verification_failed = True
+    unmanaged_siblings = workspace_inventory["unmanaged_same_origin_siblings"]
+    if unmanaged_siblings:
+        verification_failed = True
     short_status = git_value(repo, ["status", "--short"], fallback="")
     worktree = "clean" if not short_status.strip() else "dirty"
     changed_files = git_changed_files(repo)
@@ -309,8 +315,8 @@ def main(argv: list[str] | None = None) -> int:
         context_error = str(exc)
         verification_failed = True
     topology_captured, topology_raw, linked_worktrees = worktree_topology(repo)
-    dirty_classified = dirty_classification_status(repo, changed_files)
     evidence = selected_evidence(repo, agent_context)
+    dirty_classified = dirty_classification_status(repo, changed_files, evidence)
     next_action = first_next_action(repo)
     if changed_files or local_equals_remote == "no":
         local_only_claimed = "yes"
@@ -410,6 +416,36 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("  not proven")
     print()
+    print("## Workspace Lifecycle Inventory")
+    print()
+    print(f"- managed workspace root: {workspace_inventory['workspace_root']}")
+    print("- managed active clones:")
+    for item in workspace_inventory["managed_clones"]:
+        print(
+            f"  - {item.get('path', 'not proven')} "
+            f"(slice={item.get('slice_id', 'not proven')}, head={item.get('head', 'not proven')})"
+        )
+    if not workspace_inventory["managed_clones"]:
+        print("  - none")
+    print("- unmanaged same-origin sibling clones:")
+    for item in unmanaged_siblings:
+        print(
+            f"  - {item.get('path', 'not proven')} "
+            f"(head={item.get('head', 'not proven')}, dirty={item.get('dirty', 'not proven')})"
+        )
+    if not unmanaged_siblings:
+        print("  - none")
+    print("- quarantined clones (recoverable, inactive):")
+    for item in workspace_inventory["quarantined_clones"]:
+        print(
+            f"  - {item.get('path', 'not proven')} "
+            f"(slice={item.get('slice_id', 'not proven')}, head={item.get('head', 'not proven')})"
+        )
+    if not workspace_inventory["quarantined_clones"]:
+        print("  - none")
+    if workspace_error:
+        print(f"- inventory error: {workspace_error}")
+    print()
     print("## Changed Files")
     print()
     print_list(changed_files, empty="none")
@@ -489,6 +525,10 @@ def main(argv: list[str] | None = None) -> int:
     print("- PR, CI, runtime, and human acceptance are not proven by this helper")
     if context_error:
         print(f"- active agent context is invalid: {context_error}")
+    if workspace_error:
+        print(f"- workspace lifecycle inventory is not proven: {workspace_error}")
+    if unmanaged_siblings:
+        print("- unmanaged same-origin sibling clones exist; handoff is refused until reconciled")
     print()
     print("## CTO-Pasteable Handoff")
     print()
@@ -496,7 +536,8 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"Repo {repo} on {branch} at {head}: boundary={boundary}; "
         f"worktree={worktree}; evidence={evidence.relative_to(repo) if evidence else 'not proven'}; "
-        f"next={next_action}; PR/CI/runtime/acceptance remain separately unproven."
+        f"unmanaged_sibling_clones={len(unmanaged_siblings)}; next={next_action}; "
+        "PR/CI/runtime/acceptance remain separately unproven."
     )
 
     return 1 if verification_failed else 0
