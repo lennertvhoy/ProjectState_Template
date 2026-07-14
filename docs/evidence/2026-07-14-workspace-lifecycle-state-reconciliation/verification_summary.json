@@ -1,0 +1,37 @@
+{
+  "schema": "statedd.verification_summary.v1",
+  "slice_id": "BL-WORKSPACE-LIFECYCLE-001",
+  "proof_head": "c33cf178e07a1d407600c31a04798406ae51614e",
+  "proof_tree": "303ccea063890ca5d68fd7746238fd1bfc7e6435",
+  "status": "validated_local_remote_pending",
+  "scope": "state_and_evidence_reconciliation_only",
+  "checks": [
+    {
+      "command": "python3 scripts/statedd_quality_gate.py --gate-level 1",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/check_state_docs.py .",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/check_state_docs.py --bootstrap-gate .",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/statedd_validate_schema.py .",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/statedd_profile_metrics.py --check",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "result": "pass"
+    }
+  ],
+  "implementation_receipt": "docs/evidence/2026-07-14-workspace-lifecycle-closure/finish_slice_handoff.json",
+  "runtime": "not_applicable_for_template_root",
+  "remote_phase": "pending"
+}

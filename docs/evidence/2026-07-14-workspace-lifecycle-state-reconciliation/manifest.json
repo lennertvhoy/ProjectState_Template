@@ -1,0 +1,67 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "4145ec2c0c19a78b41a88345d7b9a36dd5ce705cbbfbba668a1e7c02f15bbac8"
+    },
+    {
+      "kind": "command_output",
+      "path": "verification_summary.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "82d1e51e55a1e7e53a074e302609b84e5241f3c46c3ffac5acf1d4491273653e"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "94d5f5115265f9ac4a0386d496a53207dc5cf2d756365838a4aff70b006416c0"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "Canonical live state reflects the already-verified workspace lifecycle closure without implementation changes.",
+      "evidence": [
+        "README.md",
+        "verification_summary.json"
+      ],
+      "id": "canonical-state-reconciled",
+      "status": "validated"
+    },
+    {
+      "claim": "The template root has no application runtime for this state-only reconciliation.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-14T18:16:48+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in verification_summary.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "agent/reconcile-workspace-lifecycle-state",
+    "head": "c33cf178e07a1d407600c31a04798406ae51614e"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "statedd.evidence_manifest.v1",
+  "slice_id": "BL-WORKSPACE-LIFECYCLE-001"
+}

@@ -63,7 +63,7 @@ context_budgets:
       max_startup_files: 5
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
-      max_footprint_files: 335
+      max_footprint_files: 340
       # Includes the optional OKF validator, extension schema, and contained scaffold.
       # Includes the committed OKF evidence/state finalization surface; keep
       # this above the measured full-template footprint without changing
@@ -73,6 +73,8 @@ context_budgets:
       # evidence finalization at 2,359,582 bytes. The managed workspace lifecycle
       # incident adds one inventory helper, one receipt schema, focused regressions,
       # and proportional incident evidence; measured at 2,482,405 bytes.
+      # Durable remote-closure receipt and state-reconciliation proof add four
+      # evidence files; measured at 339 files and 2,510,361 bytes.
       max_footprint_bytes: 2520000
     minimal:
       max_startup_files: 5
