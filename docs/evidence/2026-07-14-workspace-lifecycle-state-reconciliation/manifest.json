@@ -5,21 +5,21 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "b91e399461c34e33a4b7068dec79b8e0da60e52d9f4c20ba2863a05c29335cf0"
+      "sha256": "045d8b4c901611b015a99828f53baa512a104423a8b9d099e4da8416fcc9ea3c"
     },
     {
       "kind": "command_output",
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "bdca3328ac393d95e7d39228cf9ca498382e1c93c26fae99276b24e585cbd750"
+      "sha256": "c33063da3d134a95a542e506ba3b740f560dd81540c05623bd1e093832d00703"
     },
     {
       "kind": "runtime_identity",
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "e46ba7e32c7015cc8c38a471398dd4e95b5519b5a1abfb646926ce673a622a15"
+      "sha256": "44ea29c970c036d0b9f99bed4412d2aa52691372b2e5fed6ba83b2fc98155dae"
     }
   ],
   "claims": [
@@ -64,7 +64,7 @@
   },
   "repo": {
     "branch": "agent/reconcile-workspace-lifecycle-state",
-    "head": "7e23b43458744d0c8cffcadbd874bf97fc03f0f5"
+    "head": "0671bd65adc47f8148b8fb231f187c093bbd23a2"
   },
   "runtime_identity": {
     "path": "runtime_identity.json",

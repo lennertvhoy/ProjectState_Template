@@ -1,13 +1,13 @@
 {
   "schema": "statedd.verification_summary.v1",
   "slice_id": "BL-WORKSPACE-LIFECYCLE-STATE-001",
-  "proof_head": "7e23b43458744d0c8cffcadbd874bf97fc03f0f5",
-  "proof_tree": "d1b96ed5ca25f5d09821ffd4333f81b7fc265781",
+  "proof_head": "0671bd65adc47f8148b8fb231f187c093bbd23a2",
+  "proof_tree": "669f37fd65f8a68e55652836734e834d888ed7f7",
   "status": "validated_local_remote_pending",
   "scope": "state_reconciliation_and_explicit_clean_clone_abandonment",
   "checks": [
     {
-      "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-STATE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation --head 7e23b43458744d0c8cffcadbd874bf97fc03f0f5",
+      "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --slice-id BL-WORKSPACE-LIFECYCLE-STATE-001 --evidence-dir docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation --head 0671bd65adc47f8148b8fb231f187c093bbd23a2",
       "result": "pass"
     },
     {

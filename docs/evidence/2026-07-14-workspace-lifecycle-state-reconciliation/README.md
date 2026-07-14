@@ -4,8 +4,8 @@
 **Date:** 2026-07-14
 **Agent:** integration state-reconciliation agent
 **Branch:** `agent/reconcile-workspace-lifecycle-state`
-**HEAD:** 7e23b43458744d0c8cffcadbd874bf97fc03f0f5
-**Proof head:** 7e23b43458744d0c8cffcadbd874bf97fc03f0f5
+**HEAD:** 0671bd65adc47f8148b8fb231f187c093bbd23a2
+**Proof head:** 0671bd65adc47f8148b8fb231f187c093bbd23a2
 
 ## Claims
 
@@ -23,10 +23,9 @@
 ## Verification Log
 
 - Authoritative level-2 gate with explicit slice/evidence binding to proof head
-  `7e23b43458744d0c8cffcadbd874bf97fc03f0f5` — pass before the bounded abort-path
-  addition; the final proof is rebound after implementation and includes 395 script
-  tests, 5 schema-example tests, compile, Ruff, state/schema, strict evidence,
-  profile, efficiency, instruction, and diff checks.
+  `0671bd65adc47f8148b8fb231f187c093bbd23a2` — pass, including 395 script tests,
+  5 schema-example tests, compile, Ruff, state/schema, strict evidence, profile,
+  efficiency, instruction, and diff checks.
 - `python3 scripts/check_state_docs.py .` — pass.
 - `python3 scripts/check_state_docs.py --bootstrap-gate .` — pass.
 - Strict implementation evidence and the typed finish receipt validate.
