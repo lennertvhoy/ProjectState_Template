@@ -154,11 +154,58 @@ def test_level_two_requires_slice_evidence_unless_conformance_mode() -> None:
 
         closure = QualityGate(root, gate_level=2)
         assert closure.check_evidence() is False
-        assert any("active slice context" in failure for failure in closure.failures)
+        assert any("active agent context" in failure for failure in closure.failures)
 
         conformance = QualityGate(root, gate_level=2, conformance=True)
         assert conformance.check_evidence() is True
         assert conformance.failures == []
+
+
+def test_level_two_accepts_explicit_strict_slice_evidence_without_agent_context() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "docs" / "evidence" / "slice-proof").mkdir(parents=True)
+        (root / "docs" / "EVIDENCE_LOG.md").write_text("# Evidence\n\n" + "proof " * 20)
+        manifest = root / "docs" / "evidence" / "slice-proof" / "manifest.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "schema": "statedd.evidence_manifest.v1",
+                    "slice_id": "BL-EXPLICIT-001",
+                    "repo": {"head": "a" * 40},
+                }
+            ),
+            encoding="utf-8",
+        )
+        gate = QualityGate(
+            root,
+            gate_level=2,
+            slice_id="BL-EXPLICIT-001",
+            evidence_dir=Path("docs/evidence/slice-proof"),
+            expected_head="a" * 40,
+        )
+        gate.run_cmd = lambda cmd, cwd=None: (0, "pass", "")  # type: ignore[method-assign]
+        gate.check_runtime_truth = lambda folder: True  # type: ignore[method-assign]
+        assert gate.check_evidence() is True
+        assert gate.failures == []
+
+
+def test_explicit_evidence_directory_cannot_escape_repository() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        root.mkdir()
+        (root / "docs").mkdir()
+        (root / "docs" / "EVIDENCE_LOG.md").write_text("# Evidence\n\n" + "proof " * 20)
+        outside = Path(tmp) / "outside"
+        outside.mkdir()
+        gate = QualityGate(
+            root,
+            gate_level=2,
+            slice_id="BL-EXPLICIT-001",
+            evidence_dir=outside,
+        )
+        assert gate.check_evidence() is False
+        assert any("repository root" in failure for failure in gate.failures)
 
 
 def test_setup_cfg_without_flake8_section_does_not_declare_runner() -> None:

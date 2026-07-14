@@ -47,6 +47,10 @@ class QualityGate:
         conformance: bool = False,
         runtime_endpoint: str | None = None,
         allow_remote_runtime: bool = False,
+        *,
+        slice_id: str | None = None,
+        evidence_dir: Path | None = None,
+        expected_head: str | None = None,
     ):
         self.root = root
         self.verbose = verbose
@@ -54,6 +58,9 @@ class QualityGate:
         self.conformance = conformance
         self.runtime_endpoint = runtime_endpoint
         self.allow_remote_runtime = allow_remote_runtime
+        self.slice_id = slice_id
+        self.evidence_dir = evidence_dir
+        self.expected_head = expected_head
         self.failures: List[str] = []
         self.warnings: List[str] = []
 
@@ -404,7 +411,25 @@ class QualityGate:
             return True
 
         context_path = self.root / ".statedd" / "agent.context"
-        if not context_path.exists():
+        context_slice: str | None = None
+        if context_path.exists():
+            try:
+                context = load_json_file(context_path)
+            except ContractError as exc:
+                self.failures.append(f"Agent context is invalid: {exc}")
+                return False
+            candidate = context.get("slice_id") if isinstance(context, dict) else None
+            if not isinstance(candidate, str) or not candidate:
+                self.failures.append("Agent context has no valid slice_id")
+                return False
+            context_slice = candidate
+        slice_id = self.slice_id or context_slice
+        if self.slice_id and context_slice and self.slice_id != context_slice:
+            self.failures.append(
+                f"Explicit slice {self.slice_id} contradicts agent context slice {context_slice}"
+            )
+            return False
+        if not slice_id:
             if self.conformance:
                 self.warnings.append(
                     "Conformance mode: no active slice, so strict slice evidence is not applicable"
@@ -412,29 +437,54 @@ class QualityGate:
                 print("  ✓ Evidence log has content (conformance mode; no active slice)")
                 return True
             self.failures.append(
-                "Gate level 2 requires an active slice context and exactly one strict evidence pack; "
-                "use --conformance only for clean template/profile validation"
+                "Gate level 2 requires an active agent context or explicit --slice-id and "
+                "--evidence-dir; use --conformance only for clean template/profile validation"
             )
-            return False
-        try:
-            context = load_json_file(context_path)
-        except ContractError as exc:
-            self.failures.append(f"Agent context is invalid: {exc}")
-            return False
-        slice_id = context.get("slice_id") if isinstance(context, dict) else None
-        if not isinstance(slice_id, str) or not slice_id:
-            self.failures.append("Agent context has no valid slice_id")
             return False
 
         matches: List[Path] = []
         evidence_root = self.root / "docs" / "evidence"
-        manifests = evidence_root.glob("*/manifest.json") if evidence_root.exists() else []
+        if self.evidence_dir is not None:
+            requested = self.evidence_dir
+            if requested.is_absolute():
+                try:
+                    requested = requested.relative_to(self.root)
+                except ValueError:
+                    self.failures.append("Explicit evidence directory must be under the repository root")
+                    return False
+            try:
+                selected = confined_path(self.root, requested)
+            except UnsafePathError as exc:
+                self.failures.append(f"Explicit evidence directory is unsafe: {exc}")
+                return False
+            try:
+                relative = selected.relative_to(evidence_root.resolve(strict=False))
+            except ValueError:
+                self.failures.append("Explicit evidence directory must be under docs/evidence")
+                return False
+            if len(relative.parts) != 1 or not selected.is_dir():
+                self.failures.append(
+                    "Explicit evidence directory must be one real directory directly under docs/evidence"
+                )
+                return False
+            manifests = [selected / "manifest.json"]
+        else:
+            manifests = evidence_root.glob("*/manifest.json") if evidence_root.exists() else []
         for manifest in manifests:
             try:
                 payload = load_json_file(manifest)
             except ContractError:
                 continue
             if isinstance(payload, dict) and payload.get("slice_id") == slice_id:
+                if self.expected_head:
+                    repo_binding = payload.get("repo")
+                    manifest_head = repo_binding.get("head") if isinstance(repo_binding, dict) else None
+                    if manifest_head != self.expected_head:
+                        self.failures.append(
+                            f"Evidence manifest head {manifest_head or 'not proven'} differs from "
+                            f"--head {self.expected_head}"
+                        )
+                        return False
                 matches.append(manifest.parent)
         if len(matches) != 1:
             self.failures.append(
@@ -586,6 +636,9 @@ def main():
         action="store_true",
         help="Permit remote runtime re-probe when revision-header binding is present",
     )
+    parser.add_argument("--slice-id", help="Exact active slice identity for strict evidence selection")
+    parser.add_argument("--evidence-dir", type=Path, help="Exact strict evidence directory")
+    parser.add_argument("--head", help="Expected manifest proof/final head binding")
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -596,6 +649,9 @@ def main():
         args.conformance,
         args.runtime_endpoint,
         args.allow_remote_runtime,
+        slice_id=args.slice_id,
+        evidence_dir=args.evidence_dir,
+        expected_head=args.head,
     )
     sys.exit(gate.run())
 
