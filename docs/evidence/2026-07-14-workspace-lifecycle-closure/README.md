@@ -4,8 +4,8 @@
 **Date:** 2026-07-14
 **Agent:** integration coding agent
 **Branch:** `fix/workspace-lifecycle-closure`
-**HEAD:** 2286367a360d05a25cbf98e906830895a4f560b4
-**Proof head:** 2286367a360d05a25cbf98e906830895a4f560b4
+**HEAD:** 5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3
+**Proof head:** 5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3
 
 ## Claims
 

@@ -5,7 +5,7 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "45a6dc100d4dfd1d1359310c2bd87ab3b6a7ba06693934d701a206fd487e03cc"
+      "sha256": "0c70fc241a373df960e81075ca345701faf55badf865e551354bbc6313dfe513"
     },
     {
       "kind": "doc",
@@ -19,7 +19,7 @@
       "path": "verification_summary.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "340d744fc075cd55418e2da43a59bce97e2d94ea2fac73439485cac31f33d6a7"
+      "sha256": "caaff56c7a87b93e1f69bed96a844c18a985b29f13215ca2697805f9e0172db8"
     },
     {
       "kind": "doc",

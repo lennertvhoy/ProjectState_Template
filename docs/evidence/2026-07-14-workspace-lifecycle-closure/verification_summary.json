@@ -1,8 +1,10 @@
 {
   "schema": "statedd.verification_summary.v1",
   "slice_id": "BL-WORKSPACE-LIFECYCLE-001",
-  "proof_head": "2286367a360d05a25cbf98e906830895a4f560b4",
-  "proof_tree": "9fb1779b6dcc0cb12218b03c5730310c8e5d1be0",
+  "proof_head": "5a974ec9996edcd2f19cfe4b1606c2b8cf2159f3",
+  "proof_tree": "466c613c0bf82b7eedae2b08488642999d7d6e5e",
+  "implementation_proof_head": "2286367a360d05a25cbf98e906830895a4f560b4",
+  "implementation_proof_tree": "9fb1779b6dcc0cb12218b03c5730310c8e5d1be0",
   "status": "validated_local_remote_pending",
   "checks": [
     {"command": "python3 -m compileall -q scripts schemas/examples", "result": "pass"},
