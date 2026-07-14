@@ -4,8 +4,8 @@
 **Date:** 2026-07-14  
 **Agent:** integration coding agent  
 **Branch:** `fix/workspace-lifecycle-closure`  
-**HEAD:** pending immutable proof commit  
-**Proof head:** pending immutable proof commit
+**HEAD:** 040f0aebf17f27c127f7b46c24a81f432a65b169
+**Proof head:** 040f0aebf17f27c127f7b46c24a81f432a65b169
 
 ## Claims
 
@@ -16,11 +16,11 @@
   Evidence type: investigation, state_update
 - Claim: Managed clone creation is centralized outside the project parent and
   rejects nested sources, arbitrary targets, and unmanaged same-origin siblings.
-  Evidence: `verification_summary.json`, source under `scripts/`
+  Evidence: `verification_summary.json`, `source_hashes.json`
   Evidence type: implementation, adversarial
 - Claim: Finish cannot reach `HANDOFF_COMPLETE` unless a strict release receipt
   proves the exact original isolation path absent.
-  Evidence: `verification_summary.json`, source under `scripts/`
+  Evidence: `verification_summary.json`, `source_hashes.json`
   Evidence type: implementation, regression
 - Claim: Dirty state is retained; a clean clone is quarantined recoverably and a
   clean opted-in worktree is removed without force with reservation absence.
@@ -64,8 +64,12 @@
 | Check | Command / Path | Result |
 | --- | --- | --- |
 | focused lifecycle suite | `python3 -m pytest -q scripts/test_agent_worktree.py scripts/test_finish_slice.py scripts/test_handoff.py scripts/test_quality_gate.py scripts/test_closure_check.py` | pass locally |
-| full script suite | `python3 -m pytest scripts/ -q` | pending |
-| generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pending regeneration and validation |
+| full script suite | `python3 -m pytest scripts/ -q` | pass; 391 tests collected |
+| schema examples | `python3 -m pytest schemas/examples/ -q` | pass; 5 tests |
+| compile / lint | `python3 -m compileall -q scripts schemas/examples`; `ruff check scripts` | pass |
+| state/schema | `check_state_docs.py` (regular/bootstrap); `statedd_validate_schema.py` | pass |
+| efficiency / instruction lint | level 2; fail-on-error | pass; one pre-existing non-error README warning |
+| generated profiles | `python3 scripts/statedd_profile_metrics.py --check` | pending final regeneration after evidence metadata |
 | level-2 quality gate | `python3 scripts/statedd_quality_gate.py --gate-level 2 ...` | pending |
 | remote closure | exact-head PR/CI/merge/main verification | pending |
 
@@ -88,8 +92,8 @@
 
 ## Closure State At Current Worktree
 
-- Implemented: yes
-- Validated locally: focused suite only
+- Implemented: yes at immutable proof head
+- Validated locally: full scripts/schema/state/efficiency suites pass; final profile regeneration and level-2 aggregate pending
 - Closure-grade: no
 - Remote closure: pending
 - Human product acceptance: pending

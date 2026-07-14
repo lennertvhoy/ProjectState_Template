@@ -45,15 +45,10 @@ Delivery policy and remote closure
 - direct default-branch CI run: ... | not_verified
 - post-merge verifier: passing | failing | not_run
 - external closure sidecar: /absolute/path | not_written
-- remote slice branch deleted after verification: yes | no | not_applicable
-- isolation released after verification: yes | no | not_applicable
-- isolation mode: clone | worktree | not_applicable
-- isolation disposition: quarantined | removed | retained | not_applicable
-- original isolation path absent: yes | no | not proven
-- quarantine path: /absolute/path | not_applicable | not proven
-- managed active clones: ... | none | not proven
-- quarantined inactive clones: ... | none | not proven
-- unmanaged same-origin sibling clones: ... | none | not proven
+- remote branch deleted / isolation released after verification: yes | no | not_applicable
+- isolation mode / disposition: clone | worktree | not_applicable / quarantined | removed | retained
+- original path absent / quarantine path: yes | no | not proven / /absolute/path | not_applicable
+- managed active / quarantined / unmanaged sibling clones: ... | none | not proven
 - follow-up metadata PR required: no | yes (explain defect)
 - human Git action required: no | yes (explain confirmed policy boundary)
 

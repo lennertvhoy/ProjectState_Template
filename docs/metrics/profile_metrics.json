@@ -1,13 +1,13 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit bb325e7f46e3a19d2a69f70ead75bf8e5f749b30",
+  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 040f0aebf17f27c127f7b46c24a81f432a65b169",
   "profiles": [
     {
-      "actual_tokens": 88435,
+      "actual_tokens": 88642,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5279,
-          "estimated_tokens": 5461,
+          "actual_tokens": 5417,
+          "estimated_tokens": 5634,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -28,11 +28,11 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 21839
+          "total_bytes": 22529
         },
         "ci_diagnosis": {
-          "actual_tokens": 7361,
-          "estimated_tokens": 8506,
+          "actual_tokens": 7526,
+          "estimated_tokens": 8710,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -52,11 +52,11 @@
             ".github/workflows/validate.yml",
             "scripts/statedd_quality_gate.py"
           ],
-          "total_bytes": 34018
+          "total_bytes": 34834
         },
         "closure_review": {
-          "actual_tokens": 1918,
-          "estimated_tokens": 2086,
+          "actual_tokens": 2029,
+          "estimated_tokens": 2223,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -74,11 +74,11 @@
             "PROJECT_STATE.yaml",
             "prompts/EVIDENCE_README_TEMPLATE.md"
           ],
-          "total_bytes": 8340
+          "total_bytes": 8886
         },
         "initial_orientation": {
-          "actual_tokens": 1918,
-          "estimated_tokens": 2086,
+          "actual_tokens": 2029,
+          "estimated_tokens": 2223,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -93,11 +93,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8340
+          "total_bytes": 8886
         },
         "interrupted_resume": {
-          "actual_tokens": 1918,
-          "estimated_tokens": 2086,
+          "actual_tokens": 2029,
+          "estimated_tokens": 2223,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -112,11 +112,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8340
+          "total_bytes": 8886
         },
         "normal_implementation": {
-          "actual_tokens": 2312,
-          "estimated_tokens": 2547,
+          "actual_tokens": 2423,
+          "estimated_tokens": 2684,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -133,10 +133,10 @@
             "PROJECT_STATE.yaml",
             "scripts/AGENTS.md"
           ],
-          "total_bytes": 10184
+          "total_bytes": 10730
         }
       },
-      "estimated_tokens": 94640,
+      "estimated_tokens": 94907,
       "generated_file_count": 39,
       "profile": "minimal",
       "quality_gate": {
@@ -149,18 +149,18 @@
       "resolved_asset_sets": [
         "core"
       ],
-      "startup_actual_tokens": 1918,
-      "startup_bytes": 8340,
-      "startup_estimated_tokens": 2086,
+      "startup_actual_tokens": 2029,
+      "startup_bytes": 8886,
+      "startup_estimated_tokens": 2223,
       "startup_file_count": 4,
-      "total_bytes": 378507
+      "total_bytes": 379574
     },
     {
-      "actual_tokens": 172801,
+      "actual_tokens": 173577,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5289,
-          "estimated_tokens": 5468,
+          "actual_tokens": 5427,
+          "estimated_tokens": 5641,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -181,11 +181,11 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 21866
+          "total_bytes": 22556
         },
         "ci_diagnosis": {
-          "actual_tokens": 7371,
-          "estimated_tokens": 8513,
+          "actual_tokens": 7536,
+          "estimated_tokens": 8717,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -205,11 +205,11 @@
             ".github/workflows/validate.yml",
             "scripts/statedd_quality_gate.py"
           ],
-          "total_bytes": 34048
+          "total_bytes": 34864
         },
         "closure_review": {
-          "actual_tokens": 2908,
-          "estimated_tokens": 3126,
+          "actual_tokens": 3019,
+          "estimated_tokens": 3263,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -226,11 +226,11 @@
             "PROJECT_STATE.yaml",
             "prompts/EVIDENCE_README_TEMPLATE.md"
           ],
-          "total_bytes": 12502
+          "total_bytes": 13048
         },
         "initial_orientation": {
-          "actual_tokens": 1928,
-          "estimated_tokens": 2093,
+          "actual_tokens": 2039,
+          "estimated_tokens": 2230,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -245,11 +245,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8370
+          "total_bytes": 8916
         },
         "interrupted_resume": {
-          "actual_tokens": 1928,
-          "estimated_tokens": 2093,
+          "actual_tokens": 2039,
+          "estimated_tokens": 2230,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -264,11 +264,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8370
+          "total_bytes": 8916
         },
         "normal_implementation": {
-          "actual_tokens": 2322,
-          "estimated_tokens": 2554,
+          "actual_tokens": 2433,
+          "estimated_tokens": 2691,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -285,10 +285,10 @@
             "PROJECT_STATE.yaml",
             "scripts/AGENTS.md"
           ],
-          "total_bytes": 10214
+          "total_bytes": 10760
         }
       },
-      "estimated_tokens": 186004,
+      "estimated_tokens": 186902,
       "generated_file_count": 73,
       "profile": "solo",
       "quality_gate": {
@@ -302,18 +302,18 @@
         "core",
         "proof"
       ],
-      "startup_actual_tokens": 1928,
-      "startup_bytes": 8370,
-      "startup_estimated_tokens": 2093,
+      "startup_actual_tokens": 2039,
+      "startup_bytes": 8916,
+      "startup_estimated_tokens": 2230,
       "startup_file_count": 4,
-      "total_bytes": 743908
+      "total_bytes": 747500
     },
     {
-      "actual_tokens": 223095,
+      "actual_tokens": 231936,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5293,
-          "estimated_tokens": 5469,
+          "actual_tokens": 5431,
+          "estimated_tokens": 5641,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -334,11 +334,11 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 21869
+          "total_bytes": 22559
         },
         "ci_diagnosis": {
-          "actual_tokens": 7375,
-          "estimated_tokens": 8514,
+          "actual_tokens": 7540,
+          "estimated_tokens": 8717,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -358,11 +358,11 @@
             ".github/workflows/validate.yml",
             "scripts/statedd_quality_gate.py"
           ],
-          "total_bytes": 34051
+          "total_bytes": 34867
         },
         "closure_review": {
-          "actual_tokens": 2912,
-          "estimated_tokens": 3127,
+          "actual_tokens": 3023,
+          "estimated_tokens": 3263,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -379,11 +379,11 @@
             "PROJECT_STATE.yaml",
             "prompts/EVIDENCE_README_TEMPLATE.md"
           ],
-          "total_bytes": 12505
+          "total_bytes": 13051
         },
         "initial_orientation": {
-          "actual_tokens": 1932,
-          "estimated_tokens": 2094,
+          "actual_tokens": 2043,
+          "estimated_tokens": 2230,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -398,11 +398,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8373
+          "total_bytes": 8919
         },
         "interrupted_resume": {
-          "actual_tokens": 1932,
-          "estimated_tokens": 2094,
+          "actual_tokens": 2043,
+          "estimated_tokens": 2230,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -417,11 +417,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8373
+          "total_bytes": 8919
         },
         "normal_implementation": {
-          "actual_tokens": 2326,
-          "estimated_tokens": 2555,
+          "actual_tokens": 2437,
+          "estimated_tokens": 2691,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -438,11 +438,11 @@
             "PROJECT_STATE.yaml",
             "scripts/AGENTS.md"
           ],
-          "total_bytes": 10217
+          "total_bytes": 10763
         }
       },
-      "estimated_tokens": 241990,
-      "generated_file_count": 85,
+      "estimated_tokens": 251812,
+      "generated_file_count": 87,
       "profile": "team",
       "quality_gate": {
         "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
@@ -456,18 +456,18 @@
         "core",
         "proof"
       ],
-      "startup_actual_tokens": 1932,
-      "startup_bytes": 8373,
-      "startup_estimated_tokens": 2094,
+      "startup_actual_tokens": 2043,
+      "startup_bytes": 8919,
+      "startup_estimated_tokens": 2230,
       "startup_file_count": 4,
-      "total_bytes": 967833
+      "total_bytes": 1007122
     },
     {
-      "actual_tokens": 223149,
+      "actual_tokens": 232002,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5308,
-          "estimated_tokens": 5510,
+          "actual_tokens": 5446,
+          "estimated_tokens": 5683,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -488,11 +488,11 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 22032
+          "total_bytes": 22722
         },
         "ci_diagnosis": {
-          "actual_tokens": 7390,
-          "estimated_tokens": 8554,
+          "actual_tokens": 7555,
+          "estimated_tokens": 8758,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -512,11 +512,11 @@
             ".github/workflows/validate.yml",
             "scripts/statedd_quality_gate.py"
           ],
-          "total_bytes": 34209
+          "total_bytes": 35025
         },
         "closure_review": {
-          "actual_tokens": 2927,
-          "estimated_tokens": 3167,
+          "actual_tokens": 3038,
+          "estimated_tokens": 3304,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -533,11 +533,11 @@
             "PROJECT_STATE.yaml",
             "prompts/EVIDENCE_README_TEMPLATE.md"
           ],
-          "total_bytes": 12663
+          "total_bytes": 13209
         },
         "initial_orientation": {
-          "actual_tokens": 1947,
-          "estimated_tokens": 2134,
+          "actual_tokens": 2058,
+          "estimated_tokens": 2271,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -552,11 +552,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8531
+          "total_bytes": 9077
         },
         "interrupted_resume": {
-          "actual_tokens": 1947,
-          "estimated_tokens": 2134,
+          "actual_tokens": 2058,
+          "estimated_tokens": 2271,
           "file_count": 4,
           "included_files": [
             "AGENTS.md",
@@ -571,11 +571,11 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml"
           ],
-          "total_bytes": 8531
+          "total_bytes": 9077
         },
         "normal_implementation": {
-          "actual_tokens": 2341,
-          "estimated_tokens": 2595,
+          "actual_tokens": 2452,
+          "estimated_tokens": 2732,
           "file_count": 5,
           "included_files": [
             "AGENTS.md",
@@ -592,11 +592,11 @@
             "PROJECT_STATE.yaml",
             "scripts/AGENTS.md"
           ],
-          "total_bytes": 10375
+          "total_bytes": 10921
         }
       },
-      "estimated_tokens": 242103,
-      "generated_file_count": 85,
+      "estimated_tokens": 251926,
+      "generated_file_count": 87,
       "profile": "regulated",
       "quality_gate": {
         "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance",
@@ -611,11 +611,11 @@
         "proof",
         "regulated_controls"
       ],
-      "startup_actual_tokens": 1947,
-      "startup_bytes": 8531,
-      "startup_estimated_tokens": 2134,
+      "startup_actual_tokens": 2058,
+      "startup_bytes": 9077,
+      "startup_estimated_tokens": 2271,
       "startup_file_count": 4,
-      "total_bytes": 968281
+      "total_bytes": 1007570
     }
   ],
   "provenance": {
@@ -667,6 +667,7 @@
     "schemas/final_handoff_contract.json",
     "schemas/finish_slice_handoff.schema.json",
     "schemas/git_safety_report.schema.json",
+    "schemas/isolation_release.schema.json",
     "schemas/profile_catalog.schema.json",
     "schemas/profile_metrics.schema.json",
     "schemas/project_adapter.schema.json",
@@ -705,10 +706,11 @@
     "scripts/statedd_upgrade.py",
     "scripts/statedd_validate_schema.py",
     "scripts/statedd_version_check.py",
+    "scripts/statedd_workspace_inventory.py",
     "scripts/statedd_worktree_guard.py"
   ],
-  "source_tree_sha256": "2b89b8d03f715423631923d3491b1fe5652b4862f6b3164f86ce9fc44dbd07fb",
-  "template_commit": "bb325e7f46e3a19d2a69f70ead75bf8e5f749b30",
+  "source_tree_sha256": "35233af1c8336beebd504417eacc5c774d376ef29819a534854a3bfa00116c61",
+  "template_commit": "040f0aebf17f27c127f7b46c24a81f432a65b169",
   "template_version": "statedd-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
