@@ -1,4 +1,4 @@
-schema: statedd.efficiency_budget.v1
+schema: projectstate.efficiency_budget.v1
 instruction_budgets:
   root_agents_max_lines: 110
   nested_agents_max_lines: 80
@@ -49,7 +49,7 @@ context_budgets:
       - NEXT_ACTIONS.md
       - PROJECT_STATE.yaml
       - .github/workflows/validate.yml
-      - scripts/statedd_quality_gate.py
+      - scripts/projectstate_quality_gate.py
     architecture_audit:
       - AGENTS.md
       - STATUS.md
@@ -63,7 +63,7 @@ context_budgets:
       max_startup_files: 5
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
-      max_footprint_files: 340
+      max_footprint_files: 400
       # Includes the optional OKF validator, extension schema, and contained scaffold.
       # Includes the committed OKF evidence/state finalization surface; keep
       # this above the measured full-template footprint without changing
@@ -75,7 +75,10 @@ context_budgets:
       # and proportional incident evidence; measured at 2,482,405 bytes.
       # Durable remote-closure receipt and state-reconciliation proof add four
       # evidence files; measured at 339 files and 2,510,361 bytes.
-      max_footprint_bytes: 2520000
+      # The StateDD -> ProjectState rename adds 33 backward-compat script shims,
+      # 7 command alias files, schema enum aliases, and a manifest resolver;
+      # measured at 381 files and 2,586,862 bytes.
+      max_footprint_bytes: 2640000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
@@ -84,13 +87,15 @@ context_budgets:
       # Optional knowledge_okf adds the validator, extension schema, and one
       # contained index without changing the startup file selection.
       # Measured at 397,864 bytes with optional knowledge_okf installed.
-      max_footprint_bytes: 410000
+      # After ProjectState rename: measured at 424,112 bytes with optional knowledge_okf.
+      max_footprint_bytes: 430000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
       max_footprint_files: 76
       # Measured at 763,265 bytes with optional knowledge_okf installed.
+      # After ProjectState rename: measured at 775,688 bytes.
       max_footprint_bytes: 780000
     team:
       max_startup_files: 5
@@ -100,14 +105,17 @@ context_budgets:
       # exact-head collaboration controls required by the agent-first contract.
       max_footprint_files: 90
       # Measured at 986,599 bytes with finish/post-merge controls and optional OKF.
-      max_footprint_bytes: 1020000
+      # After ProjectState rename (schema enum aliases, manifest resolver,
+      # env-var fallbacks): measured at 1,041,807 bytes.
+      max_footprint_bytes: 1050000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
       max_startup_estimated_tokens: 2750
       max_footprint_files: 92
       # Measured at 987,047 bytes with inherited finish controls and optional OKF.
-      max_footprint_bytes: 1020000
+      # After ProjectState rename: measured at 1,042,220 bytes.
+      max_footprint_bytes: 1050000
 
 evidence_budgets:
   default_max_files: 15

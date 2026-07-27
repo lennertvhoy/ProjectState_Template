@@ -55,7 +55,7 @@ When you write a coding-agent prompt, include:
   `pwd`, `git remote -v`, `git branch --show-current`, `git rev-parse HEAD`,
   `git fetch origin --prune`, `git status --short`,
   `git worktree list --porcelain`,
-  `python3 scripts/statedd_worktree_guard.py --mode start-slice`
+  `python3 scripts/projectstate_worktree_guard.py --mode start-slice`
 - instructions to stop implementation and produce a worktree recovery handoff if the guard reports dirty or ambiguous state
 - the required verification or evidence
 - the condition for being done
@@ -68,7 +68,7 @@ When you write a coding-agent prompt, include:
 - a requirement to use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
 - a requirement to use `prompts/EVIDENCE_README_TEMPLATE.md` for the claim ledger in the evidence folder
 - a requirement to complete the anti-brittleness review in `ANTI_BRITTLENESS_GUARD.md` for non-trivial fix or feature slices
-- the relevant validation commands, including `python3 scripts/check_state_docs.py`, `python3 scripts/check_state_docs.py --bootstrap-gate`, `python3 scripts/statedd_audit.py`, and `python3 scripts/statedd_doctor.py`
+- the relevant validation commands, including `python3 scripts/check_state_docs.py`, `python3 scripts/check_state_docs.py --bootstrap-gate`, `python3 scripts/projectstate_audit.py`, and `python3 scripts/projectstate_doctor.py`
 - a reminder that implemented ≠ validated ≠ closure-grade ≠ accepted
 
 When reviewing a handoff:

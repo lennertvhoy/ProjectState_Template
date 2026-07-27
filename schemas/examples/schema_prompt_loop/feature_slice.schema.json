@@ -1,15 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.examples.feature_slice.v1",
-  "title": "StateDD feature slice contract",
-  "description": "A small schema-driven contract for a single StateDD backlog slice.",
+  "$id": "projectstate.examples.feature_slice.v1",
+  "title": "ProjectState feature slice contract",
+  "description": "A small schema-driven contract for a single ProjectState backlog slice.",
   "type": "object",
   "required": [
     "slice_id",
     "title",
     "goal",
     "repo_role",
-    "statedd_mode",
+    "projectstate_mode",
     "acceptance_criteria",
     "evidence_required",
     "verification_commands"
@@ -36,10 +36,10 @@
       "enum": ["template_repository", "downstream_project"],
       "description": "Repo role this slice applies to."
     },
-    "statedd_mode": {
+    "projectstate_mode": {
       "type": "string",
       "enum": ["template-maintenance", "bootstrap", "operating"],
-      "description": "StateDD mode this slice runs in."
+      "description": "ProjectState mode this slice runs in."
     },
     "runtime_required": {
       "type": "boolean",

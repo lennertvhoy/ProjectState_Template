@@ -1,44 +1,122 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.project_adapter.v1",
-  "title": "StateDD PROJECT_ADAPTER.yaml",
+  "$id": "projectstate.project_adapter.v1",
+  "title": "ProjectState PROJECT_ADAPTER.yaml",
   "type": "object",
-  "required": ["version", "project", "runtime", "integrations", "ai_execution_preferences"],
+  "required": [
+    "version",
+    "project",
+    "runtime",
+    "integrations",
+    "ai_execution_preferences"
+  ],
   "additionalProperties": true,
   "properties": {
-    "version": {"type": "string", "const": "statedd-template-v5"},
+    "version": {
+      "enum": [
+        "projectstate-template-v5",
+        "statedd-template-v5"
+      ]
+    },
     "project": {
       "type": "object",
-      "required": ["name", "short_name", "description"],
+      "required": [
+        "name",
+        "short_name",
+        "description"
+      ],
       "additionalProperties": true,
       "properties": {
-        "name": {"type": "string", "minLength": 1},
-        "short_name": {"type": "string", "minLength": 1},
-        "description": {"type": "string", "minLength": 1},
-        "repo_role": {"type": "string", "enum": ["template_repository", "downstream_project"]},
-        "statedd_mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]}
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "short_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repo_role": {
+          "type": "string",
+          "enum": [
+            "template_repository",
+            "downstream_project"
+          ]
+        },
+        "projectstate_mode": {
+          "type": "string",
+          "enum": [
+            "template-maintenance",
+            "bootstrap",
+            "operating"
+          ]
+        },
+        "statedd_mode": {
+          "type": "string",
+          "enum": [
+            "template-maintenance",
+            "bootstrap",
+            "operating"
+          ],
+          "description": "Deprecated alias for projectstate_mode; kept for one migration cycle."
+        }
       }
     },
-    "vocabulary": {"type": "object", "additionalProperties": {"type": "string"}},
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
     "runtime": {
       "type": "object",
-      "required": ["execution_mode"],
+      "required": [
+        "execution_mode"
+      ],
       "additionalProperties": true,
       "properties": {
-        "execution_mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]}
+        "execution_mode": {
+          "type": "string",
+          "enum": [
+            "template-maintenance",
+            "bootstrap",
+            "operating"
+          ]
+        }
       }
     },
-    "integrations": {"type": "array"},
+    "integrations": {
+      "type": "array"
+    },
     "ai_execution_preferences": {
       "type": "object",
-      "required": ["available_tools", "planning_models", "coding_models", "review_models"],
+      "required": [
+        "available_tools",
+        "planning_models",
+        "coding_models",
+        "review_models"
+      ],
       "additionalProperties": true,
       "properties": {
-        "available_tools": {"type": "array"},
-        "planning_models": {"type": "array"},
-        "coding_models": {"type": "array"},
-        "review_models": {"type": "array"},
-        "default_routing_priority": {"type": "string", "minLength": 1}
+        "available_tools": {
+          "type": "array"
+        },
+        "planning_models": {
+          "type": "array"
+        },
+        "coding_models": {
+          "type": "array"
+        },
+        "review_models": {
+          "type": "array"
+        },
+        "default_routing_priority": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

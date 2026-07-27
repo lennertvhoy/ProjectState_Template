@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for statedd_remote_closure_finalizer.py.
+"""Regression tests for projectstate_remote_closure_finalizer.py.
 
 Stays stdlib-only; no real GitHub API or remote git calls.
 """
@@ -19,12 +19,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import statedd_remote_closure_finalizer as finalizer  # noqa: E402
+import projectstate_remote_closure_finalizer as finalizer  # noqa: E402
 
 
 LOCAL_HEAD = "20b446d6401fff3d74fe4beb64cc0c45aea90b5e"
 PROOF_HEAD = "2e84aee8c4f8e16f3a9d0b1c5d8e7f2a1b3c4d5e"
-REMOTE_URL = "https://github.com/statedd/template.git"
+REMOTE_URL = "https://github.com/projectstate/template.git"
 BRANCH = "feature/remote-closure"
 PR_NUMBER = 42
 
@@ -131,7 +131,7 @@ def make_pr_data(
                             "pageInfo": {"hasNextPage": False, "endCursor": None},
                         },
                         "mergeStateStatus": merge_state,
-                        "url": f"https://github.com/statedd/template/pull/{PR_NUMBER}",
+                        "url": f"https://github.com/projectstate/template/pull/{PR_NUMBER}",
                     }
                 ]
             },
@@ -148,7 +148,7 @@ def make_pr_data(
                             "workflowRun": {
                                 "databaseId": actions_run_id,
                                 "runNumber": 1,
-                                "url": f"https://github.com/statedd/template/actions/runs/{actions_run_id}",
+                                "url": f"https://github.com/projectstate/template/actions/runs/{actions_run_id}",
                                 "file": {"path": ".github/workflows/validate.yml"},
                             },
                         }
@@ -191,13 +191,13 @@ def make_finalizer(
             "  validate:\n"
             "    runs-on: ubuntu-latest\n"
             "    steps:\n"
-            "      - run: python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance\n",
+            "      - run: python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance\n",
             encoding="utf-8",
         )
     state = tmp / "PROJECT_STATE.yaml"
     if not state.exists():
         state.write_text(
-            "workflow:\n  repo_role: template_repository\n  statedd_mode: template-maintenance\n",
+            "workflow:\n  repo_role: template_repository\n  projectstate_mode: template-maintenance\n",
             encoding="utf-8",
         )
     if github_data is None:
@@ -234,11 +234,11 @@ def write_evidence(root: Path, *, head: str | None = PROOF_HEAD, final_head: str
         "  validate:\n"
         "    runs-on: ubuntu-latest\n"
         "    steps:\n"
-        "      - run: python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance\n",
+        "      - run: python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance\n",
         encoding="utf-8",
     )
     (root / "PROJECT_STATE.yaml").write_text(
-        "workflow:\n  repo_role: template_repository\n  statedd_mode: template-maintenance\n",
+        "workflow:\n  repo_role: template_repository\n  projectstate_mode: template-maintenance\n",
         encoding="utf-8",
     )
     evidence_dir = root / "docs" / "evidence" / "2026-06-29-remote-closure"
@@ -252,7 +252,7 @@ def write_evidence(root: Path, *, head: str | None = PROOF_HEAD, final_head: str
     readme_content = "\n".join(readme_lines) + "\n"
     (evidence_dir / "README.md").write_text(readme_content, encoding="utf-8")
     manifest: dict = {
-        "schema": "statedd.evidence_manifest.v1",
+        "schema": "projectstate.evidence_manifest.v1",
         "slice_id": "BL-REMOTE-CLOSURE-001",
         "manifest_status": "complete",
         "created_at": "2026-06-29T00:00:00+00:00",
@@ -411,8 +411,8 @@ def test_unrelated_successful_actions_workflow_does_not_satisfy_ci() -> None:
 def test_noop_or_wrong_level_standard_workflow_cannot_be_ci_proof() -> None:
     for command in (
         "echo success",
-        "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
-        "python3 scripts/statedd_quality_gate.py --gate-level 2",
+        "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
+        "python3 scripts/projectstate_quality_gate.py --gate-level 2",
     ):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -439,7 +439,7 @@ def test_workflow_path_override_cannot_select_undeclared_workflow() -> None:
         unrelated = root / ".github" / "workflows" / "unrelated.yml"
         unrelated.write_text(
             "name: Other\njobs:\n  x:\n    steps:\n"
-            "      - run: python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance\n",
+            "      - run: python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance\n",
             encoding="utf-8",
         )
         f = make_finalizer(root, github_data=None)
@@ -475,7 +475,7 @@ def test_malformed_agent_context_fails_closed() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "agent.context"
         path.write_text(
-            '{"schema":"statedd.agent_context.v1","schema":"duplicate"}',
+            '{"schema":"projectstate.agent_context.v1","schema":"duplicate"}',
             encoding="utf-8",
         )
         with pytest.raises(finalizer.ContractError):
@@ -488,20 +488,20 @@ def test_clone_v2_agent_context_is_accepted() -> None:
         path.write_text(
             json.dumps(
                 {
-                    "schema": "statedd.agent_context.v2",
+                    "schema": "projectstate.agent_context.v2",
                     "agent_id": "integration-agent",
                     "slice_id": "BL-STATEDD-INTEGRATION-001",
                     "reservation_ref": "",
                     "worktree_path": "/tmp/integration",
-                    "branch": "bl-statedd-integration-001",
-                    "base_branch": "bl-statedd-integration-001",
+                    "branch": "bl-projectstate-integration-001",
+                    "base_branch": "bl-projectstate-integration-001",
                     "isolation_mode": "clone",
                 }
             ),
             encoding="utf-8",
         )
         context = finalizer.load_agent_context(path)
-        assert context["schema"] == "statedd.agent_context.v2"
+        assert context["schema"] == "projectstate.agent_context.v2"
         assert context["reservation_ref"] == ""
 
 
@@ -614,7 +614,7 @@ def test_invalid_or_headless_evidence_is_a_hard_failure() -> None:
         evidence.mkdir(parents=True)
         (evidence / "README.md").write_text("# Invalid\n", encoding="utf-8")
         (evidence / "manifest.json").write_text(
-            json.dumps({"schema": "statedd.evidence_manifest.v1"}), encoding="utf-8"
+            json.dumps({"schema": "projectstate.evidence_manifest.v1"}), encoding="utf-8"
         )
         body = (
             f"Proof head: {PROOF_HEAD}\nFinal PR head: {LOCAL_HEAD}\n"

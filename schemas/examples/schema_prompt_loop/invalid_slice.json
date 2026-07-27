@@ -1,7 +1,7 @@
 {
   "slice_id": "BL-005",
   "title": "Incomplete slice",
-  "statedd_mode": "template-maintenance",
+  "projectstate_mode": "template-maintenance",
   "runtime_required": false,
   "acceptance_criteria": [
     "Passes validation"

@@ -1,4 +1,4 @@
-# StateDD Maximum-Value Architecture Review
+# ProjectState Maximum-Value Architecture Review
 
 ## Verified strengths
 
@@ -58,7 +58,7 @@
   already provide fresher authority.
 - Keep one local validation entrypoint. Focused commands remain edit-loop tools,
   not a second closure pipeline.
-- Retire `statedd_closure_check.py` and the compatibility label
+- Retire `projectstate_closure_check.py` and the compatibility label
   `closure_label` in a future breaking release after downstream usage is known;
   until then they must explicitly stop at local preflight or pushed state.
 - Keep `STATUS.md` small and synchronized by checks. Do not build an automatic
@@ -70,13 +70,13 @@
 
 ## Architecture decisions
 
-- Readable canonical StateDD remains authority. StateIR is derived and
+- Readable canonical ProjectState remains authority. StateIR is derived and
   source-linked; StatePack is task/model/budget-specific, disposable, stale when
   canonical sources change, and never hand-edited.
 - Startup selection is task-scoped. Architecture, history, evidence, and
   inventories load on demand. Selection policy remains independent of rendering
   format; ultra-terse rendering stays experimental.
-- StateDD_Template owns generic workflow contracts, candidate policies, schemas,
+- ProjectState_Template owns generic workflow contracts, candidate policies, schemas,
   deterministic self-tests, and public-safe fixtures. StatePort already owns the
   StateIR/StatePack compiler and independent benchmark evaluator; this repository
   will not duplicate them.
@@ -97,8 +97,8 @@
 ## Benchmark gaps
 
 The controlled protocol is specified in
-`docs/benchmarks/STATE_DD_BENCHMARK_SPEC.md`. Missing evidence includes the
-no-StateDD control, repeated paired tasks, independent hidden validators,
+`docs/benchmarks/PROJECTSTATE_BENCHMARK_SPEC.md`. Missing evidence includes the
+no-ProjectState control, repeated paired tasks, independent hidden validators,
 model/tokenizer-pinned execution, continuity measurements, safety violation
 rates, confidence intervals, and Pareto comparisons. Token reduction alone is
 not evidence of better agent performance.
@@ -119,7 +119,7 @@ not evidence of better agent performance.
 
 ## Explicit non-goals
 
-- No StateIR/StatePack compiler duplication in StateDD_Template.
+- No StateIR/StatePack compiler duplication in ProjectState_Template.
 - No marketplace, arbitrary executable plugins, automatic prompt evolution,
   canonical caveman-language rewrite, auto-promotion, or one-number leaderboard.
 - No silent semantic merge of customized project truth, destructive asset

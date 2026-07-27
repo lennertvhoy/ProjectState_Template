@@ -1,6 +1,6 @@
 # Schema/Prompt Loop Example
 
-A minimal, stdlib-only demonstration of StateDD's schema-driven contract idea:
+A minimal, stdlib-only demonstration of ProjectState's schema-driven contract idea:
 **one schema validates data and generates prompt material**, so docs, prompts, and
 examples cannot quietly drift from the canonical contract.
 
@@ -46,6 +46,6 @@ python3 schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
 
 ## Limits
 
-- This is a teaching example, not a replacement for `scripts/statedd_validate_schema.py`.
+- This is a teaching example, not a replacement for `scripts/projectstate_validate_schema.py`.
 - The generated prompt uses only field names and descriptions; it does not
   attempt natural-language paraphrasing.

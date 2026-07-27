@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for statedd_upgrade.py.
+"""Regression tests for projectstate_upgrade.py.
 
 Stays stdlib-only.
 """
@@ -18,13 +18,13 @@ from unittest import mock
 import pytest
 
 try:
-    import statedd_upgrade as upgrade_module
+    import projectstate_upgrade as upgrade_module
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts import statedd_upgrade as upgrade_module
+    from scripts import projectstate_upgrade as upgrade_module
 
 
 ROOT = Path(__file__).resolve().parents[1]
-UPGRADE_SCRIPT = ROOT / "scripts" / "statedd_upgrade.py"
+UPGRADE_SCRIPT = ROOT / "scripts" / "projectstate_upgrade.py"
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
 
 
@@ -72,7 +72,7 @@ def tree_digest(root: Path) -> str:
 
 
 def manifest_payload(target: Path) -> dict[str, object]:
-    return json.loads((target / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+    return json.loads((target / "PROJECTSTATE_ASSETS.json").read_text(encoding="utf-8"))
 
 
 def test_dry_run_on_current_repo_refuses_template_root() -> None:
@@ -96,19 +96,19 @@ def test_dry_run_on_older_fixture_reports_missing_assets() -> None:
         target = Path(tmp) / "older"
         run_init(["new", "--name", "Older Demo", "--target", str(target)])
         # Simulate an older repo by removing newer assets.
-        (target / "scripts" / "statedd_evidence_pack.py").unlink(missing_ok=True)
+        (target / "scripts" / "projectstate_evidence_pack.py").unlink(missing_ok=True)
         (target / "schemas" / "evidence_manifest.schema.json").unlink(missing_ok=True)
         (target / "scripts" / "test_evidence_pack.py").unlink(missing_ok=True)
-        (target / "scripts" / "statedd_worktree_guard.py").unlink(missing_ok=True)
+        (target / "scripts" / "projectstate_worktree_guard.py").unlink(missing_ok=True)
         (target / "ANTI_BRITTLENESS_GUARD.md").unlink(missing_ok=True)
 
         completed = run_upgrade([str(target)], expect_success=True)
         output = completed.stdout
-        if "statedd_evidence_pack.py" not in output:
+        if "projectstate_evidence_pack.py" not in output:
             raise AssertionError("Missing evidence pack script not reported")
         if "evidence_manifest.schema.json" not in output:
             raise AssertionError("Missing evidence manifest schema not reported")
-        if "statedd_worktree_guard.py" not in output:
+        if "projectstate_worktree_guard.py" not in output:
             raise AssertionError("Missing worktree guard script not reported")
         if "ANTI_BRITTLENESS_GUARD.md" not in output:
             raise AssertionError("Missing anti-brittleness guard doc not reported")
@@ -118,15 +118,15 @@ def test_apply_adds_safe_missing_assets() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "older"
         run_init(["new", "--name", "Older Demo", "--target", str(target)])
-        (target / "scripts" / "statedd_evidence_pack.py").unlink(missing_ok=True)
+        (target / "scripts" / "projectstate_evidence_pack.py").unlink(missing_ok=True)
         (target / "schemas" / "evidence_manifest.schema.json").unlink(missing_ok=True)
         (target / "QUALITY_FIREWALL.md").unlink(missing_ok=True)
         (target / "docs" / "quality_gates" / "README.md").unlink(missing_ok=True)
-        (target / "scripts" / "statedd_worktree_guard.py").unlink(missing_ok=True)
+        (target / "scripts" / "projectstate_worktree_guard.py").unlink(missing_ok=True)
         (target / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md").unlink(missing_ok=True)
 
         run_upgrade([str(target), "--apply"], expect_success=True)
-        if not (target / "scripts" / "statedd_evidence_pack.py").exists():
+        if not (target / "scripts" / "projectstate_evidence_pack.py").exists():
             raise AssertionError("Apply did not add missing script")
         if not (target / "schemas" / "evidence_manifest.schema.json").exists():
             raise AssertionError("Apply did not add missing schema")
@@ -134,7 +134,7 @@ def test_apply_adds_safe_missing_assets() -> None:
             raise AssertionError("Apply did not add missing quality firewall")
         if not (target / "docs" / "quality_gates" / "README.md").exists():
             raise AssertionError("Apply did not add missing quality gates README")
-        if not (target / "scripts" / "statedd_worktree_guard.py").exists():
+        if not (target / "scripts" / "projectstate_worktree_guard.py").exists():
             raise AssertionError("Apply did not add missing worktree guard")
         if not (target / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md").exists():
             raise AssertionError("Apply did not add missing anti-brittleness gate")
@@ -160,13 +160,13 @@ def test_conflict_fixture_refuses_unsafe_overwrite() -> None:
         target = Path(tmp) / "older"
         run_init(["new", "--name", "Older Demo", "--target", str(target)])
         # Modify a safe managed asset locally so it differs from template.
-        script = target / "scripts" / "statedd_evidence_pack.py"
+        script = target / "scripts" / "projectstate_evidence_pack.py"
         script.write_text("# locally modified\n", encoding="utf-8")
 
         completed = run_upgrade([str(target)], expect_success=True)
         if "Conflicts" not in completed.stdout:
             raise AssertionError("Expected conflict section in dry-run output")
-        if "statedd_evidence_pack.py" not in completed.stdout:
+        if "projectstate_evidence_pack.py" not in completed.stdout:
             raise AssertionError("Expected modified script to be reported as conflict")
 
         # Apply without --force-managed should refuse.
@@ -177,7 +177,7 @@ def test_force_managed_replaces_outdated_safe_asset() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "older"
         run_init(["new", "--name", "Older Demo", "--target", str(target)])
-        script = target / "scripts" / "statedd_evidence_pack.py"
+        script = target / "scripts" / "projectstate_evidence_pack.py"
         script.write_text("# locally modified\n", encoding="utf-8")
 
         run_upgrade([str(target), "--apply", "--force-managed"], expect_success=True)
@@ -230,7 +230,7 @@ def test_report_writes_json() -> None:
         if not report.exists():
             raise AssertionError("Report file was not written")
         data = json.loads(report.read_text(encoding="utf-8"))
-        if data.get("schema") != "statedd.upgrade_report.v2":
+        if data.get("schema") != "projectstate.upgrade_report.v2":
             raise AssertionError("Report has unexpected schema")
 
 
@@ -310,14 +310,14 @@ def test_old_manifest_does_not_suppress_new_profile_asset() -> None:
         new_asset = target / "EFFICIENCY_BUDGET.yaml"
         new_asset.unlink()
         v1 = {
-            "schema": "statedd.runtime_assets.v1",
-            "template_version": "statedd-template-v4",
+            "schema": "projectstate.runtime_assets.v1",
+            "template_version": "projectstate-template-v4",
             "profile": "minimal",
             "generation_mode": "new",
-            "assets": ["VERSION", "STATEDD_ASSETS.json"],
+            "assets": ["VERSION", "PROJECTSTATE_ASSETS.json"],
             "excluded_classes": ["template_tests"],
         }
-        (target / "STATEDD_ASSETS.json").write_text(json.dumps(v1), encoding="utf-8")
+        (target / "PROJECTSTATE_ASSETS.json").write_text(json.dumps(v1), encoding="utf-8")
 
         completed = run_upgrade([str(target)], expect_success=True)
         if "EFFICIENCY_BUDGET.yaml" not in completed.stdout or "new_profile_asset" not in completed.stdout:
@@ -326,7 +326,7 @@ def test_old_manifest_does_not_suppress_new_profile_asset() -> None:
         if not new_asset.is_file():
             raise AssertionError("New profile asset was not installed")
         upgraded = manifest_payload(target)
-        if upgraded.get("schema") != "statedd.runtime_assets.v2":
+        if upgraded.get("schema") != "projectstate.runtime_assets.v2":
             raise AssertionError("Successful apply did not migrate the asset lock")
 
 
@@ -335,11 +335,11 @@ def test_old_manifest_does_not_suppress_new_profile_asset() -> None:
     [
         "{broken",
         '{"schema":"wrong"}',
-        '{"schema":"statedd.runtime_assets.v1","schema":"statedd.runtime_assets.v1"}',
+        '{"schema":"projectstate.runtime_assets.v1","schema":"projectstate.runtime_assets.v1"}',
         json.dumps(
             {
-                "schema": "statedd.runtime_assets.v1",
-                "template_version": "statedd-template-v4",
+                "schema": "projectstate.runtime_assets.v1",
+                "template_version": "projectstate-template-v4",
                 "profile": "minimal",
                 "generation_mode": "new",
                 "assets": ["../escape"],
@@ -348,8 +348,8 @@ def test_old_manifest_does_not_suppress_new_profile_asset() -> None:
         ),
         json.dumps(
             {
-                "schema": "statedd.runtime_assets.v1",
-                "template_version": "statedd-template-v4",
+                "schema": "projectstate.runtime_assets.v1",
+                "template_version": "projectstate-template-v4",
                 "profile": "minimal",
                 "generation_mode": "new",
                 "assets": ["/absolute"],
@@ -362,7 +362,7 @@ def test_malformed_or_unsafe_manifest_fails_closed_without_writes(content: str) 
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "malformed"
         run_init(["new", "--name", "Malformed", "--profile", "minimal", "--target", str(target)])
-        (target / "STATEDD_ASSETS.json").write_text(content, encoding="utf-8")
+        (target / "PROJECTSTATE_ASSETS.json").write_text(content, encoding="utf-8")
         before = tree_digest(target)
         run_upgrade([str(target), "--apply"], expect_success=False)
         if tree_digest(target) != before:
@@ -412,7 +412,7 @@ def test_pristine_old_base_updates_without_force_but_local_change_conflicts() ->
         target = Path(tmp) / "pristine-old"
         run_init(["new", "--name", "Pristine Old", "--profile", "minimal", "--target", str(target)])
         path = target / "VERSION"
-        old = b"statedd-template-v4\n"
+        old = b"projectstate-template-v4\n"
         path.write_bytes(old)
         payload = manifest_payload(target)
         for record in payload["managed_assets"]:  # type: ignore[index]
@@ -420,11 +420,11 @@ def test_pristine_old_base_updates_without_force_but_local_change_conflicts() ->
                 old_hash = hashlib.sha256(old).hexdigest()
                 record["base_sha256"] = old_hash
                 record["installed_sha256"] = old_hash
-        (target / "STATEDD_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
+        (target / "PROJECTSTATE_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
         completed = run_upgrade([str(target), "--apply"], expect_success=True)
         if "unmodified_since_previous_install" not in completed.stdout:
             raise AssertionError(f"Pristine base was not recognized:\n{completed.stdout}")
-        if path.read_text(encoding="utf-8").strip() != "statedd-template-v5":
+        if path.read_text(encoding="utf-8").strip() != "projectstate-template-v5":
             raise AssertionError("Pristine old asset was not upgraded")
 
 
@@ -441,7 +441,7 @@ def test_removed_asset_is_reported_retained_and_locked_as_retired() -> None:
         retired_record["base_sha256"] = hashlib.sha256(obsolete.read_bytes()).hexdigest()
         retired_record["installed_sha256"] = retired_record["base_sha256"]
         payload["managed_assets"].append(retired_record)  # type: ignore[index]
-        (target / "STATEDD_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
+        (target / "PROJECTSTATE_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
 
         completed = run_upgrade([str(target), "--apply"], expect_success=True)
         if "retained on disk" not in completed.stdout:
@@ -496,7 +496,7 @@ def test_manifest_change_after_planning_blocks_all_upgrade_writes() -> None:
         manifest, changed = upgrade_module.build_manifest(
             history, plan, catalog, resolved, upgrade_module.read_version(ROOT) or "unknown"
         )
-        lock = target / "STATEDD_ASSETS.json"
+        lock = target / "PROJECTSTATE_ASSETS.json"
         lock.write_text(lock.read_text(encoding="utf-8") + "\n", encoding="utf-8")
         altered = lock.read_bytes()
 
@@ -572,12 +572,12 @@ def test_malformed_v2_top_level_and_history_fail_before_writes() -> None:
         payload["profile_dependencies"] = "invalid"
         payload["required_gate_level"] = -99
         payload["upgrade_history"] = [{}]
-        (target / "STATEDD_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
+        (target / "PROJECTSTATE_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
         before = tree_digest(target)
 
         completed = run_upgrade([str(target), "--apply"], expect_success=False)
 
-        if "violates statedd.runtime_assets.v2" not in completed.stdout:
+        if "violates projectstate.runtime_assets.v2" not in completed.stdout:
             raise AssertionError(f"Expected schema-backed lock refusal:\n{completed.stdout}")
         if tree_digest(target) != before:
             raise AssertionError("Malformed v2 lock caused upgrade writes")
@@ -604,7 +604,7 @@ def test_reintroduced_retired_asset_recovers_ownership_and_is_not_still_retired(
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "reintroduced"
         run_init(["new", "--name", "Reintroduced", "--profile", "minimal", "--target", str(target)])
-        old_content = b"statedd-template-v0\n"
+        old_content = b"projectstate-template-v0\n"
         (target / "VERSION").write_bytes(old_content)
         payload = manifest_payload(target)
         payload["managed_assets"] = [
@@ -617,7 +617,7 @@ def test_reintroduced_retired_asset_recovers_ownership_and_is_not_still_retired(
                 "base_sha256": hashlib.sha256(old_content).hexdigest(),
             }
         ]
-        (target / "STATEDD_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
+        (target / "PROJECTSTATE_ASSETS.json").write_text(json.dumps(payload), encoding="utf-8")
 
         run_upgrade([str(target), "--apply"], expect_success=True)
 
@@ -632,7 +632,7 @@ def test_modified_generated_control_conflicts_then_force_regenerates_and_locks_h
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "generated-control"
         run_init(["new", "--name", "Generated", "--profile", "regulated", "--target", str(target)])
-        workflow = target / ".github" / "workflows" / "statedd-validate.yml"
+        workflow = target / ".github" / "workflows" / "projectstate-validate.yml"
         workflow.write_text(workflow.read_text(encoding="utf-8") + "# STALE-HACK\n", encoding="utf-8")
 
         completed = run_upgrade([str(target), "--apply"], expect_success=False)
@@ -647,7 +647,7 @@ def test_modified_generated_control_conflicts_then_force_regenerates_and_locks_h
         manifest = manifest_payload(target)
         record = next(
             item for item in manifest["managed_assets"]
-            if item["path"] == ".github/workflows/statedd-validate.yml"
+            if item["path"] == ".github/workflows/projectstate-validate.yml"
         )
         if record["installed_sha256"] != hashlib.sha256(workflow.read_bytes()).hexdigest():
             raise AssertionError("Generated-control lock hash does not match installed content")

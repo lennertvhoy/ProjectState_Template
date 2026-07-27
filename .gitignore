@@ -47,5 +47,5 @@ security_best_practices_report.md
 # Isolated worktrees
 .worktrees/
 
-# Ephemeral StateDD agent context
-.statedd/
+# Ephemeral ProjectState agent context
+.projectstate/

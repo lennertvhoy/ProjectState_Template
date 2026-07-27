@@ -34,7 +34,7 @@ step_by_step:
     action: "If P0, set mode to quality_freeze in PROJECT_STATE.yaml"
     verify: "PROJECT_STATE.yaml mode = quality_freeze"
   - name: "Generate handoff"
-    command: "python scripts/statedd_handoff.py"
+    command: "python scripts/projectstate_handoff.py"
     expected: "Handoff includes incident ref and next steps"
 expected_outputs:
   - "Incident file in docs/incidents/"

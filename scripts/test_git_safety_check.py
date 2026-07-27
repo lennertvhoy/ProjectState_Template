@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the StateDD Git safety preflight.
+"""Regression tests for the ProjectState Git safety preflight.
 
 The filesystem permission fixtures operate only in disposable temporary
 repositories and restore their original modes in ``finally`` blocks.
@@ -22,9 +22,9 @@ from types import ModuleType, SimpleNamespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "statedd_git_safety_check.py"
+SCRIPT = ROOT / "scripts" / "projectstate_git_safety_check.py"
 SCHEMA = ROOT / "schemas" / "git_safety_report.schema.json"
-VALIDATOR = ROOT / "scripts" / "statedd_validate_schema.py"
+VALIDATOR = ROOT / "scripts" / "projectstate_validate_schema.py"
 
 
 def run(
@@ -62,7 +62,7 @@ def init_remote_clone(root: Path, name: str = "repo") -> tuple[Path, Path]:
     git(root, "init", "--bare", str(bare))
     git(root, "init", "-b", "main", str(seed))
     git(seed, "config", "user.email", "tests@example.com")
-    git(seed, "config", "user.name", "StateDD Tests")
+    git(seed, "config", "user.name", "ProjectState Tests")
     (seed / "PROJECT_STATE.yaml").write_text("state: baseline\n", encoding="utf-8")
     (seed / "README.md").write_text("# Disposable safety test\n", encoding="utf-8")
     git(seed, "add", ".")
@@ -72,7 +72,7 @@ def init_remote_clone(root: Path, name: str = "repo") -> tuple[Path, Path]:
     git(bare, "symbolic-ref", "HEAD", "refs/heads/main")
     git(root, "clone", "--no-local", str(bare), str(clone))
     git(clone, "config", "user.email", "tests@example.com")
-    git(clone, "config", "user.name", "StateDD Tests")
+    git(clone, "config", "user.name", "ProjectState Tests")
     git(clone, "switch", "-c", "feature/safety-test")
     return clone, bare
 
@@ -108,7 +108,7 @@ def run_check(
 
 
 def load_module() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("statedd_git_safety_check", SCRIPT)
+    spec = importlib.util.spec_from_file_location("projectstate_git_safety_check", SCRIPT)
     if spec is None or spec.loader is None:
         raise AssertionError(f"Cannot load {SCRIPT}")
     module = importlib.util.module_from_spec(spec)
@@ -360,7 +360,7 @@ def test_read_only_mode_does_not_mutate_repository() -> None:
         assert report["decision"]["mutation_permitted"] is False
         assert report["write_probe"]["result"] == "not_run_read_only"
         assert report["synchronization"]["result"] == "not_run_read_only"
-        assert report["decision"]["enforcement_scope"] == "statedd_managed_session_permit"
+        assert report["decision"]["enforcement_scope"] == "projectstate_managed_session_permit"
 
 
 def test_dirty_and_stale_worktrees_are_reported_without_cleanup() -> None:
@@ -438,7 +438,7 @@ def test_exact_git_object_permission_error_is_reproduced_safely() -> None:
         repo = Path(tmp) / "repo"
         git(Path(tmp), "init", str(repo))
         objects = repo / ".git" / "objects"
-        content = b"statedd original object permission regression\n"
+        content = b"projectstate original object permission regression\n"
         while True:
             object_id = git(repo, "hash-object", "--stdin", input_text=content.decode("utf-8"))
             prefix = objects / object_id[:2]

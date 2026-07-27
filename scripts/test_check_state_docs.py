@@ -269,7 +269,7 @@ def test_template_gate_accepts_stable_empty_queue_after_final_closure() -> None:
         (root / "PROJECT_STATE.yaml").write_text(
             "workflow:\n"
             "  repo_role: template_repository\n"
-            "  statedd_mode: template-maintenance\n"
+            "  projectstate_mode: template-maintenance\n"
             "current_state:\n"
             "  execution_mode:\n"
             "    mode: template-maintenance\n"

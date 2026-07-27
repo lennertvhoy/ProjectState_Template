@@ -38,7 +38,7 @@ jobs:
 
       - name: Run authoritative Level 2 validation
         run: |
-          python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance --verbose
+          python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance --verbose
 
       - name: Generate and self-validate every profile
         run: |
@@ -46,8 +46,8 @@ jobs:
           for profile in $(python3 -c 'import json; print(" ".join(json.load(open("profiles/catalog.json"))["profiles"]))'); do
             profile_target="$tmpdir/profile-$profile"
             python3 scripts/init_template.py new --name "CI $profile" --profile "$profile" --target "$profile_target"
-            gate_level="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["required_gate_level"])' "$profile_target/STATEDD_ASSETS.json")"
-            python3 "$profile_target/scripts/statedd_quality_gate.py" --root "$profile_target" --gate-level "$gate_level" --conformance
+            gate_level="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["required_gate_level"])' "$profile_target/PROJECTSTATE_ASSETS.json")"
+            python3 "$profile_target/scripts/projectstate_quality_gate.py" --root "$profile_target" --gate-level "$gate_level" --conformance
           done
 
       - name: Prove validation left the checkout clean
@@ -83,4 +83,4 @@ jobs:
         run: python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
 
       - name: Run authoritative Level 2 validation for merge candidate
-        run: python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance --verbose
+        run: python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance --verbose

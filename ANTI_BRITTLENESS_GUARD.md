@@ -4,7 +4,7 @@
 observed failing example.
 
 This guard is a review contract, not a keyword scanner. The optional
-`scripts/statedd_brittleness_check.py` helper can warn about suspicious shapes,
+`scripts/projectstate_brittleness_check.py` helper can warn about suspicious shapes,
 but the closure authority is the anti-brittleness review in the slice contract,
 evidence README, and CTO review.
 

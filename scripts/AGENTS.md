@@ -1,6 +1,6 @@
 ---
 scope: "scripts"
-purpose: "Local invariants for StateDD executable code"
+purpose: "Local invariants for ProjectState executable code"
 ---
 # Scripts Agent Instructions
 
@@ -21,7 +21,7 @@ second hand-written script catalog here.
 - Tests cover the general invariant plus malformed and adjacent cases, not only
   the observed fixture.
 - Local audit and remote-branch parity are preflights. When the profile installs
-  `statedd_remote_closure_finalizer.py`, only it may establish exact-head remote
+  `projectstate_remote_closure_finalizer.py`, only it may establish exact-head remote
   closure; profiles without it must report remote closure as not proven.
 - Exit nonzero with actionable output when a required proof cannot be established.
 
@@ -30,7 +30,7 @@ second hand-written script catalog here.
 Run focused tests while editing, then the single authoritative local entrypoint:
 
 ```bash
-python3 scripts/statedd_quality_gate.py --gate-level 2
+python3 scripts/projectstate_quality_gate.py --gate-level 2
 ```
 
 Gate level 1 is sufficient for a trivial non-runtime edit; level 3 is reserved

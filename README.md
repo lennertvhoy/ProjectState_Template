@@ -1,20 +1,20 @@
-# StateDD Template
+# ProjectState Template
 
-StateDD is a repo-based workflow for AI-assisted software projects.
+ProjectState is a repo-based workflow for AI-assisted software projects.
 
 It keeps project truth, next actions, evidence, runtime proof, and handoffs inside the repository so coding agents do not rely on stale chat context.
 
-Current StateDD spec version: `statedd-template-v5`
+Current ProjectState spec version: `projectstate-template-v5`
 
 The template repository itself uses `repo_role: template_repository` and
-`statedd_mode: template-maintenance`. Repos generated or adopted from it use
-`repo_role: downstream_project` and start in `statedd_mode: bootstrap`.
+`projectstate_mode: template-maintenance`. Repos generated or adopted from it use
+`repo_role: downstream_project` and start in `projectstate_mode: bootstrap`.
 
 ---
 
 ## Start here
 
-StateDD is agent-operated. The human supplies intent, permissions, feedback,
+ProjectState is agent-operated. The human supplies intent, permissions, feedback,
 and acceptance; the coding agent inspects the repository, makes scoped changes,
 runs the executable gates, and follows the delivery policy confirmed once during
 bootstrap. The canonical `team` path recommends `agent_after_green`, under which
@@ -46,7 +46,7 @@ python3 scripts/init_template.py new --name "Your Project" --profile minimal
 
 Generated profiles use explicit runtime-asset allowlists. They exclude template
 tests, fixtures, maintenance history, and historical evidence; the exact installed
-surface is recorded in `STATEDD_ASSETS.json`, and each profile passes its own gate.
+surface is recorded in `PROJECTSTATE_ASSETS.json`, and each profile passes its own gate.
 
 Then paste this into your coding agent:
 
@@ -59,7 +59,7 @@ Want all commands in one place? See `docs/QUICK_COMMANDS.md`.
 
 ## Start Simple
 
-You do not need to use every StateDD feature on day one.
+You do not need to use every ProjectState feature on day one.
 
 Start with:
 
@@ -81,7 +81,7 @@ AI-assisted projects drift. Context decays, repo truth falls behind runtime trut
 - active work grows into a vague pile instead of a short queue
 - inherited repos are forced into a greenfield workflow that does not fit
 
-The State Driven Development Template reduces those failure modes with explicit state, evidence-backed claims, non-destructive adoption, and small implementation slices.
+The ProjectState template reduces those failure modes with explicit state, evidence-backed claims, non-destructive adoption, and small implementation slices.
 
 This repository publishes the template itself. It keeps the workflow contract public and reusable, but it does not try to use its own state files as a running diary for every small template maintenance edit. Downstream repos created from it should use the full workflow directly.
 
@@ -122,29 +122,29 @@ This repository publishes the template itself. It keeps the workflow contract pu
 | `docs/WORKFLOW_FOR_BEGINNERS.md` | Beginner-friendly diagram, prompt map, and quality checklist |
 | `docs/adr/` | Architecture decision records |
 | `scripts/init_template.py` | Initialize a new repo or adopt the workflow into an existing repo |
-| `scripts/statedd_bootstrap_apply.py` | Apply a validated structured bootstrap answer document and integration result |
-| `scripts/statedd_git_safety_check.py` | Fail-closed repository identity, ownership, fsck, synchronization, and isolation preflight |
-| `scripts/statedd_git_safety_session.py` | External latch and context-bound mutation permit enforcement |
+| `scripts/projectstate_bootstrap_apply.py` | Apply a validated structured bootstrap answer document and integration result |
+| `scripts/projectstate_git_safety_check.py` | Fail-closed repository identity, ownership, fsck, synchronization, and isolation preflight |
+| `scripts/projectstate_git_safety_session.py` | External latch and context-bound mutation permit enforcement |
 | `scripts/check_state_docs.py` | Validate hygiene and bootstrap readiness |
-| `scripts/statedd_version_check.py` | Verify StateDD spec-version alignment |
-| `scripts/statedd_handoff.py` | Print a read-only handoff snapshot from local repo state |
-| `scripts/statedd_audit.py` | Machine-checkable closure audit |
-| `scripts/statedd_doctor.py` | Fast StateDD health summary |
-| `scripts/statedd_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard |
-| `scripts/statedd_brittleness_check.py` | Advisory anti-brittleness heuristic scanner |
-| `scripts/statedd_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
-| `scripts/statedd_runtime_truth_check.py` | Re-probe an explicit v2 runtime artifact against current Git/runtime truth |
-| `scripts/statedd_validate_schema.py` | Validate StateDD state, evidence, runtime, and handoff contracts |
-| `scripts/statedd_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
-| `scripts/statedd_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
-| `scripts/statedd_finish_slice.py` | Finish confirmed `agent_after_green` delivery through exact-head merge, direct-main CI, post-merge proof, cleanup, and external handoff |
-| `scripts/statedd_post_merge_verify.py` | Verify squash tree/patch identity and direct default-branch CI without tracked future-SHA claims |
+| `scripts/projectstate_version_check.py` | Verify ProjectState spec-version alignment |
+| `scripts/projectstate_handoff.py` | Print a read-only handoff snapshot from local repo state |
+| `scripts/projectstate_audit.py` | Machine-checkable closure audit |
+| `scripts/projectstate_doctor.py` | Fast ProjectState health summary |
+| `scripts/projectstate_worktree_guard.py` | Pre-slice/closure worktree isolation and dirty-file classification guard |
+| `scripts/projectstate_brittleness_check.py` | Advisory anti-brittleness heuristic scanner |
+| `scripts/projectstate_runtime_proof.py` | Capture `runtime_identity.json` proof artifacts for evidence folders |
+| `scripts/projectstate_runtime_truth_check.py` | Re-probe an explicit v2 runtime artifact against current Git/runtime truth |
+| `scripts/projectstate_validate_schema.py` | Validate ProjectState state, evidence, runtime, and handoff contracts |
+| `scripts/projectstate_evidence_pack.py` | Create, hash, scan, and validate evidence pack manifests and redaction status |
+| `scripts/projectstate_upgrade.py` | Non-destructive downstream upgrade helper for managed template assets |
+| `scripts/projectstate_finish_slice.py` | Finish confirmed `agent_after_green` delivery through exact-head merge, direct-main CI, post-merge proof, cleanup, and external handoff |
+| `scripts/projectstate_post_merge_verify.py` | Verify squash tree/patch identity and direct default-branch CI without tracked future-SHA claims |
 | `scripts/test_init_template.py` | Regression-check initializer safety |
 | `scripts/test_worktree_guard.py` | Regression-check worktree guard behavior |
 | `scripts/test_brittleness_check.py` | Regression-check brittleness scanner and audit marker behavior |
 | `scripts/test_schema_validation.py` | Regression-check schema validation behavior |
 | `scripts/test_evidence_pack.py` | Regression-check evidence pack manifest and redaction behavior |
-| `schemas/` | Executable StateDD schemas and Markdown contracts |
+| `schemas/` | Executable ProjectState schemas and Markdown contracts |
 | `schemas/examples/schema_prompt_loop/` | Concrete schema-driven example: one schema validates data and generates prompt material |
 | `prompts/` | Startup prompts, CTO prompt, tool/model routing guide, handoff template, runtime checklist, freeze template, slice contract, evidence README, schema ownership, subagent review, CTO review checklist |
 
@@ -153,10 +153,10 @@ This repository publishes the template itself. It keeps the workflow contract pu
 1. `bootstrap`: establish a truthful baseline by separating observed facts from assumptions.
 2. plan: choose one small next backlog slice.
 3. contract: write a slice contract with scope, non-goals, and acceptance criteria.
-4. preflight: run `scripts/statedd_worktree_guard.py --mode start-slice` before non-trivial implementation.
+4. preflight: run `scripts/projectstate_worktree_guard.py --mode start-slice` before non-trivial implementation.
 5. execute: implement and verify directly.
 6. record: update state and evidence when truth changes.
-7. audit: run `statedd_audit.py` before claiming closure-grade.
+7. audit: run `projectstate_audit.py` before claiming closure-grade.
 8. remote closure: bind the exact PR head, evidence, review state, merge state,
    and CI subjects.
 9. merge: when confirmed policy is `agent_after_green`, squash-merge only the
@@ -171,8 +171,8 @@ This repository publishes the template itself. It keeps the workflow contract pu
 - freeze accepted milestones to source, runtime, and evidence (`acceptance freeze`)
 - four-state closure: implemented, validated, closure-grade, and accepted are separate states
 - `negative-search honesty`: a failed search stays `not found` or `not proven`; it does not become `never existed`
-- executable audit: `statedd_audit.py` checks the repo rather than relying on agent discipline alone
-- executable schemas: `statedd_validate_schema.py` checks state, evidence README, runtime identity, and handoff contracts
+- executable audit: `projectstate_audit.py` checks the repo rather than relying on agent discipline alone
+- executable schemas: `projectstate_validate_schema.py` checks state, evidence README, runtime identity, and handoff contracts
 - `bootstrap vs operating`: discovery is a real phase, not a formality
 - `adopt` path for inherited repos: bring the workflow into existing codebases without blindly overwriting them
 - agent-first delivery: clone-default isolation and confirmed-once policy let the
@@ -278,10 +278,10 @@ python3 scripts/check_state_docs.py --bootstrap-gate
 
 ## Versioning
 
-`VERSION` is the canonical StateDD spec-version source. Version-bearing state, docs, and generator files must agree with it before handoff or release.
+`VERSION` is the canonical ProjectState spec-version source. Version-bearing state, docs, and generator files must agree with it before handoff or release.
 
 ```bash
-python3 scripts/statedd_version_check.py
+python3 scripts/projectstate_version_check.py
 ```
 
 ## Setting Up The AI CTO Agent
@@ -333,17 +333,17 @@ The prompt files are the reusable source of truth for startup and handoff wordin
 
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md`. The handoff should capture what changed, what was verified, repo path, branch, git head, process or container, endpoint, rebuild status, evidence refs, and the next recommended backlog slice.
 
-Use `python3 scripts/statedd_handoff.py` near the end of a slice to print a local handoff snapshot. The helper is read-only and marks runtime facts as `not proven` unless they are directly captured.
+Use `python3 scripts/projectstate_handoff.py` near the end of a slice to print a local handoff snapshot. The helper is read-only and marks runtime facts as `not proven` unless they are directly captured.
 
 ## Runtime Identity Proof
 
 Before accepting user-facing behavior, first prove which repo, branch, HEAD commit, process or container, and endpoint were actually under test, plus whether the artifact was rebuilt and whether duplicate runtimes were checked.
 
-Use `python3 scripts/statedd_runtime_proof.py --evidence-dir docs/evidence/<slice> --url http://localhost:<port>` to write `runtime_identity.json` for runtime slices. For docs/scripts-only slices, use `python3 scripts/statedd_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>`.
+Use `python3 scripts/projectstate_runtime_proof.py --evidence-dir docs/evidence/<slice> --url http://localhost:<port>` to write `runtime_identity.json` for runtime slices. For docs/scripts-only slices, use `python3 scripts/projectstate_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>`.
 
-Re-probe the exact artifact with `python3 scripts/statedd_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json --expected-endpoint http://localhost:<port>`. Remote endpoints additionally require `--allow-remote` and a proof captured with `--revision-header <header>` whose response value equals the current Git HEAD.
+Re-probe the exact artifact with `python3 scripts/projectstate_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json --expected-endpoint http://localhost:<port>`. Remote endpoints additionally require `--allow-remote` and a proof captured with `--revision-header <header>` whose response value equals the current Git HEAD.
 
-StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider. Kimi WebBridge is a preferred provider when available, not a required dependency. Acceptable providers include Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots with explicit limits, or custom project tooling, as long as the evidence is durable and linked to runtime identity.
+ProjectState requires browser-verification evidence for user-facing closure, not a specific browser automation provider. Kimi WebBridge is a preferred provider when available, not a required dependency. Acceptable providers include Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots with explicit limits, or custom project tooling, as long as the evidence is durable and linked to runtime identity.
 
 ## Acceptance Freezes
 
@@ -363,7 +363,7 @@ flowchart LR
     B --> C[Coding agent writes slice contract]
     C --> D[Implement + verify]
     D --> E[Tracked proof + stable target state]
-    E --> F[statedd_audit.py]
+    E --> F[projectstate_audit.py]
     F --> G{Pass?}
     G -->|No| D
     G -->|Yes| H[Push + PR + exact-head CI]
@@ -429,11 +429,11 @@ git rev-parse HEAD
 git fetch origin --prune
 git status --short
 git worktree list --porcelain
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/projectstate_worktree_guard.py --mode start-slice
 ```
 
 If the guard reports dirty or ambiguous state, stop implementation and produce a
-worktree recovery handoff. Use `python3 scripts/statedd_worktree_guard.py --mode classify-dirty`
+worktree recovery handoff. Use `python3 scripts/projectstate_worktree_guard.py --mode classify-dirty`
 to record dirty-file classifications in evidence before editing.
 
 ## Common Failure Modes
@@ -451,30 +451,30 @@ to record dirty-file classifications in evidence before editing.
 
 ## Executable Audit And State Doctor
 
-StateDD v2 makes the workflow executable, not just descriptive.
+ProjectState v2 makes the workflow executable, not just descriptive.
 
 ```bash
-python3 scripts/statedd_doctor.py       # fast health summary
-python3 scripts/statedd_audit.py        # machine-checkable closure audit
+python3 scripts/projectstate_doctor.py       # fast health summary
+python3 scripts/projectstate_audit.py        # machine-checkable closure audit
 ```
 
-`statedd_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema validation, schema ownership, anti-brittleness markers, and test/build/lint recording. Use `--strict` to fail on warnings.
+`projectstate_audit.py` checks required state files, evidence hygiene, git worktree cleanliness, branch/HEAD recording, user-facing evidence, runtime identity artifacts, schema validation, schema ownership, anti-brittleness markers, and test/build/lint recording. Use `--strict` to fail on warnings.
 
-`statedd_doctor.py` prints a one-glance summary of HEAD, worktree, evidence, state-doc freshness, test/browser proof, runtime identity status, open blockers, next slice, and closure grade.
+`projectstate_doctor.py` prints a one-glance summary of HEAD, worktree, evidence, state-doc freshness, test/browser proof, runtime identity status, open blockers, next slice, and closure grade.
 
 Run the full gate set before handoff, review, or release:
 
 ```bash
 python3 scripts/check_state_docs.py
-python3 scripts/statedd_validate_schema.py
+python3 scripts/projectstate_validate_schema.py
 python3 scripts/test_init_template.py
 python3 scripts/test_worktree_guard.py
 python3 scripts/test_brittleness_check.py
 python3 scripts/test_runtime_proof.py
 python3 scripts/test_schema_validation.py
-python3 scripts/statedd_worktree_guard.py --mode start-slice
-python3 scripts/statedd_doctor.py
-python3 scripts/statedd_audit.py
+python3 scripts/projectstate_worktree_guard.py --mode start-slice
+python3 scripts/projectstate_doctor.py
+python3 scripts/projectstate_audit.py
 ```
 
 ## Slice Contracts And Claim Ledgers
@@ -485,7 +485,7 @@ Every evidence folder should contain a `README.md` claim ledger based on `prompt
 
 For non-trivial fix or feature slices, complete `ANTI_BRITTLENESS_GUARD.md` or
 `docs/quality_gates/ANTI_BRITTLENESS_GATE.md`. The optional
-`scripts/statedd_brittleness_check.py` scan can warn about brittle shapes, but a
+`scripts/projectstate_brittleness_check.py` scan can warn about brittle shapes, but a
 clean scan is not proof of quality.
 
 ## Schema Ownership
@@ -501,26 +501,26 @@ Every closure-grade evidence folder can include a `manifest.json` that lists:
 - artifacts with sha256 hashes and redaction status
 - a redaction block recording automated scan results, manual review status, and known limits
 
-Use `scripts/statedd_evidence_pack.py` to manage manifests:
+Use `scripts/projectstate_evidence_pack.py` to manage manifests:
 
 ```bash
-python3 scripts/statedd_evidence_pack.py init docs/evidence/YYYY-MM-DD-slice --slice-id BL-012
-python3 scripts/statedd_evidence_pack.py hash docs/evidence/YYYY-MM-DD-slice
-python3 scripts/statedd_evidence_pack.py scan docs/evidence/YYYY-MM-DD-slice
-python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice
-python3 scripts/statedd_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice --strict
+python3 scripts/projectstate_evidence_pack.py init docs/evidence/YYYY-MM-DD-slice --slice-id BL-012
+python3 scripts/projectstate_evidence_pack.py hash docs/evidence/YYYY-MM-DD-slice
+python3 scripts/projectstate_evidence_pack.py scan docs/evidence/YYYY-MM-DD-slice
+python3 scripts/projectstate_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice
+python3 scripts/projectstate_evidence_pack.py check docs/evidence/YYYY-MM-DD-slice --strict
 ```
 
 The redaction scanner is dependency-free and conservative. It flags obvious secret-like patterns but never claims that absence of findings proves absence of secrets. Binary and image artifacts always require explicit manual review or `checked_with_limits` status.
 
-## Upgrading An Existing StateDD Repo
+## Upgrading An Existing ProjectState Repo
 
 Use the upgrade helper to bring a downstream repo forward without overwriting project truth:
 
 ```bash
-python3 scripts/statedd_upgrade.py /path/to/downstream/repo
-python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply
-python3 scripts/statedd_upgrade.py /path/to/downstream/repo --apply --force-managed
+python3 scripts/projectstate_upgrade.py /path/to/downstream/repo
+python3 scripts/projectstate_upgrade.py /path/to/downstream/repo --apply
+python3 scripts/projectstate_upgrade.py /path/to/downstream/repo --apply --force-managed
 ```
 
 Default mode is dry-run. `--apply` copies only safe missing managed assets.
@@ -528,7 +528,7 @@ Default mode is dry-run. `--apply` copies only safe missing managed assets.
 
 ## Schema-Backed Validation
 
-StateDD ships executable schemas under `schemas/` and validates them with the stdlib-only `scripts/statedd_validate_schema.py`.
+ProjectState ships executable schemas under `schemas/` and validates them with the stdlib-only `scripts/projectstate_validate_schema.py`.
 
 The default validator checks:
 
@@ -551,7 +551,7 @@ After every coding-agent handoff, the CTO lane answers the checklist in `prompts
 
 ## Human Override Rule
 
-StateDD rules are strong defaults, not a prison. The human product owner may explicitly override a workflow step, but the agent must record the override as `Human override used: yes` and mark the result honestly. The agent cannot ignore you, but it also cannot pretend an overridden shortcut is clean closure. See `AGENTS.md`.
+ProjectState rules are strong defaults, not a prison. The human product owner may explicitly override a workflow step, but the agent must record the override as `Human override used: yes` and mark the result honestly. The agent cannot ignore you, but it also cannot pretend an overridden shortcut is clean closure. See `AGENTS.md`.
 
 Remember: implemented ≠ validated ≠ closure-grade ≠ accepted.
 
@@ -561,26 +561,26 @@ Run the hygiene check before handoff, review, or release:
 
 ```bash
 python3 scripts/check_state_docs.py
-python3 scripts/statedd_version_check.py
-python3 scripts/statedd_validate_schema.py
+python3 scripts/projectstate_version_check.py
+python3 scripts/projectstate_validate_schema.py
 python3 scripts/test_init_template.py
 python3 scripts/test_worktree_guard.py
 python3 scripts/test_brittleness_check.py
 python3 scripts/test_schema_validation.py
-python3 scripts/statedd_handoff.py
-python3 scripts/statedd_doctor.py
-python3 scripts/statedd_audit.py
+python3 scripts/projectstate_handoff.py
+python3 scripts/projectstate_doctor.py
+python3 scripts/projectstate_audit.py
 ```
 
 You can also validate initialized fixtures or another repo copy:
 
 ```bash
 python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/bootstrap
-python3 scripts/statedd_validate_schema.py fixtures/bootstrap_dry_run/bootstrap
+python3 scripts/projectstate_validate_schema.py fixtures/bootstrap_dry_run/bootstrap
 python3 scripts/check_state_docs.py fixtures/bootstrap_dry_run/operating
-python3 scripts/statedd_validate_schema.py fixtures/bootstrap_dry_run/operating
+python3 scripts/projectstate_validate_schema.py fixtures/bootstrap_dry_run/operating
 python3 scripts/check_state_docs.py fixtures/messy_inherited_repo/bootstrap
-python3 scripts/statedd_validate_schema.py fixtures/messy_inherited_repo/bootstrap
+python3 scripts/projectstate_validate_schema.py fixtures/messy_inherited_repo/bootstrap
 ```
 
 ## Publishing A Downstream Project

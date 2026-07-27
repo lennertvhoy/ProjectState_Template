@@ -24,7 +24,7 @@ Record these answers in the evidence README:
 Run when the slice touches production code or routing/classification behavior:
 
 ```bash
-python3 scripts/statedd_brittleness_check.py
+python3 scripts/projectstate_brittleness_check.py
 ```
 
 The scan may warn about large keyword buckets, repeated `.includes(...)` checks,

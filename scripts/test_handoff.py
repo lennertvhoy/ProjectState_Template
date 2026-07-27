@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-import statedd_handoff
+import projectstate_handoff
 
 
 def init_repo(path: Path) -> None:
@@ -13,9 +13,9 @@ def init_repo(path: Path) -> None:
 def test_handoff_exits_nonzero_when_direct_verification_fails(tmp_path: Path) -> None:
     init_repo(tmp_path)
 
-    code = statedd_handoff.main(
+    code = projectstate_handoff.main(
         [
-            "statedd_handoff.py",
+            "projectstate_handoff.py",
             "--repo",
             str(tmp_path),
             "--no-include-listeners",
@@ -30,9 +30,9 @@ def test_handoff_exits_nonzero_when_direct_verification_fails(tmp_path: Path) ->
 def test_handoff_exits_zero_when_direct_verification_passes(tmp_path: Path) -> None:
     init_repo(tmp_path)
 
-    code = statedd_handoff.main(
+    code = projectstate_handoff.main(
         [
-            "statedd_handoff.py",
+            "projectstate_handoff.py",
             "--repo",
             str(tmp_path),
             "--no-include-listeners",
@@ -47,9 +47,9 @@ def test_handoff_exits_zero_when_direct_verification_passes(tmp_path: Path) -> N
 def test_handoff_fails_when_requested_audit_is_unavailable(tmp_path: Path) -> None:
     init_repo(tmp_path)
 
-    code = statedd_handoff.main(
+    code = projectstate_handoff.main(
         [
-            "statedd_handoff.py",
+            "projectstate_handoff.py",
             "--repo",
             str(tmp_path),
             "--no-include-listeners",
@@ -84,9 +84,9 @@ def test_handoff_distinguishes_stale_tracking_ref_from_direct_remote(
         check=True,
     )
 
-    assert statedd_handoff.main(
+    assert projectstate_handoff.main(
         [
-            "statedd_handoff.py",
+            "projectstate_handoff.py",
             "--repo",
             str(repo),
             "--no-include-listeners",
@@ -100,12 +100,12 @@ def test_handoff_distinguishes_stale_tracking_ref_from_direct_remote(
 
 def test_handoff_fails_closed_on_malformed_active_agent_context(tmp_path: Path) -> None:
     init_repo(tmp_path)
-    context = tmp_path / ".statedd" / "agent.context"
+    context = tmp_path / ".projectstate" / "agent.context"
     context.parent.mkdir()
-    context.write_text('{"schema":"statedd.agent_context.v1","schema":"duplicate"}', encoding="utf-8")
-    assert statedd_handoff.main(
+    context.write_text('{"schema":"projectstate.agent_context.v1","schema":"duplicate"}', encoding="utf-8")
+    assert projectstate_handoff.main(
         [
-            "statedd_handoff.py",
+            "projectstate_handoff.py",
             "--repo",
             str(tmp_path),
             "--no-include-listeners",
@@ -121,12 +121,12 @@ def test_dirty_classification_never_uses_incidental_latest_evidence(tmp_path: Pa
         encoding="utf-8",
     )
 
-    assert statedd_handoff.dirty_classification_status(
+    assert projectstate_handoff.dirty_classification_status(
         tmp_path,
         [" M feature.py"],
         None,
     ) == "no"
-    assert statedd_handoff.dirty_classification_status(
+    assert projectstate_handoff.dirty_classification_status(
         tmp_path,
         [" M feature.py"],
         evidence,

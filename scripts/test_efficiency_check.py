@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for scripts/statedd_efficiency_check.py."""
+"""Tests for scripts/projectstate_efficiency_check.py."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CHECK_SCRIPT = ROOT / "scripts" / "statedd_efficiency_check.py"
+CHECK_SCRIPT = ROOT / "scripts" / "projectstate_efficiency_check.py"
 
 
 def run_check(args: list[str], *, expect_success: bool) -> subprocess.CompletedProcess[str]:
@@ -36,7 +36,7 @@ def run_check(args: list[str], *, expect_success: bool) -> subprocess.CompletedP
 
 def write_budget(root: Path, **overrides: int) -> None:
     defaults = {
-        "schema": "statedd.efficiency_budget.v1",
+        "schema": "projectstate.efficiency_budget.v1",
         "instruction_budgets": {
             "root_agents_max_lines": 100,
             "nested_agents_max_lines": 80,
@@ -104,11 +104,11 @@ def write_minimal_context_fixture(root: Path) -> None:
         "current_state:\n  project:\n    profile: minimal\n",
         encoding="utf-8",
     )
-    assets = ["AGENTS.md", "STATUS.md", "PROJECT_STATE.yaml", "STATEDD_ASSETS.json"]
-    (root / "STATEDD_ASSETS.json").write_text(
+    assets = ["AGENTS.md", "STATUS.md", "PROJECT_STATE.yaml", "PROJECTSTATE_ASSETS.json"]
+    (root / "PROJECTSTATE_ASSETS.json").write_text(
         json.dumps(
             {
-                "schema": "statedd.runtime_assets.v1",
+                "schema": "projectstate.runtime_assets.v1",
                 "generation_mode": "new",
                 "profile": "minimal",
                 "assets": assets,
@@ -270,9 +270,9 @@ def test_context_footprint_rejects_manifest_asset_through_symlink_parent() -> No
         write_minimal_context_fixture(root)
         (outside / "secret.txt").write_text("private\n", encoding="utf-8")
         os.symlink(outside, root / "linked")
-        manifest = json.loads((root / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+        manifest = json.loads((root / "PROJECTSTATE_ASSETS.json").read_text(encoding="utf-8"))
         manifest["assets"].append("linked/secret.txt")
-        (root / "STATEDD_ASSETS.json").write_text(json.dumps(manifest), encoding="utf-8")
+        (root / "PROJECTSTATE_ASSETS.json").write_text(json.dumps(manifest), encoding="utf-8")
         completed = run_check(["--root", str(root)], expect_success=False)
         if "symlink" not in completed.stdout.lower():
             raise AssertionError(f"Symlinked manifest asset was not rejected:\n{completed.stdout}")
@@ -283,7 +283,7 @@ def test_evidence_budget_selects_active_slice_not_mutable_mtime() -> None:
         root = Path(tmp)
         write_budget(root, default_max_files=2)
         (root / "AGENTS.md").write_text("short.\n", encoding="utf-8")
-        context = root / ".statedd" / "agent.context"
+        context = root / ".projectstate" / "agent.context"
         context.parent.mkdir()
         context.write_text(json.dumps({"slice_id": "BL-ACTIVE"}), encoding="utf-8")
         active = root / "docs" / "evidence" / "2026-01-01-active"

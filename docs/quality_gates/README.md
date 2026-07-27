@@ -31,7 +31,7 @@ quality_gates:
     evidence: null
   runtime_truth_gate:
     status: not_run
-    command: python3 scripts/statedd_runtime_proof.py ...
+    command: python3 scripts/projectstate_runtime_proof.py ...
     evidence: null
   live_canary_gate:
     status: not_applicable
@@ -47,7 +47,7 @@ quality_gates:
     evidence: null
   anti_brittleness_gate:
     status: not_run
-    command: python3 scripts/statedd_brittleness_check.py
+    command: python3 scripts/projectstate_brittleness_check.py
     evidence: docs/quality_gates/ANTI_BRITTLENESS_GATE.md
 ```
 

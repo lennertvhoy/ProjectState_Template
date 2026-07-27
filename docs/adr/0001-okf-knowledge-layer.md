@@ -6,7 +6,7 @@
 
 ## Context
 
-StateDD needs durable, readable domain knowledge without duplicating or weakening
+ProjectState needs durable, readable domain knowledge without duplicating or weakening
 its canonical operational state. OKF v0.1 is an emerging draft format for
 portable Markdown knowledge bundles. Its upstream reference specification is
 pinned to commit `ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a` in
@@ -14,14 +14,14 @@ pinned to commit `ee67a5ca27044ebe7c38385f5b6cffc2305a9c1a` in
 
 ## Decision
 
-StateDD will treat OKF as an optional contained knowledge layer, normally under
-`knowledge/`. StateDD remains authoritative for project status, architecture
+ProjectState will treat OKF as an optional contained knowledge layer, normally under
+`knowledge/`. ProjectState remains authoritative for project status, architecture
 governance, active work, backlog, evidence, delivery boundaries, and acceptance.
 
 The optional `knowledge_okf` module owns only generic scaffolding, validation,
-the StateDD extension contract, provenance, and staleness checks. Real project
+the ProjectState extension contract, provenance, and staleness checks. Real project
 concepts remain project-owned. StateIR and StatePack are future generated layers
-and do not replace readable canonical StateDD files.
+and do not replace readable canonical ProjectState files.
 
 ## Consequences
 
@@ -29,7 +29,7 @@ and do not replace readable canonical StateDD files.
   startup context unless the module is explicitly selected.
 - OKF base conformance stays permissive for unknown types, unknown extension
   keys, broken links, and missing indexes.
-- StateDD governance can be strict for canonical, derived, and reference concepts
+- ProjectState governance can be strict for canonical, derived, and reference concepts
   without forking OKF.
 - Source hashes make derived knowledge visibly stale instead of silently trusted.
 
@@ -37,7 +37,7 @@ and do not replace readable canonical StateDD files.
 
 - Declaring the whole repository an OKF bundle: rejected because operational state,
   instructions, evidence, and prompts have different authorities and semantics.
-- Replacing StateDD with OKF: rejected because OKF does not govern workflow truth,
+- Replacing ProjectState with OKF: rejected because OKF does not govern workflow truth,
   ownership, acceptance, or delivery closure.
 - Making OKF mandatory in all profiles: rejected until context size and correctness
   value are measured.

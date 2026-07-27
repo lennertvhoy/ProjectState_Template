@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for shared StateDD contract primitives."""
+"""Regression tests for shared ProjectState contract primitives."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 try:
-    from statedd_contracts import (
+    from projectstate_contracts import (
         ContractError,
         UnsafePathError,
         confined_path,
@@ -23,7 +23,7 @@ try:
         strict_json_loads,
     )
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts.statedd_contracts import (
+    from scripts.projectstate_contracts import (
         ContractError,
         UnsafePathError,
         confined_path,
@@ -89,8 +89,8 @@ def test_profile_catalog_expands_dependencies_and_enforces_capabilities() -> Non
     assert regulated.required_gate_level == 2
     assert "post_merge_verification" in regulated.capabilities
     assert "agent_owned_remote_closure" in team.capabilities
-    assert Path("scripts/statedd_finish_slice.py") in team.assets
-    assert Path("scripts/statedd_post_merge_verify.py") in team.assets
+    assert Path("scripts/projectstate_finish_slice.py") in team.assets
+    assert Path("scripts/projectstate_post_merge_verify.py") in team.assets
     assert "finish_slice_contract" in team.validations
     assert "quality_gate_level_1" in regulated.validations
     assert "quality_gate_level_2" in regulated.validations

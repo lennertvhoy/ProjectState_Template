@@ -8,7 +8,7 @@
 
 ## What Happened Or Could Happen
 
-- OKF concepts could duplicate canonical StateDD operational facts.
+- OKF concepts could duplicate canonical ProjectState operational facts.
 - A validator could accidentally reject valid unknown OKF types, extension keys,
   broken links, or missing indexes.
 - Derived knowledge could remain apparently valid after its source changes.
@@ -31,16 +31,16 @@
 
 ## Previous Tests That Might Miss This
 
-- Existing StateDD schema tests do not inspect Markdown frontmatter or OKF reserved files.
+- Existing ProjectState schema tests do not inspect Markdown frontmatter or OKF reserved files.
 - Existing profile tests do not exercise an explicitly selected optional asset set.
 - Existing evidence checks do not determine whether a derived knowledge source is stale.
 
 ## Global Invariant Needed
 
 - One fact has one authority; optional knowledge must never replace canonical
-  operational StateDD files.
+  operational ProjectState files.
 - Validation must preserve OKF's permissive base contract while enforcing explicit
-  StateDD governance only in the namespaced extension.
+  ProjectState governance only in the namespaced extension.
 
 ## Adversarial Case
 

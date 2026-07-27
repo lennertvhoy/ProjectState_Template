@@ -14,8 +14,8 @@ import pytest
 
 try:
     import check_state_docs as state_docs
-    import statedd_bootstrap_apply as bootstrap_apply
-    from statedd_generated_controls import (
+    import projectstate_bootstrap_apply as bootstrap_apply
+    from projectstate_generated_controls import (
         DELIVERY_MERGE_REQUIREMENTS,
         agent_merge_policy_refusal,
         confirmed_delivery_policy,
@@ -23,11 +23,11 @@ try:
         proposed_delivery_policy,
         render_downstream_workflow,
     )
-    from statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
+    from projectstate_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
     from scripts import check_state_docs as state_docs
-    from scripts import statedd_bootstrap_apply as bootstrap_apply
-    from scripts.statedd_generated_controls import (
+    from scripts import projectstate_bootstrap_apply as bootstrap_apply
+    from scripts.projectstate_generated_controls import (
         DELIVERY_MERGE_REQUIREMENTS,
         agent_merge_policy_refusal,
         confirmed_delivery_policy,
@@ -35,13 +35,13 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
         proposed_delivery_policy,
         render_downstream_workflow,
     )
-    from scripts.statedd_validate_schema import load_schema, parse_yaml_text, validate_json_schema
+    from scripts.projectstate_validate_schema import load_schema, parse_yaml_text, validate_json_schema
 
 
 ROOT = Path(__file__).resolve().parents[1]
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
 PROJECT_STATE_SCHEMA = ROOT / "schemas" / "project_state.schema.json"
-UPGRADE_SCRIPT = ROOT / "scripts" / "statedd_upgrade.py"
+UPGRADE_SCRIPT = ROOT / "scripts" / "projectstate_upgrade.py"
 
 
 def run_init(target: Path, profile: str = "team") -> None:
@@ -73,7 +73,7 @@ def answers_for(mode: str) -> dict[str, object]:
         "project_name": "Delivery Policy Demo",
         "purpose": "Prove confirmed-once merge authority.",
         "primary_user": "Human owner and coding agent",
-        "architecture": "StateDD bootstrap plus an exact-head delivery state machine.",
+        "architecture": "ProjectState bootstrap plus an exact-head delivery state machine.",
         "constraints": ["No implicit merge authority"],
         "first_milestone": "Confirm delivery policy and establish a truthful baseline.",
         "backlog": [
@@ -253,7 +253,7 @@ def test_generated_workflow_proves_branch_and_merge_candidate_subjects() -> None
     assert "merge-candidate:" in workflow
     assert "github.event.pull_request.head.sha" in workflow
     assert "EXPECTED_MERGE: ${{ github.sha }}" in workflow
-    assert workflow.count("statedd_quality_gate.py --gate-level 2 --conformance") == 2
+    assert workflow.count("projectstate_quality_gate.py --gate-level 2 --conformance") == 2
 
 
 def test_upgrade_refreshes_agent_control_without_changing_confirmed_policy(
@@ -267,7 +267,7 @@ def test_upgrade_refreshes_agent_control_without_changing_confirmed_policy(
     prompt = target / "prompts" / "CODING_AGENT_STARTUP_PROMPT.md"
     legacy = b"# Legacy generated coding-agent control\n"
     prompt.write_bytes(legacy)
-    manifest_path = target / "STATEDD_ASSETS.json"
+    manifest_path = target / "PROJECTSTATE_ASSETS.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     prompt_record = next(
         record

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from statedd_closure_check import ClosureCheck
+from projectstate_closure_check import ClosureCheck
 
 
 def test_run_fails_when_a_check_returns_false_without_diagnostic(tmp_path: Path) -> None:

@@ -1,6 +1,6 @@
 # Getting Started In 5 Minutes
 
-Use this when you want the shortest safe path from an empty or inherited repo to a StateDD-guided coding-agent session.
+Use this when you want the shortest safe path from an empty or inherited repo to a ProjectState-guided coding-agent session.
 
 You only need Python 3 and a terminal. No external dependencies are required.
 
@@ -76,7 +76,7 @@ Each implementation slice should:
 Use this helper near the end of a slice:
 
 ```bash
-python3 scripts/statedd_handoff.py
+python3 scripts/projectstate_handoff.py
 ```
 
 For a concrete, tested example of a schema driving both validation and prompt generation, see `schemas/examples/schema_prompt_loop/`.
@@ -84,7 +84,7 @@ For a concrete, tested example of a schema driving both validation and prompt ge
 If you want the helper to run validation and include the output:
 
 ```bash
-python3 scripts/statedd_handoff.py --test-command "python3 scripts/check_state_docs.py"
+python3 scripts/projectstate_handoff.py --test-command "python3 scripts/check_state_docs.py"
 ```
 
 ## 6. Run the gates
@@ -93,16 +93,16 @@ For normal hygiene:
 
 ```bash
 python3 scripts/check_state_docs.py
-python3 scripts/statedd_validate_schema.py
+python3 scripts/projectstate_validate_schema.py
 python3 scripts/test_init_template.py
 python3 scripts/test_schema_validation.py
-python3 scripts/statedd_doctor.py
+python3 scripts/projectstate_doctor.py
 ```
 
 Before claiming closure-grade:
 
 ```bash
-python3 scripts/statedd_audit.py
+python3 scripts/projectstate_audit.py
 ```
 
 Before leaving bootstrap:

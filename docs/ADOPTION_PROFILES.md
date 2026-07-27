@@ -1,6 +1,6 @@
-# StateDD Adoption Profiles
+# ProjectState Adoption Profiles
 
-Profiles let you initialize or adopt a repo with a StateDD footprint matched to
+Profiles let you initialize or adopt a repo with a ProjectState footprint matched to
 the project's needs. `profiles/catalog.json` is the machine-readable authority
 for dependencies, asset sets, capabilities, validation, and required gate level.
 Capability IDs describe the interface a profile intends to expose; they are not
@@ -32,7 +32,7 @@ rewrites shared history. Final product acceptance remains human.
 
 Use `minimal` if:
 
-- you want the smallest useful StateDD footprint
+- you want the smallest useful ProjectState footprint
 - you want core state/schema/hygiene/efficiency/quality gates without optional
   runtime, audit, evidence-pack, team, or review helpers
 
@@ -56,7 +56,7 @@ Use `regulated` if:
 
 ### `minimal`
 
-Use when you want the smallest useful StateDD footprint.
+Use when you want the smallest useful ProjectState footprint.
 
 - Core state files plus schema, hygiene, efficiency, and quality gates remain.
 - Runtime, audit, evidence-pack, browser, team, and deep-reference helpers are
@@ -105,9 +105,9 @@ python3 scripts/init_template.py new --name "Your Project" --profile team --asse
 python3 scripts/init_template.py adopt --name "Your Project" --profile team --asset-set knowledge_okf
 ```
 
-The module installs the pinned OKF v0.1 validator, StateDD provenance and
+The module installs the pinned OKF v0.1 validator, ProjectState provenance and
 staleness contract, and a project-owned `knowledge/index.md` scaffold. It does
-not duplicate StateDD operational truth or add knowledge files to `minimal`,
+not duplicate ProjectState operational truth or add knowledge files to `minimal`,
 `solo`, or `team` unless explicitly selected.
 
 ## Usage
@@ -124,7 +124,7 @@ python3 scripts/init_template.py adopt --name "Your Project" --profile team
 The `--minimal` flag is a legacy alias for `--profile minimal`.
 
 Every profile is generated from an explicit allowlist and records its installed
-files and lifecycle hashes in `STATEDD_ASSETS.json`. No profile receives template-maintenance tests,
+files and lifecycle hashes in `PROJECTSTATE_ASSETS.json`. No profile receives template-maintenance tests,
 fixtures, historical evidence, incident records, changelog, or release history.
 CI runs each generated profile's own quality gate. `EFFICIENCY_BUDGET.yaml`
 enforces startup files/bytes/estimated tokens and managed footprint files/bytes.
