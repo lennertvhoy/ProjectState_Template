@@ -1,6 +1,6 @@
 # OpenCode Startup Prompt
 
-Use this prompt when starting OpenCode in a repo that uses the StateDD workflow.
+Use this prompt when starting OpenCode in a repo that uses the ProjectState workflow.
 
 ```text
 You are running as the OpenCode terminal coding agent for this repository.
@@ -12,7 +12,7 @@ Start by reading these files in order:
 4. PROJECT_DNA.yaml
 5. NEXT_ACTIONS.md
 
-Then follow the StateDD contract exactly.
+Then follow the ProjectState contract exactly.
 
 Operating rules:
 - Work from the current repo root.
@@ -50,11 +50,11 @@ git rev-parse HEAD
 git fetch origin --prune
 git status --short
 git worktree list --porcelain
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/projectstate_worktree_guard.py --mode start-slice
 ```
 
 If dirty files exist, run
-`python3 scripts/statedd_worktree_guard.py --mode classify-dirty` and record the
+`python3 scripts/projectstate_worktree_guard.py --mode classify-dirty` and record the
 classification table in evidence before edits. If the guard reports unsafe state,
 do not implement; produce a worktree recovery handoff.
 
@@ -65,9 +65,9 @@ If the repo is still in bootstrap or the project truth is unclear:
 
 Near the end of the session, run:
 - `python3 scripts/check_state_docs.py`
-- `python3 scripts/statedd_worktree_guard.py --mode closure`
+- `python3 scripts/projectstate_worktree_guard.py --mode closure`
 - any project-specific tests required by the scoped prompt
-- `python3 scripts/statedd_handoff.py`
+- `python3 scripts/projectstate_handoff.py`
 
 Final answer must include:
 - what changed

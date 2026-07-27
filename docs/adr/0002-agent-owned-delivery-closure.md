@@ -6,7 +6,7 @@
 
 ## Context
 
-StateDD automated implementation, validation, push, PR preparation, and exact-head
+ProjectState automated implementation, validation, push, PR preparation, and exact-head
 remote closure but treated merge as a universal human boundary. That made the
 human a routine release operator and encouraged follow-up PRs whose only purpose
 was to copy provider-created merge/main identities into tracked state. A squash
@@ -80,6 +80,6 @@ for a post-merge metadata PR without asking tracked files to predict the future.
 
 - Backlog item: [BL-GOLDEN-PATH-CLOSURE-001]
 - Failure scan: `docs/failure_scans/BL-GOLDEN-PATH-CLOSURE-001.md`
-- Finish command: `scripts/statedd_finish_slice.py`
-- Pre-merge finalizer: `scripts/statedd_remote_closure_finalizer.py`
-- Post-merge verifier: `scripts/statedd_post_merge_verify.py`
+- Finish command: `scripts/projectstate_finish_slice.py`
+- Pre-merge finalizer: `scripts/projectstate_remote_closure_finalizer.py`
+- Post-merge verifier: `scripts/projectstate_post_merge_verify.py`

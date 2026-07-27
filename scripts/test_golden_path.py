@@ -13,7 +13,7 @@ from dataclasses import replace
 from pathlib import Path
 
 try:
-    from scripts.statedd_finish_slice import (
+    from scripts.projectstate_finish_slice import (
         CiObservation,
         DefaultBranchSnapshot,
         DeliveryPolicy,
@@ -26,9 +26,9 @@ try:
         RemoteClosureProof,
         Stage,
     )
-    from scripts.statedd_validate_schema import parse_yaml_text
+    from scripts.projectstate_validate_schema import parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
-    from statedd_finish_slice import (
+    from projectstate_finish_slice import (
         CiObservation,
         DefaultBranchSnapshot,
         DeliveryPolicy,
@@ -41,7 +41,7 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution
         RemoteClosureProof,
         Stage,
     )
-    from statedd_validate_schema import parse_yaml_text
+    from projectstate_validate_schema import parse_yaml_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,7 +51,7 @@ def run(args: list[str], cwd: Path, *, expected: int = 0) -> str:
     environment = os.environ.copy()
     environment.setdefault(
         "STATEDD_WORKSPACE_ROOT",
-        str(cwd.parent / ".statedd-test-workspaces"),
+        str(cwd.parent / ".projectstate-test-workspaces"),
     )
     completed = subprocess.run(
         args,
@@ -85,7 +85,7 @@ def start_agent(repo: Path, slice_id: str, agent_id: str) -> tuple[Path, str]:
     output = run(
         [
             sys.executable,
-            str(repo / "scripts" / "statedd_agent_worktree.py"),
+            str(repo / "scripts" / "projectstate_agent_worktree.py"),
             "--repo",
             str(repo),
             "start",
@@ -98,14 +98,14 @@ def start_agent(repo: Path, slice_id: str, agent_id: str) -> tuple[Path, str]:
     )
     line = next(line for line in output.splitlines() if line.startswith("Agent clone ready:"))
     clone = Path(line.split(":", 1)[1].strip())
-    context = json.loads((clone / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+    context = json.loads((clone / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
     git(clone, "config", "user.email", f"{agent_id}@example.invalid")
-    git(clone, "config", "user.name", f"StateDD {agent_id}")
+    git(clone, "config", "user.name", f"ProjectState {agent_id}")
     return clone, context["branch"]
 
 
 def test_golden_path() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-golden-path-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-golden-path-") as tmp:
         root = Path(tmp)
         template_clone = root / "template-source"
         downstream = root / "downstream"
@@ -146,14 +146,14 @@ def test_golden_path() -> None:
         if git(downstream, "branch", "--show-current") != "main":
             raise AssertionError("new-project materialization did not initialize main")
         for required_finish_asset in (
-            "scripts/statedd_finish_slice.py",
-            "scripts/statedd_post_merge_verify.py",
+            "scripts/projectstate_finish_slice.py",
+            "scripts/projectstate_post_merge_verify.py",
             "schemas/finish_slice_handoff.schema.json",
         ):
             if not (downstream / required_finish_asset).is_file():
                 raise AssertionError(f"team profile omitted finish asset: {required_finish_asset}")
         workflow_text = (
-            downstream / ".github" / "workflows" / "statedd-validate.yml"
+            downstream / ".github" / "workflows" / "projectstate-validate.yml"
         ).read_text(encoding="utf-8")
         for required_subject in ("branch-head:", "merge-candidate:"):
             if required_subject not in workflow_text:
@@ -181,7 +181,7 @@ def test_golden_path() -> None:
             if leaked:
                 raise AssertionError(f"template-maintenance payload leaked: {forbidden}")
 
-        run([sys.executable, str(downstream / "scripts" / "statedd_validate_schema.py"), str(downstream)], downstream)
+        run([sys.executable, str(downstream / "scripts" / "projectstate_validate_schema.py"), str(downstream)], downstream)
         run([sys.executable, str(downstream / "scripts" / "check_state_docs.py"), str(downstream)], downstream)
 
         # Bootstrap is a structured contract, not a string-replacement shortcut.
@@ -251,7 +251,7 @@ def test_golden_path() -> None:
         run(
             [
                 sys.executable,
-                str(downstream / "scripts" / "statedd_bootstrap_apply.py"),
+                str(downstream / "scripts" / "projectstate_bootstrap_apply.py"),
                 "--repo",
                 str(downstream),
                 "--answers",
@@ -271,8 +271,8 @@ def test_golden_path() -> None:
         if state["delivery_policy"]["merge"]["mode"] != "agent_after_green":
             raise AssertionError("structured delivery policy merge mode did not round-trip")
 
-        git(downstream, "config", "user.email", "statedd-golden@example.invalid")
-        git(downstream, "config", "user.name", "StateDD Golden Path")
+        git(downstream, "config", "user.email", "projectstate-golden@example.invalid")
+        git(downstream, "config", "user.name", "ProjectState Golden Path")
         git(root, "init", "--bare", str(remote))
         git(downstream, "remote", "add", "origin", str(remote))
         commit(downstream, "bootstrap: establish golden-path baseline")
@@ -311,7 +311,7 @@ def test_golden_path() -> None:
         run(
             [
                 sys.executable,
-                str(downstream / "scripts" / "statedd_bootstrap_apply.py"),
+                str(downstream / "scripts" / "projectstate_bootstrap_apply.py"),
                 "--repo",
                 str(downstream),
                 "--integration-result",
@@ -319,26 +319,26 @@ def test_golden_path() -> None:
             ],
             downstream,
         )
-        manifest = json.loads((downstream / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+        manifest = json.loads((downstream / "PROJECTSTATE_ASSETS.json").read_text(encoding="utf-8"))
         required_gate = manifest["required_gate_level"]
         run(
             [
                 sys.executable,
-                str(downstream / "scripts" / "statedd_quality_gate.py"),
+                str(downstream / "scripts" / "projectstate_quality_gate.py"),
                 "--gate-level",
                 str(required_gate),
                 "--conformance",
             ],
             downstream,
         )
-        integration_head = commit(downstream, "chore: record integrated StateDD truth")
+        integration_head = commit(downstream, "chore: record integrated ProjectState truth")
         git(downstream, "push", "-u", "origin", f"HEAD:refs/heads/{integration_branch}")
 
         evidence_dir = downstream / "docs" / "evidence" / "golden-path-integration"
         run(
             [
                 sys.executable,
-                str(downstream / "scripts" / "statedd_evidence_pack.py"),
+                str(downstream / "scripts" / "projectstate_evidence_pack.py"),
                 "init",
                 str(evidence_dir),
                 "--repo",
@@ -385,13 +385,13 @@ def test_golden_path() -> None:
             }
         )
         (evidence_dir / "manifest.json").write_text(json.dumps(evidence_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        run([sys.executable, str(downstream / "scripts" / "statedd_evidence_pack.py"), "hash", str(evidence_dir)], downstream)
-        run([sys.executable, str(downstream / "scripts" / "statedd_evidence_pack.py"), "scan", str(evidence_dir)], downstream)
+        run([sys.executable, str(downstream / "scripts" / "projectstate_evidence_pack.py"), "hash", str(evidence_dir)], downstream)
+        run([sys.executable, str(downstream / "scripts" / "projectstate_evidence_pack.py"), "scan", str(evidence_dir)], downstream)
         evidence_manifest = json.loads((evidence_dir / "manifest.json").read_text(encoding="utf-8"))
         evidence_manifest["redaction"]["manual_review"] = "completed"
         evidence_manifest["redaction"]["status"] = "checked_with_limits"
         (evidence_dir / "manifest.json").write_text(json.dumps(evidence_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        run([sys.executable, str(downstream / "scripts" / "statedd_evidence_pack.py"), "check", "--strict", str(evidence_dir)], downstream)
+        run([sys.executable, str(downstream / "scripts" / "projectstate_evidence_pack.py"), "check", "--strict", str(evidence_dir)], downstream)
         integration_head = commit(downstream, "chore: finalize golden-path evidence")
         git(downstream, "push", "-u", "origin", f"HEAD:refs/heads/{integration_branch}")
 
@@ -408,7 +408,7 @@ def test_golden_path() -> None:
         handoff = run(
             [
                 sys.executable,
-                str(downstream / "scripts" / "statedd_handoff.py"),
+                str(downstream / "scripts" / "projectstate_handoff.py"),
                 "--repo",
                 str(downstream),
                 "--no-include-listeners",
@@ -481,7 +481,7 @@ def test_golden_path() -> None:
                 output: Path,
             ) -> PostMergeProof:
                 events.append("post-merge-verified")
-                payload = {"schema": "statedd.post_merge_handoff.v1", "status": "verified"}
+                payload = {"schema": "projectstate.post_merge_handoff.v1", "status": "verified"}
                 output.write_text(json.dumps(payload), encoding="utf-8")
                 return PostMergeProof(output=output, payload=payload)
 
@@ -508,7 +508,7 @@ def test_golden_path() -> None:
             subject_sha=integration_head,
             run_id="501",
             run_url="https://example.invalid/actions/runs/501",
-            workflow_path=".github/workflows/statedd-validate.yml",
+            workflow_path=".github/workflows/projectstate-validate.yml",
             check_name="branch-head",
         )
         green_candidate = replace(green_branch, check_name="merge-candidate")

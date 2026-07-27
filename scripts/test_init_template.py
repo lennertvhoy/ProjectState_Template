@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the StateDD initializer.
+"""Regression tests for the ProjectState initializer.
 
 These tests intentionally stay stdlib-only so template maintainers and
 downstream repos can run them without installing a test framework.
@@ -358,7 +358,7 @@ def assert_usability_assets_exist(root: Path) -> None:
     required = [
         root / "README.md",
         root / "prompts" / "CODING_AGENT_STARTUP_PROMPT.md",
-        root / "scripts" / "statedd_handoff.py",
+        root / "scripts" / "projectstate_handoff.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -368,7 +368,7 @@ def assert_usability_assets_exist(root: Path) -> None:
 def assert_version_assets_exist(root: Path) -> None:
     required = [
         root / "VERSION",
-        root / "scripts" / "statedd_version_check.py",
+        root / "scripts" / "projectstate_version_check.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -377,7 +377,7 @@ def assert_version_assets_exist(root: Path) -> None:
 
 def assert_runtime_proof_assets_exist(root: Path) -> None:
     required = [
-        root / "scripts" / "statedd_runtime_proof.py",
+        root / "scripts" / "projectstate_runtime_proof.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -388,8 +388,8 @@ def assert_worktree_and_brittleness_assets_exist(root: Path) -> None:
     required = [
         root / "ANTI_BRITTLENESS_GUARD.md",
         root / "docs" / "quality_gates" / "ANTI_BRITTLENESS_GATE.md",
-        root / "scripts" / "statedd_worktree_guard.py",
-        root / "scripts" / "statedd_brittleness_check.py",
+        root / "scripts" / "projectstate_worktree_guard.py",
+        root / "scripts" / "projectstate_brittleness_check.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -399,7 +399,7 @@ def assert_worktree_and_brittleness_assets_exist(root: Path) -> None:
 def assert_evidence_pack_assets_exist(root: Path) -> None:
     required = [
         root / "schemas" / "evidence_manifest.schema.json",
-        root / "scripts" / "statedd_evidence_pack.py",
+        root / "scripts" / "projectstate_evidence_pack.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -408,7 +408,7 @@ def assert_evidence_pack_assets_exist(root: Path) -> None:
 
 def assert_upgrade_assets_exist(root: Path) -> None:
     required = [
-        root / "scripts" / "statedd_upgrade.py",
+        root / "scripts" / "projectstate_upgrade.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -444,12 +444,12 @@ def assert_schema_validation_assets_exist(root: Path) -> None:
         root / "schemas" / "project_state.schema.json",
         root / "schemas" / "project_dna.schema.json",
         root / "schemas" / "project_adapter.schema.json",
-        root / "schemas" / "statedd_assets.schema.json",
+        root / "schemas" / "projectstate_assets.schema.json",
         root / "schemas" / "runtime_identity.schema.json",
         root / "schemas" / "evidence_readme_contract.json",
         root / "schemas" / "evidence_manifest.schema.json",
         root / "schemas" / "final_handoff_contract.json",
-        root / "scripts" / "statedd_validate_schema.py",
+        root / "scripts" / "projectstate_validate_schema.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -462,14 +462,14 @@ def assert_downstream_bootstrap_context(root: Path) -> None:
     for text, label in ((project_state, "PROJECT_STATE.yaml"), (agents, "AGENTS.md")):
         if "repo_role: downstream_project" not in text:
             raise AssertionError(f"{label} does not declare repo_role: downstream_project")
-        if "statedd_mode: bootstrap" not in text:
-            raise AssertionError(f"{label} does not declare statedd_mode: bootstrap")
+        if "projectstate_mode: bootstrap" not in text:
+            raise AssertionError(f"{label} does not declare projectstate_mode: bootstrap")
 
 
 def assert_runtime_manifest_matches_files(root: Path) -> None:
-    manifest_path = root / "STATEDD_ASSETS.json"
+    manifest_path = root / "PROJECTSTATE_ASSETS.json"
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if payload.get("schema") != "statedd.runtime_assets.v2":
+    if payload.get("schema") != "projectstate.runtime_assets.v2":
         raise AssertionError("Generated runtime asset manifest has the wrong schema")
     records = payload.get("managed_assets", [])
     if not isinstance(records, list):
@@ -512,8 +512,8 @@ def assert_template_only_payload_absent(root: Path) -> None:
 
 def assert_v2_assets_exist(root: Path) -> None:
     required = [
-        root / "scripts" / "statedd_audit.py",
-        root / "scripts" / "statedd_doctor.py",
+        root / "scripts" / "projectstate_audit.py",
+        root / "scripts" / "projectstate_doctor.py",
         root / "prompts" / "SLICE_CONTRACT_TEMPLATE.md",
         root / "prompts" / "EVIDENCE_README_TEMPLATE.md",
         root / "prompts" / "SCHEMA_OWNERSHIP_TEMPLATE.md",
@@ -540,7 +540,7 @@ def test_new_includes_version_assets_and_passes_version_check() -> None:
         run_init(["new", "--name", "Version Demo", "--target", str(target)], expect_success=True)
         assert_version_assets_exist(target)
         completed = subprocess.run(
-            [sys.executable, str(target / "scripts" / "statedd_version_check.py"), str(target)],
+            [sys.executable, str(target / "scripts" / "projectstate_version_check.py"), str(target)],
             cwd=target,
             capture_output=True,
             text=True,
@@ -579,7 +579,7 @@ def test_new_includes_schema_validation_assets_and_passes_schema_validation() ->
         if dna_text.count("\ninvariants:\n") != 1:
             raise AssertionError("Generated PROJECT_DNA.yaml must contain exactly one invariants mapping key")
         completed = subprocess.run(
-            [sys.executable, str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
+            [sys.executable, str(target / "scripts" / "projectstate_validate_schema.py"), str(target)],
             cwd=target,
             capture_output=True,
             text=True,
@@ -663,7 +663,7 @@ def test_adopt_installs_version_assets_and_passes_version_check() -> None:
         run_init(["adopt", "--name", "Version Demo", "--target", str(repo)], expect_success=True)
         assert_version_assets_exist(repo)
         completed = subprocess.run(
-            [sys.executable, str(repo / "scripts" / "statedd_version_check.py"), str(repo)],
+            [sys.executable, str(repo / "scripts" / "projectstate_version_check.py"), str(repo)],
             cwd=repo,
             capture_output=True,
             text=True,
@@ -705,7 +705,7 @@ def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() 
         assert_evidence_pack_assets_exist(repo)
         assert_upgrade_assets_exist(repo)
         completed = subprocess.run(
-            [sys.executable, str(repo / "scripts" / "statedd_validate_schema.py"), str(repo)],
+            [sys.executable, str(repo / "scripts" / "projectstate_validate_schema.py"), str(repo)],
             cwd=repo,
             capture_output=True,
             text=True,
@@ -721,8 +721,8 @@ def test_template_root_uses_template_maintenance_mode() -> None:
     project_state = (ROOT / "PROJECT_STATE.yaml").read_text(encoding="utf-8")
     if "repo_role: template_repository" not in project_state:
         raise AssertionError("Root PROJECT_STATE.yaml does not declare repo_role: template_repository")
-    if "statedd_mode: template-maintenance" not in project_state:
-        raise AssertionError("Root PROJECT_STATE.yaml does not declare statedd_mode: template-maintenance")
+    if "projectstate_mode: template-maintenance" not in project_state:
+        raise AssertionError("Root PROJECT_STATE.yaml does not declare projectstate_mode: template-maintenance")
     if "Your Project" in project_state:
         raise AssertionError("Root PROJECT_STATE.yaml still contains downstream placeholder text")
 
@@ -771,7 +771,7 @@ def test_optional_github_assets_are_recorded_in_resolved_lock() -> None:
             ],
             expect_success=True,
         )
-        manifest = json.loads((repo / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+        manifest = json.loads((repo / "PROJECTSTATE_ASSETS.json").read_text(encoding="utf-8"))
         if "github" not in manifest["asset_sets"]:
             raise AssertionError("Optional github asset set is absent from lock provenance")
         if "github_issue_and_pr_templates" not in manifest["capabilities"]:
@@ -780,7 +780,7 @@ def test_optional_github_assets_are_recorded_in_resolved_lock() -> None:
 
 def test_handoff_snapshot_runs() -> None:
     completed = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "statedd_handoff.py"), "--no-include-listeners"],
+        [sys.executable, str(ROOT / "scripts" / "projectstate_handoff.py"), "--no-include-listeners"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -791,13 +791,13 @@ def test_handoff_snapshot_runs() -> None:
             f"Expected handoff helper success, got {completed.returncode}\n"
             f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
-    if "StateDD Handoff Snapshot" not in completed.stdout or "repo path:" not in completed.stdout:
+    if "ProjectState Handoff Snapshot" not in completed.stdout or "repo path:" not in completed.stdout:
         raise AssertionError(f"Handoff helper output is missing required fields:\n{completed.stdout}")
 
 
 def test_doctor_runs() -> None:
     completed = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "statedd_doctor.py")],
+        [sys.executable, str(ROOT / "scripts" / "projectstate_doctor.py")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -808,7 +808,7 @@ def test_doctor_runs() -> None:
             f"Expected doctor helper success, got {completed.returncode}\n"
             f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
-    for phrase in ("StateDD Health", "Local audit readiness:", "Remote closure: not checked", "Current HEAD:"):
+    for phrase in ("ProjectState Health", "Local audit readiness:", "Remote closure: not checked", "Current HEAD:"):
         if phrase not in completed.stdout:
             raise AssertionError(f"Doctor helper output missing phrase: {phrase}")
 

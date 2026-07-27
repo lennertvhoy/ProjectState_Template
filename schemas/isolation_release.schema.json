@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.isolation_release.v1",
-  "title": "StateDD physical isolation release receipt",
+  "$id": "projectstate.isolation_release.v1",
+  "title": "ProjectState physical isolation release receipt",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,44 +20,124 @@
     "reservation_absent"
   ],
   "properties": {
-    "schema": {"type": "string", "const": "statedd.isolation_release.v1"},
-    "generated_at": {"type": "string", "minLength": 1},
-    "released": {"type": "boolean", "const": true},
-    "isolation_mode": {"type": "string", "enum": ["clone", "worktree"]},
-    "disposition": {"type": "string", "enum": ["quarantined", "removed"]},
-    "original_path": {"type": "string", "minLength": 1},
-    "original_path_absent": {"type": "boolean", "const": true},
-    "quarantine_path": {"type": ["string", "null"]},
-    "recoverable_state_retained": {"type": "boolean"},
-    "branch": {"type": "string", "minLength": 1},
-    "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "reservation_ref": {"type": "string"},
-    "reservation_absent": {"type": "boolean", "const": true},
+    "schema": {
+      "enum": [
+        "projectstate.isolation_release.v1",
+        "statedd.isolation_release.v1"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "released": {
+      "type": "boolean",
+      "const": true
+    },
+    "isolation_mode": {
+      "type": "string",
+      "enum": [
+        "clone",
+        "worktree"
+      ]
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "quarantined",
+        "removed"
+      ]
+    },
+    "original_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "original_path_absent": {
+      "type": "boolean",
+      "const": true
+    },
+    "quarantine_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recoverable_state_retained": {
+      "type": "boolean"
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "reservation_ref": {
+      "type": "string"
+    },
+    "reservation_absent": {
+      "type": "boolean",
+      "const": true
+    },
     "release_reason": {
       "type": "string",
-      "enum": ["failed_preflight", "superseded", "operator_cancelled"]
+      "enum": [
+        "failed_preflight",
+        "superseded",
+        "operator_cancelled"
+      ]
     }
   },
   "allOf": [
     {
-      "if": {"properties": {"isolation_mode": {"const": "clone"}}},
+      "if": {
+        "properties": {
+          "isolation_mode": {
+            "const": "clone"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "disposition": {"const": "quarantined"},
-          "quarantine_path": {"type": "string", "minLength": 1},
-          "recoverable_state_retained": {"const": true},
-          "reservation_ref": {"const": ""}
+          "disposition": {
+            "const": "quarantined"
+          },
+          "quarantine_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recoverable_state_retained": {
+            "const": true
+          },
+          "reservation_ref": {
+            "const": ""
+          }
         }
       }
     },
     {
-      "if": {"properties": {"isolation_mode": {"const": "worktree"}}},
+      "if": {
+        "properties": {
+          "isolation_mode": {
+            "const": "worktree"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "disposition": {"const": "removed"},
-          "quarantine_path": {"type": "null"},
-          "recoverable_state_retained": {"const": false},
-          "reservation_ref": {"pattern": "^refs/statedd/reservations/"}
+          "disposition": {
+            "const": "removed"
+          },
+          "quarantine_path": {
+            "type": "null"
+          },
+          "recoverable_state_retained": {
+            "const": false
+          },
+          "reservation_ref": {
+            "pattern": "^refs/projectstate/reservations/"
+          }
         }
       }
     }

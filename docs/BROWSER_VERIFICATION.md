@@ -1,6 +1,6 @@
 # Provider-Agnostic Browser Verification
 
-StateDD requires browser-verification evidence for user-facing closure, not a specific browser automation provider.
+ProjectState requires browser-verification evidence for user-facing closure, not a specific browser automation provider.
 
 Kimi WebBridge is a preferred provider when available, not a required dependency. The same evidence contract accepts Playwright, agent-native browser tools, existing E2E/browser tests, manual browser screenshots, or custom project tooling.
 
@@ -29,11 +29,11 @@ When the slice is docs/scripts-only, the file may still be present with `provide
 
 ## Schema
 
-`schemas/browser_verification.schema.json` defines `statedd.browser_verification.v1`.
+`schemas/browser_verification.schema.json` defines `projectstate.browser_verification.v1`.
 
 Top-level fields:
 
-- `schema`: must be `statedd.browser_verification.v1`
+- `schema`: must be `projectstate.browser_verification.v1`
 - `captured_at`: ISO 8601 timestamp
 - `provider`: the automation or manual provider used
 - `runtime_identity`: link to the runtime identity artifact and match checks
@@ -124,13 +124,13 @@ Manual browser proof is allowed, but it must be honest:
 
 ## Helper script
 
-`scripts/statedd_browser_verify.py` validates and records browser verification artifacts. It does not drive browsers itself.
+`scripts/projectstate_browser_verify.py` validates and records browser verification artifacts. It does not drive browsers itself.
 
 ```bash
-python3 scripts/statedd_browser_verify.py init docs/evidence/YYYY-MM-DD-slice
-python3 scripts/statedd_browser_verify.py check docs/evidence/YYYY-MM-DD-slice --strict
-python3 scripts/statedd_browser_verify.py hash docs/evidence/YYYY-MM-DD-slice
-python3 scripts/statedd_browser_verify.py summarize docs/evidence/YYYY-MM-DD-slice
+python3 scripts/projectstate_browser_verify.py init docs/evidence/YYYY-MM-DD-slice
+python3 scripts/projectstate_browser_verify.py check docs/evidence/YYYY-MM-DD-slice --strict
+python3 scripts/projectstate_browser_verify.py hash docs/evidence/YYYY-MM-DD-slice
+python3 scripts/projectstate_browser_verify.py summarize docs/evidence/YYYY-MM-DD-slice
 ```
 
 ## Audit behavior

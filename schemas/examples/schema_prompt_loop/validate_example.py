@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate the feature slice example files against the local schema.
 
-This script stays stdlib-only and reuses scripts/statedd_validate_schema.py.
+This script stays stdlib-only and reuses scripts/projectstate_validate_schema.py.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-VALIDATOR = ROOT / "scripts" / "statedd_validate_schema.py"
+VALIDATOR = ROOT / "scripts" / "projectstate_validate_schema.py"
 SCHEMA = Path(__file__).resolve().parent / "feature_slice.schema.json"
 VALID = Path(__file__).resolve().parent / "valid_slice.json"
 INVALID = Path(__file__).resolve().parent / "invalid_slice.json"

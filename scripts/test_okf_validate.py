@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = ROOT / "scripts" / "statedd_okf_validate.py"
+VALIDATOR = ROOT / "scripts" / "projectstate_okf_validate.py"
 
 
 def run_validator(bundle: Path, source_root: Path, *, expect_success: bool) -> subprocess.CompletedProcess[str]:
@@ -84,12 +84,12 @@ def test_canonical_and_reference_governance_are_checked() -> None:
         write_concept(
             bundle,
             "domain/canonical.md",
-            "type: BusinessRule\nstatedd:\n  authority: canonical\n  owner: product\n  reviewed_at: 2026-07-11T12:00:00Z\n",
+            "type: BusinessRule\nprojectstate:\n  authority: canonical\n  owner: product\n  reviewed_at: 2026-07-11T12:00:00Z\n",
         )
         write_concept(
             bundle,
             "references/external.md",
-            "type: UnknownReference\nstatedd:\n  authority: reference\n  citations:\n    - https://example.com/source\n  last_checked_at: 2026-07-11T12:00:00Z\n",
+            "type: UnknownReference\nprojectstate:\n  authority: reference\n  citations:\n    - https://example.com/source\n  last_checked_at: 2026-07-11T12:00:00Z\n",
         )
         run_validator(bundle, root, expect_success=True)
 
@@ -107,7 +107,7 @@ def test_derived_source_hash_is_validated_and_stale_sources_fail() -> None:
         write_concept(
             bundle,
             "metrics/active.md",
-            f"type: Metric\nstatedd:\n  authority: derived\n  sources:\n    - path: schemas/metric.yaml\n      sha256: {digest}\n",
+            f"type: Metric\nprojectstate:\n  authority: derived\n  sources:\n    - path: schemas/metric.yaml\n      sha256: {digest}\n",
         )
         run_validator(bundle, root, expect_success=True)
         source.write_text("metric: changed\n", encoding="utf-8")
@@ -126,7 +126,7 @@ def test_duplicate_keys_missing_type_and_unsafe_source_fail() -> None:
         write_concept(
             bundle,
             "bad/traversal.md",
-            "type: Derived\nstatedd:\n  authority: derived\n  sources:\n    - path: ../outside.yaml\n      sha256: " + "0" * 64 + "\n",
+            "type: Derived\nprojectstate:\n  authority: derived\n  sources:\n    - path: ../outside.yaml\n      sha256: " + "0" * 64 + "\n",
         )
         completed = run_validator(bundle, root, expect_success=False)
         assert "duplicate mapping key" in completed.stdout
@@ -197,10 +197,10 @@ def test_optional_module_is_explicit_and_profile_conformance_passes() -> None:
             assert completed.returncode == 0, completed.stderr
         assert not (ordinary / "knowledge").exists()
         assert (optional / "knowledge" / "index.md").is_file()
-        manifest = json.loads((optional / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+        manifest = json.loads((optional / "PROJECTSTATE_ASSETS.json").read_text(encoding="utf-8"))
         assert "knowledge_okf" in manifest["asset_sets"]
         gate = subprocess.run(
-            [sys.executable, str(optional / "scripts" / "statedd_quality_gate.py"), "--root", str(optional), "--gate-level", "1", "--conformance"],
+            [sys.executable, str(optional / "scripts" / "projectstate_quality_gate.py"), "--root", str(optional), "--gate-level", "1", "--conformance"],
             cwd=ROOT,
             capture_output=True,
             text=True,

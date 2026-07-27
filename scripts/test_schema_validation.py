@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for StateDD schema-backed validation."""
+"""Regression tests for ProjectState schema-backed validation."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = ROOT / "scripts" / "statedd_validate_schema.py"
+VALIDATOR = ROOT / "scripts" / "projectstate_validate_schema.py"
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
 
 
@@ -67,10 +67,10 @@ def project_state_fixture(*, active_problem: str = "", repository_extra: str = "
     return f"""metadata:
   updated_at: 2026-07-12T00:00:00+00:00
   updated_by: test
-  version: statedd-template-v5
+  version: projectstate-template-v5
 workflow:
   repo_role: template_repository
-  statedd_mode: template-maintenance
+  projectstate_mode: template-maintenance
   repo_mode: template-maintenance
 current_state:
   execution_mode:
@@ -84,7 +84,7 @@ current_state:
     status: observed
     mode: template-maintenance
   project:
-    name: StateDD Test
+    name: ProjectState Test
     type: template
     lifecycle_stage: template-maintenance
   evidence:
@@ -210,7 +210,7 @@ def test_duplicate_root_yaml_key_fails() -> None:
         dna = target / "PROJECT_DNA.yaml"
         dna.write_text(dna.read_text(encoding="utf-8") + "\ninvariants:\n  - duplicate\n", encoding="utf-8")
         completed = run(
-            [str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
+            [str(target / "scripts" / "projectstate_validate_schema.py"), str(target)],
             cwd=target,
             expect_success=False,
         )
@@ -230,7 +230,7 @@ def test_duplicate_nested_yaml_key_fails() -> None:
         )
         state.write_text(text, encoding="utf-8")
         completed = run(
-            [str(target / "scripts" / "statedd_validate_schema.py"), str(target)],
+            [str(target / "scripts" / "projectstate_validate_schema.py"), str(target)],
             cwd=target,
             expect_success=False,
         )
@@ -239,7 +239,7 @@ def test_duplicate_nested_yaml_key_fails() -> None:
 
 def evidence_manifest_fixture() -> dict:
     return {
-        "schema": "statedd.evidence_manifest.v1",
+        "schema": "projectstate.evidence_manifest.v1",
         "slice_id": "BL-SCHEMA-001",
         "created_at": "2026-07-11T00:00:00+00:00",
         "repo": {"branch": "main", "head": "abc"},
@@ -348,7 +348,7 @@ def test_repo_validation_rejects_symlinked_evidence_folder_without_reading_outsi
         os.symlink(outside, evidence_root / "linked")
 
         completed = run(
-            [str(root / "scripts" / "statedd_validate_schema.py"), str(root)],
+            [str(root / "scripts" / "projectstate_validate_schema.py"), str(root)],
             cwd=root,
             expect_success=False,
         )
@@ -362,11 +362,11 @@ def assert_schema_assets_exist(root: Path) -> None:
         root / "schemas" / "project_state.schema.json",
         root / "schemas" / "project_dna.schema.json",
         root / "schemas" / "project_adapter.schema.json",
-        root / "schemas" / "statedd_assets.schema.json",
+        root / "schemas" / "projectstate_assets.schema.json",
         root / "schemas" / "runtime_identity.schema.json",
         root / "schemas" / "evidence_readme_contract.json",
         root / "schemas" / "final_handoff_contract.json",
-        root / "scripts" / "statedd_validate_schema.py",
+        root / "scripts" / "projectstate_validate_schema.py",
     ]
     missing = [str(path.relative_to(root)) for path in required if not path.exists()]
     if missing:
@@ -378,7 +378,7 @@ def test_generated_new_repo_includes_schema_validation_assets_and_passes() -> No
         target = Path(tmp) / "generated-new"
         run_init(["new", "--name", "Schema Demo", "--target", str(target)])
         assert_schema_assets_exist(target)
-        run([str(target / "scripts" / "statedd_validate_schema.py"), str(target)], cwd=target, expect_success=True)
+        run([str(target / "scripts" / "projectstate_validate_schema.py"), str(target)], cwd=target, expect_success=True)
 
 
 def test_adopted_repo_includes_schema_validation_assets_and_passes() -> None:
@@ -388,7 +388,7 @@ def test_adopted_repo_includes_schema_validation_assets_and_passes() -> None:
         (target / "README.md").write_text("# Existing Project\n", encoding="utf-8")
         run_init(["adopt", "--name", "Schema Adopted", "--target", str(target)])
         assert_schema_assets_exist(target)
-        run([str(target / "scripts" / "statedd_validate_schema.py"), str(target)], cwd=target, expect_success=True)
+        run([str(target / "scripts" / "projectstate_validate_schema.py"), str(target)], cwd=target, expect_success=True)
 
 
 def main() -> int:

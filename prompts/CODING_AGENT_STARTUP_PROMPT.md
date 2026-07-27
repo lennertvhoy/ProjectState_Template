@@ -48,29 +48,29 @@ git rev-parse HEAD
 git fetch origin --prune
 git status --short
 git worktree list --porcelain
-python3 scripts/statedd_worktree_guard.py --mode start-slice
+python3 scripts/projectstate_worktree_guard.py --mode start-slice
 ```
 
 For parallel-agent slices, use the managed isolation orchestrator from the
 canonical coordinator repository:
 
 ```bash
-python3 scripts/statedd_agent_worktree.py start --slice-id <BL-XXX>
+python3 scripts/projectstate_agent_worktree.py start --slice-id <BL-XXX>
 ```
 
 The default is a full clone with an independent Git object database under the
-per-user StateDD workspace root (outside the project parent). It writes
-`.statedd/agent.context` so StateDD can bind the exact owner, source, branch, and
+per-user ProjectState workspace root (outside the project parent). It writes
+`.projectstate/agent.context` so ProjectState can bind the exact owner, source, branch, and
 path. Linked worktrees require both explicit trusted-local flags. Never run
 `git clone` or `git worktree add` directly for an agent slice, pass an arbitrary
 `--target`, or start another agent workspace from inside an existing agent
-workspace. Use `python3 scripts/statedd_agent_worktree.py list` to inspect
+workspace. Use `python3 scripts/projectstate_agent_worktree.py list` to inspect
 managed clones, opted-in worktrees, reservations, and unexpected same-origin
 sibling clones.
 
 If the guard reports dirty or ambiguous state, stop implementation and produce a
 worktree recovery handoff instead. If dirty files exist, run
-`python3 scripts/statedd_worktree_guard.py --mode classify-dirty` and record the
+`python3 scripts/projectstate_worktree_guard.py --mode classify-dirty` and record the
 classification table in the evidence folder before any non-trivial edits.
 
 Always:
@@ -84,7 +84,7 @@ Always:
   branch-head CI, merge-candidate CI, and remote-closure condition passes; then
   verify direct-main CI, write the external post-merge handoff, and delete the
   remote slice branch only after verification
-- use `scripts/statedd_finish_slice.py` as the one authoritative merge,
+- use `scripts/projectstate_finish_slice.py` as the one authoritative merge,
   direct-main CI, post-merge handoff, and verified-cleanup path
 - require its isolation-release receipt to prove the original workspace path is
   absent before accepting `HANDOFF_COMPLETE`; a released clone is recoverably
@@ -107,7 +107,7 @@ Always:
 - use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics
 - use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone
 - use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape
-- run `python3 scripts/statedd_audit.py` before claiming closure-grade and `python3 scripts/statedd_doctor.py` for a quick health snapshot
+- run `python3 scripts/projectstate_audit.py` before claiming closure-grade and `python3 scripts/projectstate_doctor.py` for a quick health snapshot
 - respect explicit human overrides per `AGENTS.md`, but record them honestly as `partial`, `override-approved`, or `not closure-grade`
 
 If a CTO lane already exists and the user only forgot to paste the latest CTO prompt:

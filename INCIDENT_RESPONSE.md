@@ -1,4 +1,4 @@
-# StateDD Incident Response
+# ProjectState Incident Response
 
 **Purpose:** Turn bad observed behavior into durable product protection.
 

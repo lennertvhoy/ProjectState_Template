@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.finish_slice_handoff.v2",
-  "title": "StateDD agent-owned finish-slice external handoff",
+  "$id": "projectstate.finish_slice_handoff.v2",
+  "title": "ProjectState agent-owned finish-slice external handoff",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -38,8 +38,16 @@
     "failure"
   ],
   "properties": {
-    "schema": {"type": "string", "const": "statedd.finish_slice_handoff.v2"},
-    "generated_at": {"type": "string", "minLength": 1},
+    "schema": {
+      "enum": [
+        "projectstate.finish_slice_handoff.v2",
+        "statedd.finish_slice_handoff.v2"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -71,79 +79,246 @@
         ]
       }
     },
-    "repository": {"type": "string"},
-    "pr_number": {"type": "integer", "minimum": 1},
-    "pr_url": {"type": ["string", "null"]},
-    "expected_pr_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-    "proof_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-    "evidence_folder": {"type": "string", "minLength": 1},
-    "delivery_policy_mode": {"type": "string"},
-    "merge_method": {"type": "string", "enum": ["", "merge", "rebase", "squash"]},
-    "branch": {"type": ["string", "null"]},
-    "branch_head_ci": {"$ref": "#/$defs/ci_observation"},
-    "merge_candidate_ci": {"$ref": "#/$defs/ci_observation"},
-    "merge_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-    "default_branch": {"type": ["string", "null"]},
-    "default_branch_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-    "main_ci": {"$ref": "#/$defs/ci_observation"},
-    "remote_closure_output": {"type": ["string", "null"]},
-    "post_merge_output": {"type": ["string", "null"]},
-    "post_merge_verified": {"type": "boolean"},
-    "remote_branch_absent": {"type": "boolean"},
-    "isolation_released": {"type": "boolean"},
-    "isolation_mode": {"type": ["string", "null"], "enum": ["clone", "worktree", null]},
-    "isolation_disposition": {"type": ["string", "null"], "enum": ["quarantined", "removed", null]},
-    "isolation_original_path": {"type": ["string", "null"]},
-    "isolation_original_path_absent": {"type": "boolean"},
-    "isolation_quarantine_path": {"type": ["string", "null"]},
-    "recoverable_state_retained": {"type": "boolean"},
-    "failure": {"type": ["string", "null"]}
+    "repository": {
+      "type": "string"
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pr_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expected_pr_head": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "proof_head": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "evidence_folder": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_policy_mode": {
+      "type": "string"
+    },
+    "merge_method": {
+      "type": "string",
+      "enum": [
+        "",
+        "merge",
+        "rebase",
+        "squash"
+      ]
+    },
+    "branch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "branch_head_ci": {
+      "$ref": "#/$defs/ci_observation"
+    },
+    "merge_candidate_ci": {
+      "$ref": "#/$defs/ci_observation"
+    },
+    "merge_commit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "default_branch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "default_branch_head": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "main_ci": {
+      "$ref": "#/$defs/ci_observation"
+    },
+    "remote_closure_output": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "post_merge_output": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "post_merge_verified": {
+      "type": "boolean"
+    },
+    "remote_branch_absent": {
+      "type": "boolean"
+    },
+    "isolation_released": {
+      "type": "boolean"
+    },
+    "isolation_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "clone",
+        "worktree",
+        null
+      ]
+    },
+    "isolation_disposition": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "quarantined",
+        "removed",
+        null
+      ]
+    },
+    "isolation_original_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "isolation_original_path_absent": {
+      "type": "boolean"
+    },
+    "isolation_quarantine_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recoverable_state_retained": {
+      "type": "boolean"
+    },
+    "failure": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   },
   "allOf": [
     {
       "if": {
-        "properties": {"isolation_released": {"const": true}},
-        "required": ["isolation_released"]
+        "properties": {
+          "isolation_released": {
+            "const": true
+          }
+        },
+        "required": [
+          "isolation_released"
+        ]
       },
       "then": {
         "properties": {
-          "isolation_mode": {"enum": ["clone", "worktree"]},
-          "isolation_disposition": {"enum": ["quarantined", "removed"]},
-          "isolation_original_path": {"type": "string", "minLength": 1},
-          "isolation_original_path_absent": {"const": true}
+          "isolation_mode": {
+            "enum": [
+              "clone",
+              "worktree"
+            ]
+          },
+          "isolation_disposition": {
+            "enum": [
+              "quarantined",
+              "removed"
+            ]
+          },
+          "isolation_original_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "isolation_original_path_absent": {
+            "const": true
+          }
         }
       }
     },
     {
       "if": {
-        "properties": {"isolation_mode": {"const": "clone"}},
-        "required": ["isolation_mode"]
+        "properties": {
+          "isolation_mode": {
+            "const": "clone"
+          }
+        },
+        "required": [
+          "isolation_mode"
+        ]
       },
       "then": {
         "properties": {
-          "isolation_disposition": {"const": "quarantined"},
-          "isolation_quarantine_path": {"type": "string", "minLength": 1},
-          "recoverable_state_retained": {"const": true}
+          "isolation_disposition": {
+            "const": "quarantined"
+          },
+          "isolation_quarantine_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recoverable_state_retained": {
+            "const": true
+          }
         }
       }
     },
     {
       "if": {
-        "properties": {"isolation_mode": {"const": "worktree"}},
-        "required": ["isolation_mode"]
+        "properties": {
+          "isolation_mode": {
+            "const": "worktree"
+          }
+        },
+        "required": [
+          "isolation_mode"
+        ]
       },
       "then": {
         "properties": {
-          "isolation_disposition": {"const": "removed"},
-          "isolation_quarantine_path": {"type": "null"},
-          "recoverable_state_retained": {"const": false}
+          "isolation_disposition": {
+            "const": "removed"
+          },
+          "isolation_quarantine_path": {
+            "type": "null"
+          },
+          "recoverable_state_retained": {
+            "const": false
+          }
         }
       }
     }
   ],
   "$defs": {
     "ci_observation": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": false,
       "required": [
         "state",
@@ -155,13 +330,49 @@
         "detail"
       ],
       "properties": {
-        "state": {"type": "string", "enum": ["SUCCESS", "PENDING", "FAILURE", "MISSING"]},
-        "subject_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-        "run_id": {"type": ["string", "null"]},
-        "run_url": {"type": ["string", "null"]},
-        "workflow_path": {"type": ["string", "null"]},
-        "check_name": {"type": ["string", "null"]},
-        "detail": {"type": ["string", "null"]}
+        "state": {
+          "type": "string",
+          "enum": [
+            "SUCCESS",
+            "PENDING",
+            "FAILURE",
+            "MISSING"
+          ]
+        },
+        "subject_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workflow_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "check_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     }
   }

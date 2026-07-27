@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 EXAMPLE_DIR = Path(__file__).resolve().parent
-VALIDATOR = ROOT / "scripts" / "statedd_validate_schema.py"
+VALIDATOR = ROOT / "scripts" / "projectstate_validate_schema.py"
 SCHEMA = EXAMPLE_DIR / "feature_slice.schema.json"
 VALID = EXAMPLE_DIR / "valid_slice.json"
 INVALID = EXAMPLE_DIR / "invalid_slice.json"

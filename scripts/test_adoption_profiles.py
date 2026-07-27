@@ -13,14 +13,14 @@ import tempfile
 from pathlib import Path
 
 try:
-    from statedd_validate_schema import parse_yaml_text
+    from projectstate_validate_schema import parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts.statedd_validate_schema import parse_yaml_text
+    from scripts.projectstate_validate_schema import parse_yaml_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
 INIT_SCRIPT = ROOT / "scripts" / "init_template.py"
-WIZARD_SCRIPT = ROOT / "scripts" / "statedd_bootstrap_wizard.py"
+WIZARD_SCRIPT = ROOT / "scripts" / "projectstate_bootstrap_wizard.py"
 STARTUP_FILES = (
     "AGENTS.md",
     "STATUS.md",
@@ -67,14 +67,14 @@ def run_wizard(args: list[str], *, expect_success: bool) -> subprocess.Completed
 
 
 def validate_repo(repo: Path) -> None:
-    manifest = json.loads((repo / "STATEDD_ASSETS.json").read_text(encoding="utf-8"))
+    manifest = json.loads((repo / "PROJECTSTATE_ASSETS.json").read_text(encoding="utf-8"))
     required_gate_level = manifest.get("required_gate_level", 1)
     for command in (
-        [sys.executable, str(repo / "scripts" / "statedd_validate_schema.py"), str(repo)],
+        [sys.executable, str(repo / "scripts" / "projectstate_validate_schema.py"), str(repo)],
         [sys.executable, str(repo / "scripts" / "check_state_docs.py"), str(repo)],
         [
             sys.executable,
-            str(repo / "scripts" / "statedd_quality_gate.py"),
+            str(repo / "scripts" / "projectstate_quality_gate.py"),
             "--root",
             str(repo),
             "--gate-level",

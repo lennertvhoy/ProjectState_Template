@@ -38,10 +38,10 @@ and must be protected from quiet regression.
 ## AF-2026-06-23-001: BL-011 template-maintenance mode split accepted
 
 - Milestone: BL-011 root/downstream mode split
-- Scope: Root template repository uses `repo_role: template_repository` and `statedd_mode: template-maintenance`; generated/adopted downstream repositories use `repo_role: downstream_project` and start in `statedd_mode: bootstrap`.
+- Scope: Root template repository uses `repo_role: template_repository` and `projectstate_mode: template-maintenance`; generated/adopted downstream repositories use `repo_role: downstream_project` and start in `projectstate_mode: bootstrap`.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- repo_path: /home/ff/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 00b5bf13ced5bcc4c19a0d8001fc69fdedad983a
 - process_or_container: not applicable; docs/scripts-only template-governance slice
@@ -52,18 +52,18 @@ and must be protected from quiet regression.
 - evidence_refs:
   - EV-2026-06-23-002
 - regression_guard:
-  - Template root must remain `repo_role: template_repository` with `statedd_mode: template-maintenance`.
+  - Template root must remain `repo_role: template_repository` with `projectstate_mode: template-maintenance`.
   - Generated and adopted downstream repositories must not inherit template-maintenance mode.
   - Runtime proof work must build on this accepted mode split rather than reintroducing root/downstream ambiguity.
 - Notes: Runtime identity proof artifact generation remains [BL-009].
 
 ## AF-2026-06-23-002: BL-012/013/014 adoption-ready template release accepted
 
-- Milestone: BL-012/013/014 adoption-ready StateDD template release
+- Milestone: BL-012/013/014 adoption-ready ProjectState template release
 - Scope: Evidence pack manifests/redaction gate, non-destructive downstream upgrade tooling MVP, adoption profiles, and bootstrap wizard MVP are accepted as the current reusable template baseline.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- repo_path: /home/ff/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 9f940ddd5c00f11896df6ab5b14bfe0dfe18bf8f
 - process_or_container: not applicable; docs/scripts-only template-maintenance release
@@ -85,11 +85,11 @@ and must be protected from quiet regression.
   still_closure_grade: yes
 - accepted_capabilities:
   - schemas/evidence_manifest.schema.json defines the evidence manifest contract
-  - scripts/statedd_evidence_pack.py supports init/check/hash/scan evidence pack workflows
+  - scripts/projectstate_evidence_pack.py supports init/check/hash/scan evidence pack workflows
   - strict evidence-pack validation rejects empty complete manifests and insufficient manual-review records
-  - scripts/statedd_upgrade.py provides non-destructive downstream upgrade MVP behavior
+  - scripts/projectstate_upgrade.py provides non-destructive downstream upgrade MVP behavior
   - scripts/init_template.py supports minimal, solo, team, and regulated adoption profiles
-  - scripts/statedd_bootstrap_wizard.py provides an MVP bootstrap wizard with interactive, --answers, and --dry-run modes
+  - scripts/projectstate_bootstrap_wizard.py provides an MVP bootstrap wizard with interactive, --answers, and --dry-run modes
 - regression_guard:
   - Closure-grade evidence packs must not regress to empty complete manifests.
   - Human overrides must remain explicit and scoped.
@@ -106,10 +106,10 @@ and must be protected from quiet regression.
 ## AF-2026-06-23-005: BL-BROWSER-001 provider-agnostic browser verification accepted
 
 - Milestone: BL-BROWSER-001 provider-agnostic browser verification contract
-- Scope: Added `schemas/browser_verification.schema.json`, `docs/BROWSER_VERIFICATION.md`, `scripts/statedd_browser_verify.py`, `scripts/test_browser_verification.py`, fixtures, and audit/doctor/CI integration so StateDD accepts browser-verification evidence from any recognized provider.
+- Scope: Added `schemas/browser_verification.schema.json`, `docs/BROWSER_VERIFICATION.md`, `scripts/projectstate_browser_verify.py`, `scripts/test_browser_verification.py`, fixtures, and audit/doctor/CI integration so ProjectState accepts browser-verification evidence from any recognized provider.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- repo_path: /home/ff/Documents/Projects/ProjectState_Template
 - branch: feature/provider-agnostic-browser-verification
 - head: eb0cd886e900c2e35ddb8123b9fd599631335f89
 - process_or_container: not applicable; docs/scripts-only template-maintenance slice
@@ -125,14 +125,14 @@ and must be protected from quiet regression.
 - human_override:
   used: no
 - accepted_capabilities:
-  - schemas/browser_verification.schema.json defines statedd.browser_verification.v1
-  - scripts/statedd_browser_verify.py supports init/check/hash/summarize without driving browsers
-  - scripts/statedd_audit.py requires browser_verification.json for user-facing/runtime closure and accepts any recognized provider in strict mode
-  - scripts/statedd_doctor.py reports browser verification status and provider-agnostic fallback guidance
-  - scripts/statedd_validate_schema.py validates browser_verification.json in evidence folders
+  - schemas/browser_verification.schema.json defines projectstate.browser_verification.v1
+  - scripts/projectstate_browser_verify.py supports init/check/hash/summarize without driving browsers
+  - scripts/projectstate_audit.py requires browser_verification.json for user-facing/runtime closure and accepts any recognized provider in strict mode
+  - scripts/projectstate_doctor.py reports browser verification status and provider-agnostic fallback guidance
+  - scripts/projectstate_validate_schema.py validates browser_verification.json in evidence folders
   - prompts/EVIDENCE_README_TEMPLATE.md and prompts/FINAL_HANDOFF_TEMPLATE.md include browser verification fields
 - regression_guard:
-  - StateDD must remain provider-agnostic: no single browser automation provider may become a hard dependency.
+  - ProjectState must remain provider-agnostic: no single browser automation provider may become a hard dependency.
   - Kimi WebBridge may be documented as a preferred provider when available, but it must not be required.
   - Strict audit must continue to accept valid evidence from Playwright, agent-native browser tools, existing E2E tests, manual screenshots, and custom tooling.
   - docs/scripts-only slices must remain not applicable for browser verification.
@@ -143,10 +143,10 @@ and must be protected from quiet regression.
 ## AF-2026-06-23-004: BL-007 public usability and release-readiness polish accepted
 
 - Milestone: BL-007 public usability and release-readiness polish
-- Scope: Simplified README top half, added `docs/QUICK_COMMANDS.md`, improved `docs/ADOPTION_PROFILES.md` chooser with explicit `solo` default, polished `docs/GETTING_STARTED_5_MIN.md`, and finalized `docs/RELEASE_NOTES_statedd-template-v4.md` as release-candidate ready.
+- Scope: Simplified README top half, added `docs/QUICK_COMMANDS.md`, improved `docs/ADOPTION_PROFILES.md` chooser with explicit `solo` default, polished `docs/GETTING_STARTED_5_MIN.md`, and finalized `docs/RELEASE_NOTES_projectstate-template-v4.md` as release-candidate ready.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- repo_path: /home/ff/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 947a8964085b8377017d6681e20fa24d266dcab9
 - process_or_container: not applicable; docs/scripts-only template-maintenance slice
@@ -165,14 +165,14 @@ and must be protected from quiet regression.
   - `docs/QUICK_COMMANDS.md` provides a copy-paste command cheat sheet
   - `docs/ADOPTION_PROFILES.md` recommends `--profile solo` by default
   - `docs/GETTING_STARTED_5_MIN.md` can be followed without reading the full README first
-  - `docs/RELEASE_NOTES_statedd-template-v4.md` is release-candidate ready and requires explicit human permission to publish
+  - `docs/RELEASE_NOTES_projectstate-template-v4.md` is release-candidate ready and requires explicit human permission to publish
 - regression_guard:
   - README must keep a beginner-friendly top half.
   - Quick commands, adoption profiles, and the 5-minute guide must remain discoverable and accurate.
   - Release notes must keep the human-permission gate for GitHub release publishing.
 - known_limits:
-  - GitHub release publishing for statedd-template-v4 is not done; requires explicit human permission.
-  - Provider-agnostic browser verification remains future work (BL-BROWSER-001). Kimi WebBridge may be used when available, but StateDD does not require a specific browser automation provider.
+  - GitHub release publishing for projectstate-template-v4 is not done; requires explicit human permission.
+  - Provider-agnostic browser verification remains future work (BL-BROWSER-001). Kimi WebBridge may be used when available, but ProjectState does not require a specific browser automation provider.
 
 ## AF-2026-06-23-003: BL-005 canonical schema/prompt example accepted
 
@@ -180,7 +180,7 @@ and must be protected from quiet regression.
 - Scope: The `schemas/examples/schema_prompt_loop/` example demonstrates a schema-driven loop where one schema validates data and generates deterministic prompt material, with regression tests and CI coverage.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- repo_path: /home/ff/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 0c17d4fe46e7a6cb73396b11e562b4cc008f6bad
 - process_or_container: not applicable; docs/scripts-only template-maintenance release
@@ -210,11 +210,11 @@ and must be protected from quiet regression.
   - The example is intentionally small and educational.
   - The generated prompt uses only schema field names and descriptions.
 
-## AF-2026-07-12-001: StateDD v5 operational core accepted
+## AF-2026-07-12-001: ProjectState v5 operational core accepted
 
-- Milestone: StateDD v5 operational template completion
+- Milestone: ProjectState v5 operational template completion
 - Scope: CTO engineering and architecture acceptance of the compact, repo-native
-  StateDD operational core, including structured bootstrap, bounded parallel-agent
+  ProjectState operational core, including structured bootstrap, bounded parallel-agent
   integration, confirmed agent-owned exact-head delivery, direct-main CI,
   post-merge verification, self-reconciling canonical state, and stable maintenance.
 - Closure-grade: yes
@@ -222,7 +222,7 @@ and must be protected from quiet regression.
 - Acceptance authority: human CTO
 - Acceptance type: engineering_and_architecture
 - Accepted on: 2026-07-12
-- repo_path: /home/ff/Documents/Projects/StateDD_Template
+- repo_path: /home/ff/Documents/Projects/ProjectState_Template
 - branch: main
 - accepted_head: 5779baf293a9b5357f896d9725fd7edae2528445
 - process_or_container: not applicable; template repository has no application runtime

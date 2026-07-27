@@ -1,13 +1,13 @@
-# CLAUDE.md — StateDD Agent Instructions
+# CLAUDE.md — ProjectState Agent Instructions
 
 This file is a compatibility shim for Claude Code. The authoritative agent contract is in **AGENTS.md**.
 
 ## Quick Reference
 - **Read first:** `AGENTS.md` (constitutional contract)
 - **Skills:** Load via `/skill-name` (e.g., `/close-slice`)
-- **Commands:** Invoke via `/statedd-*` (e.g., `/statedd-close-slice`)
-- **Quality gates:** Run `scripts/statedd_quality_gate.py` before closure
-- **Handoff:** End every session with `scripts/statedd_handoff.py`
+- **Commands:** Invoke via `/projectstate-*` (e.g., `/projectstate-close-slice`)
+- **Quality gates:** Run `scripts/projectstate_quality_gate.py` before closure
+- **Handoff:** End every session with `scripts/projectstate_handoff.py`
 
 ## Mode
 This repo operates in `template-maintenance` mode (see AGENTS.md).

@@ -1,7 +1,7 @@
 {
-  "$schema": "statedd.markdown_contract.v1",
-  "$id": "statedd.final_handoff_contract.v1",
-  "title": "StateDD final handoff template contract",
+  "$schema": "projectstate.markdown_contract.v1",
+  "$id": "projectstate.final_handoff_contract.v1",
+  "title": "ProjectState final handoff template contract",
   "contract_type": "markdown_contract",
   "required_markers": [
     "Final handoff for CTO lane",

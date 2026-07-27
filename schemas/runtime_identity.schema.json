@@ -1,55 +1,164 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.runtime_identity.v1",
-  "title": "StateDD runtime_identity.json",
+  "$id": "projectstate.runtime_identity.v1",
+  "title": "ProjectState runtime_identity.json",
   "type": "object",
-  "required": ["schema", "repo", "runtime", "checks", "limits"],
+  "required": [
+    "schema",
+    "repo",
+    "runtime",
+    "checks",
+    "limits"
+  ],
   "additionalProperties": true,
   "properties": {
-    "schema": {"type": "string", "const": "statedd.runtime_identity.v1"},
-    "generated_at": {"type": "string", "minLength": 10},
-    "captured_at": {"type": "string", "minLength": 10},
+    "schema": {
+      "enum": [
+        "projectstate.runtime_identity.v1",
+        "statedd.runtime_identity.v1"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "captured_at": {
+      "type": "string",
+      "minLength": 10
+    },
     "repo": {
       "type": "object",
-      "required": ["path", "branch", "head", "worktree_clean"],
+      "required": [
+        "path",
+        "branch",
+        "head",
+        "worktree_clean"
+      ],
       "additionalProperties": true,
       "properties": {
-        "path": {"type": "string", "minLength": 1},
-        "branch": {"type": ["string", "null"]},
-        "head": {"type": ["string", "null"]},
-        "worktree_clean": {"type": "boolean"},
-        "status_porcelain": {"type": "string"}
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "worktree_clean": {
+          "type": "boolean"
+        },
+        "status_porcelain": {
+          "type": "string"
+        }
       }
     },
     "runtime": {
       "type": "object",
-      "required": ["required"],
+      "required": [
+        "required"
+      ],
       "additionalProperties": true,
       "properties": {
-        "required": {"type": "boolean"},
-        "reason": {"type": "string", "minLength": 1},
-        "kind": {"type": "string", "minLength": 1},
-        "endpoint": {"type": "string", "minLength": 1},
-        "url": {"type": ["string", "null"]},
+        "required": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endpoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "process": {
           "type": "object",
-          "required": ["detected"],
+          "required": [
+            "detected"
+          ],
           "additionalProperties": true,
           "properties": {
-            "detected": {"type": "boolean"},
-            "pid": {"type": "integer", "minimum": 1},
-            "port": {"type": ["integer", "null"], "minimum": 1, "maximum": 65535},
-            "host": {"type": "string", "minLength": 1},
-            "reason": {"type": "string", "minLength": 1},
-            "impact": {"type": "string", "minLength": 1},
-            "cwd_relation": {"enum": ["repo_root", "within_repo", "outside_repo", "unavailable"]},
-            "cwd_matches_repo": {"type": ["boolean", "null"]},
-            "executable": {"type": ["string", "null"]},
-            "argv_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-            "argv_count": {"type": "integer", "minimum": 0},
+            "detected": {
+              "type": "boolean"
+            },
+            "pid": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "port": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "host": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "impact": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cwd_relation": {
+              "enum": [
+                "repo_root",
+                "within_repo",
+                "outside_repo",
+                "unavailable"
+              ]
+            },
+            "cwd_matches_repo": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "executable": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "argv_sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "argv_count": {
+              "type": "integer",
+              "minimum": 0
+            },
             "all_candidate_pids": {
               "type": "array",
-              "items": {"type": "integer", "minimum": 1},
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
               "uniqueItems": true
             }
           }
@@ -59,32 +168,71 @@
     "probe": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["url", "http_status", "content_type", "response_sha256", "response_bytes"],
+      "required": [
+        "url",
+        "http_status",
+        "content_type",
+        "response_sha256",
+        "response_bytes"
+      ],
       "properties": {
-        "url": {"type": "string", "minLength": 1},
-        "http_status": {"type": ["integer", "null"]},
-        "content_type": {"type": ["string", "null"]},
-        "response_sha256": {"type": ["string", "null"]},
-        "response_bytes": {"type": "integer", "minimum": 0}
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "http_status": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "content_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "response_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "response_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "checks": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "endpoint_reachable": {"type": "boolean"},
-        "process_detected": {"type": "boolean"},
-        "duplicate_runtime_checked": {"type": "boolean"},
-        "head_recorded": {"type": "boolean"},
-        "runtime_not_applicable_recorded": {"type": "boolean"}
+        "endpoint_reachable": {
+          "type": "boolean"
+        },
+        "process_detected": {
+          "type": "boolean"
+        },
+        "duplicate_runtime_checked": {
+          "type": "boolean"
+        },
+        "head_recorded": {
+          "type": "boolean"
+        },
+        "runtime_not_applicable_recorded": {
+          "type": "boolean"
+        }
       }
     },
     "limits": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      }
     }
   },
-  "statedd_semantics": {
+  "projectstate_semantics": {
     "runtime_required_requires_endpoint_reachable": true
   }
 }

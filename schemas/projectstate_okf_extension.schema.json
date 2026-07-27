@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "projectstate.okf_extension.v1",
+  "title": "ProjectState governance extension for OKF concepts",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "authority"
+  ],
+  "properties": {
+    "authority": {
+      "type": "string",
+      "enum": [
+        "canonical",
+        "derived",
+        "reference"
+      ]
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verification": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewed_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "last_checked_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{64}$"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "authority": {
+            "const": "canonical"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "owner",
+          "reviewed_at"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authority": {
+            "const": "derived"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "sources"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authority": {
+            "const": "reference"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "citations",
+          "last_checked_at"
+        ]
+      }
+    }
+  ]
+}

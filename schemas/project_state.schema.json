@@ -1,38 +1,107 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.project_state.v1",
-  "title": "StateDD PROJECT_STATE.yaml",
+  "$id": "projectstate.project_state.v1",
+  "title": "ProjectState PROJECT_STATE.yaml",
   "type": "object",
-  "required": ["metadata", "workflow", "current_state", "active_problems"],
+  "required": [
+    "metadata",
+    "workflow",
+    "current_state",
+    "active_problems"
+  ],
   "additionalProperties": true,
   "properties": {
     "metadata": {
       "type": "object",
-      "required": ["updated_at", "updated_by", "version"],
+      "required": [
+        "updated_at",
+        "updated_by",
+        "version"
+      ],
       "additionalProperties": true,
       "properties": {
-        "updated_at": {"type": "string", "minLength": 10},
-        "updated_by": {"type": "string", "minLength": 1},
-        "version": {"type": "string", "const": "statedd-template-v5"}
+        "updated_at": {
+          "type": "string",
+          "minLength": 10
+        },
+        "updated_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "enum": [
+            "projectstate-template-v5",
+            "statedd-template-v5"
+          ]
+        }
       }
     },
     "workflow": {
       "type": "object",
-      "required": ["repo_role", "statedd_mode", "repo_mode"],
+      "required": [
+        "repo_role",
+        "repo_mode"
+      ],
+      "anyOf": [
+        {"required": ["projectstate_mode"]},
+        {"required": ["statedd_mode"]}
+      ],
       "additionalProperties": true,
       "properties": {
-        "repo_role": {"type": "string", "enum": ["template_repository", "downstream_project"]},
-        "statedd_mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]},
-        "repo_mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]},
+        "repo_role": {
+          "type": "string",
+          "enum": [
+            "template_repository",
+            "downstream_project"
+          ]
+        },
+        "projectstate_mode": {
+          "type": "string",
+          "enum": [
+            "template-maintenance",
+            "bootstrap",
+            "operating"
+          ]
+        },
+        "statedd_mode": {
+          "type": "string",
+          "enum": [
+            "template-maintenance",
+            "bootstrap",
+            "operating"
+          ],
+          "description": "Deprecated alias for projectstate_mode; kept for one migration cycle."
+        },
+        "repo_mode": {
+          "type": "string",
+          "enum": [
+            "template-maintenance",
+            "bootstrap",
+            "operating"
+          ]
+        },
         "bootstrap": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "completed": {"type": "boolean"},
-            "system_investigated": {"type": "boolean"},
-            "repo_investigated": {"type": "boolean"},
-            "user_intake_complete": {"type": "boolean"},
-            "unknowns_remaining": {"type": "array", "items": {"type": "string"}}
+            "completed": {
+              "type": "boolean"
+            },
+            "system_investigated": {
+              "type": "boolean"
+            },
+            "repo_investigated": {
+              "type": "boolean"
+            },
+            "user_intake_complete": {
+              "type": "boolean"
+            },
+            "unknowns_remaining": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }
@@ -41,8 +110,20 @@
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "status": {"type": "string", "enum": ["proposed_default", "confirmed"]},
-        "confirmation": {"type": "string", "enum": ["pending_during_bootstrap", "human_confirmed"]},
+        "status": {
+          "type": "string",
+          "enum": [
+            "proposed_default",
+            "confirmed"
+          ]
+        },
+        "confirmation": {
+          "type": "string",
+          "enum": [
+            "pending_during_bootstrap",
+            "human_confirmed"
+          ]
+        },
         "merge": {
           "type": "object",
           "additionalProperties": false,
@@ -60,56 +141,127 @@
             "require_post_merge_main_ci"
           ],
           "properties": {
-            "mode": {"type": "string", "enum": ["human_merge", "agent_after_green"]},
-            "method": {"type": "string", "const": "squash"},
-            "delete_branch_after_verification": {"type": "boolean", "const": true},
-            "require_exact_pr_head": {"type": "boolean", "const": true},
-            "require_clean_merge_state": {"type": "boolean", "const": true},
-            "require_no_requested_changes": {"type": "boolean", "const": true},
-            "require_no_unresolved_review_threads": {"type": "boolean", "const": true},
-            "require_branch_head_ci": {"type": "boolean", "const": true},
-            "require_merge_candidate_ci": {"type": "boolean", "const": true},
-            "require_remote_closure": {"type": "boolean", "const": true},
-            "require_post_merge_main_ci": {"type": "boolean", "const": true}
+            "mode": {
+              "type": "string",
+              "enum": [
+                "human_merge",
+                "agent_after_green"
+              ]
+            },
+            "method": {
+              "type": "string",
+              "const": "squash"
+            },
+            "delete_branch_after_verification": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_exact_pr_head": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_clean_merge_state": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_no_requested_changes": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_no_unresolved_review_threads": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_branch_head_ci": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_merge_candidate_ci": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_remote_closure": {
+              "type": "boolean",
+              "const": true
+            },
+            "require_post_merge_main_ci": {
+              "type": "boolean",
+              "const": true
+            }
           }
         },
         "protected_operations": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["force_push", "rewrite_shared_history"],
+          "required": [
+            "force_push",
+            "rewrite_shared_history"
+          ],
           "properties": {
-            "force_push": {"type": "string", "const": "forbidden"},
-            "rewrite_shared_history": {"type": "string", "const": "forbidden"}
+            "force_push": {
+              "type": "string",
+              "const": "forbidden"
+            },
+            "rewrite_shared_history": {
+              "type": "string",
+              "const": "forbidden"
+            }
           }
         },
         "ci_unavailable": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["automatic_merge", "override"],
+          "required": [
+            "automatic_merge",
+            "override"
+          ],
           "properties": {
-            "automatic_merge": {"type": "string", "const": "forbidden"},
-            "override": {"type": "string", "const": "requires_separate_explicit_human_authorization"}
+            "automatic_merge": {
+              "type": "string",
+              "const": "forbidden"
+            },
+            "override": {
+              "type": "string",
+              "const": "requires_separate_explicit_human_authorization"
+            }
           }
         }
       }
     },
     "verification_labels": {
       "type": "object",
-      "additionalProperties": {"type": "string"}
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "current_state": {
       "type": "object",
-      "required": ["repository", "operating_mode", "project", "evidence"],
+      "required": [
+        "repository",
+        "operating_mode",
+        "project",
+        "evidence"
+      ],
       "additionalProperties": true,
       "properties": {
         "execution_mode": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "minLength": 1},
+            "status": {
+              "type": "string",
+              "minLength": 1
+            },
             "mode": {
               "type": "string",
-              "enum": ["template-maintenance", "bootstrap", "operating", "quality_freeze", "incident_response", "release_candidate"]
+              "enum": [
+                "template-maintenance",
+                "bootstrap",
+                "operating",
+                "quality_freeze",
+                "incident_response",
+                "release_candidate"
+              ]
             }
           }
         },
@@ -117,59 +269,118 @@
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "minLength": 1},
-            "product_quality_gate": {"type": "string", "minLength": 1},
-            "runtime_truth_gate": {"type": "string", "minLength": 1},
-            "live_canary_gate": {"type": "string", "minLength": 1},
-            "redteam_gate": {"type": "string", "minLength": 1},
-            "known_bad_events_gate": {"type": "string", "minLength": 1}
+            "status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "product_quality_gate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "runtime_truth_gate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "live_canary_gate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "redteam_gate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "known_bad_events_gate": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "runtime_truth": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "minLength": 1}
+            "status": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "known_bad_events": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "minLength": 1}
+            "status": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "open_p0_failures": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "remote_reconciliation": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "evidence": {"type": "string", "minLength": 1},
+            "evidence": {
+              "type": "string",
+              "minLength": 1
+            },
             "pull_requests": {
               "type": "array",
               "uniqueItems": true,
               "items": {
                 "type": "object",
-                "required": ["number", "state"],
+                "required": [
+                  "number",
+                  "state"
+                ],
                 "additionalProperties": true,
                 "properties": {
-                  "number": {"type": "integer", "minimum": 1},
-                  "state": {"type": "string", "enum": ["open", "closed", "merged"]},
-                  "evidence": {"type": "string", "minLength": 1}
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "closed",
+                      "merged"
+                    ]
+                  },
+                  "evidence": {
+                    "type": "string",
+                    "minLength": 1
+                  }
                 }
               }
             },
             "main_ci": {
               "type": "object",
-              "required": ["status", "evidence"],
+              "required": [
+                "status",
+                "evidence"
+              ],
               "additionalProperties": true,
               "properties": {
-                "status": {"type": "string", "enum": ["pending", "failed", "verified"]},
-                "evidence": {"type": "string", "minLength": 1}
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "failed",
+                    "verified"
+                  ]
+                },
+                "evidence": {
+                  "type": "string",
+                  "minLength": 1
+                }
               }
             }
           }
@@ -190,49 +401,121 @@
         },
         "repository": {
           "type": "object",
-          "required": ["canonical_path", "path_status"],
+          "required": [
+            "canonical_path",
+            "path_status"
+          ],
           "additionalProperties": true,
           "properties": {
-            "canonical_path": {"type": "string", "minLength": 1},
-            "path_status": {"type": "string", "enum": ["observed", "unknown", "reported", "blocked", "assumed", "stale", "invalid"]}
+            "canonical_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path_status": {
+              "type": "string",
+              "enum": [
+                "observed",
+                "unknown",
+                "reported",
+                "blocked",
+                "assumed",
+                "stale",
+                "invalid"
+              ]
+            }
           }
         },
         "operating_mode": {
           "type": "object",
-          "required": ["status", "mode"],
+          "required": [
+            "status",
+            "mode"
+          ],
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "enum": ["observed", "unknown", "reported", "blocked", "assumed", "stale", "invalid"]},
-            "mode": {"type": "string", "enum": ["template-maintenance", "bootstrap", "operating"]}
+            "status": {
+              "type": "string",
+              "enum": [
+                "observed",
+                "unknown",
+                "reported",
+                "blocked",
+                "assumed",
+                "stale",
+                "invalid"
+              ]
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "template-maintenance",
+                "bootstrap",
+                "operating"
+              ]
+            }
           }
         },
         "project": {
           "type": "object",
-          "required": ["name", "type", "lifecycle_stage"],
+          "required": [
+            "name",
+            "type",
+            "lifecycle_stage"
+          ],
           "additionalProperties": true,
           "properties": {
-            "name": {"type": "string", "minLength": 1},
-            "type": {"type": "string", "minLength": 1},
-            "lifecycle_stage": {"type": "string", "minLength": 1}
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lifecycle_stage": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "runtime_identity": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "minLength": 1},
-            "artifact_contract": {"type": "string", "minLength": 1},
-            "helper": {"type": "string", "minLength": 1}
+            "status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifact_contract": {
+              "type": "string",
+              "minLength": 1
+            },
+            "helper": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "evidence": {
           "type": "object",
-          "required": ["status", "ledger"],
+          "required": [
+            "status",
+            "ledger"
+          ],
           "additionalProperties": true,
           "properties": {
-            "status": {"type": "string", "minLength": 1},
-            "ledger": {"type": "string", "minLength": 1},
-            "artifact_root": {"type": "string", "minLength": 1}
+            "status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ledger": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifact_root": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         }
       }
@@ -242,19 +525,36 @@
       "uniqueItems": true,
       "items": {
         "type": "object",
-        "required": ["id", "severity"],
+        "required": [
+          "id",
+          "severity"
+        ],
         "additionalProperties": true,
         "properties": {
-          "id": {"type": "string", "minLength": 1},
-          "severity": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
-          "status": {"type": "string", "minLength": 1}
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     }
   },
-  "statedd_semantics": {
+  "projectstate_semantics": {
     "repo_role_mode_compatibility": true,
-    "statedd_mode_matches_repo_mode": true,
+    "projectstate_mode_matches_repo_mode": true,
     "live_state_is_nonterminal": true
   }
 }

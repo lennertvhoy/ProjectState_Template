@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from statedd_remote_truth_check import RemoteTruthCheck
+from projectstate_remote_truth_check import RemoteTruthCheck
 
 
 def git(repo: Path, *args: str) -> str:
@@ -23,7 +23,7 @@ def pushed_repo(tmp_path: Path) -> tuple[Path, Path]:
     subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
     git(repo, "config", "user.email", "test@example.invalid")
-    git(repo, "config", "user.name", "StateDD Test")
+    git(repo, "config", "user.name", "ProjectState Test")
     git(repo, "checkout", "-q", "-b", "slice")
     (repo / "tracked.txt").write_text("one\n", encoding="utf-8")
     git(repo, "add", "tracked.txt")

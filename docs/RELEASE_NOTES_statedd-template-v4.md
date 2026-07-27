@@ -1,7 +1,7 @@
-# Release Notes — StateDD Template v4
+# Release Notes — ProjectState Template v4
 
 **Status:** release-candidate ready  
-**Version:** statedd-template-v4  
+**Version:** projectstate-template-v4  
 **Date:** 2026-06-23  
 
 > This file is release-candidate ready. Do not publish a GitHub release from it
@@ -24,7 +24,7 @@ State Driven Development template for AI-assisted software projects with repo tr
 - prompt-engineering
 - project-template
 
-## What is StateDD Template?
+## What is ProjectState Template?
 
 A lightweight, executable workflow for AI-assisted software projects. It keeps
 humans in control while giving coding agents a shared source of truth inside the
@@ -39,8 +39,8 @@ separation of responsibilities.
 - **Evidence pack manifests and redaction gate** — every closure-grade evidence
 folder can carry a `manifest.json` with claims, artifact hashes, and conservative
 redaction scanning.
-- **Non-destructive downstream upgrade tooling** — `statedd_upgrade.py` brings an
-existing StateDD repo forward without overwriting project truth.
+- **Non-destructive downstream upgrade tooling** — `projectstate_upgrade.py` brings an
+existing ProjectState repo forward without overwriting project truth.
 - **Adoption profiles** — initialize or adopt with `minimal`, `solo`, `team`, or
 `regulated` profiles matched to project needs. Default recommendation is `solo`.
 - **Bootstrap wizard MVP** — interactive and `--answers` modes for the minimum
@@ -48,9 +48,9 @@ strategic questions needed to bootstrap honestly.
 - **Schema-driven example project** — `schemas/examples/schema_prompt_loop/`
 shows one schema validating data and generating prompt material so docs and
 prompts cannot drift from the contract.
-- **Executable workflow tooling** — `statedd_audit.py`, `statedd_doctor.py`,
-`statedd_validate_schema.py`, `statedd_runtime_proof.py`, `statedd_handoff.py`,
-and `statedd_version_check.py` make the workflow machine-checkable.
+- **Executable workflow tooling** — `projectstate_audit.py`, `projectstate_doctor.py`,
+`projectstate_validate_schema.py`, `projectstate_runtime_proof.py`, `projectstate_handoff.py`,
+and `projectstate_version_check.py` make the workflow machine-checkable.
 
 ## Quick start
 
@@ -77,10 +77,10 @@ For all common commands, see `docs/QUICK_COMMANDS.md`.
 - The upgrade helper copies safe managed assets but does not semantic-merge
 customized workflow files.
 - The redaction scanner is pattern-based and cannot prove absence of secrets.
-- Provider-agnostic browser verification remains future work. Kimi WebBridge may be used when available, but StateDD does not require a specific browser automation provider.
+- Provider-agnostic browser verification remains future work. Kimi WebBridge may be used when available, but ProjectState does not require a specific browser automation provider.
 
 ## License
 
-Released under the custom StateDD license in `LICENSE`. Free use, modification,
+Released under the custom ProjectState license in `LICENSE`. Free use, modification,
 distribution, and commercial use are permitted; teaching and training rights are
 reserved. See `LICENSE_FAQ.md` for plain-language guidance.

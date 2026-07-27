@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the StateDD strong-isolation orchestrator."""
+"""Regression tests for the ProjectState strong-isolation orchestrator."""
 
 from __future__ import annotations
 
@@ -13,20 +13,20 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ORCHESTRATOR = ROOT / "scripts" / "statedd_agent_worktree.py"
+ORCHESTRATOR = ROOT / "scripts" / "projectstate_agent_worktree.py"
 
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-from statedd_workspace_inventory import normalize_remote  # noqa: E402
-from statedd_validate_schema import validate_json_schema  # noqa: E402
+from projectstate_workspace_inventory import normalize_remote  # noqa: E402
+from projectstate_validate_schema import validate_json_schema  # noqa: E402
 
 
 def run(args: list[str], *, cwd: Path, expect_code: int | None = None) -> subprocess.CompletedProcess[str]:
     environment = os.environ.copy()
     environment.setdefault(
         "STATEDD_WORKSPACE_ROOT",
-        str(cwd.parent / ".statedd-test-workspaces"),
+        str(cwd.parent / ".projectstate-test-workspaces"),
     )
     completed = subprocess.run(
         [sys.executable, str(ORCHESTRATOR), *args],
@@ -57,8 +57,8 @@ def init_repo(root: Path) -> Path:
     repo = root / "repo"
     repo.mkdir()
     git(repo, "init", "-b", "main")
-    git(repo, "config", "user.email", "statedd@example.invalid")
-    git(repo, "config", "user.name", "StateDD Test")
+    git(repo, "config", "user.email", "projectstate@example.invalid")
+    git(repo, "config", "user.name", "ProjectState Test")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / ".gitignore").write_text((ROOT / ".gitignore").read_text(encoding="utf-8"), encoding="utf-8")
     git(repo, "add", "README.md", ".gitignore")
@@ -119,8 +119,8 @@ def test_default_start_creates_independent_clone() -> None:
         repo = init_repo(Path(tmp))
         agent_id = "agent-a1b2"
         clone = start_clone(repo, "BL-TEST-001", agent_id)
-        context = json.loads((clone / ".statedd" / "agent.context").read_text(encoding="utf-8"))
-        assert context["schema"] == "statedd.agent_context.v2"
+        context = json.loads((clone / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
+        assert context["schema"] == "projectstate.agent_context.v2"
         assert context["isolation_mode"] == "clone"
         assert context["reservation_ref"] == ""
         assert context["branch"].startswith(agent_branch_prefix("BL-TEST-001", agent_id))
@@ -129,7 +129,7 @@ def test_default_start_creates_independent_clone() -> None:
         clone_common_raw = Path(git(clone, "rev-parse", "--git-common-dir"))
         clone_common = clone_common_raw if clone_common_raw.is_absolute() else (clone / clone_common_raw).resolve()
         assert clone_common != source_common
-        assert ".statedd-test-workspaces" in clone.parts
+        assert ".projectstate-test-workspaces" in clone.parts
         assert clone.parent.name == "active"
         alternates = clone_common / "objects" / "info" / "alternates"
         assert not alternates.exists() or not alternates.read_text(encoding="utf-8").strip()
@@ -160,18 +160,18 @@ def test_explicit_same_user_worktree_creates_reservation() -> None:
         repo = init_repo(Path(tmp))
         agent_id = "agent-a1b2"
         worktree = start_worktree(repo, "BL-TEST-003", agent_id)
-        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        context = json.loads((worktree / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
         assert context["isolation_mode"] == "worktree"
-        assert context["reservation_ref"].startswith("refs/statedd/reservations/")
+        assert context["reservation_ref"].startswith("refs/projectstate/reservations/")
         assert git(repo, "rev-parse", context["reservation_ref"])
-        assert git(worktree, "check-ignore", ".statedd/agent.context") == ".statedd/agent.context"
+        assert git(worktree, "check-ignore", ".projectstate/agent.context") == ".projectstate/agent.context"
 
 
 def test_duplicate_worktree_reservation_fails_without_cleanup() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         worktree = start_worktree(repo, "BL-TEST-004", "agent-a1b2")
-        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        context = json.loads((worktree / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
         completed = run(
             [
                 "--repo",
@@ -271,7 +271,7 @@ def test_handoff_includes_clone_agent_context() -> None:
             cwd=repo,
             expect_code=0,
         )
-        assert_contains(completed.stdout, "# StateDD Handoff Snapshot")
+        assert_contains(completed.stdout, "# ProjectState Handoff Snapshot")
         assert_contains(completed.stdout, "agent_id: agent-a1b2")
         assert_contains(completed.stdout, "slice_id: BL-TEST-007")
 
@@ -280,7 +280,7 @@ def test_close_dry_run_retains_clone() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         clone = start_clone(repo, "BL-TEST-008", "agent-a1b2")
-        context_before = (clone / ".statedd" / "agent.context").read_bytes()
+        context_before = (clone / ".projectstate" / "agent.context").read_bytes()
         completed = run(
             [
                 "--repo",
@@ -297,7 +297,7 @@ def test_close_dry_run_retains_clone() -> None:
         )
         assert_contains(completed.stdout, "No worktree, clone, branch, or reservation cleanup")
         assert clone.exists()
-        assert (clone / ".statedd" / "agent.context").read_bytes() == context_before
+        assert (clone / ".projectstate" / "agent.context").read_bytes() == context_before
 
 
 def test_cleanup_is_report_only_for_stale_and_dirty_worktrees() -> None:
@@ -318,7 +318,7 @@ def test_missing_worktree_is_reported_not_pruned() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         worktree = start_worktree(repo, "BL-TEST-010", "agent-a1b2")
-        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        context = json.loads((worktree / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
         shutil.rmtree(worktree)
         topology_before = git(repo, "worktree", "list", "--porcelain")
         completed = run(["--repo", str(repo), "cleanup"], cwd=repo, expect_code=0)
@@ -350,7 +350,7 @@ Claims: isolated clone
         (evidence_dir / "manifest.json").write_text(
             json.dumps(
                 {
-                    "schema": "statedd.evidence_manifest.v1",
+                    "schema": "projectstate.evidence_manifest.v1",
                     "slice_id": "BL-TEST-011",
                     "manifest_status": "complete",
                     "created_at": "2026-07-11T00:00:00+00:00",
@@ -368,7 +368,7 @@ Claims: isolated clone
         completed = subprocess.run(
             [
                 sys.executable,
-                str(ROOT / "scripts" / "statedd_audit.py"),
+                str(ROOT / "scripts" / "projectstate_audit.py"),
                 str(clone),
                 "--agent-context",
                 str(clone),
@@ -385,7 +385,7 @@ def test_forged_context_unknown_field_is_rejected() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         clone = start_clone(repo, "BL-TEST-012", "agent-a1b2")
-        context_path = clone / ".statedd" / "agent.context"
+        context_path = clone / ".projectstate" / "agent.context"
         context = json.loads(context_path.read_text(encoding="utf-8"))
         context["forged"] = True
         context_path.write_text(json.dumps(context), encoding="utf-8")
@@ -398,8 +398,8 @@ def test_copied_context_from_another_clone_is_rejected() -> None:
         repo = init_repo(Path(tmp))
         first = start_clone(repo, "BL-TEST-013", "agent-a1b2")
         second = start_clone(repo, "BL-TEST-014", "agent-c3d4")
-        source_context = (first / ".statedd" / "agent.context").read_text(encoding="utf-8")
-        (second / ".statedd" / "agent.context").write_text(source_context, encoding="utf-8")
+        source_context = (first / ".projectstate" / "agent.context").read_text(encoding="utf-8")
+        (second / ".projectstate" / "agent.context").write_text(source_context, encoding="utf-8")
         completed = run(["--repo", str(repo), "guard", "--worktree", str(second)], cwd=repo, expect_code=1)
         assert_contains(completed.stderr, "worktree_path")
 
@@ -486,9 +486,9 @@ def test_unmanaged_same_origin_sibling_blocks_start_and_handoff() -> None:
         )
         assert_contains(start.stderr, "unmanaged same-origin sibling clone")
         handoff = subprocess.run(
-            [sys.executable, str(ROOT / "scripts" / "statedd_handoff.py"), "--repo", str(repo), "--no-include-listeners"],
+            [sys.executable, str(ROOT / "scripts" / "projectstate_handoff.py"), "--repo", str(repo), "--no-include-listeners"],
             cwd=repo,
-            env={**os.environ, "STATEDD_WORKSPACE_ROOT": str(repo.parent / ".statedd-test-workspaces")},
+            env={**os.environ, "STATEDD_WORKSPACE_ROOT": str(repo.parent / ".projectstate-test-workspaces")},
             capture_output=True,
             text=True,
             check=False,
@@ -606,7 +606,7 @@ def test_clean_worktree_release_removes_path_and_reservation_without_force() -> 
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))
         worktree = start_worktree(repo, "BL-TEST-023", "agent-a1b2")
-        context = json.loads((worktree / ".statedd" / "agent.context").read_text(encoding="utf-8"))
+        context = json.loads((worktree / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
         completed = run(
             [
                 "--repo",
@@ -631,15 +631,15 @@ def test_clean_worktree_release_removes_path_and_reservation_without_force() -> 
 
 def test_remote_identity_normalizes_transport_and_credentials() -> None:
     repo = Path("/tmp/example-repo")
-    expected = "remote:github.com/example/StateDD_Template"
+    expected = "remote:github.com/example/ProjectState_Template"
     assert normalize_remote(
-        "git@github.com:example/StateDD_Template.git", repo=repo
+        "git@github.com:example/ProjectState_Template.git", repo=repo
     ) == expected
     assert normalize_remote(
-        "ssh://git@github.com/example/StateDD_Template.git", repo=repo
+        "ssh://git@github.com/example/ProjectState_Template.git", repo=repo
     ) == expected
     assert normalize_remote(
-        "https://secret-token@github.com/example/StateDD_Template.git", repo=repo
+        "https://secret-token@github.com/example/ProjectState_Template.git", repo=repo
     ) == expected
 
 

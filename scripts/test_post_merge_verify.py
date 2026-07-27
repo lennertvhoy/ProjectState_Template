@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for scripts/statedd_post_merge_verify.py."""
+"""Regression tests for scripts/projectstate_post_merge_verify.py."""
 
 from __future__ import annotations
 
@@ -12,10 +12,10 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-VERIFY_SCRIPT = ROOT / "scripts" / "statedd_post_merge_verify.py"
+VERIFY_SCRIPT = ROOT / "scripts" / "projectstate_post_merge_verify.py"
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from statedd_post_merge_verify import PostMergeVerifier, run_command  # noqa: E402
+from projectstate_post_merge_verify import PostMergeVerifier, run_command  # noqa: E402
 
 
 def run_verify(args: list[str]) -> subprocess.CompletedProcess[str]:
@@ -103,8 +103,8 @@ def build_merged_scenario(
     remote = root / "remote.git"
     repo.mkdir()
     git(repo, "init", "-b", "main")
-    git(repo, "config", "user.name", "StateDD Test")
-    git(repo, "config", "user.email", "statedd@example.invalid")
+    git(repo, "config", "user.name", "ProjectState Test")
+    git(repo, "config", "user.email", "projectstate@example.invalid")
 
     (repo / "source.txt").write_text("base\n", encoding="utf-8")
     git(repo, "add", "source.txt")
@@ -140,7 +140,7 @@ def build_merged_scenario(
     )
     artifact_hash = hashlib.sha256(test_output.read_bytes()).hexdigest()
     manifest = {
-        "schema": "statedd.evidence_manifest.v1",
+        "schema": "projectstate.evidence_manifest.v1",
         "slice_id": "BL-ONE-PR-001",
         "manifest_status": "complete",
         "created_at": "2026-07-12T00:00:00+00:00",

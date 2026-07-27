@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize or adopt the StateDD template workflow."""
+"""Initialize or adopt the ProjectState template workflow."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 try:
-    from statedd_contracts import (
+    from projectstate_contracts import (
         ContractError,
         UnsafePathError,
         confined_path,
@@ -26,15 +26,15 @@ try:
         resolve_profile,
         safe_root_path,
     )
-    from statedd_generated_controls import (
+    from projectstate_generated_controls import (
         recommended_merge_mode,
         render_coding_agent_startup_prompt as render_coding_agent_control,
         render_downstream_workflow as render_workflow_control,
         render_proposed_delivery_policy,
     )
-    from statedd_validate_schema import load_schema, validate_json_schema
+    from projectstate_validate_schema import load_schema, validate_json_schema
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts.statedd_contracts import (
+    from scripts.projectstate_contracts import (
         ContractError,
         UnsafePathError,
         confined_path,
@@ -44,13 +44,13 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
         resolve_profile,
         safe_root_path,
     )
-    from scripts.statedd_generated_controls import (
+    from scripts.projectstate_generated_controls import (
         recommended_merge_mode,
         render_coding_agent_startup_prompt as render_coding_agent_control,
         render_downstream_workflow as render_workflow_control,
         render_proposed_delivery_policy,
     )
-    from scripts.statedd_validate_schema import load_schema, validate_json_schema
+    from scripts.projectstate_validate_schema import load_schema, validate_json_schema
 
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
@@ -58,11 +58,11 @@ IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".
 
 TEMPLATE_NAME = "State Driven Development Template"
 CONTRACT_TITLE = "State Driven Development Template Contract"
-TEMPLATE_VERSION = "statedd-template-v5"
+TEMPLATE_VERSION = "projectstate-template-v5"
 try:
     PROFILE_CATALOG = load_profile_catalog(TEMPLATE_ROOT)
 except ContractError as exc:  # fail before any target write
-    raise SystemExit(f"Invalid StateDD profile catalog: {exc}") from exc
+    raise SystemExit(f"Invalid ProjectState profile catalog: {exc}") from exc
 VALID_PROFILES = set(PROFILE_CATALOG["profiles"])
 OPTIONAL_ASSET_SETS = sorted(
     set_id
@@ -72,10 +72,10 @@ OPTIONAL_ASSET_SETS = sorted(
 try:
     _version_file = regular_source_path(TEMPLATE_ROOT, "VERSION").read_text(encoding="utf-8").strip()
 except (UnsafePathError, OSError, UnicodeDecodeError) as exc:
-    raise SystemExit(f"Invalid StateDD template VERSION source: {exc}") from exc
+    raise SystemExit(f"Invalid ProjectState template VERSION source: {exc}") from exc
 if len({TEMPLATE_VERSION, PROFILE_CATALOG["template_version"], _version_file}) != 1:
     raise SystemExit(
-        "StateDD template version mismatch across init constant, profiles/catalog.json, and VERSION"
+        "ProjectState template version mismatch across init constant, profiles/catalog.json, and VERSION"
     )
 
 
@@ -99,7 +99,7 @@ def validate_profile(profile: str) -> str:
 
 def profile_summary(profile: str) -> str:
     summaries = {
-        "minimal": "Smallest useful StateDD footprint; no fake completeness; keeps the bootstrap gate.",
+        "minimal": "Smallest useful ProjectState footprint; no fake completeness; keeps the bootstrap gate.",
         "solo": "Standard single-developer workflow with evidence template, runtime proof, and schema validation.",
         "team": "Stricter handoff/evidence/audit defaults and PR/review-friendly documentation.",
         "regulated": "Strict audit defaults; runtime proof expected for user-facing work; evidence manifest/redaction gate expected; acceptance freeze guidance emphasized.",
@@ -167,9 +167,9 @@ class RepoScan:
 def render_agents_template(today: str, mode: str, profile: str = "team") -> str:
     return f"""---
 repo_role: downstream_project
-statedd_mode: {mode}
+projectstate_mode: {mode}
 repo_mode: {mode}
-statedd_version: "{TEMPLATE_VERSION}"
+projectstate_version: "{TEMPLATE_VERSION}"
 initialized_on: {today}
 last_updated: {today}
 ---
@@ -202,12 +202,12 @@ views and never replace canonical readable state.
 - P0 product failure enters `quality_freeze` or `incident_response`.
 - Non-trivial work starts from classified, isolated worktree state and names the
   invariant that prevents brittle example-only fixes.
-- Repository or StateDD mutation starts only after
-  `scripts/statedd_git_safety_check.py` permits `normal_branch`, `worktree`, or
+- Repository or ProjectState mutation starts only after
+  `scripts/projectstate_git_safety_check.py` permits `normal_branch`, `worktree`, or
   `clone`; containers and independent agents use full clones.
 - One integration agent owns each slice branch; subagents return bounded commits,
-  do not edit global StateDD truth, and do not push the final slice.
-- Agent clones are created only through `scripts/statedd_agent_worktree.py` under
+  do not edit global ProjectState truth, and do not push the final slice.
+- Agent clones are created only through `scripts/projectstate_agent_worktree.py` under
   the per-user managed workspace root. Agent workspaces cannot provision nested
   agents, arbitrary isolation targets are forbidden, and every handoff inventories
   unexpected same-origin sibling clones.
@@ -218,7 +218,7 @@ views and never replace canonical readable state.
   `agent_after_green` lets the integration agent squash-merge only the exact
   verified PR head, verify direct-main CI, write an external final handoff, and
   delete the remote slice branch only after post-merge verification through
-  `scripts/statedd_finish_slice.py`.
+  `scripts/projectstate_finish_slice.py`.
 - `HANDOFF_COMPLETE` requires a closed-world release receipt proving the original
   isolation path is absent. Clean clones are quarantined outside the project
   parent; clean opted-in worktrees are removed without force; dirty or unproven
@@ -239,7 +239,7 @@ coherent backlog slice at a time and keep live state current.
 ## Gates And Handoff
 
 - Edit loop: relevant tests plus `python3 scripts/check_state_docs.py`.
-- Slice closure: `python3 scripts/statedd_quality_gate.py --gate-level 2` plus
+- Slice closure: `python3 scripts/projectstate_quality_gate.py --gate-level 2` plus
   runtime/evidence/remote gates applicable to the claim.
 - Report changes, verification, repo/branch/HEAD, runtime process/endpoint/rebuild,
   worktree cleanliness, evidence paths, residual risk, and next action.
@@ -313,7 +313,7 @@ def render_project_state(
     branch = json.dumps(repo_scan.branch) if repo_scan.branch is not None else "null"
     head = json.dumps(repo_scan.head) if repo_scan.head is not None else "null"
     unknowns_block = "\n".join(f"      - {json.dumps(entry)}" for entry in unknowns) or "      []"
-    runtime_helper = "not_installed_in_minimal_profile" if profile == "minimal" else "scripts/statedd_runtime_proof.py"
+    runtime_helper = "not_installed_in_minimal_profile" if profile == "minimal" else "scripts/projectstate_runtime_proof.py"
     delivery_policy = render_proposed_delivery_policy(profile)
 
     return f"""# PROJECT_STATE.yaml - Structured current truth
@@ -325,7 +325,7 @@ metadata:
 
 workflow:
   repo_role: downstream_project
-  statedd_mode: bootstrap
+  projectstate_mode: bootstrap
   repo_mode: bootstrap
   bootstrap:
     completed: false
@@ -361,7 +361,7 @@ current_state:
     known_bad_events_gate: not_run
     git_safety_gate:
       status: not_run
-      script: scripts/statedd_git_safety_check.py
+      script: scripts/projectstate_git_safety_check.py
       effective_mode: read_only_until_preflight
 
   runtime_truth:
@@ -486,8 +486,8 @@ invariants:
 
 governance:
   hygiene_check: scripts/check_state_docs.py
-  schema_validation: scripts/statedd_validate_schema.py
-  quality_gate: scripts/statedd_quality_gate.py
+  schema_validation: scripts/projectstate_validate_schema.py
+  quality_gate: scripts/projectstate_quality_gate.py
 """
 
 
@@ -502,7 +502,7 @@ project:
   description: "Optional adapter layer for project-specific vocabulary and runtime details."
   profile: {profile}
   repo_role: downstream_project
-  statedd_mode: bootstrap
+  projectstate_mode: bootstrap
 
 vocabulary:
   control_plane_name: "control plane"
@@ -685,7 +685,7 @@ Use this file for dated session notes, verification summaries, and references to
 **Worktree:** unknown
 
 ### What changed
-- Installed the StateDD workflow files without replacing the existing project README by default.
+- Installed the ProjectState workflow files without replacing the existing project README by default.
 - Captured an initial bootstrap baseline from the current repo structure and documented the active queue using backlog IDs.
 
 ### Verification
@@ -802,8 +802,8 @@ def render_downstream_readme(project_name: str, profile: str) -> str:
     proposed_merge_mode = recommended_merge_mode(profile)
     return f"""# {project_name}
 
-This repository uses StateDD `{TEMPLATE_VERSION}` with the `{profile}` profile.
-StateDD files coordinate current truth, a short queue, evidence, and executable
+This repository uses ProjectState `{TEMPLATE_VERSION}` with the `{profile}` profile.
+ProjectState files coordinate current truth, a short queue, evidence, and executable
 gates; they do not define this project's product behavior.
 
 ## Start
@@ -821,8 +821,8 @@ gates; they do not define this project's product behavior.
 
 ```bash
 python3 scripts/check_state_docs.py
-python3 scripts/statedd_validate_schema.py
-python3 scripts/statedd_quality_gate.py --gate-level 1
+python3 scripts/projectstate_validate_schema.py
+python3 scripts/projectstate_quality_gate.py --gate-level 1
 ```
 
 ## Git Safety
@@ -830,7 +830,7 @@ python3 scripts/statedd_quality_gate.py --gate-level 1
 Before editing an existing repository, run one fail-closed preflight:
 
 ```bash
-python3 scripts/statedd_git_safety_check.py --mode normal_branch
+python3 scripts/projectstate_git_safety_check.py --mode normal_branch
 ```
 
 Use full clones for containers or independent agents. Linked worktrees require
@@ -846,7 +846,7 @@ The agent never infers a CI-unavailable override, changes the confirmed mode, or
 deletes the remote slice branch before verified main closure. Final product
 acceptance remains human in either mode.
 
-`STATEDD_ASSETS.json` records the exact workflow files installed for this
+`PROJECTSTATE_ASSETS.json` records the exact workflow files installed for this
 profile. Template-maintenance tests, fixtures, evidence, incidents, and release
 history are intentionally excluded.
 """
@@ -876,15 +876,15 @@ APPEND_ONLY_ASSETS = {
     "docs/ACCEPTANCE_FREEZES.md",
 }
 GENERATED_CONTROL_ASSETS = {
-    ".github/workflows/statedd-validate.yml",
+    ".github/workflows/projectstate-validate.yml",
     "prompts/CODING_AGENT_STARTUP_PROMPT.md",
-    "STATEDD_ASSETS.json",
+    "PROJECTSTATE_ASSETS.json",
 }
 SCHEMA_BY_ASSET = {
     "PROJECT_STATE.yaml": "schemas/project_state.schema.json",
     "PROJECT_DNA.yaml": "schemas/project_dna.schema.json",
     "PROJECT_ADAPTER.yaml": "schemas/project_adapter.schema.json",
-    "STATEDD_ASSETS.json": "schemas/statedd_assets.schema.json",
+    "PROJECTSTATE_ASSETS.json": "schemas/projectstate_assets.schema.json",
 }
 
 
@@ -920,7 +920,7 @@ def add_asset_manifest(
     generation_mode: str,
     optional_asset_sets: tuple[str, ...] = (),
 ) -> None:
-    manifest_path = "STATEDD_ASSETS.json"
+    manifest_path = "PROJECTSTATE_ASSETS.json"
     overlap = {path.as_posix() for path in asset_paths} & set(managed_files)
     if overlap:
         raise SystemExit(
@@ -979,7 +979,7 @@ def add_asset_manifest(
     records.sort(key=lambda record: str(record["path"]))
     catalog_path = TEMPLATE_ROOT / "profiles" / "catalog.json"
     payload = {
-        "schema": "statedd.runtime_assets.v2",
+        "schema": "projectstate.runtime_assets.v2",
         "template_version": TEMPLATE_VERSION,
         "template_commit": clean_git_head(TEMPLATE_ROOT),
         "catalog": {
@@ -1006,20 +1006,20 @@ def add_asset_manifest(
             "maintenance_changelog",
         ],
     }
-    schema = load_schema(TEMPLATE_ROOT / "schemas" / "statedd_assets.schema.json")
+    schema = load_schema(TEMPLATE_ROOT / "schemas" / "projectstate_assets.schema.json")
     issues = validate_json_schema(payload, schema)
     if issues:
         details = "; ".join(f"{issue.path}: {issue.message}" for issue in issues[:8])
-        raise SystemExit(f"Generated STATEDD_ASSETS.json violates its schema: {details}")
+        raise SystemExit(f"Generated PROJECTSTATE_ASSETS.json violates its schema: {details}")
     paths = [str(record["path"]) for record in records]
     if len(paths) != len(set(paths)):
-        raise SystemExit("Generated STATEDD_ASSETS.json contains duplicate managed paths")
+        raise SystemExit("Generated PROJECTSTATE_ASSETS.json contains duplicate managed paths")
     managed_files[manifest_path] = json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
 def render_readme_section() -> str:
     return f"""
-## StateDD Workflow
+## ProjectState Workflow
 
 This repo now uses the {TEMPLATE_NAME} workflow.
 The workflow contract lives in `AGENTS.md`, the current truth lives in
@@ -1574,7 +1574,7 @@ def maybe_append_readme_link(target: Path, *, dry_run: bool) -> None:
         return
     if dry_run:
         print("Planned README action:")
-        print("  - append StateDD workflow section to README.md")
+        print("  - append ProjectState workflow section to README.md")
         return
     write_file(target, "README.md", text.rstrip() + "\n\n" + section + "\n")
 
@@ -1599,7 +1599,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
             "PROJECT_STATE.yaml",
             "README.md",
             "STATUS.md",
-            "STATEDD_ASSETS.json",
+            "PROJECTSTATE_ASSETS.json",
             "WORKLOG.md",
             "docs",
             "prompts",
@@ -1610,12 +1610,12 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         branch=None,
         head=None,
         top_level_entries=top_level_entries,
-        manifests=["README.md", "STATEDD_ASSETS.json", "VERSION"],
+        manifests=["README.md", "PROJECTSTATE_ASSETS.json", "VERSION"],
         entrypoints=[
             "scripts/check_state_docs.py",
-            "scripts/statedd_version_check.py",
-            "scripts/statedd_validate_schema.py",
-            "scripts/statedd_quality_gate.py",
+            "scripts/projectstate_version_check.py",
+            "scripts/projectstate_validate_schema.py",
+            "scripts/projectstate_quality_gate.py",
         ],
         test_setup=[
             "project test setup not yet discovered",
@@ -1669,7 +1669,7 @@ def build_managed_files_for_new(project_name: str, target: Path, today: str, sta
         "docs/BOOTSTRAP_INVENTORY.yaml": render_bootstrap_inventory(repo_scan, stamp),
         "docs/evidence/.gitkeep": "",
         "prompts/CODING_AGENT_STARTUP_PROMPT.md": render_coding_agent_startup_prompt(),
-        ".github/workflows/statedd-validate.yml": render_downstream_workflow(profile),
+        ".github/workflows/projectstate-validate.yml": render_downstream_workflow(profile),
     }
 
 
@@ -1720,7 +1720,7 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
 
 
 def build_subcommand_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Initialize or adopt the StateDD workflow")
+    parser = argparse.ArgumentParser(description="Initialize or adopt the ProjectState workflow")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     new_parser = subparsers.add_parser("new", help="Create a new repo from the template")
@@ -1789,7 +1789,7 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
 
 
 def build_legacy_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create a new repo from the StateDD workflow template")
+    parser = argparse.ArgumentParser(description="Create a new repo from the ProjectState workflow template")
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
     parser.add_argument("--profile", default="team", choices=sorted(VALID_PROFILES), help="Adoption profile: minimal, solo, team, or regulated")
@@ -1905,7 +1905,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Next:")
         print("1. Read README.md and AGENTS.md")
         print("2. Fill bootstrap truth and create a real backlog-linked queue")
-        print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 1")
+        print(f"3. Run {Path(sys.executable).name} scripts/projectstate_quality_gate.py --gate-level 1")
         print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before operating mode")
         return 0
 
@@ -1922,7 +1922,7 @@ def main(argv: list[str] | None = None) -> int:
     optional_asset_sets = tuple(sorted(selected_optional_sets))
     support_paths = assets_for_profile(profile, optional_asset_sets=optional_asset_sets)
     if selected_optional_sets or "remote_closure_contract" in resolved_profile.validations:
-        managed_files[".github/workflows/statedd-validate.yml"] = render_downstream_workflow(profile)
+        managed_files[".github/workflows/projectstate-validate.yml"] = render_downstream_workflow(profile)
     add_asset_manifest(
         managed_files,
         support_paths,
@@ -1978,7 +1978,7 @@ def main(argv: list[str] | None = None) -> int:
     print("Next:")
     print("1. Read AGENTS.md and review PROJECT_STATE.yaml against the real repo")
     print("2. Resolve inherited contradictions and fill the backlog-linked queue")
-    print(f"3. Run {Path(sys.executable).name} scripts/statedd_quality_gate.py --gate-level 1")
+    print(f"3. Run {Path(sys.executable).name} scripts/projectstate_quality_gate.py --gate-level 1")
     print(f"4. Run {Path(sys.executable).name} scripts/check_state_docs.py --bootstrap-gate before operating mode")
     return 0
 

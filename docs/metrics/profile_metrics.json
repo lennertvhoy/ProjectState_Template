@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/statedd_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 0671bd65adc47f8148b8fb231f187c093bbd23a2",
+  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 0671bd65adc47f8148b8fb231f187c093bbd23a2",
   "profiles": [
     {
       "actual_tokens": 89221,
@@ -39,7 +39,7 @@
             "STATUS.md",
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "missing_optional_files": [
             ".github/workflows/validate.yml"
@@ -50,7 +50,7 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
             ".github/workflows/validate.yml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "total_bytes": 37649
         },
@@ -140,7 +140,7 @@
       "generated_file_count": 39,
       "profile": "minimal",
       "quality_gate": {
-        "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
+        "command": "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
         "exit_code": 0,
         "gate_level": 1,
         "result": "pass"
@@ -192,7 +192,7 @@
             "STATUS.md",
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "missing_optional_files": [
             ".github/workflows/validate.yml"
@@ -203,7 +203,7 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
             ".github/workflows/validate.yml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "total_bytes": 37679
         },
@@ -292,7 +292,7 @@
       "generated_file_count": 73,
       "profile": "solo",
       "quality_gate": {
-        "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
+        "command": "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
         "exit_code": 0,
         "gate_level": 1,
         "result": "pass"
@@ -345,7 +345,7 @@
             "STATUS.md",
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "missing_optional_files": [
             ".github/workflows/validate.yml"
@@ -356,7 +356,7 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
             ".github/workflows/validate.yml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "total_bytes": 37682
         },
@@ -445,7 +445,7 @@
       "generated_file_count": 87,
       "profile": "team",
       "quality_gate": {
-        "command": "python3 scripts/statedd_quality_gate.py --gate-level 1 --conformance",
+        "command": "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
         "exit_code": 0,
         "gate_level": 1,
         "result": "pass"
@@ -499,7 +499,7 @@
             "STATUS.md",
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "missing_optional_files": [
             ".github/workflows/validate.yml"
@@ -510,7 +510,7 @@
             "NEXT_ACTIONS.md",
             "PROJECT_STATE.yaml",
             ".github/workflows/validate.yml",
-            "scripts/statedd_quality_gate.py"
+            "scripts/projectstate_quality_gate.py"
           ],
           "total_bytes": 37840
         },
@@ -599,7 +599,7 @@
       "generated_file_count": 87,
       "profile": "regulated",
       "quality_gate": {
-        "command": "python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance",
+        "command": "python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance",
         "exit_code": 0,
         "gate_level": 2,
         "result": "pass"
@@ -631,7 +631,7 @@
     "source_date_epoch": 1783728000,
     "token_aggregation": "sum of per-file counts"
   },
-  "schema": "statedd.profile_metrics.v1",
+  "schema": "projectstate.profile_metrics.v1",
   "schema_version": 1,
   "source_inputs": [
     ".gitignore",
@@ -675,43 +675,43 @@
     "schemas/project_state.schema.json",
     "schemas/runtime_identity.schema.json",
     "schemas/runtime_identity_v2.schema.json",
-    "schemas/statedd_assets.schema.json",
+    "schemas/projectstate_assets.schema.json",
     "scripts/AGENTS.md",
     "scripts/check_state_docs.py",
     "scripts/init_template.py",
-    "scripts/statedd_agent_worktree.py",
-    "scripts/statedd_audit.py",
-    "scripts/statedd_bootstrap_apply.py",
-    "scripts/statedd_brittleness_check.py",
-    "scripts/statedd_browser_verify.py",
-    "scripts/statedd_closure_check.py",
-    "scripts/statedd_contracts.py",
-    "scripts/statedd_doctor.py",
-    "scripts/statedd_efficiency_check.py",
-    "scripts/statedd_evidence_pack.py",
-    "scripts/statedd_evidence_type_check.py",
-    "scripts/statedd_finish_slice.py",
-    "scripts/statedd_generated_controls.py",
-    "scripts/statedd_git_safety_check.py",
-    "scripts/statedd_git_safety_session.py",
-    "scripts/statedd_handoff.py",
-    "scripts/statedd_instruction_lint.py",
-    "scripts/statedd_post_merge_verify.py",
-    "scripts/statedd_profile_metrics.py",
-    "scripts/statedd_quality_gate.py",
-    "scripts/statedd_remote_closure_finalizer.py",
-    "scripts/statedd_remote_truth_check.py",
-    "scripts/statedd_runtime_proof.py",
-    "scripts/statedd_runtime_truth_check.py",
-    "scripts/statedd_upgrade.py",
-    "scripts/statedd_validate_schema.py",
-    "scripts/statedd_version_check.py",
-    "scripts/statedd_workspace_inventory.py",
-    "scripts/statedd_worktree_guard.py"
+    "scripts/projectstate_agent_worktree.py",
+    "scripts/projectstate_audit.py",
+    "scripts/projectstate_bootstrap_apply.py",
+    "scripts/projectstate_brittleness_check.py",
+    "scripts/projectstate_browser_verify.py",
+    "scripts/projectstate_closure_check.py",
+    "scripts/projectstate_contracts.py",
+    "scripts/projectstate_doctor.py",
+    "scripts/projectstate_efficiency_check.py",
+    "scripts/projectstate_evidence_pack.py",
+    "scripts/projectstate_evidence_type_check.py",
+    "scripts/projectstate_finish_slice.py",
+    "scripts/projectstate_generated_controls.py",
+    "scripts/projectstate_git_safety_check.py",
+    "scripts/projectstate_git_safety_session.py",
+    "scripts/projectstate_handoff.py",
+    "scripts/projectstate_instruction_lint.py",
+    "scripts/projectstate_post_merge_verify.py",
+    "scripts/projectstate_profile_metrics.py",
+    "scripts/projectstate_quality_gate.py",
+    "scripts/projectstate_remote_closure_finalizer.py",
+    "scripts/projectstate_remote_truth_check.py",
+    "scripts/projectstate_runtime_proof.py",
+    "scripts/projectstate_runtime_truth_check.py",
+    "scripts/projectstate_upgrade.py",
+    "scripts/projectstate_validate_schema.py",
+    "scripts/projectstate_version_check.py",
+    "scripts/projectstate_workspace_inventory.py",
+    "scripts/projectstate_worktree_guard.py"
   ],
   "source_tree_sha256": "5e1a9d783867a7a0a8f6797f380b56869c7a9041459cd24c3f8fa9a203b499c1",
   "template_commit": "0671bd65adc47f8148b8fb231f187c093bbd23a2",
-  "template_version": "statedd-template-v5",
+  "template_version": "projectstate-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
     "actual_encoding": "o200k_base",

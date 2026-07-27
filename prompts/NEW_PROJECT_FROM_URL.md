@@ -1,11 +1,11 @@
-# New StateDD Project From URL
+# New ProjectState Project From URL
 
 Use this as the canonical empty-folder startup prompt:
 
 ```text
-Use the public StateDD template at:
+Use the public ProjectState template at:
 
-https://github.com/lennertvhoy/StateDD_Template
+https://github.com/lennertvhoy/ProjectState_Template
 
 to create a new project in the current folder.
 
@@ -17,7 +17,7 @@ Ask me first for:
 Ask for the destination GitHub repository only when you cannot create or infer
 one through the authenticated GitHub tooling available in this environment.
 
-Use the StateDD `team` profile because this project may use parallel coding
+Use the ProjectState `team` profile because this project may use parallel coding
 subagents.
 
 Materialization requirements:
@@ -30,7 +30,7 @@ Materialization requirements:
 - Remove the temporary clone only after successful project materialization.
 - Initialize a fresh Git repository using `main`.
 
-Then enter StateDD bootstrap mode.
+Then enter ProjectState bootstrap mode.
 
 During bootstrap:
 
@@ -38,7 +38,7 @@ During bootstrap:
 - Ask only architecture-critical questions.
 - Establish project purpose, scope, architecture, constraints, and initial
   delivery milestones.
-- Fill every required StateDD file truthfully.
+- Fill every required ProjectState file truthfully.
 - Use explicit `unknown` values with follow-up actions rather than inventing facts.
 - Build a prioritized backlog for the first project milestone.
 - Keep `NEXT_ACTIONS.md` short.
@@ -73,7 +73,7 @@ Finish with a CTO-ready handoff containing:
 - repository URL;
 - branch;
 - exact pushed HEAD;
-- StateDD profile;
+- ProjectState profile;
 - project purpose;
 - architecture summary;
 - important decisions;
@@ -85,6 +85,6 @@ Finish with a CTO-ready handoff containing:
 - CI status;
 - known limits.
 
-Do not ask me to run routine StateDD, Git, validation, or handoff commands that
+Do not ask me to run routine ProjectState, Git, validation, or handoff commands that
 you can run yourself.
 ```

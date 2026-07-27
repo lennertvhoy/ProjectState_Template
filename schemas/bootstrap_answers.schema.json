@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.bootstrap_answers.v1",
-  "title": "StateDD structured bootstrap answers",
+  "$id": "projectstate.bootstrap_answers.v1",
+  "title": "ProjectState structured bootstrap answers",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -16,25 +16,68 @@
     "delivery_policy"
   ],
   "properties": {
-    "project_name": {"type": "string", "minLength": 1},
-    "purpose": {"type": "string", "minLength": 1},
-    "primary_user": {"type": "string", "minLength": 1},
-    "architecture": {"type": "string", "minLength": 1},
-    "constraints": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-    "first_milestone": {"type": "string", "minLength": 1},
+    "project_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primary_user": {
+      "type": "string",
+      "minLength": 1
+    },
+    "architecture": {
+      "type": "string",
+      "minLength": 1
+    },
+    "constraints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "first_milestone": {
+      "type": "string",
+      "minLength": 1
+    },
     "backlog": {
       "type": "array",
       "minItems": 3,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "title", "priority", "next", "exit"],
+        "required": [
+          "id",
+          "title",
+          "priority",
+          "next",
+          "exit"
+        ],
         "properties": {
-          "id": {"type": "string", "pattern": "^BL-[A-Z0-9-]+$"},
-          "title": {"type": "string", "minLength": 1},
-          "priority": {"type": "string", "pattern": "^P[0-3]$"},
-          "next": {"type": "string", "minLength": 1},
-          "exit": {"type": "string", "minLength": 1}
+          "id": {
+            "type": "string",
+            "pattern": "^BL-[A-Z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "pattern": "^P[0-3]$"
+          },
+          "next": {
+            "type": "string",
+            "minLength": 1
+          },
+          "exit": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
@@ -45,29 +88,68 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "priority", "owner", "next", "exit"],
+        "required": [
+          "id",
+          "priority",
+          "owner",
+          "next",
+          "exit"
+        ],
         "properties": {
-          "id": {"type": "string", "pattern": "^BL-[A-Z0-9-]+$"},
-          "priority": {"type": "string", "pattern": "^P[0-3]$"},
-          "owner": {"type": "string", "minLength": 1},
-          "next": {"type": "string", "minLength": 1},
-          "exit": {"type": "string", "minLength": 1}
+          "id": {
+            "type": "string",
+            "pattern": "^BL-[A-Z0-9-]+$"
+          },
+          "priority": {
+            "type": "string",
+            "pattern": "^P[0-3]$"
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "next": {
+            "type": "string",
+            "minLength": 1
+          },
+          "exit": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
     "delivery_policy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["confirmation", "merge"],
+      "required": [
+        "confirmation",
+        "merge"
+      ],
       "properties": {
-        "confirmation": {"type": "string", "const": "human_confirmed"},
+        "confirmation": {
+          "type": "string",
+          "const": "human_confirmed"
+        },
         "merge": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["mode", "method"],
+          "required": [
+            "mode",
+            "method"
+          ],
           "properties": {
-            "mode": {"type": "string", "enum": ["human_merge", "agent_after_green"]},
-            "method": {"type": "string", "const": "squash"}
+            "mode": {
+              "type": "string",
+              "enum": [
+                "human_merge",
+                "agent_after_green"
+              ]
+            },
+            "method": {
+              "type": "string",
+              "const": "squash"
+            }
           }
         }
       }

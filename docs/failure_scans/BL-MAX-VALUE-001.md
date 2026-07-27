@@ -32,7 +32,7 @@
 | CI omits newly added tests | P1 `workflow`, `observability` | One documented authoritative suite using automatic discovery; focused smoke tests only for distinct integration boundaries | CI workflow inspection plus clean-clone run |
 | Target or nested symlink escapes confinement | P0 `security_privacy`, `data_integrity` | Inspect the requested path before canonicalization; enforce relative managed paths and no symlink components/source symlinks | Root/nested/source symlink and traversal tests prove zero outside-root writes |
 | Metrics/evidence/PR claims disagree | P1 `state_truth`, `workflow` | Generate one machine-readable metrics artifact with provenance; reference it from human views | Exact-head artifact hash, evidence check, PR/CI/finalizer agreement |
-| Concision work removes decision-critical truth | P1 `state_truth`, `brittleness` | Keep readable canonical StateDD authoritative; benchmark selection separately from rendering | Round-trip/source-link checks in a later StateIR/StatePack slice |
+| Concision work removes decision-critical truth | P1 `state_truth`, `brittleness` | Keep readable canonical ProjectState authoritative; benchmark selection separately from rendering | Round-trip/source-link checks in a later StateIR/StatePack slice |
 | New controls cost more than the risk prevented | P1 `workflow` | Keep one lifecycle engine, one authoritative validation entrypoint, and risk-tiered gates; reject speculative abstractions | Architecture review records deletions, non-goals, and measured context/process cost |
 
 ## How The User Or Operator Would Notice

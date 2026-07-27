@@ -1,39 +1,88 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.project_dna.v1",
-  "title": "StateDD PROJECT_DNA.yaml",
+  "$id": "projectstate.project_dna.v1",
+  "title": "ProjectState PROJECT_DNA.yaml",
   "type": "object",
-  "required": ["version", "schema_version", "product", "truth_rules", "invariants"],
+  "required": [
+    "version",
+    "schema_version",
+    "product",
+    "truth_rules",
+    "invariants"
+  ],
   "additionalProperties": true,
   "properties": {
-    "version": {"type": "string", "const": "statedd-template-v5"},
-    "schema_version": {"type": "string", "minLength": 1},
+    "version": {
+      "enum": [
+        "projectstate-template-v5",
+        "statedd-template-v5"
+      ]
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
     "product": {
       "type": "object",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "additionalProperties": true,
       "properties": {
-        "name": {"type": "string", "minLength": 1},
-        "one_sentence": {"type": "string", "minLength": 1},
-        "description": {"type": "string", "minLength": 1}
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "one_sentence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "truth_rules": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "contract_files": {"type": "object", "additionalProperties": {"type": "string"}},
-        "hard_rules": {"type": "array", "items": {"type": "string"}},
-        "claim_states": {"type": "object", "additionalProperties": {"type": "string"}},
-        "repo_modes": {"type": "object"},
-        "repo_roles": {"type": "object"}
+        "contract_files": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "hard_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "claim_states": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "repo_modes": {
+          "type": "object"
+        },
+        "repo_roles": {
+          "type": "object"
+        }
       }
     },
-    "architecture": {"type": "object"},
+    "architecture": {
+      "type": "object"
+    },
     "invariants": {
       "type": "array",
       "minItems": 1,
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "governance": {
       "type": "object",

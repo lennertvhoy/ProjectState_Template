@@ -9,7 +9,7 @@
 
 ## User/Operator Symptom
 
-- The project parent contained nine visible `StateDD_Template-*` clone directories
+- The project parent contained nine visible `ProjectState_Template-*` clone directories
   plus five linked worktrees in the canonical checkout.
 - Several external finish handoffs claimed `isolation_released: true` and
   `recoverable_state_retained: false`, contradicting the directories still on disk.
@@ -30,14 +30,14 @@
 - The archived clone and linked-worktree feature reconciliation is recorded in
   `docs/evidence/2026-07-14-workspace-lifecycle-closure/clone_audit.json`.
 - The nine visible clone directories were moved, without deletion, to
-  `/home/ff/Documents/Projects/_archive/StateDD_Template-clones-20260714` before
+  `/home/ff/Documents/Projects/_archive/ProjectState_Template-clones-20260714` before
   implementation began.
 
 ## Confirmed Root Cause
 
-1. `statedd_agent_worktree.py handoff --release --validated` deleted only a
+1. `projectstate_agent_worktree.py handoff --release --validated` deleted only a
    worktree reservation ref and explicitly retained the isolation directory.
-2. `statedd_finish_slice.py` treated that command's zero exit as physical cleanup
+2. `projectstate_finish_slice.py` treated that command's zero exit as physical cleanup
    and unconditionally wrote `isolation_released: true` and
    `recoverable_state_retained: false`.
 3. Provisioning accepted arbitrary `--target` paths and did not reject a source
@@ -104,7 +104,7 @@ This was a workflow and state-truth defect, not a Git feature integration gap.
 
 ## Residual Risk
 
-- Raw `git clone` cannot be globally prohibited outside StateDD. It is detected at
+- Raw `git clone` cannot be globally prohibited outside ProjectState. It is detected at
   the next managed start and every handoff when it appears as an immediate
   same-origin sibling.
 - The dirty BL-BROWSER-002 worktree remains preserved and is not merged because

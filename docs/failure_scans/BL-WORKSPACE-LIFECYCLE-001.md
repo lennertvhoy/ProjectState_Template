@@ -80,7 +80,7 @@
 - Duration or trigger: the first managed agent slice after merge and the repair
   slice's own final release.
 - Artifact: `docs/evidence/2026-07-14-workspace-lifecycle-closure/finish_slice_handoff.json`
-  plus `statedd_workspace_inventory.py` output.
+  plus `projectstate_workspace_inventory.py` output.
 
 ## Closure Blockers
 

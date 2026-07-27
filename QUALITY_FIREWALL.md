@@ -1,6 +1,6 @@
-# StateDD Quality Firewall
+# ProjectState Quality Firewall
 
-**Purpose:** Make StateDD a failure-discovery workflow, not only a traceability workflow.
+**Purpose:** Make ProjectState a failure-discovery workflow, not only a traceability workflow.
 
 The quality firewall is a reusable layer that every downstream project adapts to
 its own product. It protects the product by requiring broad, adversarial, and
@@ -98,5 +98,5 @@ When a user reports a bad live event, use the incident workflow:
 ## Handoff Truth
 
 Agent handoffs are claims, not verified truth. A handoff may say a gate passed,
-but StateDD should only accept closure when the claim points to durable evidence
+but ProjectState should only accept closure when the claim points to durable evidence
 or an independent quality gate result.

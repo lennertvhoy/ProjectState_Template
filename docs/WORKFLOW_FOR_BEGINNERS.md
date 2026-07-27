@@ -1,12 +1,12 @@
-# StateDD Workflow for Beginners
+# ProjectState Workflow for Beginners
 
-This guide explains the State Driven Development (StateDD) workflow in plain
+This guide explains the State Driven Development (ProjectState) workflow in plain
 language, with a diagram, and shows exactly where to get each prompt and where
 to paste it.
 
 ## The human remains the product decision-maker
 
-StateDD is not "let an AI agent run loose." It is a human-in-the-loop system
+ProjectState is not "let an AI agent run loose." It is a human-in-the-loop system
 with three roles:
 
 1. **Human / product owner** — decides what matters, confirms the delivery policy
@@ -73,16 +73,16 @@ flowchart LR
 1. Read `AGENTS.md` first.
 2. Read `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `NEXT_ACTIONS.md`,
    and `BACKLOG.md`.
-3. Run `python3 scripts/statedd_doctor.py` to see the current health snapshot.
+3. Run `python3 scripts/projectstate_doctor.py` to see the current health snapshot.
 4. Write a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`.
 5. Implement the slice.
 6. Verify with tests, build, lint, and browser/runtime proof when user-facing.
 7. Create or update the evidence folder README using
    `prompts/EVIDENCE_README_TEMPLATE.md`.
 8. Update only the state files where truth changed.
-9. Run `python3 scripts/statedd_audit.py`.
+9. Run `python3 scripts/projectstate_audit.py`.
 10. Push and open the PR. If policy is `agent_after_green`, use
-    `scripts/statedd_finish_slice.py` to finish through exact-head merge, direct
+    `scripts/projectstate_finish_slice.py` to finish through exact-head merge, direct
     main CI, post-merge verification, and cleanup.
 11. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` to write the remote-first handoff back
     to the CTO lane.
@@ -117,8 +117,8 @@ flowchart LR
 
    ```bash
    python3 scripts/check_state_docs.py
-   python3 scripts/statedd_audit.py
-   python3 scripts/statedd_doctor.py
+   python3 scripts/projectstate_audit.py
+   python3 scripts/projectstate_doctor.py
    ```
 
    For confirmed `agent_after_green`, the final handoff comes only after the
@@ -146,17 +146,17 @@ the same as reviewed and accepted.
   locatable`, or `not proven` instead of guessing.
 - **Runtime identity before UI acceptance.** Always prove which build, process,
   port, and URL produced the screenshot.
-- **Audit before closure.** `statedd_audit.py` should pass before a slice is
+- **Audit before closure.** `projectstate_audit.py` should pass before a slice is
   called closure-grade.
 
 ## Quick command reference
 
 ```bash
 # Health snapshot
-python3 scripts/statedd_doctor.py
+python3 scripts/projectstate_doctor.py
 
 # Closure audit
-python3 scripts/statedd_audit.py
+python3 scripts/projectstate_audit.py
 
 # Documentation hygiene
 python3 scripts/check_state_docs.py

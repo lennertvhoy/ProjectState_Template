@@ -1,9 +1,9 @@
 {
   "slice_id": "BL-005",
   "title": "Canonical schema/prompt example project",
-  "goal": "Add a small but real example that demonstrates StateDD's schema-driven loop: one schema validates data and generates prompt material, so docs/prompts/examples cannot drift from the schema.",
+  "goal": "Add a small but real example that demonstrates ProjectState's schema-driven loop: one schema validates data and generates prompt material, so docs/prompts/examples cannot drift from the schema.",
   "repo_role": "template_repository",
-  "statedd_mode": "template-maintenance",
+  "projectstate_mode": "template-maintenance",
   "runtime_required": false,
   "acceptance_criteria": [
     "valid_slice.json passes schema validation",
@@ -13,9 +13,9 @@
     "No external dependencies are introduced"
   ],
   "non_goals": [
-    "Replace the full StateDD schema validator",
+    "Replace the full ProjectState schema validator",
     "Add a templating engine",
-    "Make the example a runtime dependency of StateDD"
+    "Make the example a runtime dependency of ProjectState"
   ],
   "evidence_required": true,
   "verification_commands": [

@@ -1,9 +1,9 @@
-# StateDD Template Status
+# ProjectState Template Status
 
 **Updated At:** 2026-07-14
 **Execution Mode:** template-maintenance
 **Project State:** operational_template_complete
-**Public URL:** https://github.com/lennertvhoy/StateDD_Template/releases/tag/v5
+**Public URL:** https://github.com/lennertvhoy/ProjectState_Template/releases/tag/v5
 
 ## Snapshot
 
@@ -23,7 +23,7 @@
 ## Acceptance And Freeze
 
 - CTO engineering and architecture acceptance remains in force for the repaired
-  StateDD v5 operational core.
+  ProjectState v5 operational core.
 - The incident quality freeze is lifted; normal template maintenance resumes.
 - Human product acceptance remains a separate pending boundary.
 

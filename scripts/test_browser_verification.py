@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "statedd_browser_verify.py"
+SCRIPT = ROOT / "scripts" / "projectstate_browser_verify.py"
 
 
 class TestBrowserVerification(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestBrowserVerification(unittest.TestCase):
         evidence_dir.mkdir(parents=True, exist_ok=True)
         path = evidence_dir / "runtime_identity.json"
         artifact = {
-            "schema": "statedd.runtime_identity.v1",
+            "schema": "projectstate.runtime_identity.v1",
             "captured_at": "2026-06-23T12:34:56+02:00",
             "repo": {
                 "path": str(evidence_dir),
@@ -62,7 +62,7 @@ class TestBrowserVerification(unittest.TestCase):
 
     def valid_data(self, provider_kind: str, limits: list[str] | None = None) -> dict:
         return {
-            "schema": "statedd.browser_verification.v1",
+            "schema": "projectstate.browser_verification.v1",
             "captured_at": "2026-06-23T12:34:56+02:00",
             "provider": {
                 "kind": provider_kind,
@@ -244,7 +244,7 @@ class TestBrowserVerification(unittest.TestCase):
     def test_not_applicable_for_docs_only(self) -> None:
         ev = self.evidence_dir("docs-only")
         data = {
-            "schema": "statedd.browser_verification.v1",
+            "schema": "projectstate.browser_verification.v1",
             "captured_at": "2026-06-23T12:34:56+02:00",
             "provider": {
                 "kind": "not_applicable",
