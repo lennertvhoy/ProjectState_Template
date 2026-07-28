@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 8a4986f15aac24ca34c436b4e8c2e1eb7d907ffa",
+  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit a3fac60e314b390fd29fd6af25ea675de5f0f63a",
   "profiles": [
     {
-      "actual_tokens": 92221,
+      "actual_tokens": 92219,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5576,
@@ -156,7 +156,7 @@
       "total_bytes": 404595
     },
     {
-      "actual_tokens": 177754,
+      "actual_tokens": 177752,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5585,
@@ -309,7 +309,7 @@
       "total_bytes": 778620
     },
     {
-      "actual_tokens": 237246,
+      "actual_tokens": 237244,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5589,
@@ -463,7 +463,7 @@
       "total_bytes": 1044739
     },
     {
-      "actual_tokens": 237280,
+      "actual_tokens": 237278,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 5604,
@@ -710,7 +710,7 @@
     "scripts/projectstate_worktree_guard.py"
   ],
   "source_tree_sha256": "d9658bca0701e160faa069f5191cdc7f818ee8038f976620fe551237ef005a7f",
-  "template_commit": "8a4986f15aac24ca34c436b4e8c2e1eb7d907ffa",
+  "template_commit": "a3fac60e314b390fd29fd6af25ea675de5f0f63a",
   "template_version": "projectstate-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
