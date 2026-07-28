@@ -1,11 +1,11 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "statedd-template-v5"
+version: "projectstate-template-v5"
 schema_version: "1.0"
 
 product:
-  name: "StateDD_Template"
-  one_sentence: "Reusable State Driven Development workflow template for AI-assisted projects."
+  name: "ProjectState_Template"
+  one_sentence: "Reusable ProjectState workflow template for AI-assisted projects."
   description: |
     This repository uses explicit state, a short active queue, durable history,
     and evidence-led verification for AI-assisted technical delivery.
@@ -72,7 +72,7 @@ truth_rules:
 
   repo_modes:
     template-maintenance:
-      purpose: maintain the reusable StateDD template repository
+      purpose: maintain the reusable ProjectState template repository
       exit_condition: not used by downstream projects
     bootstrap:
       purpose: discover truth and establish baseline state
@@ -83,11 +83,11 @@ truth_rules:
 
   repo_roles:
     template_repository:
-      purpose: repository that maintains and publishes StateDD itself
+      purpose: repository that maintains and publishes ProjectState itself
       allowed_modes:
         - template-maintenance
     downstream_project:
-      purpose: project repository that adopts or is generated from StateDD
+      purpose: project repository that adopts or is generated from ProjectState
       allowed_modes:
         - bootstrap
         - operating
@@ -112,9 +112,9 @@ invariants:
   - "PROJECT_DNA.yaml changes slowly."
   - "NEXT_ACTIONS.md contains open work only."
   - "BACKLOG.md assigns stable backlog IDs."
-  - "VERSION is the canonical StateDD spec-version source."
-  - "Template root uses repo_role: template_repository and statedd_mode: template-maintenance."
-  - "Generated and adopted repos use repo_role: downstream_project and start with statedd_mode: bootstrap."
+  - "VERSION is the canonical ProjectState spec-version source."
+  - "Template root uses repo_role: template_repository and projectstate_mode: template-maintenance."
+  - "Generated and adopted repos use repo_role: downstream_project and start with projectstate_mode: bootstrap."
   - "Accepted user-facing milestones are frozen to source, runtime, and evidence."
   - "WORKLOG.md is append-only."
   - "Implemented, validated, closure-grade, and accepted are four distinct states."
@@ -142,20 +142,20 @@ governance:
   license_faq: LICENSE_FAQ.md
   getting_started_guide: docs/GETTING_STARTED_5_MIN.md
   tool_model_routing_guide: prompts/TOOL_MODEL_ROUTING_GUIDE.md
-  version_check: scripts/statedd_version_check.py
-  handoff_snapshot_helper: scripts/statedd_handoff.py
-  runtime_proof_helper: scripts/statedd_runtime_proof.py
+  version_check: scripts/projectstate_version_check.py
+  handoff_snapshot_helper: scripts/projectstate_handoff.py
+  runtime_proof_helper: scripts/projectstate_runtime_proof.py
   runtime_identity_artifact: runtime_identity.json
   hygiene_check: scripts/check_state_docs.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
-  closure_audit: scripts/statedd_audit.py
-  finish_slice: scripts/statedd_finish_slice.py
+  closure_audit: scripts/projectstate_audit.py
+  finish_slice: scripts/projectstate_finish_slice.py
   finish_slice_handoff_schema: schemas/finish_slice_handoff.schema.json
-  workspace_inventory: scripts/statedd_workspace_inventory.py
-  worktree_guard: scripts/statedd_worktree_guard.py
-  brittleness_check: scripts/statedd_brittleness_check.py
-  health_summary: scripts/statedd_doctor.py
-  schema_validation: scripts/statedd_validate_schema.py
+  workspace_inventory: scripts/projectstate_workspace_inventory.py
+  worktree_guard: scripts/projectstate_worktree_guard.py
+  brittleness_check: scripts/projectstate_brittleness_check.py
+  health_summary: scripts/projectstate_doctor.py
+  schema_validation: scripts/projectstate_validate_schema.py
   slice_contract_template: prompts/SLICE_CONTRACT_TEMPLATE.md
   evidence_readme_template: prompts/EVIDENCE_README_TEMPLATE.md
   schema_ownership_template: prompts/SCHEMA_OWNERSHIP_TEMPLATE.md

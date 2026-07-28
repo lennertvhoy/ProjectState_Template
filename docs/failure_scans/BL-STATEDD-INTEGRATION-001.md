@@ -1,4 +1,4 @@
-# Failure Scan: StateDD lifecycle and Git-safety integration
+# Failure Scan: ProjectState lifecycle and Git-safety integration
 
 **Date:** 2026-07-11
 **Backlog item:** [BL-STATEDD-INTEGRATION-001]

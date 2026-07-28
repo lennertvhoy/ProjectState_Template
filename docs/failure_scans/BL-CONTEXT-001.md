@@ -23,7 +23,7 @@
 
 ## How The User Or Operator Would Notice
 
-- `python3 scripts/statedd_quality_gate.py` fails in a fresh generated repo.
+- `python3 scripts/projectstate_quality_gate.py` fails in a fresh generated repo.
 - A `minimal` instance still contains hundreds of unrelated files and more than
   one megabyte of workflow material.
 - Agents spend context on template history and duplicated state, or act on stale

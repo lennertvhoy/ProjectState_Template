@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for statedd_instruction_lint.py"""
+"""Tests for projectstate_instruction_lint.py"""
 
 import tempfile
 import sys
@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import pytest
 
-from statedd_instruction_lint import (
+from projectstate_instruction_lint import (
     InstructionLinter,
     Severity,
     SmellType,

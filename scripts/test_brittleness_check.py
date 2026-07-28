@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for scripts/statedd_brittleness_check.py."""
+"""Regression tests for scripts/projectstate_brittleness_check.py."""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CHECK = ROOT / "scripts" / "statedd_brittleness_check.py"
-AUDIT = ROOT / "scripts" / "statedd_audit.py"
+CHECK = ROOT / "scripts" / "projectstate_brittleness_check.py"
+AUDIT = ROOT / "scripts" / "projectstate_audit.py"
 
 
 def load_audit_module():
-    spec = importlib.util.spec_from_file_location("statedd_audit_for_test", AUDIT)
+    spec = importlib.util.spec_from_file_location("projectstate_audit_for_test", AUDIT)
     if spec is None or spec.loader is None:
-        raise AssertionError("Could not load statedd_audit.py")
+        raise AssertionError("Could not load projectstate_audit.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)

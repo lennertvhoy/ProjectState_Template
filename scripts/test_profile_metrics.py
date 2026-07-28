@@ -3,13 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from statedd_profile_metrics import (
+from projectstate_profile_metrics import (
     DEFAULT_SOURCE_DATE_EPOCH,
     build_metrics,
     metrics_match_after_squash,
     normalized_file_blobs,
 )
-from statedd_contracts import load_profile_catalog
+from projectstate_contracts import load_profile_catalog
 
 
 def test_profile_metrics_are_deterministic_and_validate_every_profile() -> None:
@@ -38,7 +38,7 @@ def test_profile_metrics_normalize_dirty_generated_lock_to_proof_commit(tmp_path
     target.mkdir()
     managed = target / "AGENTS.md"
     managed.write_text("# Agent contract\n", encoding="utf-8")
-    lock = target / "STATEDD_ASSETS.json"
+    lock = target / "PROJECTSTATE_ASSETS.json"
     lock.write_text(
         json.dumps(
             {
@@ -57,7 +57,7 @@ def test_profile_metrics_normalize_dirty_generated_lock_to_proof_commit(tmp_path
 
     proof_commit = "a" * 40
     blobs = normalized_file_blobs([managed, lock], target, proof_commit)
-    normalized_lock = json.loads(blobs["STATEDD_ASSETS.json"].decode("utf-8"))
+    normalized_lock = json.loads(blobs["PROJECTSTATE_ASSETS.json"].decode("utf-8"))
     assert normalized_lock["template_commit"] == proof_commit
 
 
@@ -71,7 +71,7 @@ def test_profile_metrics_accept_content_preserving_squash_identity() -> None:
     original = build_metrics(root, template_commit=source_commit, epoch=DEFAULT_SOURCE_DATE_EPOCH)
     squashed = json.loads(json.dumps(original))
     squashed["template_commit"] = "a" * 40
-    squashed["generation_command"] = "python3 scripts/statedd_profile_metrics.py --template-commit " + "a" * 40
+    squashed["generation_command"] = "python3 scripts/projectstate_profile_metrics.py --template-commit " + "a" * 40
     squashed["provenance"] = {
         "commit_exists": False,
         "commit_is_ancestor_of_head": False,

@@ -2,6 +2,14 @@
 
 **Purpose:** Append-only history for completed work.
 
+> **2026-07-27 — Rename notice.** The template was renamed from `StateDD` to
+> `ProjectState`. Entries below this banner were written under the prior name
+> and are preserved verbatim; cross-references to `StateDD`, `statedd_*`,
+> `STATEDD_ASSETS.json`, and `statedd-template-v*` remain historically accurate.
+> Canonical identifiers going forward are `ProjectState`, `projectstate_*`,
+> `PROJECTSTATE_ASSETS.json`, and `projectstate-template-v5`. Backward-compat
+> aliases are kept for one migration cycle (see `CHANGELOG.md` Unreleased).
+
 ## 2026-07-10 - BL-CONTEXT-001 remote closure candidate
 
 **Type:** template_maintenance_closure

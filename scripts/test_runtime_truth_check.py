@@ -14,9 +14,9 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import statedd_audit as audit  # noqa: E402
-import statedd_runtime_truth_check as runtime_truth  # noqa: E402
-from statedd_closure_check import ClosureCheck  # noqa: E402
+import projectstate_audit as audit  # noqa: E402
+import projectstate_runtime_truth_check as runtime_truth  # noqa: E402
+from projectstate_closure_check import ClosureCheck  # noqa: E402
 
 
 HEAD = "a" * 40
@@ -88,7 +88,7 @@ def live_probe(url: str, timeout: float) -> tuple[dict[str, object], list[str]]:
 
 
 def test_dirty_same_head_is_rejected() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-dirty-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-dirty-") as tmp:
         root = Path(tmp)
         checker = make_checker(root)
         snapshot = {"head": HEAD, "branch": "main", "changed": {"src/app.py"}}
@@ -98,7 +98,7 @@ def test_dirty_same_head_is_rejected() -> None:
 
 
 def test_endpoint_port_and_process_digest_must_match() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-process-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-process-") as tmp:
         checker = make_checker(Path(tmp))
         current_process = {
             "detected": True,
@@ -130,11 +130,11 @@ def test_endpoint_port_and_process_digest_must_match() -> None:
 
 def test_remote_artifact_cannot_trigger_implicit_probe() -> None:
     endpoint = "https://example.com/health"
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-remote-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-remote-") as tmp:
         checker = make_checker(Path(tmp), endpoint)
         payload = local_payload(endpoint)
         payload["runtime"]["ownership_mode"] = "remote_revision"  # type: ignore[index]
-        payload["runtime"]["revision_header"] = "X-StateDD-Revision"  # type: ignore[index]
+        payload["runtime"]["revision_header"] = "X-ProjectState-Revision"  # type: ignore[index]
         with mock.patch.object(runtime_truth, "fetch_url") as fetch:
             checker._check_live_runtime(payload)
         fetch.assert_not_called()
@@ -142,7 +142,7 @@ def test_remote_artifact_cannot_trigger_implicit_probe() -> None:
 
 
 def test_nested_symlink_artifact_is_rejected() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-symlink-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-symlink-") as tmp:
         base = Path(tmp)
         root = base / "repo"
         outside = base / "outside"
@@ -158,10 +158,10 @@ def test_nested_symlink_artifact_is_rejected() -> None:
 
 
 def test_v1_is_migration_only_for_runtime_truth() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-v1-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-v1-") as tmp:
         root = Path(tmp)
         artifact = root / "runtime_identity.json"
-        artifact.write_text(json.dumps({"schema": "statedd.runtime_identity.v1"}), encoding="utf-8")
+        artifact.write_text(json.dumps({"schema": "projectstate.runtime_identity.v1"}), encoding="utf-8")
         checker = runtime_truth.RuntimeTruthCheck(
             root,
             artifact,
@@ -177,14 +177,14 @@ def test_v1_is_migration_only_for_runtime_truth() -> None:
 
 
 def test_audit_accepts_v2_schema_label() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-audit-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-audit-") as tmp:
         root = Path(tmp)
         folder = root / "docs" / "evidence" / "slice"
         folder.mkdir(parents=True)
         (folder / "runtime_identity.json").write_text(
             json.dumps(
                 {
-                    "schema": "statedd.runtime_identity.v2",
+                    "schema": "projectstate.runtime_identity.v2",
                     "runtime": {"required": False, "reason": "test-only slice"},
                 }
             ),
@@ -199,7 +199,7 @@ def test_audit_accepts_v2_schema_label() -> None:
 
 
 def test_closure_preflight_invokes_explicit_runtime_artifact() -> None:
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-closure-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-closure-") as tmp:
         root = Path(tmp)
         folder = root / "docs" / "evidence" / "slice"
         folder.mkdir(parents=True)

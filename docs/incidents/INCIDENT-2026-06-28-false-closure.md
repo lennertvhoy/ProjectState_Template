@@ -6,9 +6,9 @@
 
 ## Summary
 
-An agent claimed "StateDD v5 AgentOS architecture is fully implemented" with closure-grade confidence. However, verification against GitHub `main` revealed:
-- `AGENTS.md` still showed `statedd-template-v4` metadata (reported; actually was v5 on remote)
-- `scripts/statedd_instruction_lint.py` returned 404 on GitHub `main` (reported; actually existed on remote)
+An agent claimed "ProjectState v5 AgentOS architecture is fully implemented" with closure-grade confidence. However, verification against GitHub `main` revealed:
+- `AGENTS.md` still showed `projectstate-template-v4` metadata (reported; actually was v5 on remote)
+- `scripts/projectstate_instruction_lint.py` returned 404 on GitHub `main` (reported; actually existed on remote)
 - The agent had **no proof** that local commits were pushed, tracked, or visible on GitHub
 
 **Root Cause:** The agent collapsed all truth boundaries into one vague "done" — no executable gate existed to verify remote state before claiming closure.
@@ -36,7 +36,7 @@ CI truth              →  user-accepted truth  ✗ (no handoff verification)
 
 ## Remediation Implemented
 
-### 1. Remote Truth Gate (`scripts/statedd_remote_truth_check.py`)
+### 1. Remote Truth Gate (`scripts/projectstate_remote_truth_check.py`)
 Hard gate verifying 9 truth boundaries before any closure claim:
 1. `repo_identity` — `pwd`
 2. `git_remote` — `git remote -v`
@@ -55,7 +55,7 @@ Hard gate verifying 9 truth boundaries before any closure claim:
 - `CI-verified` — CI passes (future)
 - `closure-grade` — only with `GitHub-verified` + evidence
 
-### 2. Closure Check Integration (`scripts/statedd_closure_check.py`)
+### 2. Closure Check Integration (`scripts/projectstate_closure_check.py`)
 Added `check_remote_truth()` as mandatory gate. Exit code 1 if any boundary fails.
 
 ### 3. AGENTS.md Constitution Update
@@ -93,8 +93,8 @@ Added to Invariants:
 
 | Check | Command | Result |
 |-------|---------|--------|
-| Remote truth check (v5 files) | `python scripts/statedd_remote_truth_check.py --claim scripts/statedd_instruction_lint.py --claim AGENTS.md` | ✅ GitHub-verified |
-| Closure check with remote truth | `python scripts/statedd_closure_check.py --claimed-files scripts/statedd_instruction_lint.py AGENTS.md` | ❌ (runtime_identity.json missing — expected) |
+| Remote truth check (v5 files) | `python scripts/projectstate_remote_truth_check.py --claim scripts/projectstate_instruction_lint.py --claim AGENTS.md` | ✅ GitHub-verified |
+| Closure check with remote truth | `python scripts/projectstate_closure_check.py --claimed-files scripts/projectstate_instruction_lint.py AGENTS.md` | ❌ (runtime_identity.json missing — expected) |
 | Regression tests | `python fixtures/false_closure_claim/test_false_closure.py` | ✅ All pass |
 
 ## Handoff
@@ -103,8 +103,8 @@ Added to Invariants:
 - **Final SHA:** `HEAD` (after remote truth gate + incident doc)
 - **Branch:** `main`
 - **Files Changed:**
-  - `scripts/statedd_remote_truth_check.py` (new)
-  - `scripts/statedd_closure_check.py` (modified)
+  - `scripts/projectstate_remote_truth_check.py` (new)
+  - `scripts/projectstate_closure_check.py` (modified)
   - `AGENTS.md` (invariants + truth boundary)
   - `fixtures/false_closure_claim/test_false_closure.py` (new)
   - `docs/incidents/INCIDENT-2026-06-28-false-closure.md` (new)

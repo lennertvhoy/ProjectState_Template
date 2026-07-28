@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the authoritative StateDD quality-gate entrypoint."""
+"""Tests for the authoritative ProjectState quality-gate entrypoint."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ import tempfile
 from pathlib import Path
 
 try:
-    from statedd_quality_gate import QualityGate
+    from projectstate_quality_gate import QualityGate
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts.statedd_quality_gate import QualityGate
+    from scripts.projectstate_quality_gate import QualityGate
 
 
 def configured_multi_suite_root(root: Path) -> None:
@@ -97,10 +97,10 @@ def test_internal_python_checks_use_current_interpreter() -> None:
 def test_regulated_lock_requires_level_two() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        (root / "STATEDD_ASSETS.json").write_text(
+        (root / "PROJECTSTATE_ASSETS.json").write_text(
             json.dumps(
                 {
-                    "schema": "statedd.runtime_assets.v2",
+                    "schema": "projectstate.runtime_assets.v2",
                     "profile": "regulated",
                     "required_gate_level": 2,
                 }
@@ -116,11 +116,11 @@ def test_regulated_lock_requires_level_two() -> None:
 def test_profile_validation_ids_dispatch_and_fail_on_unknown_or_missing_assets() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        manifest = root / "STATEDD_ASSETS.json"
+        manifest = root / "PROJECTSTATE_ASSETS.json"
         manifest.write_text(
             json.dumps(
                 {
-                    "schema": "statedd.runtime_assets.v2",
+                    "schema": "projectstate.runtime_assets.v2",
                     "validations": ["quality_gate_level_1"],
                 }
             ),
@@ -131,13 +131,13 @@ def test_profile_validation_ids_dispatch_and_fail_on_unknown_or_missing_assets()
         assert any("requires regular asset" in failure for failure in gate.failures)
 
         (root / "scripts").mkdir()
-        (root / "scripts" / "statedd_quality_gate.py").write_text("# present\n")
+        (root / "scripts" / "projectstate_quality_gate.py").write_text("# present\n")
         gate = QualityGate(root, gate_level=1)
         assert gate.check_profile_validations() is True
 
         manifest.write_text(
             json.dumps(
-                {"schema": "statedd.runtime_assets.v2", "validations": ["unknown"]}
+                {"schema": "projectstate.runtime_assets.v2", "validations": ["unknown"]}
             ),
             encoding="utf-8",
         )
@@ -170,7 +170,7 @@ def test_level_two_accepts_explicit_strict_slice_evidence_without_agent_context(
         manifest.write_text(
             json.dumps(
                 {
-                    "schema": "statedd.evidence_manifest.v1",
+                    "schema": "projectstate.evidence_manifest.v1",
                     "slice_id": "BL-EXPLICIT-001",
                     "repo": {"head": "a" * 40},
                 }

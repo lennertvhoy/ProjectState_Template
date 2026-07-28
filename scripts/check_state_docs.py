@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate StateDD workflow docs and bootstrap readiness."""
+"""Validate ProjectState workflow docs and bootstrap readiness."""
 
 from __future__ import annotations
 
@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from statedd_generated_controls import confirmed_delivery_policy_refusal
-    from statedd_validate_schema import StateDDYamlError, parse_yaml_text
+    from projectstate_generated_controls import confirmed_delivery_policy_refusal
+    from projectstate_validate_schema import ProjectStateYamlError, parse_yaml_text
 except ModuleNotFoundError:  # pragma: no cover - module import path under pytest
-    from scripts.statedd_generated_controls import confirmed_delivery_policy_refusal
-    from scripts.statedd_validate_schema import StateDDYamlError, parse_yaml_text
+    from scripts.projectstate_generated_controls import confirmed_delivery_policy_refusal
+    from scripts.projectstate_validate_schema import ProjectStateYamlError, parse_yaml_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,40 +77,40 @@ TEMPLATE_ASSET_PATHS = [
     "ANTI_BRITTLENESS_GUARD.md",
     "scripts/init_template.py",
     "scripts/check_state_docs.py",
-    "scripts/statedd_version_check.py",
-    "scripts/statedd_handoff.py",
-    "scripts/statedd_audit.py",
-    "scripts/statedd_doctor.py",
-    "scripts/statedd_worktree_guard.py",
-    "scripts/statedd_brittleness_check.py",
-    "scripts/statedd_runtime_proof.py",
-    "scripts/statedd_runtime_truth_check.py",
-    "scripts/statedd_validate_schema.py",
+    "scripts/projectstate_version_check.py",
+    "scripts/projectstate_handoff.py",
+    "scripts/projectstate_audit.py",
+    "scripts/projectstate_doctor.py",
+    "scripts/projectstate_worktree_guard.py",
+    "scripts/projectstate_brittleness_check.py",
+    "scripts/projectstate_runtime_proof.py",
+    "scripts/projectstate_runtime_truth_check.py",
+    "scripts/projectstate_validate_schema.py",
     "scripts/test_init_template.py",
     "scripts/test_worktree_guard.py",
     "scripts/test_brittleness_check.py",
     "scripts/test_runtime_proof.py",
     "scripts/test_runtime_truth_check.py",
     "scripts/test_schema_validation.py",
-    "scripts/statedd_evidence_pack.py",
-    "scripts/statedd_upgrade.py",
-    "scripts/statedd_browser_verify.py",
+    "scripts/projectstate_evidence_pack.py",
+    "scripts/projectstate_upgrade.py",
+    "scripts/projectstate_browser_verify.py",
     "scripts/test_evidence_pack.py",
     "scripts/test_upgrade.py",
     "scripts/test_browser_verification.py",
-    "scripts/statedd_remote_closure_finalizer.py",
+    "scripts/projectstate_remote_closure_finalizer.py",
     "scripts/test_remote_closure_finalizer.py",
-    "scripts/statedd_post_merge_verify.py",
+    "scripts/projectstate_post_merge_verify.py",
     "scripts/test_post_merge_verify.py",
-    "scripts/statedd_finish_slice.py",
+    "scripts/projectstate_finish_slice.py",
     "scripts/test_finish_slice.py",
     "EFFICIENCY_BUDGET.yaml",
-    "scripts/statedd_efficiency_check.py",
+    "scripts/projectstate_efficiency_check.py",
     "scripts/test_efficiency_check.py",
     "schemas/project_state.schema.json",
     "schemas/project_dna.schema.json",
     "schemas/project_adapter.schema.json",
-    "schemas/statedd_assets.schema.json",
+    "schemas/projectstate_assets.schema.json",
     "schemas/runtime_identity.schema.json",
     "schemas/runtime_identity_v2.schema.json",
     "schemas/evidence_readme_contract.json",
@@ -170,7 +170,7 @@ OPTIONAL_ASSETS_FOR_MINIMAL_PROFILE = {
 }
 
 VALID_REPO_ROLES = {"template_repository", "downstream_project"}
-VALID_STATEDD_MODES = {"template-maintenance", "bootstrap", "operating"}
+VALID_PROJECTSTATE_MODES = {"template-maintenance", "bootstrap", "operating"}
 TERMINAL_WORKLOG_STATUSES = {
     "ACCEPTED",
     "CLOSED",
@@ -313,7 +313,7 @@ def extract_terminal_worklog_ids(text: str) -> set[str]:
 def extract_active_problems(project_state_text: str) -> tuple[dict[str, str], list[str]]:
     try:
         state = parse_yaml_text(project_state_text)
-    except StateDDYamlError as exc:
+    except ProjectStateYamlError as exc:
         return {}, [f"PROJECT_STATE.yaml could not be parsed for lifecycle checks: {exc}"]
     if not isinstance(state, dict):
         return {}, ["PROJECT_STATE.yaml root must be a mapping for lifecycle checks"]
@@ -347,7 +347,7 @@ def normalize_lifecycle_status(value: Any) -> str:
 def parse_project_state(project_state_text: str) -> tuple[dict[str, Any], list[str]]:
     try:
         state = parse_yaml_text(project_state_text)
-    except StateDDYamlError as exc:
+    except ProjectStateYamlError as exc:
         return {}, [f"PROJECT_STATE.yaml could not be parsed for semantic checks: {exc}"]
     if not isinstance(state, dict):
         return {}, ["PROJECT_STATE.yaml root must be a mapping for semantic checks"]
@@ -557,8 +557,10 @@ def detect_repo_context(root: Path) -> tuple[str | None, str | None]:
     agents = read_optional(root / "AGENTS.md")
     role = extract_scalar(project_state, "repo_role") or extract_scalar(agents, "repo_role")
     mode = (
-        extract_scalar(project_state, "statedd_mode")
-        or extract_scalar(agents, "statedd_mode")
+        extract_scalar(project_state, "projectstate_mode")
+        or extract_scalar(agents, "projectstate_mode")
+        or extract_scalar(project_state, "statedd_mode")  # backward-compat alias
+        or extract_scalar(agents, "statedd_mode")  # backward-compat alias
         or extract_scalar(project_state, "repo_mode")
         or extract_scalar(agents, "repo_mode")
     )
@@ -702,17 +704,17 @@ def check_repo_role_mode(root: Path) -> list[str]:
         issues.append(f"Invalid repo_role: {role}")
 
     if mode is None:
-        issues.append("Missing statedd_mode/repo_mode; expected template-maintenance, bootstrap, or operating")
-    elif mode not in VALID_STATEDD_MODES:
-        issues.append(f"Invalid statedd_mode/repo_mode: {mode}")
+        issues.append("Missing projectstate_mode/repo_mode; expected template-maintenance, bootstrap, or operating")
+    elif mode not in VALID_PROJECTSTATE_MODES:
+        issues.append(f"Invalid projectstate_mode/repo_mode: {mode}")
 
     if role == "template_repository":
         if mode != "template-maintenance":
-            issues.append("template_repository must use statedd_mode: template-maintenance")
+            issues.append("template_repository must use projectstate_mode: template-maintenance")
         if 'repo_role: template_repository' not in project_state:
             issues.append("PROJECT_STATE.yaml must declare repo_role: template_repository")
-        if 'statedd_mode: template-maintenance' not in project_state:
-            issues.append("PROJECT_STATE.yaml must declare statedd_mode: template-maintenance")
+        if 'projectstate_mode: template-maintenance' not in project_state:
+            issues.append("PROJECT_STATE.yaml must declare projectstate_mode: template-maintenance")
         for relpath in ("AGENTS.md", "STATUS.md", "PROJECT_STATE.yaml", "PROJECT_DNA.yaml", "PROJECT_ADAPTER.yaml"):
             text = read_optional(root / relpath)
             if "Your Project" in text:
@@ -720,7 +722,7 @@ def check_repo_role_mode(root: Path) -> list[str]:
 
     if role == "downstream_project":
         if mode == "template-maintenance":
-            issues.append("downstream_project cannot use statedd_mode: template-maintenance")
+            issues.append("downstream_project cannot use projectstate_mode: template-maintenance")
         if 'repo_role: downstream_project' not in project_state:
             issues.append("PROJECT_STATE.yaml must declare repo_role: downstream_project")
 
@@ -745,12 +747,12 @@ def check_readme(path: Path) -> list[str]:
         "prompts/TOOL_MODEL_ROUTING_GUIDE.md",
         "prompts/FINAL_HANDOFF_TEMPLATE.md",
         "docs/GETTING_STARTED_5_MIN.md",
-        "scripts/statedd_handoff.py",
-        "scripts/statedd_worktree_guard.py",
+        "scripts/projectstate_handoff.py",
+        "scripts/projectstate_worktree_guard.py",
         "ANTI_BRITTLENESS_GUARD.md",
-        "scripts/statedd_runtime_proof.py",
-        "scripts/statedd_runtime_truth_check.py",
-        "scripts/statedd_validate_schema.py",
+        "scripts/projectstate_runtime_proof.py",
+        "scripts/projectstate_runtime_truth_check.py",
+        "scripts/projectstate_validate_schema.py",
         "LICENSE_FAQ.md",
         "teaching/training rights are reserved",
         "ChatGPT, Claude, Gemini",
@@ -766,11 +768,11 @@ def check_readme(path: Path) -> list[str]:
         "fresh coding-agent session",
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
-        "State Driven Development Template",
-        "statedd-template-v5",
-        "scripts/statedd_version_check.py",
+        "ProjectState Template",
+        "projectstate-template-v5",
+        "scripts/projectstate_version_check.py",
         "repo_role",
-        "statedd_mode",
+        "projectstate_mode",
         "docs/evidence/",
         "scripts/test_init_template.py",
         "existing README preserved",
@@ -778,8 +780,8 @@ def check_readme(path: Path) -> list[str]:
         "acceptance freeze",
         "not currently locatable",
         "process or container",
-        "statedd_audit.py",
-        "statedd_doctor.py",
+        "projectstate_audit.py",
+        "projectstate_doctor.py",
         "slice contract",
         "claim ledger",
         "schema ownership",
@@ -798,7 +800,7 @@ def check_readme(path: Path) -> list[str]:
 
 
 def check_version_alignment(root: Path) -> list[str]:
-    script = root / "scripts" / "statedd_version_check.py"
+    script = root / "scripts" / "projectstate_version_check.py"
     if not script.exists():
         return []
 
@@ -819,13 +821,13 @@ def check_version_alignment(root: Path) -> list[str]:
 
 
 def check_schema_validation(root: Path) -> list[str]:
-    script = root / "scripts" / "statedd_validate_schema.py"
+    script = root / "scripts" / "projectstate_validate_schema.py"
     if not script.exists():
-        fallback = ROOT / "scripts" / "statedd_validate_schema.py"
+        fallback = ROOT / "scripts" / "projectstate_validate_schema.py"
         if fallback.exists():
             script = fallback
         else:
-            return ["Missing schema validator: scripts/statedd_validate_schema.py"]
+            return ["Missing schema validator: scripts/projectstate_validate_schema.py"]
 
     completed = subprocess.run(
         [sys.executable, str(script), str(root), "--quiet"],
@@ -869,9 +871,9 @@ def check_evidence_manifest(root: Path) -> list[str]:
     if not schema.exists():
         issues.append("manifest.json exists but schemas/evidence_manifest.schema.json is missing")
         return issues
-    validator = root / "scripts" / "statedd_validate_schema.py"
+    validator = root / "scripts" / "projectstate_validate_schema.py"
     if not validator.exists():
-        issues.append("manifest.json exists but scripts/statedd_validate_schema.py is missing")
+        issues.append("manifest.json exists but scripts/projectstate_validate_schema.py is missing")
         return issues
     completed = subprocess.run(
         [sys.executable, str(validator), "--file", str(manifest), "--schema", str(schema)],
@@ -932,7 +934,7 @@ def check_template_assets(root: Path) -> list[str]:
     cto_prompt = root / "prompts" / "CTO_SESSION_PROMPT.md"
     if cto_prompt.exists():
         cto_text = cto_prompt.read_text(encoding="utf-8")
-        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven", "statedd_worktree_guard.py", "ANTI_BRITTLENESS_GUARD.md"):
+        for phrase in ("TOOL_MODEL_ROUTING_GUIDE.md", "recommended tool/model/settings", "not proven", "projectstate_worktree_guard.py", "ANTI_BRITTLENESS_GUARD.md"):
             if phrase not in cto_text:
                 issues.append(f"CTO session prompt missing phrase: {phrase}")
 
@@ -946,7 +948,7 @@ def check_template_assets(root: Path) -> list[str]:
     opencode_prompt = root / "prompts" / "OPENCODE_STARTUP_PROMPT.md"
     if opencode_prompt.exists():
         opencode_text = opencode_prompt.read_text(encoding="utf-8")
-        for phrase in ("OpenCode", "AGENTS.md", "statedd_handoff.py", "not proven", "statedd_worktree_guard.py"):
+        for phrase in ("OpenCode", "AGENTS.md", "projectstate_handoff.py", "not proven", "projectstate_worktree_guard.py"):
             if phrase not in opencode_text:
                 issues.append(f"OpenCode startup prompt missing phrase: {phrase}")
 
@@ -957,10 +959,10 @@ def check_template_assets(root: Path) -> list[str]:
             if phrase not in getting_started_text:
                 issues.append(f"5-minute getting started guide missing phrase: {phrase}")
 
-    handoff_helper = root / "scripts" / "statedd_handoff.py"
+    handoff_helper = root / "scripts" / "projectstate_handoff.py"
     if handoff_helper.exists():
         handoff_helper_text = handoff_helper.read_text(encoding="utf-8")
-        for phrase in ("StateDD Handoff Snapshot", "repo path", "not proven", "--test-command", "GitHub-visible deliverables", "local-only files claimed"):
+        for phrase in ("ProjectState Handoff Snapshot", "repo path", "not proven", "--test-command", "GitHub-visible deliverables", "local-only files claimed"):
             if phrase not in handoff_helper_text:
                 issues.append(f"Handoff helper missing phrase: {phrase}")
 
@@ -1001,7 +1003,7 @@ def check_template_assets(root: Path) -> list[str]:
     slice_contract = root / "prompts" / "SLICE_CONTRACT_TEMPLATE.md"
     if slice_contract.exists():
         slice_text = slice_contract.read_text(encoding="utf-8")
-        for phrase in ("non_goals", "acceptance_criteria", "Human override used: yes", "anti_brittleness", "statedd_worktree_guard.py"):
+        for phrase in ("non_goals", "acceptance_criteria", "Human override used: yes", "anti_brittleness", "projectstate_worktree_guard.py"):
             if phrase not in slice_text:
                 issues.append(f"Slice contract template missing phrase: {phrase}")
 
@@ -1041,7 +1043,7 @@ def check_template_assets(root: Path) -> list[str]:
                 issues.append(f"GitHub Action reference must be pinned to a full SHA, found: {ref}")
         if not PINNED_ACTION_RE.search(workflow_text):
             issues.append("GitHub workflow must pin action references to full SHAs")
-        authoritative = "python3 scripts/statedd_quality_gate.py --gate-level 2 --conformance"
+        authoritative = "python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance"
         if authoritative not in workflow_text:
             issues.append(f"GitHub workflow must run the authoritative local gate: {authoritative}")
         manual_script_tests = re.findall(r"python3?\s+(scripts/test_[^\s]+\.py)", workflow_text)
@@ -1074,7 +1076,7 @@ def check_bootstrap_gate(root: Path) -> list[str]:
         issues.append("Bootstrap gate failed: repo investigation is still false in PROJECT_STATE.yaml")
     try:
         parsed_state = parse_yaml_text(project_state)
-    except StateDDYamlError as exc:
+    except ProjectStateYamlError as exc:
         issues.append(f"Bootstrap gate failed: PROJECT_STATE.yaml is invalid: {exc}")
     else:
         policy = parsed_state.get("delivery_policy") if isinstance(parsed_state, dict) else None
@@ -1106,13 +1108,13 @@ def check_template_maintenance_gate(root: Path) -> list[str]:
 
     if "repo_role: template_repository" not in project_state:
         issues.append("Template gate failed: PROJECT_STATE.yaml does not declare repo_role: template_repository")
-    if "statedd_mode: template-maintenance" not in project_state:
-        issues.append("Template gate failed: PROJECT_STATE.yaml does not declare statedd_mode: template-maintenance")
+    if "projectstate_mode: template-maintenance" not in project_state:
+        issues.append("Template gate failed: PROJECT_STATE.yaml does not declare projectstate_mode: template-maintenance")
     if "Your Project" in project_state:
         issues.append("Template gate failed: PROJECT_STATE.yaml still contains downstream placeholder text")
     try:
         parsed_state = parse_yaml_text(project_state)
-    except StateDDYamlError:
+    except ProjectStateYamlError:
         parsed_state = {}
     current = parsed_state.get("current_state") if isinstance(parsed_state, dict) else None
     current = current if isinstance(current, dict) else {}
@@ -1137,7 +1139,7 @@ def check_template_maintenance_gate(root: Path) -> list[str]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate StateDD workflow docs and bootstrap readiness")
+    parser = argparse.ArgumentParser(description="Validate ProjectState workflow docs and bootstrap readiness")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
     parser.add_argument(
         "--bootstrap-gate",

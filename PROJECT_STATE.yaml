@@ -3,15 +3,15 @@
 metadata:
   updated_at: 2026-07-14T18:09:24+02:00
   updated_by: integration_agent_reconciling_verified_workspace_lifecycle_closure
-  version: "statedd-template-v5"
+  version: "projectstate-template-v5"
 
 workflow:
   repo_role: template_repository
-  statedd_mode: template-maintenance
+  projectstate_mode: template-maintenance
   repo_mode: template-maintenance
   template_maintenance:
     status: observed
-    purpose: maintain the reusable StateDD template repository
+    purpose: maintain the reusable ProjectState template repository
     downstream_default_role: downstream_project
     downstream_default_mode: bootstrap
     unknowns_remaining:
@@ -55,16 +55,16 @@ current_state:
     cto_engineering_and_architecture:
       status: accepted
       accepted_on: 2026-07-12
-      scope: statedd_v5_operational_core
+      scope: projectstate_v5_operational_core
       authority: human_cto
-      evidence: docs/ACCEPTANCE_FREEZES.md#af-2026-07-12-001-statedd-v5-operational-core-accepted
+      evidence: docs/ACCEPTANCE_FREEZES.md#af-2026-07-12-001-projectstate-v5-operational-core-accepted
     human_product_acceptance:
       status: pending
       notes: CTO engineering and architecture acceptance does not imply final product acceptance.
 
   operational_core_freeze:
     status: active
-    scope: statedd_v5_operational_core
+    scope: projectstate_v5_operational_core
     accepted_change_classes:
       - reproduced_defect
       - compatibility_or_security_migration
@@ -88,21 +88,21 @@ current_state:
     redteam_gate: passing_for_golden_path_regressions
     known_bad_events_gate: passing_for_workspace_lifecycle_regressions
     authoritative_local_gate:
-      script: scripts/statedd_quality_gate.py
+      script: scripts/projectstate_quality_gate.py
       default_slice_level: 2
     remote_closure_gate:
       status: active
-      script: scripts/statedd_remote_closure_finalizer.py
+      script: scripts/projectstate_remote_closure_finalizer.py
     finish_slice_gate:
       status: active
-      script: scripts/statedd_finish_slice.py
+      script: scripts/projectstate_finish_slice.py
       external_handoff_schema: schemas/finish_slice_handoff.schema.json
     git_safety_preflight:
       status: active
-      script: scripts/statedd_git_safety_check.py
+      script: scripts/projectstate_git_safety_check.py
     anti_brittleness_gate:
       status: active
-      script: scripts/statedd_brittleness_check.py
+      script: scripts/projectstate_brittleness_check.py
 
   runtime_truth:
     status: not_applicable_for_template_root
@@ -150,7 +150,7 @@ current_state:
       workspace's own quarantine receipt all completed successfully.
 
   completed_capabilities:
-    integrated_statedd_baseline:
+    integrated_projectstate_baseline:
       status: operational
       evidence: docs/evidence/2026-07-11-statedd-integration/README.md
     optional_okf_interoperability:
@@ -181,8 +181,8 @@ current_state:
 
   parallel_agent_support:
     status: active
-    orchestrator: scripts/statedd_agent_worktree.py
-    workspace_inventory: scripts/statedd_workspace_inventory.py
+    orchestrator: scripts/projectstate_agent_worktree.py
+    workspace_inventory: scripts/projectstate_workspace_inventory.py
     managed_clone_location: per_user_state_root_outside_project_parent
     nested_agent_provisioning: forbidden
     handoff_complete_release_proof: exact_original_path_absence_required
@@ -195,10 +195,10 @@ current_state:
   operating_mode:
     status: observed
     mode: template-maintenance
-    summary: The repository maintains a stable reusable StateDD template.
+    summary: The repository maintains a stable reusable ProjectState template.
 
   project:
-    name: StateDD_Template
+    name: ProjectState_Template
     type: documentation_and_workflow_template
     lifecycle_stage: operational_template_maintenance
     truth_summary: operational_core_complete_with_verified_workspace_lifecycle
@@ -207,7 +207,7 @@ current_state:
     status: not_applicable_for_template_root
     repo_path: .
     artifact_contract: runtime_identity.json
-    helper: scripts/statedd_runtime_proof.py
+    helper: scripts/projectstate_runtime_proof.py
     process_or_container: no application runtime
     port_or_base_url: not_applicable
     rebuilt_in_current_slice: false

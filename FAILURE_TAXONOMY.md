@@ -1,4 +1,4 @@
-# StateDD Failure Taxonomy
+# ProjectState Failure Taxonomy
 
 **Purpose:** Standard vocabulary for classifying failures before fixing them.
 
@@ -22,7 +22,7 @@ and final handoffs.
 - `data_integrity`: user data, canonical data, migrations, or generated state are corrupted or silently changed.
 - `security_privacy`: secret, auth, permission, retention, or data exposure failure.
 - `observability`: the system failed without logs, metrics, traces, or useful diagnostics.
-- `workflow`: StateDD process allowed premature closure, weak proof, or wrong sequencing.
+- `workflow`: ProjectState process allowed premature closure, weak proof, or wrong sequencing.
 - `brittleness`: the fix only matches observed prompts, strings, keywords, fixtures, sleeps/timeouts, provider quirks, or silent fallbacks instead of a durable invariant.
 
 ## Evidence Status

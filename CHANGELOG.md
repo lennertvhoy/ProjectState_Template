@@ -1,9 +1,30 @@
 # Changelog
 
-All notable StateDD template changes are tracked here.
+All notable ProjectState template changes are tracked here.
+
+> **Note on naming:** This template was renamed from `StateDD` to `ProjectState`
+> on 2026-07-27. Historical entries below retain the prior name for accuracy.
+> Backward-compat aliases (script shims, command aliases, schema identifier
+> enums, legacy `STATEDD_*` env-var and filename fallbacks) are kept for one
+> migration cycle. Canonical identifiers are now `projectstate-template-v5`,
+> `PROJECTSTATE_ASSETS.json`, and `scripts/projectstate_*.py`.
 
 ## Unreleased
 
+- **BL-RENAME-001: StateDD -> ProjectState rename.** Renamed canonical brand,
+  script modules (`scripts/projectstate_*.py`), slash commands
+  (`commands/projectstate-*.md`), schemas, version string
+  (`projectstate-template-v5`), package name (`projectstate-template`), repo
+  display name, and GitHub repository (`StateDD_Template` -> `ProjectState_Template`).
+  Backward-compat preserved: legacy `scripts/statedd_*.py` shims re-export the
+  canonical modules; `commands/statedd-*.md` alias files point at canonical
+  commands; schema `enum` constants accept both `projectstate.*` and `statedd.*`
+  identifiers; `STATEDD_ASSETS.json` and `STATEDD_*` env vars are still honored
+  via `scripts/projectstate_contracts.py:resolve_assets_manifest` and per-call
+  fallbacks. Historical artifacts (evidence, fixtures, WORKLOG, EVIDENCE_LOG,
+  dated incident records, BL-STATEDD-INTEGRATION-001 scan id, v4 release notes)
+  are intentionally preserved verbatim. Efficiency budgets updated to reflect
+  measured post-rename footprint (template_repository, team, regulated profiles).
 - BL-WORKSPACE-LIFECYCLE-001: Replaced metadata-only isolation release with a
   verified physical lifecycle: centrally managed non-recursive clone paths,
   same-origin sibling inventory, clean-clone quarantine, no-force clean-worktree

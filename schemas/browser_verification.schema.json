@@ -1,14 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "statedd.browser_verification.v1",
-  "title": "StateDD browser verification",
+  "$id": "projectstate.browser_verification.v1",
+  "title": "ProjectState browser verification",
   "type": "object",
-  "required": ["schema", "captured_at", "provider", "runtime_identity", "checks", "artifacts", "limits"],
+  "required": [
+    "schema",
+    "captured_at",
+    "provider",
+    "runtime_identity",
+    "checks",
+    "artifacts",
+    "limits"
+  ],
   "additionalProperties": true,
   "properties": {
     "schema": {
-      "type": "string",
-      "const": "statedd.browser_verification.v1"
+      "enum": [
+        "projectstate.browser_verification.v1",
+        "statedd.browser_verification.v1"
+      ]
     },
     "captured_at": {
       "type": "string",
@@ -16,12 +26,25 @@
     },
     "provider": {
       "type": "object",
-      "required": ["kind", "required", "available", "selection_reason"],
+      "required": [
+        "kind",
+        "required",
+        "available",
+        "selection_reason"
+      ],
       "additionalProperties": true,
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["kimi_webbridge", "playwright", "agent_native_browser", "existing_e2e", "manual_browser", "custom", "not_applicable"]
+          "enum": [
+            "kimi_webbridge",
+            "playwright",
+            "agent_native_browser",
+            "existing_e2e",
+            "manual_browser",
+            "custom",
+            "not_applicable"
+          ]
         },
         "required": {
           "type": "boolean"
@@ -54,7 +77,9 @@
     },
     "runtime_identity": {
       "type": "object",
-      "required": ["path"],
+      "required": [
+        "path"
+      ],
       "additionalProperties": true,
       "properties": {
         "path": {
@@ -62,10 +87,16 @@
           "minLength": 1
         },
         "head_matches": {
-          "type": ["boolean", "null"]
+          "type": [
+            "boolean",
+            "null"
+          ]
         },
         "endpoint_matches": {
-          "type": ["boolean", "null"]
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       }
     },
@@ -92,7 +123,12 @@
   "$defs": {
     "check": {
       "type": "object",
-      "required": ["id", "claim", "status", "evidence"],
+      "required": [
+        "id",
+        "claim",
+        "status",
+        "evidence"
+      ],
       "additionalProperties": true,
       "properties": {
         "id": {
@@ -109,7 +145,12 @@
         },
         "status": {
           "type": "string",
-          "enum": ["passed", "failed", "partial", "not_run"]
+          "enum": [
+            "passed",
+            "failed",
+            "partial",
+            "not_run"
+          ]
         },
         "evidence": {
           "type": "array",
@@ -130,7 +171,10 @@
     },
     "artifact": {
       "type": "object",
-      "required": ["path", "kind"],
+      "required": [
+        "path",
+        "kind"
+      ],
       "additionalProperties": true,
       "properties": {
         "path": {
@@ -139,14 +183,30 @@
         },
         "kind": {
           "type": "string",
-          "enum": ["screenshot", "browser_log", "trace", "video", "test_output", "other"]
+          "enum": [
+            "screenshot",
+            "browser_log",
+            "trace",
+            "video",
+            "test_output",
+            "other"
+          ]
         },
         "sha256": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "redaction_status": {
           "type": "string",
-          "enum": ["checked", "checked_with_limits", "manual_required", "override_used", "unchecked"]
+          "enum": [
+            "checked",
+            "checked_with_limits",
+            "manual_required",
+            "override_used",
+            "unchecked"
+          ]
         }
       }
     }

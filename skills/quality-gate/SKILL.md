@@ -14,7 +14,7 @@ required_inputs:
   - "Branch with changes"
 step_by_step:
   - name: "Run authoritative local gate"
-    command: "python3 scripts/statedd_quality_gate.py --gate-level 2"
+    command: "python3 scripts/projectstate_quality_gate.py --gate-level 2"
     expected: "Exit 0 after every detected suite, compile, schema, state, instruction, efficiency, evidence, and diff check has run"
     failure: "Fix every aggregated failure and re-run the same command"
   - name: "Add risk-specific proof when applicable"
@@ -41,7 +41,7 @@ failure_cases:
     recovery: "Fix YAML/schemas"
     evidence: "Validation output"
   - name: "Evidence missing"
-    detection: "statedd_evidence_type_check.py exits non-zero"
+    detection: "projectstate_evidence_type_check.py exits non-zero"
     recovery: "Collect required evidence before proceeding"
     evidence: "Evidence check output"
 evidence_required:

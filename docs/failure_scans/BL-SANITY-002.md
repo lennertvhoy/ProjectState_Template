@@ -8,29 +8,29 @@
 
 ## What Happened Or Could Happen
 
-An ultra-critical sanity check of the StateDD template repository found that several
+An ultra-critical sanity check of the ProjectState template repository found that several
 closure-grade gates can pass while their underlying invariants are violated:
 
-- `statedd_audit.py` accepts an evidence README that records a stale HEAD.
-- `statedd_audit.py` falls back to the most recent commit's file list when the
+- `projectstate_audit.py` accepts an evidence README that records a stale HEAD.
+- `projectstate_audit.py` falls back to the most recent commit's file list when the
   worktree is clean, so user-facing/schema/browser checks can evaluate the wrong files.
-- `statedd_handoff.py` reports `local-only files claimed: no` when no upstream is
+- `projectstate_handoff.py` reports `local-only files claimed: no` when no upstream is
   configured, even if nothing has ever been pushed.
-- `statedd_doctor.py` counts active NEXT_ACTIONS headings as "open blockers".
-- `statedd_runtime_proof.py` produces a `runtime_identity.json` artifact that
-  `statedd_runtime_truth_check.py` and `statedd_closure_check.py` cannot consume.
-- `statedd_worktree_guard.py` permits a slice to start when dirty files are
+- `projectstate_doctor.py` counts active NEXT_ACTIONS headings as "open blockers".
+- `projectstate_runtime_proof.py` produces a `runtime_identity.json` artifact that
+  `projectstate_runtime_truth_check.py` and `projectstate_closure_check.py` cannot consume.
+- `projectstate_worktree_guard.py` permits a slice to start when dirty files are
   classified `unknown_do_not_touch`, and it labels any tracked branch as shared/default.
 - `init_template.py` `new` mode can overwrite the template root's own truth files.
-- `statedd_upgrade.py` copies files without symlink/traversal guards and always
+- `projectstate_upgrade.py` copies files without symlink/traversal guards and always
   reports `dry_run: true` in its JSON report.
-- `statedd_browser_verify.py` resolves artifact paths relative to the evidence
+- `projectstate_browser_verify.py` resolves artifact paths relative to the evidence
   directory without preventing `../../../etc/passwd` traversal.
-- `statedd_remote_closure_finalizer.py` runs `gh` from the process cwd (not the repo)
+- `projectstate_remote_closure_finalizer.py` runs `gh` from the process cwd (not the repo)
   and ignores an explicit `--github-token` when `gh` is installed.
-- `statedd_post_merge_verify.py` references an undeclared `$sha` GraphQL variable
+- `projectstate_post_merge_verify.py` references an undeclared `$sha` GraphQL variable
   and checks merge ancestry against a remote SHA that may not be fetched locally.
-- `statedd_probe_guidance.py` writes files directly into the repo and leaves them
+- `projectstate_probe_guidance.py` writes files directly into the repo and leaves them
   there.
 
 ## How The User Or Operator Would Notice
@@ -72,7 +72,7 @@ closure-grade gates can pass while their underlying invariants are violated:
 
 - Input/event: A malicious or misconfigured `browser_verification.json` references
   `path: "../../../etc/passwd"`; an agent runs
-  `statedd_browser_verify.py check <evidence> --strict`.
+  `projectstate_browser_verify.py check <evidence> --strict`.
 - Expected protected behavior: The verifier rejects the out-of-bounds path and exits
   non-zero without reading the file.
 - Evidence required: Regression test and, if possible, an adversarial fixture under
@@ -94,18 +94,18 @@ closure-grade gates can pass while their underlying invariants are violated:
 
 ## Closure Blockers
 
-- All StateDD gates and regression tests must pass.
-- `statedd_audit.py --strict` must fail stale HEAD evidence and mismatching file sets.
-- `statedd_worktree_guard.py --mode start-slice` must reject `unknown_do_not_touch`
+- All ProjectState gates and regression tests must pass.
+- `projectstate_audit.py --strict` must fail stale HEAD evidence and mismatching file sets.
+- `projectstate_worktree_guard.py --mode start-slice` must reject `unknown_do_not_touch`
   classifications and must not label ordinary feature branches as shared/default.
-- `statedd_runtime_truth_check.py` and `statedd_closure_check.py` must accept a
-  `runtime_identity.json` produced by `statedd_runtime_proof.py`.
+- `projectstate_runtime_truth_check.py` and `projectstate_closure_check.py` must accept a
+  `runtime_identity.json` produced by `projectstate_runtime_proof.py`.
 - `init_template.py new --target <template-root>` must be refused.
-- `statedd_upgrade.py` must guard symlinks and report the actual `dry_run` value.
-- `statedd_browser_verify.py` must reject path traversal.
-- `statedd_remote_closure_finalizer.py` must run `gh` from `self.root` and honor
+- `projectstate_upgrade.py` must guard symlinks and report the actual `dry_run` value.
+- `projectstate_browser_verify.py` must reject path traversal.
+- `projectstate_remote_closure_finalizer.py` must run `gh` from `self.root` and honor
   `--github-token`.
-- `statedd_post_merge_verify.py` must declare `$sha` and fetch the remote default
+- `projectstate_post_merge_verify.py` must declare `$sha` and fetch the remote default
   branch head before ancestry checks.
 
 ## Mitigations

@@ -1,7 +1,7 @@
 # Evidence README Template
 
 Copy this into every evidence folder as `README.md`. Replace placeholders with
-real values. The claim ledger is the core of executable StateDD.
+real values. The claim ledger is the core of executable ProjectState.
 
 ```markdown
 # Evidence: <slice-title>
@@ -55,11 +55,11 @@ real values. The claim ledger is the core of executable StateDD.
 | tests | `npm test` or `pytest` | pass / fail |
 | lint | `npm run lint` | pass / fail |
 | build | `npm run build` | pass / fail |
-| schema validation | `python3 scripts/statedd_validate_schema.py` | pass / fail |
-| evidence manifest | `python3 scripts/statedd_evidence_pack.py check docs/evidence/<slice>` | pass / fail |
-| worktree guard | `python3 scripts/statedd_worktree_guard.py --mode start-slice` / `--mode closure` | pass / fail |
-| brittleness scan | `python3 scripts/statedd_brittleness_check.py` | warnings reviewed / not applicable |
-| audit | `python3 scripts/statedd_audit.py` | pass / fail |
+| schema validation | `python3 scripts/projectstate_validate_schema.py` | pass / fail |
+| evidence manifest | `python3 scripts/projectstate_evidence_pack.py check docs/evidence/<slice>` | pass / fail |
+| worktree guard | `python3 scripts/projectstate_worktree_guard.py --mode start-slice` / `--mode closure` | pass / fail |
+| brittleness scan | `python3 scripts/projectstate_brittleness_check.py` | warnings reviewed / not applicable |
+| audit | `python3 scripts/projectstate_audit.py` | pass / fail |
 | runtime identity proof | `prompts/RUNTIME_IDENTITY_CHECKLIST.md` | yes / no |
 | schema ownership validation | `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` | yes / no / not applicable |
 | product quality gate | project-specific command/path | pass / fail / not applicable |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for scripts/statedd_worktree_guard.py."""
+"""Regression tests for scripts/projectstate_worktree_guard.py."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GUARD = ROOT / "scripts" / "statedd_worktree_guard.py"
+GUARD = ROOT / "scripts" / "projectstate_worktree_guard.py"
 
 
 def run(args: list[str], *, cwd: Path, expect_code: int | None = None) -> subprocess.CompletedProcess[str]:
@@ -46,8 +46,8 @@ def init_repo(root: Path, *, with_origin: bool = True) -> Path:
     repo = root / "repo"
     repo.mkdir()
     git(repo, "init", "-b", "main")
-    git(repo, "config", "user.email", "statedd@example.invalid")
-    git(repo, "config", "user.name", "StateDD Test")
+    git(repo, "config", "user.email", "projectstate@example.invalid")
+    git(repo, "config", "user.name", "ProjectState Test")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     git(repo, "add", "README.md")
     git(repo, "commit", "-m", "initial")

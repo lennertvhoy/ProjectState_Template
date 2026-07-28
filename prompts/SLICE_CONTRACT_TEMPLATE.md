@@ -40,8 +40,8 @@ slice:
     anti_brittleness_gate: required | not_applicable
   worktree_preflight:
     required_for_non_trivial_work: true
-    command: python3 scripts/statedd_worktree_guard.py --mode start-slice
-    dirty_classification: python3 scripts/statedd_worktree_guard.py --mode classify-dirty
+    command: python3 scripts/projectstate_worktree_guard.py --mode start-slice
+    dirty_classification: python3 scripts/projectstate_worktree_guard.py --mode classify-dirty
     stop_rule: |
       If the guard reports dirty or ambiguous state, stop implementation and
       produce a worktree recovery handoff instead of editing.

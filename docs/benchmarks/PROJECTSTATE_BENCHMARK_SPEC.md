@@ -1,13 +1,13 @@
-# StateDD Controlled Benchmark Specification
+# ProjectState Controlled Benchmark Specification
 
-Status: specification only. No StateDD performance or superiority claim follows
+Status: specification only. No ProjectState performance or superiority claim follows
 until repeated paired runs satisfy this protocol.
 
 ## Ownership boundary
 
-StateDD_Template owns immutable public candidate definitions, selection-policy
+ProjectState_Template owns immutable public candidate definitions, selection-policy
 IDs, render-profile IDs, deterministic generation, schemas, self-tests, and
-public-safe fixtures. StatePort owns the no-StateDD control, isolated runner,
+public-safe fixtures. StatePort owns the no-ProjectState control, isolated runner,
 instrumentation, authoritative validators, private holdouts, reports, and result
 tiers. Private canary content never enters this repository.
 
@@ -16,13 +16,13 @@ tiers. Private canary content never enters this repository.
 Each candidate is pinned by template commit, profile, modules, selection policy,
 render profile, generator version, source hashes, and token budget.
 
-1. `control/no-statedd`: repository and task only; no StateDD files or hints.
-2. `statedd/eager-human`: all canonical startup files, human rendering.
-3. `statedd/compact-canonical`: task-scoped canonical file selection, unchanged
+1. `control/no-projectstate`: repository and task only; no ProjectState files or hints.
+2. `projectstate/eager-human`: all canonical startup files, human rendering.
+3. `projectstate/compact-canonical`: task-scoped canonical file selection, unchanged
    human-readable source.
-4. `statedd/modular-statepack`: task-specific selection through the versioned
+4. `projectstate/modular-statepack`: task-specific selection through the versioned
    StateIR/StatePack contract, with source links and staleness checks.
-5. `statedd/ultra-experimental`: the same selected facts as configuration 4,
+5. `projectstate/ultra-experimental`: the same selected facts as configuration 4,
    rendered ultra-terse. It is never promoted by token reduction alone.
 
 Selection policy and rendering format are independent experimental factors. An
@@ -36,7 +36,7 @@ Within each repository/task/model block, every configuration uses the same:
 - sanitized fixture and starting commit;
 - task text and hidden acceptance validator;
 - model snapshot, tokenizer, tools, permissions, and system instructions other
-  than the registered StateDD treatment;
+  than the registered ProjectState treatment;
 - runner image, dependency cache policy, network policy, temperature/settings,
   wall-time limit, and token/cost limit;
 - pre-seeded dirty state, interrupted state, or failure state where the task

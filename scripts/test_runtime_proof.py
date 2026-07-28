@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused regression tests for statedd_runtime_proof.py.
+"""Focused regression tests for projectstate_runtime_proof.py.
 
 These tests stay stdlib-only and avoid real network or /proc dependencies.
 """
@@ -17,8 +17,8 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import statedd_runtime_proof as runtime_proof  # noqa: E402
-from statedd_validate_schema import validate_file  # noqa: E402
+import projectstate_runtime_proof as runtime_proof  # noqa: E402
+from projectstate_validate_schema import validate_file  # noqa: E402
 
 
 def fake_probe(
@@ -121,7 +121,7 @@ def test_loopback_attempts_process_detection() -> None:
 def test_remote_url_skips_local_port_detection() -> None:
     artifact, calls = build_with_fake_process(
         "https://example.com",
-        revision_header="X-StateDD-Revision",
+        revision_header="X-ProjectState-Revision",
     )
     if calls:
         raise AssertionError(f"remote endpoint should not inspect local port 443, got calls {calls}")
@@ -201,7 +201,7 @@ def test_runtime_endpoint_rejects_serialized_secrets() -> None:
 
 def test_generated_v2_artifact_is_strict_and_schema_valid() -> None:
     artifact, _ = build_with_fake_process("http://127.0.0.1:8126")
-    with tempfile.TemporaryDirectory(prefix="statedd-runtime-schema-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="projectstate-runtime-schema-") as tmp:
         path = Path(tmp) / "runtime_identity.json"
         runtime_proof.write_artifact(path, artifact)
         issues = validate_file(path, ROOT / "schemas" / "runtime_identity_v2.schema.json")

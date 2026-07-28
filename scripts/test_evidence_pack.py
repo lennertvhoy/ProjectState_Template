@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for statedd_evidence_pack.py.
+"""Regression tests for projectstate_evidence_pack.py.
 
 Stays stdlib-only.
 """
@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PACK_SCRIPT = ROOT / "scripts" / "statedd_evidence_pack.py"
+PACK_SCRIPT = ROOT / "scripts" / "projectstate_evidence_pack.py"
 
 
 def run_pack(args: list[str], *, expect_success: bool) -> subprocess.CompletedProcess[str]:
@@ -50,7 +50,7 @@ def test_init_creates_manifest() -> None:
         evidence = Path(tmp) / "evidence"
         run_pack(["init", str(evidence), "--slice-id", "BL-012"], expect_success=True)
         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
-        if manifest.get("schema") != "statedd.evidence_manifest.v1":
+        if manifest.get("schema") != "projectstate.evidence_manifest.v1":
             raise AssertionError("Manifest has wrong schema")
         if manifest.get("slice_id") != "BL-012":
             raise AssertionError("Manifest has wrong slice_id")
@@ -75,7 +75,7 @@ def test_valid_manifest_passes_check() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -119,7 +119,7 @@ def test_missing_artifact_fails() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -164,7 +164,7 @@ def test_hash_mismatch_fails() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -204,7 +204,7 @@ def test_claim_without_evidence_fails() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -237,7 +237,7 @@ def test_unchecked_redaction_fails_strict() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -278,7 +278,7 @@ def test_checked_with_limits_passes_strict() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "manifest_status": "complete",
@@ -324,7 +324,7 @@ def test_binary_artifact_without_manual_review_fails_strict() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -365,7 +365,7 @@ def test_hash_command_updates_hashes() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -405,7 +405,7 @@ def test_scan_flags_possible_secret() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -445,7 +445,7 @@ def test_empty_claims_and_artifacts_fails_strict() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -470,7 +470,7 @@ def test_skeleton_status_never_passes_strict_closure() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "manifest_status": "skeleton",
                 "created_at": "2026-06-23T00:00:00+00:00",
@@ -550,7 +550,7 @@ def test_strict_requires_known_limits_when_manual_review_required() -> None:
         write_manifest(
             evidence,
             {
-                "schema": "statedd.evidence_manifest.v1",
+                "schema": "projectstate.evidence_manifest.v1",
                 "slice_id": "BL-012",
                 "created_at": "2026-06-23T00:00:00+00:00",
                 "repo": {"branch": "main", "head": "abc1234"},
@@ -585,7 +585,7 @@ def test_strict_requires_known_limits_when_manual_review_required() -> None:
 
 def minimal_manifest(ref: str) -> dict:
     return {
-        "schema": "statedd.evidence_manifest.v1",
+        "schema": "projectstate.evidence_manifest.v1",
         "slice_id": "BL-PATH-001",
         "manifest_status": "complete",
         "created_at": "2026-07-11T00:00:00+00:00",
@@ -740,7 +740,7 @@ def test_duplicate_json_keys_fail_closed() -> None:
         evidence = Path(tmp) / "evidence"
         evidence.mkdir()
         (evidence / "manifest.json").write_text(
-            '{"schema":"statedd.evidence_manifest.v1","artifacts":[],"artifacts":[]}',
+            '{"schema":"projectstate.evidence_manifest.v1","artifacts":[],"artifacts":[]}',
             encoding="utf-8",
         )
         run_pack(["check", str(evidence)], expect_success=False)

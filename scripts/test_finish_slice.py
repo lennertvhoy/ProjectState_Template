@@ -16,7 +16,7 @@ SCRIPTS = Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from statedd_finish_slice import (  # noqa: E402
+from projectstate_finish_slice import (  # noqa: E402
     CiObservation,
     DefaultBranchSnapshot,
     DeliveryPolicy,
@@ -32,7 +32,7 @@ from statedd_finish_slice import (  # noqa: E402
     Stage,
     load_policy,
 )
-from statedd_validate_schema import validate_json_schema  # noqa: E402
+from projectstate_validate_schema import validate_json_schema  # noqa: E402
 
 
 HEAD = "1" * 40
@@ -543,11 +543,11 @@ def test_final_external_handoff_is_machine_checkable(tmp_path: Path) -> None:
 
 def test_legacy_close_help_names_pre_merge_boundary() -> None:
     completed = subprocess.run(
-        [sys.executable, str(SCRIPTS / "statedd_agent_worktree.py"), "close", "--help"],
+        [sys.executable, str(SCRIPTS / "projectstate_agent_worktree.py"), "close", "--help"],
         capture_output=True,
         text=True,
         check=False,
     )
     assert completed.returncode == 0
     assert "Deprecated pre-merge" in completed.stdout
-    assert "statedd_finish_slice.py" in completed.stdout
+    assert "projectstate_finish_slice.py" in completed.stdout

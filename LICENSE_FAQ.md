@@ -18,13 +18,13 @@ business tooling, paid products, and profit-making projects.
 Yes. You may sell software, templates, implementation services, consulting
 services, or managed projects that use the Software, as long as you are not
 selling teaching, training, courses, workshops, tutorials, curricula, coaching,
-or educational services based on the Software or the StateDD workflow.
+or educational services based on the Software or the ProjectState workflow.
 
 ## Can I teach this workflow?
 
 No, not without prior written permission from the copyright holder. Teaching,
 training, courses, workshops, tutorials, curricula, coaching, and educational
-products or services based on the Software or StateDD workflow are reserved
+products or services based on the Software or ProjectState workflow are reserved
 rights.
 
 ## Can I explain it to my team or clients?
