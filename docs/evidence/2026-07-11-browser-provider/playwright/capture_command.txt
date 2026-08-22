@@ -1,0 +1,4 @@
+$ /home/ff/.local/bin/playwright screenshot --browser chromium --full-page --save-har /home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh/docs/evidence/2026-07-11-browser-provider/playwright/network.har https://example.com /home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh/docs/evidence/2026-07-11-browser-provider/playwright/page.png
+
+Navigating to https://example.com
+Capturing screenshot into /home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh/docs/evidence/2026-07-11-browser-provider/playwright/page.png
