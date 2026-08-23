@@ -1,0 +1,18 @@
+{
+  "captured_at": "2026-07-10T23:29:10+02:00",
+  "checks": {},
+  "limits": [
+    "Template repository has no application runtime; this is a concrete Playwright provider smoke test."
+  ],
+  "repo": {
+    "branch": "bl-bl-browser-002-code-g3trh",
+    "head": "a0ac268d186d9ec71ffefab6970dc1d40add5b06",
+    "path": "/home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "Template repository has no application runtime; this is a concrete Playwright provider smoke test.",
+    "required": false
+  },
+  "schema": "projectstate.runtime_identity.v1"
+}

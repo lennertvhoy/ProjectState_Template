@@ -1,0 +1,62 @@
+{
+  "artifacts": [
+    {
+      "kind": "screenshot",
+      "path": "playwright/page.png",
+      "redaction_status": "manual_required",
+      "sha256": "2f7a6cea97de782c1cdfaa2923b685fff896be3bba57dca4260da35ff1d15c40"
+    },
+    {
+      "kind": "other",
+      "path": "playwright/network.har",
+      "redaction_status": "unchecked",
+      "sha256": "f4f97d01d058f89f8edbc6c256a5499c484fb50b8ce2879fbc63452045fbf4b8"
+    },
+    {
+      "kind": "test_output",
+      "path": "playwright/capture_command.txt",
+      "redaction_status": "unchecked",
+      "sha256": "7b966861006ffa7c9d20f6f6ea836a13e43ae69dea751cf33bdd562d37a36e90"
+    }
+  ],
+  "captured_at": "2026-07-10T23:29:11+02:00",
+  "checks": [
+    {
+      "claim": "Playwright captured the requested page and network trace.",
+      "evidence": [
+        "playwright/page.png",
+        "playwright/network.har",
+        "playwright/capture_command.txt"
+      ],
+      "id": "BV-PLAYWRIGHT-001",
+      "known_limits": [
+        "Template repository has no application runtime; this is a concrete Playwright provider smoke test."
+      ],
+      "route": "/",
+      "status": "passed"
+    }
+  ],
+  "limits": [
+    "Template repository has no application runtime; this is a concrete Playwright provider smoke test."
+  ],
+  "provider": {
+    "available": true,
+    "command": "/home/ff/.local/bin/playwright screenshot --browser chromium --full-page --save-har /home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh/docs/evidence/2026-07-11-browser-provider/playwright/network.har https://example.com /home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh/docs/evidence/2026-07-11-browser-provider/playwright/page.png",
+    "fallbacks_considered": [
+      "kimi_webbridge",
+      "agent_native_browser",
+      "manual_browser"
+    ],
+    "kind": "playwright",
+    "required": true,
+    "selection_reason": "Playwright CLI provider was explicitly selected and executed.",
+    "tool": "playwright"
+  },
+  "runtime_identity": {
+    "endpoint_matches": null,
+    "head_matches": true,
+    "path": "runtime_identity.json"
+  },
+  "schema": "projectstate.browser_verification.v1",
+  "slice_id": "BL-BROWSER-002"
+}

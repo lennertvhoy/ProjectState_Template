@@ -1,0 +1,106 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "d02d277a36fe6532054bf8300201794365620859fdea578b7e63207074a6689b"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked",
+      "sensitive_data": "none_found",
+      "sha256": "0420f1956888f858e7cf8ecc1d85f03372b7b86c45b7d610a00454e87a6ca1b0"
+    },
+    {
+      "kind": "command_output",
+      "path": "browser_verification.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "be9fe6a22f766134e3a9744b9a574ce870b7322ff433ea6a088c9594a21929f1"
+    },
+    {
+      "kind": "screenshot",
+      "path": "playwright/page.png",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "unknown",
+      "sha256": "2f7a6cea97de782c1cdfaa2923b685fff896be3bba57dca4260da35ff1d15c40"
+    },
+    {
+      "kind": "other",
+      "path": "playwright/network.har",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "unknown",
+      "sha256": "f4f97d01d058f89f8edbc6c256a5499c484fb50b8ce2879fbc63452045fbf4b8"
+    },
+    {
+      "kind": "command_output",
+      "path": "playwright/capture_command.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "7b966861006ffa7c9d20f6f6ea836a13e43ae69dea751cf33bdd562d37a36e90"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "The template includes a stdlib-only adapter that invokes Playwright CLI and emits the canonical browser evidence contract.",
+      "evidence": [
+        "README.md",
+        "browser_verification.json"
+      ],
+      "id": "playwright-adapter",
+      "status": "validated"
+    },
+    {
+      "claim": "The concrete provider captured a real page screenshot and HAR.",
+      "evidence": [
+        "playwright/page.png",
+        "playwright/network.har",
+        "playwright/capture_command.txt"
+      ],
+      "id": "playwright-smoke",
+      "known_limits": [
+        "The smoke target is external because the template root has no application runtime."
+      ],
+      "status": "validated"
+    },
+    {
+      "claim": "The browser artifact and evidence pack pass strict validation.",
+      "evidence": [
+        "browser_verification.json",
+        "README.md"
+      ],
+      "id": "strict-validation",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-07-10T23:29:16+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Screenshot content requires manual visual review.",
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in browser_verification.json; this does not prove absence of secrets.",
+      "Binary/image artifact playwright/page.png requires manual review; automated scan cannot inspect content.",
+      "Artifact playwright/network.har has unrecognized content type; automated scan skipped, manual review required.",
+      "Automated scan found no obvious patterns in playwright/capture_command.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "required",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-browser-002-code-g3trh",
+    "head": "a0ac268d186d9ec71ffefab6970dc1d40add5b06",
+    "proof_head": "a0ac268d186d9ec71ffefab6970dc1d40add5b06"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "projectstate.evidence_manifest.v1",
+  "slice_id": "BL-BROWSER-002"
+}

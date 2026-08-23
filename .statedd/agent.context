@@ -1,0 +1,10 @@
+{
+  "agent_id": "codex-browser",
+  "base_branch": "origin/main",
+  "branch": "bl-bl-browser-002-code-g3trh",
+  "created_at": "2026-07-10T23:26:18+02:00",
+  "reservation_ref": "refs/projectstate/reservations/bl-bl-browser-002-code-g3trh",
+  "schema": "projectstate.agent_context.v1",
+  "slice_id": "BL-BROWSER-002",
+  "worktree_path": "/home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-bl-browser-002-code-g3trh"
+}
