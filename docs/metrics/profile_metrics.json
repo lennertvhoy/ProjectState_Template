@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit bf97200f07dafc4badeb4c361adba19b50dc89ec",
+  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 18192490b0ea2b684df41af42a583b5dba59b0c6",
   "profiles": [
     {
-      "actual_tokens": 94947,
+      "actual_tokens": 94949,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 6003,
@@ -157,7 +157,7 @@
       "total_bytes": 416763
     },
     {
-      "actual_tokens": 180492,
+      "actual_tokens": 180494,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 6012,
@@ -311,7 +311,7 @@
       "total_bytes": 790788
     },
     {
-      "actual_tokens": 239984,
+      "actual_tokens": 239986,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 6016,
@@ -466,7 +466,7 @@
       "total_bytes": 1056907
     },
     {
-      "actual_tokens": 240018,
+      "actual_tokens": 240020,
       "contexts": {
         "architecture_audit": {
           "actual_tokens": 6031,
@@ -716,7 +716,7 @@
     "skills/improve/SKILL.md"
   ],
   "source_tree_sha256": "314cd71d9616274fc9e83a28ad4ff8e76812f645b371838bffa3e29ae0bfba98",
-  "template_commit": "bf97200f07dafc4badeb4c361adba19b50dc89ec",
+  "template_commit": "18192490b0ea2b684df41af42a583b5dba59b0c6",
   "template_version": "projectstate-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
