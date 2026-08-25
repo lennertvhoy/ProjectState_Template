@@ -4,6 +4,7 @@
 **Date:** 2026-08-25
 **Agent:** opencode integration agent (ox-alpha)
 **Branch:** `bl-autonomy-001-improve-workflow`
+**HEAD:** 7db9a8caed24f3c5d18990cfe91031a9cfda7e51
 **Proof head:** 7db9a8caed24f3c5d18990cfe91031a9cfda7e51
 
 ## Claims
