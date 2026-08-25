@@ -11,9 +11,6 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-AUTONOMY-001] Integrate the autonomous improvement workflow: add the
-  improve skill and `/projectstate-improve` command, codify the autonomy
-  ladder and stop conditions, repair subsystem enumeration drift.
 
 ## NEXT
 
@@ -22,6 +19,14 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## CLOSED
 
+- [BL-AUTONOMY-001] Integrated the autonomous improvement workflow:
+  `skills/improve/SKILL.md`, `/projectstate-improve`, and the L0-L4 Autonomy
+  Ladder in `AGENTS.md` with stop conditions and a final-report contract;
+  repaired subsystem enumeration drift (git-safety skill listing, copilot
+  mirror lists and false auto-generated claim, prompts catalog gap,
+  beginners-doc contradiction). Merged in PR #19 as `d1179f3`; remote branch
+  deleted; direct-main CI verified; managed finish clone quarantined with
+  physical original-path absence proven by external receipt.
 - [BL-WORKSPACE-LIFECYCLE-001] Replaced false isolation release and recursive
   clone provisioning with managed inventory, physical release receipts, exact-head
   remote closure, verified self-release, and explicit clean-clone abandonment.

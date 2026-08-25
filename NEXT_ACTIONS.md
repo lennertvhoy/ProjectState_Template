@@ -6,12 +6,7 @@
 
 ## Active Work
 
-### P1 [BL-AUTONOMY-001] Verify remote closure for the improve workflow integration
-
-Local implementation and validation are done on branch
-`bl-autonomy-001-improve-workflow`. Remaining: commit, push, open PR, run
-exact-head CI, merge per confirmed `agent_after_green` policy, verify
-direct-main CI.
+No mandatory implementation item.
 
 ## Queue Rules
 

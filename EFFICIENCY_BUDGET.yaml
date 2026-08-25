@@ -78,7 +78,11 @@ context_budgets:
       # The StateDD -> ProjectState rename adds 33 backward-compat script shims,
       # 7 command alias files, schema enum aliases, and a manifest resolver;
       # measured at 381 files and 2,586,862 bytes.
-      max_footprint_bytes: 2640000
+      # The autonomous improvement workflow (BL-AUTONOMY-001) adds the improve
+      # skill, /projectstate-improve command, and one closure evidence pack with
+      # an external-receipt copy; measured at 2,643,416 bytes before receipt
+      # compaction.
+      max_footprint_bytes: 2660000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000

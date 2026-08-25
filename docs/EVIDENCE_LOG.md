@@ -781,3 +781,28 @@
 - Notes: Remote closure (push, PR, exact-head CI, merge, direct-main CI) is not
   proven by this entry; per the Remote Truth Gate this is NOT CLOSURE-GRADE until
   remote finalization completes.
+
+## EV-2026-08-25-002: Autonomous improvement workflow closes remotely
+
+- File: docs/evidence/2026-08-25-autonomy-workflow-integration/finish_slice_handoff.json
+- Title: BL-AUTONOMY-001 exact-head remote closure and managed-clone release
+- Source/System: GitHub Actions plus `scripts/projectstate_finish_slice.py`
+- Action: Verified the exact PR head and evidence binding, passed branch-head
+  and merge-candidate CI in run 32899811460, squash-merged PR #19, passed
+  direct-main CI in run 32900937110, verified post-merge tree equivalence,
+  deleted the remote branch, and released the managed finish clone.
+- Shows:
+  - proof head `7db9a8caed24f3c5d18990cfe91031a9cfda7e51` bound to final PR
+    head `92b4bf1625314f4a3305064485e9a2ceb82ace38` in the PR body
+  - merge/default head `d1179f3abb9153deaf77adf8b65c854feea4f789` with
+    SUCCESS direct-main CI
+  - remote feature branch absent; quarantine receipt proves original clone
+    path absent (status `HANDOFF_COMPLETE`)
+- Proves:
+  - remote, CI, post-merge, branch-cleanup, and physical-release closure for
+    BL-AUTONOMY-001
+- Type: remote_ci, post_merge, release_receipt, state_update
+- as_of: 2026-08-25T23:35:00+02:00
+- Notes: Human product acceptance remains separate. The external handoff
+  receipt is authoritative for provider-created merge identity; tracked files
+  never predict it.
