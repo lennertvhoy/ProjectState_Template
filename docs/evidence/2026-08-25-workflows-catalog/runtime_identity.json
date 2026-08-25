@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-08-26T00:20:35+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "ea95a438c7d5ff844d8be6562fc6c30af95d0dc8",
+  "in_container": false,
+  "kernel": "7.1.8-arch1-3",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
+  "python": "3.14.7",
+  "repo": {
+    "branch": "bl-workflows-catalog-001",
+    "head": "ea95a438c7d5ff844d8be6562fc6c30af95d0dc8",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "Template root has no application runtime; repo truth is not runtime truth",
+    "required": false
+  },
+  "schema": "projectstate.runtime_identity.v2",
+  "timestamp": "2026-08-25T22:20:35.062325Z"
+}
