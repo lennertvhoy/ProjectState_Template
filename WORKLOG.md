@@ -1183,3 +1183,37 @@
 
 - Remote closure per confirmed agent_after_green policy: push, PR, exact-head
   CI, merge, direct-main CI are pending human go-ahead for this session.
+
+## 2026-08-25 - Close BL-AUTONOMY-001 remotely
+
+**Type:** measured_improvement_remote_closure
+**Status:** MERGED_CI_VERIFIED
+**Backlog item:** [BL-AUTONOMY-001]
+**Branch:** bl-autonomy-001-improve-workflow (deleted after verification)
+
+### Verified remote truth
+
+- PR #19 bound proof head `7db9a8caed24f3c5d18990cfe91031a9cfda7e51`
+  to final PR head `92b4bf1625314f4a3305064485e9a2ceb82ace38`.
+- Branch-head and merge-candidate CI passed in run `32899811460`.
+- Squash merge `d1179f3abb9153deaf77adf8b65c854feea4f789` became the verified
+  default-branch head; direct-main CI passed in run `32900937110`.
+- Post-merge equivalence passed (PR tree equals merge tree) and the remote
+  feature branch is absent.
+
+### Physical closure
+
+- The finish path ran from managed clone
+  `bl-autonomy-001-improve-workflow-39f64e1cdd`; the clean clone was
+  quarantined to the per-user workspace root and the external receipt proves
+  the exact original active path absent (`isolation_original_path_absent: true`,
+  schema `projectstate.finish_slice_handoff.v2`, status `HANDOFF_COMPLETE`).
+- Receipt retained outside the repository at
+  `/tmp/opencode/finish_slice_handoff.json` and copied into the slice evidence
+  pack by this reconciliation slice.
+
+### Reconciliation slice
+
+- This entry plus BACKLOG/NEXT_ACTIONS/STATUS/EVIDENCE_LOG updates and the
+  evidence-pack receipt copy constitute the state reconciliation on branch
+  `bl-autonomy-state-reconcile`.

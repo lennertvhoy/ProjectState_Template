@@ -7,14 +7,14 @@
 
 ## Snapshot
 
-- The autonomous improvement workflow is integrated locally on branch
-  `bl-autonomy-001-improve-workflow`: `skills/improve/SKILL.md`,
-  `/projectstate-improve`, the autonomy ladder in `AGENTS.md`, and
-  subsystem enumeration drift repairs.
+- The autonomous improvement workflow is integrated and remotely closed:
+  `skills/improve/SKILL.md`, `/projectstate-improve`, the Autonomy Ladder in
+  `AGENTS.md`, and subsystem enumeration drift repairs merged through PR #19
+  with exact-head, merge-candidate, and direct-`main` CI verified.
 - The workspace-lifecycle P0 remains closed with a receipt-backed lifecycle;
   all earlier clone/worktree features stay integrated on `main`.
-- Level-2 local gates pass for the integration slice; remote closure
-  (push, PR, CI, merge) is pending per the confirmed delivery policy.
+- Level-2 local gates pass; the state reconciliation for the integration is
+  the current maintenance slice.
 
 ## Acceptance And Freeze
 
