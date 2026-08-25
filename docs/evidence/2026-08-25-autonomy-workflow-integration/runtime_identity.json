@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-08-25T23:39:49+02:00",
+  "captured_at": "2026-08-25T23:44:05+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "dc101fa91c1e0753a0b0011d625b0dfe6ea7a5d6",
+  "git_head": "854be1e14e4ba79e2cb414c9f19c91d0b06682ca",
   "in_container": false,
   "kernel": "7.1.8-arch1-3",
   "limits": [],
@@ -13,8 +13,8 @@
   "os_version": "#1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
   "python": "3.14.7",
   "repo": {
-    "branch": "bl-autonomy-state-reconcile",
-    "head": "dc101fa91c1e0753a0b0011d625b0dfe6ea7a5d6",
+    "branch": "bl-autonomy-state-reconcile-pr",
+    "head": "854be1e14e4ba79e2cb414c9f19c91d0b06682ca",
     "path": ".",
     "status_porcelain": "",
     "worktree_clean": true
@@ -24,5 +24,5 @@
     "required": false
   },
   "schema": "projectstate.runtime_identity.v2",
-  "timestamp": "2026-08-25T21:39:49.230916Z"
+  "timestamp": "2026-08-25T21:44:05.841722Z"
 }
