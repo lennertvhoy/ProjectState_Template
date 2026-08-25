@@ -102,8 +102,9 @@ context_budgets:
       max_footprint_files: 78
       # Measured at 763,265 bytes with optional knowledge_okf installed.
       # After ProjectState rename: measured at 775,688 bytes.
-      # BL-WORKFLOW-CATALOG-001 adds +2 files, +7,459 bytes: 783,147 bytes.
-      max_footprint_bytes: 790000
+      # BL-WORKFLOW-CATALOG-001 adds +2 files (+7,459 bytes); measured with
+      # optional knowledge_okf at 790,739 bytes.
+      max_footprint_bytes: 800000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
