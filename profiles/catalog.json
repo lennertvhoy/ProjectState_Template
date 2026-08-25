@@ -14,7 +14,10 @@
         "project_test_detection",
         "git_safety"
       ],
-      "validation": ["quality_gate_level_1", "git_safety_contract"],
+      "validation": [
+        "quality_gate_level_1",
+        "git_safety_contract"
+      ],
       "assets": [
         ".gitignore",
         "VERSION",
@@ -43,7 +46,9 @@
     },
     "proof": {
       "version": 1,
-      "depends_on": ["core"],
+      "depends_on": [
+        "core"
+      ],
       "conflicts_with": [],
       "capabilities": [
         "runtime_identity",
@@ -51,7 +56,10 @@
         "browser_evidence",
         "local_closure_preflight"
       ],
-      "validation": ["runtime_contracts", "evidence_contracts"],
+      "validation": [
+        "runtime_contracts",
+        "evidence_contracts"
+      ],
       "assets": [
         "QUALITY_FIREWALL.md",
         "FAILURE_TAXONOMY.md",
@@ -91,7 +99,9 @@
     },
     "collaboration": {
       "version": 3,
-      "depends_on": ["proof"],
+      "depends_on": [
+        "proof"
+      ],
       "conflicts_with": [],
       "capabilities": [
         "parallel_worktree_isolation",
@@ -102,7 +112,12 @@
         "review_handoff",
         "upgrade_guidance"
       ],
-      "validation": ["remote_closure_contract", "finish_slice_contract", "post_merge_contract", "worktree_contract"],
+      "validation": [
+        "remote_closure_contract",
+        "finish_slice_contract",
+        "post_merge_contract",
+        "worktree_contract"
+      ],
       "assets": [
         "scripts/projectstate_agent_worktree.py",
         "scripts/projectstate_workspace_inventory.py",
@@ -122,22 +137,32 @@
     },
     "regulated_controls": {
       "version": 2,
-      "depends_on": ["collaboration"],
+      "depends_on": [
+        "collaboration"
+      ],
       "conflicts_with": [],
-      "capabilities": ["level_2_validation_default"],
-      "validation": ["quality_gate_level_2"],
+      "capabilities": [
+        "level_2_validation_default"
+      ],
+      "validation": [
+        "quality_gate_level_2"
+      ],
       "assets": []
     },
     "knowledge_okf": {
       "version": 1,
-      "depends_on": ["core"],
+      "depends_on": [
+        "core"
+      ],
       "conflicts_with": [],
       "capabilities": [
         "okf_knowledge_bundle",
         "knowledge_source_provenance",
         "knowledge_staleness_detection"
       ],
-      "validation": ["okf_v0_1_conformance"],
+      "validation": [
+        "okf_v0_1_conformance"
+      ],
       "optional": true,
       "assets": [
         "scripts/projectstate_okf_validate.py",
@@ -149,8 +174,12 @@
       "version": 1,
       "depends_on": [],
       "conflicts_with": [],
-      "capabilities": ["github_issue_and_pr_templates"],
-      "validation": ["github_asset_presence"],
+      "capabilities": [
+        "github_issue_and_pr_templates"
+      ],
+      "validation": [
+        "github_asset_presence"
+      ],
       "optional": true,
       "assets": [
         ".github/pull_request_template.md",
@@ -160,31 +189,81 @@
         ".github/ISSUE_TEMPLATE/backlog-item.md",
         ".github/ISSUE_TEMPLATE/architecture-change.md"
       ]
+    },
+    "workflows": {
+      "version": 1,
+      "depends_on": [],
+      "conflicts_with": [],
+      "capabilities": [
+        "autonomous_improvement_workflow"
+      ],
+      "validation": [],
+      "optional": false,
+      "assets": [
+        "skills/improve/SKILL.md",
+        "commands/projectstate-improve.md"
+      ]
     }
   },
   "profiles": {
-      "minimal": {
+    "minimal": {
       "depends_on": [],
-      "asset_sets": ["core"],
-      "required_capabilities": ["state_hygiene", "schema_validation", "project_test_detection", "git_safety"],
+      "asset_sets": [
+        "core",
+        "workflows"
+      ],
+      "required_capabilities": [
+        "state_hygiene",
+        "schema_validation",
+        "project_test_detection",
+        "git_safety"
+      ],
       "required_gate_level": 1
     },
     "solo": {
-      "depends_on": ["minimal"],
-      "asset_sets": ["proof"],
-      "required_capabilities": ["runtime_identity", "evidence_manifest", "local_closure_preflight"],
+      "depends_on": [
+        "minimal"
+      ],
+      "asset_sets": [
+        "proof",
+        "workflows"
+      ],
+      "required_capabilities": [
+        "runtime_identity",
+        "evidence_manifest",
+        "local_closure_preflight"
+      ],
       "required_gate_level": 1
     },
     "team": {
-      "depends_on": ["solo"],
-      "asset_sets": ["collaboration"],
-      "required_capabilities": ["parallel_worktree_isolation", "remote_closure", "agent_owned_remote_closure", "post_merge_verification", "review_handoff"],
+      "depends_on": [
+        "solo"
+      ],
+      "asset_sets": [
+        "collaboration",
+        "workflows"
+      ],
+      "required_capabilities": [
+        "parallel_worktree_isolation",
+        "remote_closure",
+        "agent_owned_remote_closure",
+        "post_merge_verification",
+        "review_handoff"
+      ],
       "required_gate_level": 1
     },
     "regulated": {
-      "depends_on": ["team"],
-      "asset_sets": ["regulated_controls"],
-      "required_capabilities": ["post_merge_verification", "level_2_validation_default"],
+      "depends_on": [
+        "team"
+      ],
+      "asset_sets": [
+        "regulated_controls",
+        "workflows"
+      ],
+      "required_capabilities": [
+        "post_merge_verification",
+        "level_2_validation_default"
+      ],
       "required_gate_level": 2
     }
   },

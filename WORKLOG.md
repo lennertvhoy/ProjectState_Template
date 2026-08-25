@@ -1217,3 +1217,28 @@
 - This entry plus BACKLOG/NEXT_ACTIONS/STATUS/EVIDENCE_LOG updates and the
   evidence-pack receipt copy constitute the state reconciliation on branch
   `bl-autonomy-state-reconcile`.
+
+## 2026-08-25 - BL-WORKFLOW-CATALOG-001 ship improve workflow via catalog
+
+**Type:** measured_improvement
+**Status:** LOCAL_VALIDATED
+**Backlog item:** [BL-WORKFLOW-CATALOG-001]
+**Branch:** bl-workflows-catalog-001
+
+### What changed
+
+- profiles/catalog.json: new non-optional `workflows` asset set v1 carrying
+  skills/improve/SKILL.md and commands/projectstate-improve.md; resolved by
+  minimal, solo, team, and regulated profiles.
+- EFFICIENCY_BUDGET.yaml: measured footprint headroom for the two additional
+  downstream files (minimal 44/440000, solo 78/800000 from measured 790739,
+  team 92/1060000, regulated 94/1060000) with provenance comments.
+- scripts/test_contracts.py: resolved regulated composition now expects the
+  workflows set.
+- docs/metrics/profile_metrics.json regenerated against the recorded commit.
+
+### Validation
+
+- init_template.assets_for_profile resolves improve into all four profiles.
+- Full CI-parity level-2 conformance gate exit 0 at the proof tree, including
+  generated-repo gates for every profile.

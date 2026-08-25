@@ -1,0 +1,10 @@
+{
+ "schema": "local.resolution_note.v1",
+ "proof_head": "67a4f53a153502b4a24b8acd0db715d569fb2593",
+ "profiles": [
+  "minimal: assets=25 improve=2",
+  "solo: assets=59 improve=2",
+  "team: assets=73 improve=2",
+  "regulated: assets=73 improve=2"
+ ]
+}

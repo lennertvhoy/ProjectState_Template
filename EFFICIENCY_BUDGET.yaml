@@ -87,39 +87,46 @@ context_budgets:
       max_startup_files: 5
       max_startup_bytes: 9000
       max_startup_estimated_tokens: 2250
-      max_footprint_files: 42
+      max_footprint_files: 44
       # Optional knowledge_okf adds the validator, extension schema, and one
       # contained index without changing the startup file selection.
       # Measured at 397,864 bytes with optional knowledge_okf installed.
       # After ProjectState rename: measured at 424,112 bytes with optional knowledge_okf.
-      max_footprint_bytes: 430000
+      # BL-WORKFLOW-CATALOG-001 adds the improve skill and /projectstate-improve
+      # command (+2 files, +7,459 bytes): 431,571 bytes with optional knowledge_okf.
+      max_footprint_bytes: 440000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
       max_startup_estimated_tokens: 2500
-      max_footprint_files: 76
+      max_footprint_files: 78
       # Measured at 763,265 bytes with optional knowledge_okf installed.
       # After ProjectState rename: measured at 775,688 bytes.
-      max_footprint_bytes: 780000
+      # BL-WORKFLOW-CATALOG-001 adds +2 files (+7,459 bytes); measured with
+      # optional knowledge_okf at 790,739 bytes.
+      max_footprint_bytes: 800000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
       max_startup_estimated_tokens: 2625
       # Includes strict runtime-truth, Git-safety, structured bootstrap, and
       # exact-head collaboration controls required by the agent-first contract.
-      max_footprint_files: 90
+      max_footprint_files: 92
       # Measured at 986,599 bytes with finish/post-merge controls and optional OKF.
       # After ProjectState rename (schema enum aliases, manifest resolver,
       # env-var fallbacks): measured at 1,041,807 bytes.
-      max_footprint_bytes: 1050000
+      # BL-WORKFLOW-CATALOG-001 adds +2 files, +7,459 bytes: 1,049,266 bytes.
+      max_footprint_bytes: 1060000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
       max_startup_estimated_tokens: 2750
-      max_footprint_files: 92
+      # BL-WORKFLOW-CATALOG-001 adds +2 files.
+      max_footprint_files: 94
       # Measured at 987,047 bytes with inherited finish controls and optional OKF.
       # After ProjectState rename: measured at 1,042,220 bytes.
-      max_footprint_bytes: 1050000
+      # BL-WORKFLOW-CATALOG-001 adds +2 files, +7,459 bytes: 1,049,679 bytes.
+      max_footprint_bytes: 1060000
 
 evidence_budgets:
   default_max_files: 15

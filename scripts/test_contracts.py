@@ -85,7 +85,7 @@ def test_profile_catalog_expands_dependencies_and_enforces_capabilities() -> Non
     regulated = resolve_profile(catalog, "regulated")
     assert set(minimal.assets) < set(regulated.assets)
     assert regulated.profile_dependencies == ("minimal", "solo", "team")
-    assert regulated.asset_sets == ("collaboration", "core", "proof", "regulated_controls")
+    assert regulated.asset_sets == ("collaboration", "core", "proof", "regulated_controls", "workflows")
     assert regulated.required_gate_level == 2
     assert "post_merge_verification" in regulated.capabilities
     assert "agent_owned_remote_closure" in team.capabilities
