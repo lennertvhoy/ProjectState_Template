@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-08-26T00:20:35+02:00",
+  "captured_at": "2026-08-26T00:24:27+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "ea95a438c7d5ff844d8be6562fc6c30af95d0dc8",
+  "git_head": "f4f0a93fd7f161f6ba3f14351b4d48864d54c283",
   "in_container": false,
   "kernel": "7.1.8-arch1-3",
   "limits": [],
@@ -13,8 +13,8 @@
   "os_version": "#1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
   "python": "3.14.7",
   "repo": {
-    "branch": "bl-workflows-catalog-001",
-    "head": "ea95a438c7d5ff844d8be6562fc6c30af95d0dc8",
+    "branch": "bl-workflows-catalog-001-pr",
+    "head": "f4f0a93fd7f161f6ba3f14351b4d48864d54c283",
     "path": ".",
     "status_porcelain": "",
     "worktree_clean": true
@@ -24,5 +24,5 @@
     "required": false
   },
   "schema": "projectstate.runtime_identity.v2",
-  "timestamp": "2026-08-25T22:20:35.062325Z"
+  "timestamp": "2026-08-25T22:24:27.075243Z"
 }
