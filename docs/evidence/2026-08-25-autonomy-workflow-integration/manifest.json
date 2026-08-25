@@ -27,6 +27,13 @@
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
       "sha256": "1463d556769607e34e24f669d8b09650c3e50fd46adebd5123324d22b3527231"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "bee01423ec45be60897794ebcdd65a29d584957460609c17466efda8da499da5"
     }
   ],
   "claims": [
@@ -69,6 +76,14 @@
         "README.md"
       ],
       "id": "local-boundary-documented",
+      "status": "validated"
+    },
+    {
+      "claim": "No application runtime is required or claimed by this slice; the captured runtime identity records repo truth as distinct from runtime truth at the exact slice head.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
       "status": "validated"
     }
   ],

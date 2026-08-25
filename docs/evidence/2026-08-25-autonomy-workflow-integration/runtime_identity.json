@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-08-25T23:05:58+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "7db9a8caed24f3c5d18990cfe91031a9cfda7e51",
+  "in_container": false,
+  "kernel": "7.1.8-arch1-3",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
+  "python": "3.14.7",
+  "repo": {
+    "branch": "bl-autonomy-001-improve-workflow",
+    "head": "7db9a8caed24f3c5d18990cfe91031a9cfda7e51",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "Template root has no application runtime; repo truth is not runtime truth",
+    "required": false
+  },
+  "schema": "projectstate.runtime_identity.v2",
+  "timestamp": "2026-08-25T21:05:58.933377Z"
+}
