@@ -1137,3 +1137,49 @@
 - The P0 and incident quality freeze are closed; template-maintenance mode resumes.
 - Raw external clones cannot be globally blocked, but managed starts and every
   handoff now detect immediate same-origin sibling clones and fail closed.
+
+## 2026-08-25 - BL-AUTONOMY-001 integrate the autonomous improvement workflow
+
+**Type:** measured_improvement
+**Status:** LOCAL_VALIDATED
+**Backlog item:** [BL-AUTONOMY-001]
+**Branch:** bl-autonomy-001-improve-workflow
+
+### What was integrated
+
+- New `skills/improve/SKILL.md`: the multi-slice loop (preflight and authority,
+  source-of-truth pass, ranked assessment sweep, vertical implementation,
+  validation plus falsification, close-slice, loop-or-stop) with stop condition
+  A (meaningful local closure) / B (genuine blocker) and a final-report contract.
+- New `commands/projectstate-improve.md`: slash entry point delegating to the
+  skill, with the L0-L4 autonomy ladder, Never list, failure cases, evidence,
+  and exit criteria.
+- `AGENTS.md`: added the Autonomy Ladder section (L0 inspect always allowed;
+  L1 local reversible changes autonomous inside an invoked improve run;
+  L2 delivery policy; L3 external/irreversible prepare-only; L4 human only),
+  registered both new subsystems, and compressed redundant prose so the file
+  stays at its 110-line budget.
+
+### Consistency repairs in the same change class
+
+- Root `AGENTS.md` skills enumeration now lists `git-safety` (previously omitted).
+- `.github/copilot-instructions.md` skill and command lists refreshed; false
+  "auto-generated" claim replaced with an honest mirror statement; root-level
+  reference docs no longer described as living under `docs/`.
+- `prompts/AGENTS.md` catalog now lists `NEW_PROJECT_FROM_URL.md`.
+- `docs/WORKFLOW_FOR_BEGINNERS.md` no longer contradicts delegated slice
+  selection inside an invoked improve run.
+
+### Validation
+
+- Git safety preflight passed at writable grade on the private slice branch
+  (identity, write probe, fsck, fetch synchronization all pass).
+- `projectstate_instruction_lint.py --fail-on error`: 0 errors.
+- `projectstate_efficiency_check.py --gate-level 2`: passed; AGENTS.md exactly
+  110 lines; footprint 382 files / 2,607,940 bytes within budget.
+- Full level-2 conformance gate run recorded in the slice evidence pack.
+
+### Remaining boundary
+
+- Remote closure per confirmed agent_after_green policy: push, PR, exact-head
+  CI, merge, direct-main CI are pending human go-ahead for this session.

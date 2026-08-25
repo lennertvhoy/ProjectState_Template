@@ -2,7 +2,7 @@
 
 **Product:** ProjectState_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-07-14
+**Updated At:** 2026-08-25
 
 ## Purpose
 
@@ -11,6 +11,9 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
+- [BL-AUTONOMY-001] Integrate the autonomous improvement workflow: add the
+  improve skill and `/projectstate-improve` command, codify the autonomy
+  ladder and stop conditions, repair subsystem enumeration drift.
 
 ## NEXT
 

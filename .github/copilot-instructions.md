@@ -1,6 +1,6 @@
 # GitHub Copilot Instructions — ProjectState Template
 
-This file is auto-generated from the ProjectState constitutional contract. The authoritative source is **AGENTS.md**.
+This file mirrors the ProjectState constitutional contract for Copilot compatibility. The authoritative source is **AGENTS.md**; update both whenever subsystems change.
 
 ## Repository Role
 - `repo_role: template_repository` — This is the ProjectState template repository
@@ -37,7 +37,7 @@ is only a compatibility summary and does not define a second read order.
 - **Skills** → `skills/<name>/SKILL.md` — executable workflows (invoke via `/skill-name`)
 - **Commands** → `commands/projectstate-*.md` — slash-command playbooks (invoke via `/projectstate-*`)
 - **Gates** → `scripts/projectstate_*_gate.py`, `scripts/projectstate_*_check.py` — executable quality gates
-- **Docs** → `docs/` — reference (FAILURE_TAXONOMY, QUALITY_FIREWALL, INCIDENT_RESPONSE)
+- **Docs** → reference at root (FAILURE_TAXONOMY, QUALITY_FIREWALL, INCIDENT_RESPONSE) plus `docs/` (failure_scans/, quality_gates/, adr/)
 - **Schemas** → `schemas/` — machine-checkable contracts (YAML/JSON)
 - **Prompts** → `prompts/` — CTO/agent startup prompts, templates
 
@@ -56,17 +56,23 @@ Run `scripts/projectstate_handoff.py` and include: changes, verification, repo p
 
 ## Skills Available
 - `/close-slice` — Execute full slice closure
-- `/ingest-bad-event` — Record and handle failures
 - `/failure-scan` — Pre-mortem failure scan
-- `/runtime-truth` — Capture and verify runtime identity
+- `/git-safety` — Git mutation preflight
+- `/improve` — Autonomous multi-slice improvement loop
+- `/ingest-bad-event` — Record and handle failures
 - `/quality-gate` — Execute full quality gate pipeline
+- `/release-gate` — Release and migration gating
+- `/runtime-truth` — Capture and verify runtime identity
 
 ## Commands Available
 - `/projectstate-close-slice`
-- `/projectstate-ingest-bad-event`
 - `/projectstate-failure-scan`
+- `/projectstate-git-safety`
+- `/projectstate-improve`
+- `/projectstate-ingest-bad-event`
 - `/projectstate-quality-freeze`
 - `/projectstate-release-gate`
+- `/projectstate-remote-closure`
 
 ## Quality Gates (Must Pass Before Closure)
 - `scripts/projectstate_quality_gate.py` — Tests, static analysis, state, evidence

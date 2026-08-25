@@ -28,6 +28,7 @@ This directory contains prompt templates for CTO sessions, coding agent startup,
 | `SCHEMA_OWNERSHIP_TEMPLATE.md` | Schema change ownership |
 | `TOOL_MODEL_ROUTING_GUIDE.md` | Model/tool selection reasoning |
 | `OPENCODE_STARTUP_PROMPT.md` | OpenCode-specific startup |
+| `NEW_PROJECT_FROM_URL.md` | Derive a new downstream project prompt from a repository URL |
 
 ## Usage Rules
 - Prompts are **templates**, not executable code

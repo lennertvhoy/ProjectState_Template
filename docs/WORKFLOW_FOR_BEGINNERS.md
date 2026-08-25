@@ -108,7 +108,9 @@ flowchart LR
 2. **Close one slice before starting the next.** A slice is not done until it is
    closure-grade or honestly marked as partial.
 3. **Always hand off to the CTO lane.** The coding agent should not choose the
-   next slice.
+   next slice on its own — except inside an explicitly invoked
+   `/projectstate-improve` run, where the human delegated maintenance-class
+   selection within the autonomy ladder (see `AGENTS.md`).
 4. **Update state files only where truth changed.** Do not rewrite history or
    speculate.
 5. **Keep evidence next to claims.** Every claim in the evidence README must

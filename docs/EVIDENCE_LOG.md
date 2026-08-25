@@ -755,3 +755,29 @@
 - as_of: 2026-07-14T18:09:24+02:00
 - Notes: Human product acceptance remains separate; raw non-StateDD clones are
   detectable at managed boundaries but cannot be globally prohibited.
+
+## EV-2026-08-25-001: Autonomous improvement workflow integrated
+
+- File: docs/evidence/2026-08-25-autonomy-workflow-integration/README.md
+- File: docs/evidence/2026-08-25-autonomy-workflow-integration/manifest.json
+- File: docs/evidence/2026-08-25-autonomy-workflow-integration/quality_gate_output.txt
+- File: docs/evidence/2026-08-25-autonomy-workflow-integration/git_safety_report.json
+- File: docs/evidence/2026-08-25-autonomy-workflow-integration/run_notes.md
+- Title: BL-AUTONOMY-001 improve skill, /projectstate-improve command, and autonomy ladder
+- Source/System: test | state_update
+- Action: Added `skills/improve/SKILL.md` and `commands/projectstate-improve.md`,
+  inserted the L0-L4 Autonomy Ladder into `AGENTS.md` within its line budget,
+  registered both subsystems, and repaired enumeration drift (git-safety skill,
+  copilot mirror lists, prompts catalog, beginners-doc contradiction).
+- Shows:
+  - writable-grade Git safety preflight permitted mutation on the private slice branch
+  - the authoritative level-2 conformance gate exits 0 with all changes in tree
+  - AGENTS.md stays at its 110-line budget with the ladder present
+- Proves:
+  - local implementation and CI-parity validation of the autonomous
+    improvement workflow integration
+- Type: implementation | test | state_update
+- as_of: 2026-08-25T23:00:00+02:00
+- Notes: Remote closure (push, PR, exact-head CI, merge, direct-main CI) is not
+  proven by this entry; per the Remote Truth Gate this is NOT CLOSURE-GRADE until
+  remote finalization completes.

@@ -1,24 +1,20 @@
 # ProjectState Template Status
 
-**Updated At:** 2026-07-14
+**Updated At:** 2026-08-25
 **Execution Mode:** template-maintenance
 **Project State:** operational_template_complete
 **Public URL:** https://github.com/lennertvhoy/ProjectState_Template/releases/tag/v5
 
 ## Snapshot
 
-- The workspace-lifecycle P0 is closed: false metadata-only release and recursive
-  clone provisioning were replaced by a managed, receipt-backed lifecycle.
-- Nine visible sibling clones were audited and reversibly archived outside the
-  project parent; every clean clone feature is integrated on `main`.
-- Five linked worktrees were audited. Integrated/superseded safeguards were
-  reconciled, while dirty BL-BROWSER-002 WIP remains safely preserved.
-- Managed clones now live under a per-user state root, nested/arbitrary starts are
-  rejected, and handoff cannot complete without physical original-path absence.
-- Clean failed/superseded/cancelled clones have an explicit recoverable `abandon`
-  quarantine path; dirty clones remain active and untouched.
-- Level-2 local gates, exact-head PR CI, merge-candidate CI, direct-`main` CI,
-  post-merge verification, branch deletion, and managed-clone quarantine passed.
+- The autonomous improvement workflow is integrated locally on branch
+  `bl-autonomy-001-improve-workflow`: `skills/improve/SKILL.md`,
+  `/projectstate-improve`, the autonomy ladder in `AGENTS.md`, and
+  subsystem enumeration drift repairs.
+- The workspace-lifecycle P0 remains closed with a receipt-backed lifecycle;
+  all earlier clone/worktree features stay integrated on `main`.
+- Level-2 local gates pass for the integration slice; remote closure
+  (push, PR, CI, merge) is pending per the confirmed delivery policy.
 
 ## Acceptance And Freeze
 
