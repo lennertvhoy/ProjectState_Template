@@ -11,6 +11,17 @@ All notable ProjectState template changes are tracked here.
 
 ## Unreleased
 
+- **BL-AUTONOMY-001: Integrated the autonomous improvement workflow.** Added
+  `skills/improve/SKILL.md` and `/projectstate-improve` as the sanctioned
+  multi-slice loop (assess, prioritize, implement vertically, validate,
+  falsify, close, repeat) with an explicit autonomy ladder in `AGENTS.md`
+  (L0 inspect → L4 human-only), stop conditions, and a final-report contract.
+  Fixed subsystem enumeration drift: `git-safety` skill added to `AGENTS.md`,
+  `.github/copilot-instructions.md` skill/command lists refreshed and its
+  false "auto-generated" claim corrected, root-level reference docs no longer
+  described as living under `docs/`, `prompts/AGENTS.md` catalog now lists
+  `NEW_PROJECT_FROM_URL.md`, and the beginner-workflow contradiction with
+  delegated slice selection removed.
 - **BL-RENAME-001: StateDD -> ProjectState rename.** Renamed canonical brand,
   script modules (`scripts/projectstate_*.py`), slash commands
   (`commands/projectstate-*.md`), schemas, version string
