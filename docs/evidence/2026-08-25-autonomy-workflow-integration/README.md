@@ -4,8 +4,7 @@
 **Date:** 2026-08-25
 **Agent:** opencode integration agent (ox-alpha)
 **Branch:** `bl-autonomy-001-improve-workflow`
-**HEAD:** see `git rev-parse HEAD` at verification time (branch is unpushed; no main SHA is coupled here)
-**Proof head:** this working tree; remote proof pending
+**Proof head:** 7db9a8caed24f3c5d18990cfe91031a9cfda7e51
 
 ## Claims
 
@@ -96,7 +95,7 @@
 
 ## Closure State At Current Worktree
 
-- Implemented: yes, in this working tree on the private slice branch
+- Implemented: yes, captured at immutable proof head `7db9a8caed24f3c5d18990cfe91031a9cfda7e51`
 - Validated locally: yes; authoritative level-2 aggregate passes
 - Closure-grade: no — remote closure has not run
 - Remote closure: pending (push, PR, exact-head CI, merge, direct-main CI)
