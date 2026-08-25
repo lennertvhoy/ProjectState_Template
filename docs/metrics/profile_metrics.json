@@ -1,13 +1,13 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 546031fbb5a5beb46ec7c4aaa3da1ae16dc04268",
+  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit bf97200f07dafc4badeb4c361adba19b50dc89ec",
   "profiles": [
     {
-      "actual_tokens": 92276,
+      "actual_tokens": 94947,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5640,
-          "estimated_tokens": 5979,
+          "actual_tokens": 6003,
+          "estimated_tokens": 6327,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -28,7 +28,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 23910
+          "total_bytes": 25300
         },
         "ci_diagnosis": {
           "actual_tokens": 7994,
@@ -136,8 +136,8 @@
           "total_bytes": 10798
         }
       },
-      "estimated_tokens": 101227,
-      "generated_file_count": 39,
+      "estimated_tokens": 104206,
+      "generated_file_count": 41,
       "profile": "minimal",
       "quality_gate": {
         "command": "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
@@ -147,20 +147,21 @@
       },
       "required_gate_level": 1,
       "resolved_asset_sets": [
-        "core"
+        "core",
+        "workflows"
       ],
       "startup_actual_tokens": 2019,
       "startup_bytes": 8939,
       "startup_estimated_tokens": 2236,
       "startup_file_count": 4,
-      "total_bytes": 404852
+      "total_bytes": 416763
     },
     {
-      "actual_tokens": 177809,
+      "actual_tokens": 180492,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5649,
-          "estimated_tokens": 5985,
+          "actual_tokens": 6012,
+          "estimated_tokens": 6333,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -181,7 +182,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 23937
+          "total_bytes": 25327
         },
         "ci_diagnosis": {
           "actual_tokens": 8003,
@@ -288,8 +289,8 @@
           "total_bytes": 10828
         }
       },
-      "estimated_tokens": 194747,
-      "generated_file_count": 73,
+      "estimated_tokens": 197726,
+      "generated_file_count": 75,
       "profile": "solo",
       "quality_gate": {
         "command": "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
@@ -300,20 +301,21 @@
       "required_gate_level": 1,
       "resolved_asset_sets": [
         "core",
-        "proof"
+        "proof",
+        "workflows"
       ],
       "startup_actual_tokens": 2028,
       "startup_bytes": 8969,
       "startup_estimated_tokens": 2243,
       "startup_file_count": 4,
-      "total_bytes": 778877
+      "total_bytes": 790788
     },
     {
-      "actual_tokens": 237301,
+      "actual_tokens": 239984,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5653,
-          "estimated_tokens": 5986,
+          "actual_tokens": 6016,
+          "estimated_tokens": 6334,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -334,7 +336,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 23940
+          "total_bytes": 25330
         },
         "ci_diagnosis": {
           "actual_tokens": 8007,
@@ -441,8 +443,8 @@
           "total_bytes": 10831
         }
       },
-      "estimated_tokens": 261284,
-      "generated_file_count": 87,
+      "estimated_tokens": 264263,
+      "generated_file_count": 89,
       "profile": "team",
       "quality_gate": {
         "command": "python3 scripts/projectstate_quality_gate.py --gate-level 1 --conformance",
@@ -454,20 +456,21 @@
       "resolved_asset_sets": [
         "collaboration",
         "core",
-        "proof"
+        "proof",
+        "workflows"
       ],
       "startup_actual_tokens": 2032,
       "startup_bytes": 8972,
       "startup_estimated_tokens": 2244,
       "startup_file_count": 4,
-      "total_bytes": 1044996
+      "total_bytes": 1056907
     },
     {
-      "actual_tokens": 237335,
+      "actual_tokens": 240018,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 5668,
-          "estimated_tokens": 6028,
+          "actual_tokens": 6031,
+          "estimated_tokens": 6376,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -488,7 +491,7 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 24103
+          "total_bytes": 25493
         },
         "ci_diagnosis": {
           "actual_tokens": 8022,
@@ -595,8 +598,8 @@
           "total_bytes": 10989
         }
       },
-      "estimated_tokens": 261398,
-      "generated_file_count": 87,
+      "estimated_tokens": 264377,
+      "generated_file_count": 89,
       "profile": "regulated",
       "quality_gate": {
         "command": "python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance",
@@ -609,13 +612,14 @@
         "collaboration",
         "core",
         "proof",
-        "regulated_controls"
+        "regulated_controls",
+        "workflows"
       ],
       "startup_actual_tokens": 2047,
       "startup_bytes": 9130,
       "startup_estimated_tokens": 2284,
       "startup_file_count": 4,
-      "total_bytes": 1045444
+      "total_bytes": 1057355
     }
   ],
   "provenance": {
@@ -641,6 +645,7 @@
     "INCIDENT_RESPONSE.md",
     "QUALITY_FIREWALL.md",
     "VERSION",
+    "commands/projectstate-improve.md",
     "docs/BROWSER_VERIFICATION.md",
     "docs/UPGRADING.md",
     "docs/adr/0000-adr-template.md",
@@ -707,10 +712,11 @@
     "scripts/projectstate_validate_schema.py",
     "scripts/projectstate_version_check.py",
     "scripts/projectstate_workspace_inventory.py",
-    "scripts/projectstate_worktree_guard.py"
+    "scripts/projectstate_worktree_guard.py",
+    "skills/improve/SKILL.md"
   ],
-  "source_tree_sha256": "52b8431ee68adc7e0986dc669c8d08d40ea302a3d548d47ce4a46835c1445d1d",
-  "template_commit": "546031fbb5a5beb46ec7c4aaa3da1ae16dc04268",
+  "source_tree_sha256": "314cd71d9616274fc9e83a28ad4ff8e76812f645b371838bffa3e29ae0bfba98",
+  "template_commit": "bf97200f07dafc4badeb4c361adba19b50dc89ec",
   "template_version": "projectstate-template-v5",
   "tokenizer": {
     "actual_counts_available": true,
