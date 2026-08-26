@@ -1,0 +1,100 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "23bed142a73662dbdd7306ec4180b446e6d0b222033482ea5883879fea6a234f"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "7a37640fb5500b7d70c14a3a88c418b68e09732a4cd609310ff7ca8b943f02ec"
+    },
+    {
+      "kind": "command_output",
+      "path": "quality_gate_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "1e8fde938076da5cb10444bd4ebc01539b471a0f36db83135b277900ac668513"
+    },
+    {
+      "kind": "command_output",
+      "path": "repro_before_fix_golden_path.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "4c222b94870e4ce533749fb2d7e87f350117020c5c39d4fa909129b4a637041c"
+    },
+    {
+      "kind": "command_output",
+      "path": "after_fix_hostile_env.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "264bdf8202a617380b4c6d407655fa46f20d40403bef847857f87da3b412141d"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "The golden-path regression failed spuriously under an ambient read-only Git-safety latch in the shared default state root before any repair.",
+      "evidence": [
+        "README.md",
+        "repro_before_fix_golden_path.txt"
+      ],
+      "id": "defect-reproduced-before-repair",
+      "status": "validated"
+    },
+    {
+      "claim": "After the harness-only fix, both integration harnesses pass under a hostile ambient-latch environment (golden path PASS; agent-worktree suite 27/27), with the decoy root untouched.",
+      "evidence": [
+        "after_fix_hostile_env.txt",
+        "quality_gate_output.txt"
+      ],
+      "id": "isolation-implemented-and-falsified",
+      "status": "validated"
+    },
+    {
+      "claim": "Full CI-parity level-2 conformance gate exits 0 at the proof tree including the raised measured footprint budget with provenance.",
+      "evidence": [
+        "quality_gate_output.txt"
+      ],
+      "id": "gate-parity-at-proof-tree",
+      "status": "validated"
+    },
+    {
+      "claim": "Runtime boundary recorded; repo truth is distinct from runtime truth.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-08-26T12:20:00+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in quality_gate_output.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in repro_before_fix_golden_path.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in after_fix_hostile_env.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-stateisolation-001-agen-6wnng",
+    "head": "547aa912a67f64d53f5b0e8d43ec473586f1f9e0"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "projectstate.evidence_manifest.v1",
+  "slice_id": "BL-STATEISOLATION-001"
+}

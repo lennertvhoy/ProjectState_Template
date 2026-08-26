@@ -1271,3 +1271,39 @@
 
 Full CI-parity level-2 conformance gate run at the slice proof tree; result
 recorded in the evidence pack for this run.
+
+## 2026-08-26 - BL-STATEISOLATION-001 per-test Git-safety state-root isolation
+
+**Type:** defect_repair
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-STATEISOLATION-001]
+**Branch:** bl-bl-stateisolation-001-agen-6wnng
+
+### What changed
+
+- scripts/test_golden_path.py and scripts/test_agent_worktree.py now pin
+  `PROJECTSTATE_GIT_SAFETY_STATE_ROOT` to a per-test isolated root in their
+  central subprocess env merge, so integration regressions never inherit the
+  shared machine session state at `/tmp/projectstate-git-safety-<uid>`.
+- The legacy `STATEDD_GIT_SAFETY_STATE_ROOT` variable is pointed at a decoy
+  root holding an ambient-shaped global latch: if precedence ever regresses,
+  the preflight fails loudly instead of silently passing.
+- test_golden_path additionally asserts after agent starts that the isolated
+  root received the preflight lock file and that the decoy root was neither
+  consulted nor mutated (byte comparison).
+- Production scripts are unchanged; the fix is harness-only.
+
+### Reproduction before repair
+
+With an ambient latched root injected via env, main's golden-path regression
+failed at agent start ("Git safety preflight blocked writable isolation"),
+matching the twice-observed 2026-08-26 contamination. The same stale-latch
+class also blocked this slice's own preflight until an inspected and disproven
+blocker was cleared via the documented `--restart-session` restart.
+
+### Validation
+
+- Hostile-env runs after the fix: golden path PASS; agent-worktree suite 27/27
+  PASS; clean-env and legacy-only hostile variants PASS.
+- Full CI-parity level-2 conformance gate exit 0 at the proof tree recorded in
+  the evidence pack for this slice.

@@ -1,0 +1,403 @@
+$ /usr/bin/python3 -m compileall -q scripts schemas/examples
+$ /usr/bin/python3 /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/scripts/projectstate_profile_metrics.py --root /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605 --check
+$ /usr/bin/python3 -m pytest scripts/ -q
+$ /usr/bin/python3 -m pytest schemas/examples/ -q
+$ ruff check .
+$ /usr/bin/python3 scripts/check_state_docs.py
+$ /usr/bin/python3 scripts/projectstate_validate_schema.py
+$ /usr/bin/python3 scripts/projectstate_evidence_pack.py check --strict /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/docs/evidence/2026-08-26-stateisolation
+$ /usr/bin/python3 scripts/projectstate_instruction_lint.py --fail-on error
+$ /usr/bin/python3 scripts/projectstate_efficiency_check.py --gate-level 2
+$ git rev-parse --verify HEAD
+$ git diff --check HEAD
+==================================================
+ProjectState Quality Gate
+Mode: template/profile conformance — NOT SLICE CLOSURE
+==================================================
+🧩 Compiling Python sources...
+  ✓ Python sources compile
+📏 Reproducing profile metrics...
+🧪 Running tests...
+  ✓ Tests passed (/usr/bin/python3 -m pytest schemas/examples/ -q)
+🔍 Running static analysis...
+📋 Validating state files...
+📐 Validating schemas...
+📦 Checking evidence...
+🧊 Checking acceptance freezes...
+  ✓ Acceptance freezes present
+🔎 Linting instructions...
+  ✓ No instruction smells (errors)
+⚡ Running efficiency check...
+  ✓ Efficiency check passed
+🧹 Checking diff whitespace...
+  ✓ Git diff whitespace clean
+
+==================================================
+Failures:
+  ✗ Profile metrics drift: stderr:
+Profile metrics refused: source inputs do not match the recorded template commit
+  ✗ Test suite failed (/usr/bin/python3 -m pytest scripts/ -q, exit 1):
+stdout:
+.................................................................... [ 15%]
+........................................................................ [ 31%]
+........................................................................ [ 47%]
+................F....................................................... [ 63%]
+........................................................................ [ 79%]
+.................................F...................................... [ 95%]
+......................                                                   [100%]
+=================================== FAILURES ===================================
+___________________ test_template_root_bootstrap_gate_passes ___________________
+
+    def test_template_root_bootstrap_gate_passes() -> None:
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check_state_docs.py"), "--bootstrap-gate", str(ROOT)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+>           raise AssertionError(
+                f"Template-maintenance root should pass bootstrap gate\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+            )
+E           AssertionError: Template-maintenance root should pass bootstrap gate
+E           stdout:
+E           ============================================================
+E           DOCUMENTATION HYGIENE CHECK
+E           ============================================================
+E           
+E           📄 AGENTS.md
+E             ✅ All checks passed
+E           
+E           📄 STATUS.md
+E             ✅ All checks passed
+E           
+E           📄 PROJECT_STATE.yaml
+E             ✅ All checks passed
+E           
+E           📄 PROJECT_DNA.yaml
+E             ✅ All checks passed
+E           
+E           📄 NEXT_ACTIONS.md
+E             ✅ All checks passed
+E           
+E           📄 BACKLOG.md
+E             ✅ All checks passed
+E           
+E           📄 cross_file_rules
+E             ✅ All checks passed
+E           
+E           📄 repo role/mode
+E             ✅ All checks passed
+E           
+E           📄 version alignment
+E             ✅ All checks passed
+E           
+E           📄 schema validation
+E             ❌ FAIL docs/evidence/2026-08-26-stateisolation/README.md
+E             ❌     - $: missing required marker '**HEAD:**'
+E             ❌ FAILED: 1 schema issue(s) found
+E           
+E           📄 README.md
+E             ✅ All checks passed
+E           
+E           📄 template assets
+E             ✅ All checks passed
+E           
+E           📄 evidence manifest
+E             ✅ All checks passed
+E           
+E           📄 bootstrap gate
+E             ✅ All checks passed
+E           
+E           ============================================================
+E           FAILED: 3 issue(s) found
+E           
+E           Summary:
+E             - schema_validation: FAIL docs/evidence/2026-08-26-stateisolation/README.md
+E             - schema_validation:     - $: missing required marker '**HEAD:**'
+E             - schema_validation: FAILED: 1 schema issue(s) found
+E           
+E           stderr:
+
+scripts/test_init_template.py:739: AssertionError
+______________________ test_root_schema_validation_passes ______________________
+
+    def test_root_schema_validation_passes() -> None:
+>       run([str(VALIDATOR)], expect_success=True)
+
+scripts/test_schema_validation.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ['/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/scripts/projectstate_validate_schema.py']
+cwd = PosixPath('/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605')
+expect_success = True
+
+    def run(args: list[str], *, cwd: Path = ROOT, expect_success: bool) -> subprocess.CompletedProcess[str]:
+        completed = subprocess.run(
+            [sys.executable, *args],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if expect_success and completed.returncode != 0:
+>           raise AssertionError(
+                f"Expected success for {args}, got {completed.returncode}\n"
+                f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+            )
+E           AssertionError: Expected success for ['/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/scripts/projectstate_validate_schema.py'], got 1
+E           stdout:
+E           ============================================================
+E           PROJECTSTATE SCHEMA VALIDATION
+E           ============================================================
+E             PASS PROJECT_STATE.yaml
+E             PASS PROJECT_DNA.yaml
+E             PASS PROJECT_ADAPTER.yaml
+E             PASS profiles/catalog.json
+E             PASS docs/metrics/profile_metrics.json
+E             PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+E             PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+E             PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+E             PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+E             PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+E             PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+E             PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+E             PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+E             PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+E             PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+E             PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+E             PASS docs/evidence/2026-06-23-release-readiness-polish/README.md
+E             PASS docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+E             PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+E             PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+E             PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+E             PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+E             PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+E             PASS docs/evidence/2026-06-28-quality-firewall-template/README.md
+E             PASS docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
+E             PASS docs/evidence/2026-06-28-quality-firewall-template/manifest.json
+E             PASS docs/evidence/2026-06-29-remote-closure/README.md
+E             PASS docs/evidence/2026-06-29-remote-closure/runtime_identity.json
+E             PASS docs/evidence/2026-06-29-remote-closure/manifest.json
+E             PASS docs/evidence/2026-06-29-sanity-repair/README.md
+E             PASS docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
+E             PASS docs/evidence/2026-06-29-sanity-repair/manifest.json
+E             PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+E             PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json
+E             PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json
+E             PASS docs/evidence/2026-07-07-parallel-agent-worktree/README.md
+E             PASS docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json
+E             PASS docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json
+E             PASS docs/evidence/2026-07-07-sanity-logic-repair/README.md
+E             PASS docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
+E             PASS docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
+E             PASS docs/evidence/2026-07-10-context-generator-hygiene/README.md
+E             PASS docs/evidence/2026-07-10-context-generator-hygiene/runtime_identity.json
+E             PASS docs/evidence/2026-07-10-context-generator-hygiene/manifest.json
+E             PASS docs/evidence/2026-07-11-maximum-value-correctness/README.md
+E             PASS docs/evidence/2026-07-11-maximum-value-correctness/runtime_identity.json
+E             PASS docs/evidence/2026-07-11-maximum-value-correctness/manifest.json
+E             PASS docs/evidence/2026-07-11-okf-interoperability/README.md
+E             PASS docs/evidence/2026-07-11-okf-interoperability/runtime_identity.json
+E             PASS docs/evidence/2026-07-11-okf-interoperability/manifest.json
+E             PASS docs/evidence/2026-07-11-statedd-integration/README.md
+E             PASS docs/evidence/2026-07-11-statedd-integration/runtime_identity.json
+E             PASS docs/evidence/2026-07-11-statedd-integration/manifest.json
+E             PASS docs/evidence/2026-07-12-cto-architecture-acceptance/README.md
+E             PASS docs/evidence/2026-07-12-cto-architecture-acceptance/runtime_identity.json
+E             PASS docs/evidence/2026-07-12-cto-architecture-acceptance/manifest.json
+E             PASS docs/evidence/2026-07-12-finish-branch-delete-repair/README.md
+E             PASS docs/evidence/2026-07-12-finish-branch-delete-repair/runtime_identity.json
+E             PASS docs/evidence/2026-07-12-finish-branch-delete-repair/manifest.json
+E             PASS docs/evidence/2026-07-12-golden-path-closure/README.md
+E             PASS docs/evidence/2026-07-12-golden-path-closure/runtime_identity.json
+E             PASS docs/evidence/2026-07-12-golden-path-closure/manifest.json
+E             PASS docs/evidence/2026-07-14-workspace-lifecycle-closure/README.md
+E             PASS docs/evidence/2026-07-14-workspace-lifecycle-closure/runtime_identity.json
+E             PASS docs/evidence/2026-07-14-workspace-lifecycle-closure/manifest.json
+E             PASS docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation/README.md
+E             PASS docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation/runtime_identity.json
+E             PASS docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation/manifest.json
+E             PASS docs/evidence/2026-08-25-autonomy-workflow-integration/README.md
+E             PASS docs/evidence/2026-08-25-autonomy-workflow-integration/runtime_identity.json
+E             PASS docs/evidence/2026-08-25-autonomy-workflow-integration/manifest.json
+E             PASS docs/evidence/2026-08-25-workflows-catalog/README.md
+E             PASS docs/evidence/2026-08-25-workflows-catalog/runtime_identity.json
+E             PASS docs/evidence/2026-08-25-workflows-catalog/manifest.json
+E             PASS docs/evidence/2026-08-26-improve-run-001/README.md
+E             PASS docs/evidence/2026-08-26-improve-run-001/runtime_identity.json
+E             PASS docs/evidence/2026-08-26-improve-run-001/manifest.json
+E             FAIL docs/evidence/2026-08-26-stateisolation/README.md
+E               - $: missing required marker '**HEAD:**'
+E             PASS docs/evidence/2026-08-26-stateisolation/runtime_identity.json
+E             PASS docs/evidence/2026-08-26-stateisolation/manifest.json
+E             PASS manifest/catalog agreement
+E           FAILED: 1 schema issue(s) found
+E           
+E           stderr:
+
+scripts/test_schema_validation.py:28: AssertionError
+=========================== short test summary info ============================
+FAILED scripts/test_init_template.py::test_template_root_bootstrap_gate_passes
+FAILED scripts/test_schema_validation.py::test_root_schema_validation_passes
+  ✗ Configured static-analysis runner unavailable (ruff): stderr:
+[Errno 2] No such file or directory: 'ruff'
+  ✗ State validation failed: stdout:
+============================================================
+DOCUMENTATION HYGIENE CHECK
+============================================================
+
+📄 AGENTS.md
+  ✅ All checks passed
+
+📄 STATUS.md
+  ✅ All checks passed
+
+📄 PROJECT_STATE.yaml
+  ✅ All checks passed
+
+📄 PROJECT_DNA.yaml
+  ✅ All checks passed
+
+📄 NEXT_ACTIONS.md
+  ✅ All checks passed
+
+📄 BACKLOG.md
+  ✅ All checks passed
+
+📄 cross_file_rules
+  ✅ All checks passed
+
+📄 repo role/mode
+  ✅ All checks passed
+
+📄 version alignment
+  ✅ All checks passed
+
+📄 schema validation
+  ❌ FAIL docs/evidence/2026-08-26-stateisolation/README.md
+  ❌     - $: missing required marker '**HEAD:**'
+  ❌ FAILED: 1 schema issue(s) found
+
+📄 README.md
+  ✅ All checks passed
+
+📄 template assets
+  ✅ All checks passed
+
+📄 evidence manifest
+  ✅ All checks passed
+
+============================================================
+FAILED: 3 issue(s) found
+
+Summary:
+  - schema_validation: FAIL docs/evidence/2026-08-26-stateisolation/README.md
+  - schema_validation:     - $: missing required marker '**HEAD:**'
+  - schema_validation: FAILED: 1 schema issue(s) found
+  ✗ Schema validation failed: stdout:
+============================================================
+PROJECTSTATE SCHEMA VALIDATION
+============================================================
+  PASS PROJECT_STATE.yaml
+  PASS PROJECT_DNA.yaml
+  PASS PROJECT_ADAPTER.yaml
+  PASS profiles/catalog.json
+  PASS docs/metrics/profile_metrics.json
+  PASS prompts/FINAL_HANDOFF_TEMPLATE.md
+  PASS docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+  PASS docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/runtime_identity.json
+  PASS docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/README.md
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/runtime_identity.json
+  PASS docs/evidence/2026-06-23-evidence-pack-manifests/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+  PASS docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/README.md
+  PASS docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+  PASS docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/README.md
+  PASS docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+  PASS docs/evidence/2026-06-23-schema-backed-validation/README.md
+  PASS docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+  PASS docs/evidence/2026-06-23-statedd-version-source/README.md
+  PASS docs/evidence/2026-06-23-template-maintenance-mode/README.md
+  PASS docs/evidence/2026-06-28-quality-firewall-template/README.md
+  PASS docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
+  PASS docs/evidence/2026-06-28-quality-firewall-template/manifest.json
+  PASS docs/evidence/2026-06-29-remote-closure/README.md
+  PASS docs/evidence/2026-06-29-remote-closure/runtime_identity.json
+  PASS docs/evidence/2026-06-29-remote-closure/manifest.json
+  PASS docs/evidence/2026-06-29-sanity-repair/README.md
+  PASS docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
+  PASS docs/evidence/2026-06-29-sanity-repair/manifest.json
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/runtime_identity.json
+  PASS docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/manifest.json
+  PASS docs/evidence/2026-07-07-parallel-agent-worktree/README.md
+  PASS docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json
+  PASS docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json
+  PASS docs/evidence/2026-07-07-sanity-logic-repair/README.md
+  PASS docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
+  PASS docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
+  PASS docs/evidence/2026-07-10-context-generator-hygiene/README.md
+  PASS docs/evidence/2026-07-10-context-generator-hygiene/runtime_identity.json
+  PASS docs/evidence/2026-07-10-context-generator-hygiene/manifest.json
+  PASS docs/evidence/2026-07-11-maximum-value-correctness/README.md
+  PASS docs/evidence/2026-07-11-maximum-value-correctness/runtime_identity.json
+  PASS docs/evidence/2026-07-11-maximum-value-correctness/manifest.json
+  PASS docs/evidence/2026-07-11-okf-interoperability/README.md
+  PASS docs/evidence/2026-07-11-okf-interoperability/runtime_identity.json
+  PASS docs/evidence/2026-07-11-okf-interoperability/manifest.json
+  PASS docs/evidence/2026-07-11-statedd-integration/README.md
+  PASS docs/evidence/2026-07-11-statedd-integration/runtime_identity.json
+  PASS docs/evidence/2026-07-11-statedd-integration/manifest.json
+  PASS docs/evidence/2026-07-12-cto-architecture-acceptance/README.md
+  PASS docs/evidence/2026-07-12-cto-architecture-acceptance/runtime_identity.json
+  PASS docs/evidence/2026-07-12-cto-architecture-acceptance/manifest.json
+  PASS docs/evidence/2026-07-12-finish-branch-delete-repair/README.md
+  PASS docs/evidence/2026-07-12-finish-branch-delete-repair/runtime_identity.json
+  PASS docs/evidence/2026-07-12-finish-branch-delete-repair/manifest.json
+  PASS docs/evidence/2026-07-12-golden-path-closure/README.md
+  PASS docs/evidence/2026-07-12-golden-path-closure/runtime_identity.json
+  PASS docs/evidence/2026-07-12-golden-path-closure/manifest.json
+  PASS docs/evidence/2026-07-14-workspace-lifecycle-closure/README.md
+  PASS docs/evidence/2026-07-14-workspace-lifecycle-closure/runtime_identity.json
+  PASS docs/evidence/2026-07-14-workspace-lifecycle-closure/manifest.json
+  PASS docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation/README.md
+  PASS docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation/runtime_identity.json
+  PASS docs/evidence/2026-07-14-workspace-lifecycle-state-reconciliation/manifest.json
+  PASS docs/evidence/2026-08-25-autonomy-workflow-integration/README.md
+  PASS docs/evidence/2026-08-25-autonomy-workflow-integration/runtime_identity.json
+  PASS docs/evidence/2026-08-25-autonomy-workflow-integration/manifest.json
+  PASS docs/evidence/2026-08-25-workflows-catalog/README.md
+  PASS docs/evidence/2026-08-25-workflows-catalog/runtime_identity.json
+  PASS docs/evidence/2026-08-25-workflows-catalog/manifest.json
+  PASS docs/evidence/2026-08-26-improve-run-001/README.md
+  PASS docs/evidence/2026-08-26-improve-run-001/runtime_identity.json
+  PASS docs/evidence/2026-08-26-improve-run-001/manifest.json
+  FAIL docs/evidence/2026-08-26-stateisolation/README.md
+    - $: missing required marker '**HEAD:**'
+  PASS docs/evidence/2026-08-26-stateisolation/runtime_identity.json
+  PASS docs/evidence/2026-08-26-stateisolation/manifest.json
+  PASS manifest/catalog agreement
+FAILED: 1 schema issue(s) found
+  ✗ Strict evidence pack validation failed:
+stdout:
+Manifest check failed:
+  - Hash mismatch for quality_gate_output.txt: expected 7519bd318ea99a9f..., got bacb5006ffeb1557...
+==================================================
+❌ CONFORMANCE FAILED — NOT SLICE CLOSURE

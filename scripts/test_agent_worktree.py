@@ -15,6 +15,34 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ORCHESTRATOR = ROOT / "scripts" / "projectstate_agent_worktree.py"
 
+# Integration subprocesses must never inherit ambient machine session state:
+# a stale read-only latch in the shared default Git-safety state root otherwise
+# fails these regressions spuriously. The legacy variable points at a decoy
+# root holding an ambient latch so a precedence regression fails loudly here.
+GIT_SAFETY_STATE_ENV: dict[str, str] = {}
+
+
+def isolate_git_safety_state(root: Path) -> tuple[Path, Path]:
+    isolated = root / "git-safety-state"
+    decoy = root / "ambient-git-safety-state"
+    decoy.mkdir(mode=0o700)
+    decoy_latch = decoy / "global.latch.json"
+    payload = {
+        "schema": "projectstate.git_safety_latch.v1",
+        "blockers": ["ambient decoy latch from a concurrent session"],
+        "restart_required": True,
+    }
+    decoy_latch.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    GIT_SAFETY_STATE_ENV.clear()
+    GIT_SAFETY_STATE_ENV.update(
+        {
+            "PROJECTSTATE_GIT_SAFETY_STATE_ROOT": str(isolated),
+            "STATEDD_GIT_SAFETY_STATE_ROOT": str(decoy),
+        }
+    )
+    return isolated, decoy
+
+
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -24,6 +52,7 @@ from projectstate_validate_schema import validate_json_schema  # noqa: E402
 
 def run(args: list[str], *, cwd: Path, expect_code: int | None = None) -> subprocess.CompletedProcess[str]:
     environment = os.environ.copy()
+    environment.update(GIT_SAFETY_STATE_ENV)
     environment.setdefault(
         "STATEDD_WORKSPACE_ROOT",
         str(cwd.parent / ".projectstate-test-workspaces"),
@@ -54,6 +83,7 @@ def git(repo: Path, *args: str) -> str:
 
 
 def init_repo(root: Path) -> Path:
+    isolate_git_safety_state(root)
     repo = root / "repo"
     repo.mkdir()
     git(repo, "init", "-b", "main")
@@ -488,7 +518,7 @@ def test_unmanaged_same_origin_sibling_blocks_start_and_handoff() -> None:
         handoff = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "projectstate_handoff.py"), "--repo", str(repo), "--no-include-listeners"],
             cwd=repo,
-            env={**os.environ, "STATEDD_WORKSPACE_ROOT": str(repo.parent / ".projectstate-test-workspaces")},
+            env={**os.environ, **GIT_SAFETY_STATE_ENV, "STATEDD_WORKSPACE_ROOT": str(repo.parent / ".projectstate-test-workspaces")},
             capture_output=True,
             text=True,
             check=False,
