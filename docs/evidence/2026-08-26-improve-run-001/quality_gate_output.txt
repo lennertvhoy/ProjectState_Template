@@ -1,14 +1,3 @@
-$ /tmp/opencode/psvenv/bin/python3 -m compileall -q scripts schemas/examples
-$ /tmp/opencode/psvenv/bin/python3 /home/ff/Projects/ProjectState_Template/scripts/projectstate_profile_metrics.py --root /home/ff/Projects/ProjectState_Template --check
-$ /tmp/opencode/psvenv/bin/python3 -m pytest scripts/ -q
-$ /tmp/opencode/psvenv/bin/python3 -m pytest schemas/examples/ -q
-$ ruff check .
-$ /tmp/opencode/psvenv/bin/python3 scripts/check_state_docs.py
-$ /tmp/opencode/psvenv/bin/python3 scripts/projectstate_validate_schema.py
-$ /tmp/opencode/psvenv/bin/python3 scripts/projectstate_instruction_lint.py --fail-on error
-$ /tmp/opencode/psvenv/bin/python3 scripts/projectstate_efficiency_check.py --gate-level 2
-$ git rev-parse --verify HEAD
-$ git diff --check HEAD
 ==================================================
 ProjectState Quality Gate
 Mode: template/profile conformance — NOT SLICE CLOSURE
@@ -16,6 +5,7 @@ Mode: template/profile conformance — NOT SLICE CLOSURE
 🧩 Compiling Python sources...
   ✓ Python sources compile
 📏 Reproducing profile metrics...
+  ✓ Profile/context metrics reproduce from their recorded proof commit
 🧪 Running tests...
   ✓ Tests passed (/tmp/opencode/psvenv/bin/python3 -m pytest scripts/ -q)
   ✓ Tests passed (/tmp/opencode/psvenv/bin/python3 -m pytest schemas/examples/ -q)
@@ -32,7 +22,6 @@ Mode: template/profile conformance — NOT SLICE CLOSURE
 🔎 Linting instructions...
   ✓ No instruction smells (errors)
 ⚡ Running efficiency check...
-  ✓ Efficiency check passed
 🧹 Checking diff whitespace...
   ✓ Git diff whitespace clean
 
@@ -40,7 +29,28 @@ Mode: template/profile conformance — NOT SLICE CLOSURE
 Warnings:
   ⚠ Conformance mode: no active slice, so strict slice evidence is not applicable
 Failures:
-  ✗ Profile metrics drift: stderr:
-Profile metrics refused: source inputs do not match the recorded template commit
+  ✗ Efficiency check failed:
+stdout:
+==================================================
+ProjectState Efficiency Check
+==================================================
+
+Gate level: 2
+Budget file: EFFICIENCY_BUDGET.yaml
+
+## measured_context_and_footprint
+  profile: template_repository
+  startup_files: 4
+  startup_bytes: 19478
+  startup_estimated_tokens: 4870
+  token_estimator: utf8_bytes_div_4_ceiling
+  footprint_scope: repository
+  footprint_files: 397
+  footprint_bytes: 2663686
+
+## context_footprint
+  [ERROR] footprint_bytes is 2663686, max 2660000 for profile template_repository
+
+Summary: 1 error(s), 0 warning(s)
 ==================================================
 ❌ CONFORMANCE FAILED — NOT SLICE CLOSURE

@@ -82,7 +82,10 @@ context_budgets:
       # skill, /projectstate-improve command, and one closure evidence pack with
       # an external-receipt copy; measured at 2,643,416 bytes before receipt
       # compaction.
-      max_footprint_bytes: 2660000
+      # BL-WORKFLOW-CATALOG-001 adds the workflows-catalog evidence pack;
+      # BL-IMPROVE-RUN-001 adds its reconciliation pack: measured at
+      # 2,663,686 bytes combined.
+      max_footprint_bytes: 2672000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
