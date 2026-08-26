@@ -1,13 +1,13 @@
 {
   "generated_at": "2026-07-11T00:00:00Z",
-  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit dd518be0f4ee24c49a8e52fbf69c0e90fe881fbb",
+  "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit b64ed97d446834feeca55b9b971637ff3cae1ee5",
   "profiles": [
     {
-      "actual_tokens": 94970,
+      "actual_tokens": null,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 6051,
-          "estimated_tokens": 6371,
+          "actual_tokens": null,
+          "estimated_tokens": 6445,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -28,10 +28,10 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 25477
+          "total_bytes": 25771
         },
         "ci_diagnosis": {
-          "actual_tokens": 7994,
+          "actual_tokens": null,
           "estimated_tokens": 9460,
           "file_count": 5,
           "included_files": [
@@ -55,7 +55,7 @@
           "total_bytes": 37832
         },
         "closure_review": {
-          "actual_tokens": 2019,
+          "actual_tokens": null,
           "estimated_tokens": 2236,
           "file_count": 4,
           "included_files": [
@@ -77,7 +77,7 @@
           "total_bytes": 8939
         },
         "initial_orientation": {
-          "actual_tokens": 2019,
+          "actual_tokens": null,
           "estimated_tokens": 2236,
           "file_count": 4,
           "included_files": [
@@ -96,7 +96,7 @@
           "total_bytes": 8939
         },
         "interrupted_resume": {
-          "actual_tokens": 2019,
+          "actual_tokens": null,
           "estimated_tokens": 2236,
           "file_count": 4,
           "included_files": [
@@ -115,7 +115,7 @@
           "total_bytes": 8939
         },
         "normal_implementation": {
-          "actual_tokens": 2411,
+          "actual_tokens": null,
           "estimated_tokens": 2701,
           "file_count": 5,
           "included_files": [
@@ -136,7 +136,7 @@
           "total_bytes": 10798
         }
       },
-      "estimated_tokens": 104204,
+      "estimated_tokens": 104278,
       "generated_file_count": 41,
       "profile": "minimal",
       "quality_gate": {
@@ -150,18 +150,18 @@
         "core",
         "workflows"
       ],
-      "startup_actual_tokens": 2019,
+      "startup_actual_tokens": null,
       "startup_bytes": 8939,
       "startup_estimated_tokens": 2236,
       "startup_file_count": 4,
-      "total_bytes": 416756
+      "total_bytes": 417050
     },
     {
-      "actual_tokens": 180515,
+      "actual_tokens": null,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 6060,
-          "estimated_tokens": 6377,
+          "actual_tokens": null,
+          "estimated_tokens": 6451,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -182,10 +182,10 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 25504
+          "total_bytes": 25798
         },
         "ci_diagnosis": {
-          "actual_tokens": 8003,
+          "actual_tokens": null,
           "estimated_tokens": 9467,
           "file_count": 5,
           "included_files": [
@@ -209,7 +209,7 @@
           "total_bytes": 37862
         },
         "closure_review": {
-          "actual_tokens": 3003,
+          "actual_tokens": null,
           "estimated_tokens": 3284,
           "file_count": 5,
           "included_files": [
@@ -230,7 +230,7 @@
           "total_bytes": 13131
         },
         "initial_orientation": {
-          "actual_tokens": 2028,
+          "actual_tokens": null,
           "estimated_tokens": 2243,
           "file_count": 4,
           "included_files": [
@@ -249,7 +249,7 @@
           "total_bytes": 8969
         },
         "interrupted_resume": {
-          "actual_tokens": 2028,
+          "actual_tokens": null,
           "estimated_tokens": 2243,
           "file_count": 4,
           "included_files": [
@@ -268,7 +268,7 @@
           "total_bytes": 8969
         },
         "normal_implementation": {
-          "actual_tokens": 2420,
+          "actual_tokens": null,
           "estimated_tokens": 2708,
           "file_count": 5,
           "included_files": [
@@ -289,7 +289,7 @@
           "total_bytes": 10828
         }
       },
-      "estimated_tokens": 197724,
+      "estimated_tokens": 197798,
       "generated_file_count": 75,
       "profile": "solo",
       "quality_gate": {
@@ -304,18 +304,18 @@
         "proof",
         "workflows"
       ],
-      "startup_actual_tokens": 2028,
+      "startup_actual_tokens": null,
       "startup_bytes": 8969,
       "startup_estimated_tokens": 2243,
       "startup_file_count": 4,
-      "total_bytes": 790781
+      "total_bytes": 791075
     },
     {
-      "actual_tokens": 240007,
+      "actual_tokens": null,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 6064,
-          "estimated_tokens": 6378,
+          "actual_tokens": null,
+          "estimated_tokens": 6452,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -336,10 +336,10 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 25507
+          "total_bytes": 25801
         },
         "ci_diagnosis": {
-          "actual_tokens": 8007,
+          "actual_tokens": null,
           "estimated_tokens": 9468,
           "file_count": 5,
           "included_files": [
@@ -363,7 +363,7 @@
           "total_bytes": 37865
         },
         "closure_review": {
-          "actual_tokens": 3007,
+          "actual_tokens": null,
           "estimated_tokens": 3285,
           "file_count": 5,
           "included_files": [
@@ -384,7 +384,7 @@
           "total_bytes": 13134
         },
         "initial_orientation": {
-          "actual_tokens": 2032,
+          "actual_tokens": null,
           "estimated_tokens": 2244,
           "file_count": 4,
           "included_files": [
@@ -403,7 +403,7 @@
           "total_bytes": 8972
         },
         "interrupted_resume": {
-          "actual_tokens": 2032,
+          "actual_tokens": null,
           "estimated_tokens": 2244,
           "file_count": 4,
           "included_files": [
@@ -422,7 +422,7 @@
           "total_bytes": 8972
         },
         "normal_implementation": {
-          "actual_tokens": 2424,
+          "actual_tokens": null,
           "estimated_tokens": 2709,
           "file_count": 5,
           "included_files": [
@@ -443,7 +443,7 @@
           "total_bytes": 10831
         }
       },
-      "estimated_tokens": 264261,
+      "estimated_tokens": 264335,
       "generated_file_count": 89,
       "profile": "team",
       "quality_gate": {
@@ -459,18 +459,18 @@
         "proof",
         "workflows"
       ],
-      "startup_actual_tokens": 2032,
+      "startup_actual_tokens": null,
       "startup_bytes": 8972,
       "startup_estimated_tokens": 2244,
       "startup_file_count": 4,
-      "total_bytes": 1056900
+      "total_bytes": 1057194
     },
     {
-      "actual_tokens": 240041,
+      "actual_tokens": null,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": 6079,
-          "estimated_tokens": 6420,
+          "actual_tokens": null,
+          "estimated_tokens": 6494,
           "file_count": 7,
           "included_files": [
             "AGENTS.md",
@@ -491,10 +491,10 @@
             "EFFICIENCY_BUDGET.yaml",
             "profiles/catalog.json"
           ],
-          "total_bytes": 25670
+          "total_bytes": 25964
         },
         "ci_diagnosis": {
-          "actual_tokens": 8022,
+          "actual_tokens": null,
           "estimated_tokens": 9508,
           "file_count": 5,
           "included_files": [
@@ -518,7 +518,7 @@
           "total_bytes": 38023
         },
         "closure_review": {
-          "actual_tokens": 3022,
+          "actual_tokens": null,
           "estimated_tokens": 3325,
           "file_count": 5,
           "included_files": [
@@ -539,7 +539,7 @@
           "total_bytes": 13292
         },
         "initial_orientation": {
-          "actual_tokens": 2047,
+          "actual_tokens": null,
           "estimated_tokens": 2284,
           "file_count": 4,
           "included_files": [
@@ -558,7 +558,7 @@
           "total_bytes": 9130
         },
         "interrupted_resume": {
-          "actual_tokens": 2047,
+          "actual_tokens": null,
           "estimated_tokens": 2284,
           "file_count": 4,
           "included_files": [
@@ -577,7 +577,7 @@
           "total_bytes": 9130
         },
         "normal_implementation": {
-          "actual_tokens": 2439,
+          "actual_tokens": null,
           "estimated_tokens": 2749,
           "file_count": 5,
           "included_files": [
@@ -598,7 +598,7 @@
           "total_bytes": 10989
         }
       },
-      "estimated_tokens": 264375,
+      "estimated_tokens": 264449,
       "generated_file_count": 89,
       "profile": "regulated",
       "quality_gate": {
@@ -615,11 +615,11 @@
         "regulated_controls",
         "workflows"
       ],
-      "startup_actual_tokens": 2047,
+      "startup_actual_tokens": null,
       "startup_bytes": 9130,
       "startup_estimated_tokens": 2284,
       "startup_file_count": 4,
-      "total_bytes": 1057348
+      "total_bytes": 1057642
     }
   ],
   "provenance": {
@@ -715,14 +715,14 @@
     "scripts/projectstate_worktree_guard.py",
     "skills/improve/SKILL.md"
   ],
-  "source_tree_sha256": "48ba3be5114884a0bd9ed729a050255b3ddfe160088b917b7bb12c0f55642fbb",
-  "template_commit": "dd518be0f4ee24c49a8e52fbf69c0e90fe881fbb",
+  "source_tree_sha256": "0a68d3632c5528d0d15c6b7ead62936b0306ca569a2e59779ca637b8a3c023b4",
+  "template_commit": "b64ed97d446834feeca55b9b971637ff3cae1ee5",
   "template_version": "projectstate-template-v5",
   "tokenizer": {
-    "actual_counts_available": true,
+    "actual_counts_available": false,
     "actual_encoding": "o200k_base",
-    "actual_tokenizer_package": "tiktoken",
-    "actual_tokenizer_version": "0.12.0",
+    "actual_tokenizer_package": null,
+    "actual_tokenizer_version": null,
     "estimated_method": "sum(ceil(normalized_utf8_file_bytes/4))"
   }
 }

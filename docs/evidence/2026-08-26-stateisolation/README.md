@@ -4,8 +4,8 @@
 **Date:** 2026-08-26
 **Agent:** opencode integration agent (ox-alpha)
 **Branch:** `bl-bl-stateisolation-001-agen-6wnng`
-**HEAD:** pending proof commit (final value recorded in `manifest.json`)
-**Proof head:** recorded in `manifest.json` after the proof commit; final state commit follows
+**HEAD:** b64ed97d446834feeca55b9b971637ff3cae1ee5 (proof tree; final state commit follows)
+**Proof head:** b64ed97d446834feeca55b9b971637ff3cae1ee5
 
 ## Claims
 

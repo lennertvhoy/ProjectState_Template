@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-08-26T10:18:59+02:00",
+  "captured_at": "2026-08-26T10:34:53+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "547aa912a67f64d53f5b0e8d43ec473586f1f9e0",
+  "git_head": "b64ed97d446834feeca55b9b971637ff3cae1ee5",
   "in_container": false,
   "kernel": "7.1.8-arch1-3",
   "limits": [],
@@ -14,15 +14,15 @@
   "python": "3.14.7",
   "repo": {
     "branch": "bl-bl-stateisolation-001-agen-6wnng",
-    "head": "547aa912a67f64d53f5b0e8d43ec473586f1f9e0",
+    "head": "b64ed97d446834feeca55b9b971637ff3cae1ee5",
     "path": ".",
-    "status_porcelain": "M scripts/test_agent_worktree.py\n M scripts/test_golden_path.py\n?? docs/evidence/2026-08-26-stateisolation/\n?? docs/evidence/after_fix_hostile_env.txt\n?? docs/evidence/repro_before_fix_golden_path.txt",
-    "worktree_clean": false
+    "status_porcelain": "",
+    "worktree_clean": true
   },
   "runtime": {
     "reason": "Template root has no application runtime; repo truth is not runtime truth",
     "required": false
   },
   "schema": "projectstate.runtime_identity.v2",
-  "timestamp": "2026-08-26T08:18:59.619909Z"
+  "timestamp": "2026-08-26T08:34:53.462533Z"
 }
