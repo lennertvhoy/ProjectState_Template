@@ -825,3 +825,22 @@
   - local implementation and CI-parity validation of the reconciliation repairs
 - Type: implementation | test | state_update
 - as_of: 2026-08-26T01:00:00+02:00
+
+## EV-2026-08-26-002: Integration-test Git-safety state-root isolation
+
+- File: docs/evidence/2026-08-26-stateisolation/README.md
+- File: docs/evidence/2026-08-26-stateisolation/manifest.json
+- Title: BL-STATEISOLATION-001 per-test Git-safety state-root isolation
+- Source/System: test | defect_repair
+- Action: Pinned both integration harnesses to per-test Git-safety state roots
+  with a hostile decoy latch guarding variable precedence; reproduced the
+  ambient-latch contamination on main first, then closed it harness-only.
+- Shows:
+  - golden-path regression fails under an ambient latch before repair
+  - golden path and 27/27 agent-worktree tests pass under the same hostile
+    environment after repair, with the decoy untouched
+  - full CI-parity level-2 conformance gate exit 0 at the proof tree
+- Proves:
+  - local implementation and CI-parity validation of the isolation repair
+- Type: implementation | test | command_output
+- as_of: 2026-08-26T12:00:00+02:00

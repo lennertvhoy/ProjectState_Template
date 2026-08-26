@@ -46,9 +46,37 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Integration subprocesses must never inherit ambient machine session state:
+# a stale read-only latch in the shared default Git-safety state root otherwise
+# fails this regression spuriously. The legacy variable points at a decoy root
+# holding an ambient latch so a precedence regression fails loudly here.
+GIT_SAFETY_STATE_ENV: dict[str, str] = {}
+
+
+def isolate_git_safety_state(root: Path) -> tuple[Path, Path]:
+    isolated = root / "git-safety-state"
+    decoy = root / "ambient-git-safety-state"
+    decoy.mkdir(mode=0o700)
+    decoy_latch = decoy / "global.latch.json"
+    payload = {
+        "schema": "projectstate.git_safety_latch.v1",
+        "blockers": ["ambient decoy latch from a concurrent session"],
+        "restart_required": True,
+    }
+    decoy_latch.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    GIT_SAFETY_STATE_ENV.clear()
+    GIT_SAFETY_STATE_ENV.update(
+        {
+            "PROJECTSTATE_GIT_SAFETY_STATE_ROOT": str(isolated),
+            "STATEDD_GIT_SAFETY_STATE_ROOT": str(decoy),
+        }
+    )
+    return isolated, decoy
+
 
 def run(args: list[str], cwd: Path, *, expected: int = 0) -> str:
     environment = os.environ.copy()
+    environment.update(GIT_SAFETY_STATE_ENV)
     environment.setdefault(
         "STATEDD_WORKSPACE_ROOT",
         str(cwd.parent / ".projectstate-test-workspaces"),
@@ -107,6 +135,8 @@ def start_agent(repo: Path, slice_id: str, agent_id: str) -> tuple[Path, str]:
 def test_golden_path() -> None:
     with tempfile.TemporaryDirectory(prefix="projectstate-golden-path-") as tmp:
         root = Path(tmp)
+        isolated_state_root, decoy_state_root = isolate_git_safety_state(root)
+        decoy_latch_before = (decoy_state_root / "global.latch.json").read_bytes()
         template_clone = root / "template-source"
         downstream = root / "downstream"
         remote = root / "downstream.git"
@@ -282,6 +312,13 @@ def test_golden_path() -> None:
 
         agent_a, branch_a = start_agent(downstream, "BL-GOLDEN-PATH-001", "agent-a111")
         agent_b, branch_b = start_agent(downstream, "BL-GOLDEN-PATH-001", "agent-b222")
+        if not (isolated_state_root / ".state.lock").exists():
+            raise AssertionError("git-safety preflight did not use the isolated test state root")
+        decoy_now = sorted(path.name for path in decoy_state_root.iterdir())
+        if decoy_now != ["global.latch.json"] or (
+            decoy_state_root / "global.latch.json"
+        ).read_bytes() != decoy_latch_before:
+            raise AssertionError("ambient decoy state root was consulted or mutated")
         (agent_a / "subagent-a.txt").write_text("independent package A\n", encoding="utf-8")
         (agent_b / "subagent-b.txt").write_text("independent package B\n", encoding="utf-8")
         commit_a = commit(agent_a, "feat: integrate package A")

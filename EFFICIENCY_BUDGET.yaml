@@ -63,7 +63,6 @@ context_budgets:
       max_startup_files: 5
       max_startup_bytes: 40000
       max_startup_estimated_tokens: 10000
-      max_footprint_files: 400
       # Includes the optional OKF validator, extension schema, and contained scaffold.
       # Includes the committed OKF evidence/state finalization surface; keep
       # this above the measured full-template footprint without changing
@@ -85,7 +84,12 @@ context_budgets:
       # BL-WORKFLOW-CATALOG-001 adds the workflows-catalog evidence pack;
       # BL-IMPROVE-RUN-001 adds its reconciliation pack: measured at
       # 2,663,686 bytes combined.
-      max_footprint_bytes: 2672000
+      # BL-STATEISOLATION-001 adds its defect-repair evidence pack (README,
+      # runtime identity, gate output, before/after repro artifacts);
+      # measured at 404 files and 2,682,517 bytes before the pack absorbed
+      # its own verbose gate transcript (peak measured 2,708,119 bytes).
+      max_footprint_files: 405
+      max_footprint_bytes: 2730000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
