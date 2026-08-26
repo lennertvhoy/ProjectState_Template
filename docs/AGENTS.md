@@ -11,9 +11,9 @@ This directory holds reference documentation for ProjectState: failure taxonomy,
 ## Document Catalog
 | File | Purpose |
 |------|---------|
-| `FAILURE_TAXONOMY.md` | Severity/class vocabulary for bad events |
-| `QUALITY_FIREWALL.md` | Reusable closure-gate contract |
-| `INCIDENT_RESPONSE.md` | Standard bad-event ingestion workflow |
+| `../FAILURE_TAXONOMY.md` (repo root) | Severity/class vocabulary for bad events |
+| `../QUALITY_FIREWALL.md` (repo root) | Reusable closure-gate contract |
+| `../INCIDENT_RESPONSE.md` (repo root) | Standard bad-event ingestion workflow |
 | `failure_scans/TEMPLATE.md` | Pre-mortem template for risky work |
 | `quality_gates/README.md` | Downstream project-specific gate index |
 | `adr/` | Architecture Decision Records |

@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-08-26T09:29:18+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "1b9271ab88fa46b589535e40170e2caf6c8e627e",
+  "in_container": false,
+  "kernel": "7.1.8-arch1-3",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
+  "python": "3.14.7",
+  "repo": {
+    "branch": "bl-improve-run-001-pr",
+    "head": "1b9271ab88fa46b589535e40170e2caf6c8e627e",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "Template root has no application runtime; repo truth is not runtime truth",
+    "required": false
+  },
+  "schema": "projectstate.runtime_identity.v2",
+  "timestamp": "2026-08-26T07:29:18.532633Z"
+}

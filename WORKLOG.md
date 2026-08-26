@@ -1242,3 +1242,32 @@
 - init_template.assets_for_profile resolves improve into all four profiles.
 - Full CI-parity level-2 conformance gate exit 0 at the proof tree, including
   generated-repo gates for every profile.
+
+## 2026-08-26 - BL-IMPROVE-RUN-001 dogfood improve run: rollout reconciliation and rot repairs
+
+**Type:** measured_improvement
+**Status:** LOCAL_VALIDATED
+**Backlog item:** [BL-IMPROVE-RUN-001]
+**Branch:** bl-improve-run-001
+
+### Assessment findings and repairs (ranked)
+
+1. Stale live truth: NEXT_ACTIONS/BACKLOG still listed the downstream rollout
+   as active after it executed; the rollout run itself was absent from
+   WORKLOG/EVIDENCE_LOG/STATUS. Reconciled: BL-WORKFLOW-CATALOG-001 closed with
+   outcome (2 upgrade PRs, 2 transactional non-git upgrades, 52 pickup issues),
+   queue returned to a stable empty state, STATUS snapshot extended, this entry
+   plus an EV record added.
+2. docs/AGENTS.md Document Catalog listed root-level reference files as if
+   docs-local; labels corrected to `(repo root)`.
+3. docs/ACCEPTANCE_FREEZES.md dangling v4 release-notes filename: append-only
+   errata recorded instead of editing history.
+4. scripts/projectstate_instruction_lint.py: removed dead `known_skills`
+   attribute (defined, never referenced).
+5. docs/QUICK_COMMANDS.md: upgrade section now notes the adopt-first path for
+   pre-manifest repos and points at /projectstate-improve.
+
+### Validation
+
+Full CI-parity level-2 conformance gate run at the slice proof tree; result
+recorded in the evidence pack for this run.

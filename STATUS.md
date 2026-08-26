@@ -1,12 +1,15 @@
 # ProjectState Template Status
 
-**Updated At:** 2026-08-25
+**Updated At:** 2026-08-26
 **Execution Mode:** template-maintenance
 **Project State:** operational_template_complete
 **Public URL:** https://github.com/lennertvhoy/ProjectState_Template/releases/tag/v5
 
 ## Snapshot
 
+- The workflows asset set (BL-WORKFLOW-CATALOG-001, PR #21) ships the improve
+  workflow to every downstream profile; the cross-repo rollout executed with
+  upgrade PRs, transactional non-git upgrades, and 52 in-repo pickup issues.
 - The autonomous improvement workflow is integrated and remotely closed:
   `skills/improve/SKILL.md`, `/projectstate-improve`, the Autonomy Ladder in
   `AGENTS.md`, and subsystem enumeration drift repairs merged through PR #19
