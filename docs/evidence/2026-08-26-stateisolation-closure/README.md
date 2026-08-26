@@ -4,8 +4,8 @@
 **Date:** 2026-08-26
 **Agent:** opencode integration agent (ox-alpha)
 **Branch:** `bl-bl-stateisolation-002-agen-3cj6y`
-**HEAD:** recorded in `manifest.json`
-**Proof head:** recorded in `manifest.json`
+**HEAD:** 04034c696b5c75f708ea949a2259ba2184d705d9 (proof tree)
+**Proof head:** 04034c696b5c75f708ea949a2259ba2184d705d9
 
 ## Claims
 

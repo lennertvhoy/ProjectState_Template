@@ -1,11 +1,11 @@
 {
   "arch": "x86_64",
-  "captured_at": "2026-08-26T10:57:56+02:00",
+  "captured_at": "2026-08-26T10:59:32+02:00",
   "checks": {
     "head_recorded": true,
     "runtime_not_applicable_recorded": true
   },
-  "git_head": "70195fa8acfdf644890a86efb13ca6ba7026d372",
+  "git_head": "04034c696b5c75f708ea949a2259ba2184d705d9",
   "in_container": false,
   "kernel": "7.1.8-arch1-3",
   "limits": [],
@@ -14,15 +14,15 @@
   "python": "3.14.7",
   "repo": {
     "branch": "bl-bl-stateisolation-002-agen-3cj6y",
-    "head": "70195fa8acfdf644890a86efb13ca6ba7026d372",
+    "head": "04034c696b5c75f708ea949a2259ba2184d705d9",
     "path": ".",
-    "status_porcelain": "M EFFICIENCY_BUDGET.yaml\n M PROJECT_STATE.yaml\n M WORKLOG.md\n M docs/EVIDENCE_LOG.md\n?? docs/evidence/2026-08-26-stateisolation-closure/",
-    "worktree_clean": false
+    "status_porcelain": "",
+    "worktree_clean": true
   },
   "runtime": {
     "reason": "Ledger reconciliation only; no application runtime",
     "required": false
   },
   "schema": "projectstate.runtime_identity.v2",
-  "timestamp": "2026-08-26T08:57:56.584912Z"
+  "timestamp": "2026-08-26T08:59:32.001691Z"
 }

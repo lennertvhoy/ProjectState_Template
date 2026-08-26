@@ -1315,6 +1315,7 @@ blocker was cleared via the documented `--restart-session` restart.
 **Status:** CLOSURE_RECORDED
 **Slice:** [BL-STATEISOLATION-002]
 **Branch:** bl-bl-stateisolation-002-agen-3cj6y
+**Git Head:** proof tree 04034c696b5c75f708ea949a2259ba2184d705d9
 
 ### What changed
 
