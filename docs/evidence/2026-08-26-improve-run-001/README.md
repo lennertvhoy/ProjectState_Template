@@ -4,8 +4,8 @@
 **Date:** 2026-08-26
 **Agent:** opencode integration agent (ox-alpha)
 **Branch:** `bl-improve-run-001`
-**HEAD:** 7ad5b8eda2aab3b84b247a7c683fca050e4556e8
-**Proof head:** 7ad5b8eda2aab3b84b247a7c683fca050e4556e8
+**HEAD:** a0c781a3fcdb129cc8cc5bfe48766335d4ead047
+**Proof head:** a0c781a3fcdb129cc8cc5bfe48766335d4ead047
 
 ## Claims
 
@@ -83,7 +83,7 @@
 
 ## Closure State At Current Worktree
 
-- Implemented: yes; captured at immutable proof head `7ad5b8eda2aab3b84b247a7c683fca050e4556e8`
+- Implemented: yes; captured at immutable proof head `a0c781a3fcdb129cc8cc5bfe48766335d4ead047`
 - Validated locally: yes
 - Closure-grade: no until remote finalization
 - Remote closure: pending
