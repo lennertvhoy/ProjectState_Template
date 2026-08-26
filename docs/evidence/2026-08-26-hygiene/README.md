@@ -2,6 +2,8 @@
 
 **Slice:** [BL-EVIDENCE-HYGIENE-001]
 **Date:** 2026-08-26
+**Branch:** `bl-bl-evidence-hygiene-001-agen-u8uea`
+**HEAD:** c6a48a4d2854b4a87669add9bfd9359be8e1768f (proof tree)
 **Agent:** opencode integration agent (ox-alpha)
 
 ## Claims
@@ -46,7 +48,7 @@
 | Check | Command / Path | Result |
 | --- | --- | --- |
 | identity proof | sha256 comparison of removed HEAD blobs vs pack copies | identical |
-| full level-2 gate | `projectstate_quality_gate.py --gate-level 2 --conformance --verbose` | pass; exit 0 |
+| full level-2 gate | `projectstate_quality_gate.py --gate-level 2 --conformance --verbose` | pass; exit 0 (see `quality_gate_output.txt`) |
 
 ## Runtime Identity
 
@@ -57,3 +59,19 @@
 
 - Browser verification required: no
 - Reason: file removal only.
+
+## Closure State
+
+- Implemented: yes; captured at proof head `c6a48a4d2854b4a87669add9bfd9359be8e1768f`
+- Validated locally: yes
+- Closure-grade: no until remote finalization
+- Remote closure: pending
+- Human product acceptance: pending (separate boundary)
+
+## Human Override
+
+- Human override used: no
+
+## Risks / What Remains Partial
+
+- None beyond the standard remote-finalization boundary for this slice itself.

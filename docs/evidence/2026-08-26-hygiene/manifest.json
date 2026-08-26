@@ -5,21 +5,29 @@
       "path": "README.md",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "4012837509a78b95374aca99866b60b8d24b215cf1db7dbc70a6e5a5646f5899"
+      "sha256": "d5274aae8183342578a16ac9a7d0a80029fa9f684bddc128cbea9981b74273b5"
     },
     {
       "kind": "runtime_identity",
       "path": "runtime_identity.json",
       "redaction_status": "checked_with_limits",
       "sensitive_data": "none_found",
-      "sha256": "ad17a3ae34c11b0a1dcd24151a4d494612315d16cf01dba1e915c3f53d51ba7a"
+      "sha256": "d291613e0b22948218755984a6cb6e7b775e6d0b70f728f2bfda9e0f60c62035"
+    },
+    {
+      "kind": "command_output",
+      "path": "quality_gate_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "15b84a59cdcd68045045027e9ef9ddf65ef9ba05cba6386271057af15ed6c2ae"
     }
   ],
   "claims": [
     {
       "claim": "Two stray docs/evidence-root duplicates removed after proving byte-identity with the authoritative copies inside the BL-STATEISOLATION-001 pack.",
       "evidence": [
-        "README.md"
+        "README.md",
+        "quality_gate_output.txt"
       ],
       "id": "stray-duplicates-removed",
       "status": "validated"
@@ -39,7 +47,8 @@
     "automated_scan": "passed",
     "known_limits": [
       "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
-      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets."
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in quality_gate_output.txt; this does not prove absence of secrets."
     ],
     "manual_review": "completed",
     "status": "checked_with_limits"
