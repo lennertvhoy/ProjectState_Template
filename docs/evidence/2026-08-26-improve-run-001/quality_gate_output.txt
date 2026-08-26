@@ -1,0 +1,46 @@
+$ /tmp/opencode/psvenv/bin/python3 -m compileall -q scripts schemas/examples
+$ /tmp/opencode/psvenv/bin/python3 /home/ff/Projects/ProjectState_Template/scripts/projectstate_profile_metrics.py --root /home/ff/Projects/ProjectState_Template --check
+$ /tmp/opencode/psvenv/bin/python3 -m pytest scripts/ -q
+$ /tmp/opencode/psvenv/bin/python3 -m pytest schemas/examples/ -q
+$ ruff check .
+$ /tmp/opencode/psvenv/bin/python3 scripts/check_state_docs.py
+$ /tmp/opencode/psvenv/bin/python3 scripts/projectstate_validate_schema.py
+$ /tmp/opencode/psvenv/bin/python3 scripts/projectstate_instruction_lint.py --fail-on error
+$ /tmp/opencode/psvenv/bin/python3 scripts/projectstate_efficiency_check.py --gate-level 2
+$ git rev-parse --verify HEAD
+$ git diff --check HEAD
+==================================================
+ProjectState Quality Gate
+Mode: template/profile conformance — NOT SLICE CLOSURE
+==================================================
+🧩 Compiling Python sources...
+  ✓ Python sources compile
+📏 Reproducing profile metrics...
+🧪 Running tests...
+  ✓ Tests passed (/tmp/opencode/psvenv/bin/python3 -m pytest scripts/ -q)
+  ✓ Tests passed (/tmp/opencode/psvenv/bin/python3 -m pytest schemas/examples/ -q)
+🔍 Running static analysis...
+  ✓ ruff passed
+📋 Validating state files...
+  ✓ State files valid
+📐 Validating schemas...
+  ✓ Schemas valid
+📦 Checking evidence...
+  ✓ Evidence log has content (conformance mode; no active slice)
+🧊 Checking acceptance freezes...
+  ✓ Acceptance freezes present
+🔎 Linting instructions...
+  ✓ No instruction smells (errors)
+⚡ Running efficiency check...
+  ✓ Efficiency check passed
+🧹 Checking diff whitespace...
+  ✓ Git diff whitespace clean
+
+==================================================
+Warnings:
+  ⚠ Conformance mode: no active slice, so strict slice evidence is not applicable
+Failures:
+  ✗ Profile metrics drift: stderr:
+Profile metrics refused: source inputs do not match the recorded template commit
+==================================================
+❌ CONFORMANCE FAILED — NOT SLICE CLOSURE
