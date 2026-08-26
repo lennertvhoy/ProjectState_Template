@@ -1,0 +1,74 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "22cd1c800a48d2d0129b9a27ea8c5ebd20bbd452b0f500a4f70f2b2b05ab63f0"
+    },
+    {
+      "kind": "other",
+      "path": "finish_slice_handoff.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "39498fd6cc6a55e5bb52162d6c75526287e861f463f9862a05f4bce3b1fe4345"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "d3f40d01c2c0d07b358fe55532f6788605831b4848b03f031bba7f7c5dc08c0c"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "BL-STATEISOLATION-001 remotely closed via exact-head squash merge 70195fa with direct-main CI SUCCESS, branch deletion, and quarantined clone receipt.",
+      "evidence": [
+        "finish_slice_handoff.json"
+      ],
+      "id": "remote-closure-recorded",
+      "status": "validated"
+    },
+    {
+      "claim": "WORKLOG and EVIDENCE_LOG carry the closure facts as additions without history rewrites.",
+      "evidence": [
+        "README.md"
+      ],
+      "id": "ledgers-append-only-updated",
+      "status": "validated"
+    },
+    {
+      "claim": "Runtime boundary recorded; repo truth is distinct from runtime truth.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-08-26T13:15:00+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in finish_slice_handoff.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-stateisolation-002-agen-3cj6y",
+    "head": "70195fa8acfdf644890a86efb13ca6ba7026d372"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "projectstate.evidence_manifest.v1",
+  "slice_id": "BL-STATEISOLATION-002"
+}

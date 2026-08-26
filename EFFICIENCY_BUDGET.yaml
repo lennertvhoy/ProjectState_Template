@@ -88,8 +88,10 @@ context_budgets:
       # runtime identity, gate output, before/after repro artifacts);
       # measured at 404 files and 2,682,517 bytes before the pack absorbed
       # its own verbose gate transcript (peak measured 2,708,119 bytes).
-      max_footprint_files: 405
-      max_footprint_bytes: 2730000
+      # BL-STATEISOLATION-002 records the closure receipt in a small
+      # reconciliation pack; measured at 409 files and 2,701,500 bytes.
+      max_footprint_files: 410
+      max_footprint_bytes: 2740000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000

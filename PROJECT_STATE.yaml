@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-08-26T12:05:00+02:00
-  updated_by: integration_agent_closing_bl-stateisolation-001
+  updated_at: 2026-08-26T13:05:00+02:00
+  updated_by: integration_agent_recording_bl-stateisolation-001_remote_closure
   version: "projectstate-template-v5"
 
 workflow:
