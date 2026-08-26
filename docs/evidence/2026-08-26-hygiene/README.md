@@ -3,7 +3,8 @@
 **Slice:** [BL-EVIDENCE-HYGIENE-001]
 **Date:** 2026-08-26
 **Branch:** `bl-bl-evidence-hygiene-001-agen-u8uea`
-**HEAD:** c6a48a4d2854b4a87669add9bfd9359be8e1768f (proof tree)
+**HEAD:** c6a48a4d2854b4a87669add9bfd9359be8e1768f
+**Proof head:** c6a48a4d2854b4a87669add9bfd9359be8e1768f
 **Agent:** opencode integration agent (ox-alpha)
 
 ## Claims
