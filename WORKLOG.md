@@ -1308,3 +1308,21 @@ blocker was cleared via the documented `--restart-session` restart.
   PASS; clean-env and legacy-only hostile variants PASS.
 - Full CI-parity level-2 conformance gate exit 0 at the proof tree recorded in
   the evidence pack for this slice.
+
+## 2026-08-26 - BL-STATEISOLATION-002 remote closure of BL-STATEISOLATION-001
+
+**Type:** state_reconciliation
+**Status:** CLOSURE_RECORDED
+**Slice:** [BL-STATEISOLATION-002]
+**Branch:** bl-bl-stateisolation-002-agen-3cj6y
+**Git Head:** proof tree 04034c696b5c75f708ea949a2259ba2184d705d9
+
+### What changed
+
+- Records the verified remote closure of BL-STATEISOLATION-001: PR #76 merged
+  by exact-head squash as `70195fa8acfdf644890a86efb13ca6ba7026d372`;
+  direct-main CI run `32949925520` SUCCESS; remote branch deleted; the managed
+  finish clone was released and quarantined with physical original-path
+  absence proven by the external receipt (copied into this slice's evidence
+  pack).
+- EVIDENCE_LOG gains EV-2026-08-26-003 with the closure facts.

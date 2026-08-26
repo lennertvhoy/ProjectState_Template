@@ -844,3 +844,21 @@
   - local implementation and CI-parity validation of the isolation repair
 - Type: implementation | test | command_output
 - as_of: 2026-08-26T12:00:00+02:00
+
+## EV-2026-08-26-003: Remote closure receipt for BL-STATEISOLATION-001
+
+- File: docs/evidence/2026-08-26-stateisolation-closure/finish_slice_handoff.json
+- Title: BL-STATEISOLATION-001 merged, CI-verified, and physically closed
+- Source/System: remote_ci | post_merge | release_receipt | state_update
+- Action: Finished PR #76 through the authoritative exact-head finish path.
+- Shows:
+  - squash merge `70195fa8acfdf644890a86efb13ca6ba7026d372` is the verified
+    default-branch head; direct-main CI run `32949925520` SUCCESS
+  - PR tree equals merge tree (`source_tree_equal`); proof tree b64ed97 bound
+  - remote branch absent; clean clone quarantined with original path absent
+    (schema projectstate.finish_slice_handoff.v2, status HANDOFF_COMPLETE)
+- Proves:
+  - remote, CI, post-merge, branch-cleanup, and physical-release closure for
+    BL-STATEISOLATION-001
+- Type: remote_ci | post_merge | release_receipt | state_update
+- as_of: 2026-08-26T11:00:00+02:00

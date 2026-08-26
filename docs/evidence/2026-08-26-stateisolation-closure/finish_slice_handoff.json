@@ -1,0 +1,62 @@
+{
+  "branch": "bl-bl-stateisolation-001-agen-6wnng",
+  "branch_head_ci": {
+    "check_name": "branch-head",
+    "detail": "status=COMPLETED, conclusion=SUCCESS",
+    "run_id": "32949696049",
+    "run_url": "https://github.com/lennertvhoy/ProjectState_Template/actions/runs/32949696049",
+    "state": "SUCCESS",
+    "subject_sha": "3a2f7554460ad02f7c6ad049a171f87ad2f34eb8",
+    "workflow_path": ".github/workflows/validate.yml"
+  },
+  "default_branch": "main",
+  "default_branch_head": "70195fa8acfdf644890a86efb13ca6ba7026d372",
+  "delivery_policy_mode": "agent_after_green",
+  "evidence_folder": "/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/docs/evidence/2026-08-26-stateisolation",
+  "expected_pr_head": "3a2f7554460ad02f7c6ad049a171f87ad2f34eb8",
+  "failure": null,
+  "generated_at": "2026-08-26T10:54:35+02:00",
+  "isolation_disposition": "quarantined",
+  "isolation_mode": "clone",
+  "isolation_original_path": "/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605",
+  "isolation_original_path_absent": true,
+  "isolation_quarantine_path": "/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/quarantine/bl-bl-stateisolation-001-agen-6wnng-3a2f7554460a-20260826T085435622754Z-2ec6a85a",
+  "isolation_released": true,
+  "main_ci": {
+    "check_name": "branch-head",
+    "detail": "status=COMPLETED, conclusion=SUCCESS",
+    "run_id": "32949925520",
+    "run_url": "https://github.com/lennertvhoy/ProjectState_Template/actions/runs/32949925520",
+    "state": "SUCCESS",
+    "subject_sha": "70195fa8acfdf644890a86efb13ca6ba7026d372",
+    "workflow_path": ".github/workflows/validate.yml"
+  },
+  "merge_candidate_ci": {
+    "check_name": "merge-candidate",
+    "detail": "status=COMPLETED, conclusion=SUCCESS",
+    "run_id": "32949696049",
+    "run_url": "https://github.com/lennertvhoy/ProjectState_Template/actions/runs/32949696049",
+    "state": "SUCCESS",
+    "subject_sha": "3a2f7554460ad02f7c6ad049a171f87ad2f34eb8",
+    "workflow_path": ".github/workflows/validate.yml"
+  },
+  "merge_commit": "70195fa8acfdf644890a86efb13ca6ba7026d372",
+  "merge_method": "squash",
+  "post_merge_output": "/tmp/opencode/finish_slice_handoff.post-merge.json",
+  "post_merge_verified": true,
+  "pr_number": 76,
+  "pr_url": "https://github.com/lennertvhoy/ProjectState_Template/pull/76",
+  "proof_head": "b64ed97d446834feeca55b9b971637ff3cae1ee5",
+  "recoverable_state_retained": true,
+  "remote_branch_absent": true,
+  "remote_closure_output": null,
+  "repository": "/home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605",
+  "schema": "projectstate.finish_slice_handoff.v2",
+  "status": "HANDOFF_COMPLETE",
+  "transitions": [
+    "LOCAL_VALIDATED",
+    "MERGED",
+    "MAIN_CI_VERIFIED",
+    "HANDOFF_COMPLETE"
+  ]
+}

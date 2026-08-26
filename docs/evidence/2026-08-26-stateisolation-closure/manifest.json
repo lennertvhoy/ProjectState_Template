@@ -1,0 +1,83 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "ed22a9a13dbb31ea95652db7aae5fd658ce5a24299cfba97c38c071566fdca60"
+    },
+    {
+      "kind": "other",
+      "path": "finish_slice_handoff.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "39498fd6cc6a55e5bb52162d6c75526287e861f463f9862a05f4bce3b1fe4345"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "e8c7d3ba5b58b06bc2145781deb5935369847efeb6ba2c3352cbc418b7be85c9"
+    },
+    {
+      "kind": "command_output",
+      "path": "quality_gate_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "9e4201acf8f7eefbb4f0bce97c596933cba88baca2dfc54ece132a9533721925"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "BL-STATEISOLATION-001 remotely closed via exact-head squash merge 70195fa with direct-main CI SUCCESS, branch deletion, and quarantined clone receipt.",
+      "evidence": [
+        "finish_slice_handoff.json",
+        "quality_gate_output.txt"
+      ],
+      "id": "remote-closure-recorded",
+      "status": "validated"
+    },
+    {
+      "claim": "WORKLOG and EVIDENCE_LOG carry the closure facts as additions without history rewrites.",
+      "evidence": [
+        "README.md"
+      ],
+      "id": "ledgers-append-only-updated",
+      "status": "validated"
+    },
+    {
+      "claim": "Runtime boundary recorded; repo truth is distinct from runtime truth.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-08-26T13:15:00+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in finish_slice_handoff.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in quality_gate_output.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-stateisolation-002-agen-3cj6y",
+    "head": "04034c696b5c75f708ea949a2259ba2184d705d9"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "projectstate.evidence_manifest.v1",
+  "slice_id": "BL-STATEISOLATION-002"
+}
