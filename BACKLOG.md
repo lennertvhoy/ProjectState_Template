@@ -2,7 +2,7 @@
 
 **Product:** ProjectState_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-08-25
+**Updated At:** 2026-08-26
 
 ## Purpose
 
@@ -11,8 +11,6 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-WORKFLOW-CATALOG-001] Ship the autonomous improve workflow downstream via
-  the workflows asset set and roll the upgrade out across managed repos.
 
 ## NEXT
 

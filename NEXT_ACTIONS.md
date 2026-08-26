@@ -1,16 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-08-25
+**Updated At:** 2026-08-26
 **Execution Mode:** template-maintenance
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-WORKFLOW-CATALOG-001] Roll the workflows asset-set upgrade across managed downstream repos
-
-Catalog, budgets, and metrics are merged on this branch; remaining work is
-running `projectstate_upgrade.py` dry-run/apply per managed repo and opening
-upgrade PRs that each repo's next agent session completes after CI.
+No mandatory implementation item.
 
 ## Queue Rules
 

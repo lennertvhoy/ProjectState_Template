@@ -41,6 +41,16 @@ python3 scripts/projectstate_upgrade.py /path/to/repo
 python3 scripts/projectstate_upgrade.py /path/to/repo --apply
 ```
 
+Repos installed before asset manifests existed need a one-time lock first:
+`init_template.py adopt`, then `projectstate_upgrade.py --apply`.
+
+After upgrading, the autonomous improvement loop is available in any repo:
+
+```bash
+# Delegate maintenance-class slice selection for one bounded run (see AGENTS.md ladder)
+/projectstate-improve
+```
+
 ## Daily checks
 
 ```bash

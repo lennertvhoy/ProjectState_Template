@@ -113,12 +113,6 @@ class InstructionLinter:
             r"github\.com/.*/blob/main/",  # main branch refs
         ]
 
-        # Known skills to reference
-        self.known_skills = [
-            "close-slice", "ingest-bad-event", "failure-scan",
-            "runtime-truth", "quality-gate"
-        ]
-
     def find_files(self) -> List[Path]:
         """Find active guidance, excluding history, fixtures, and proof output."""
         excluded_prefixes = (

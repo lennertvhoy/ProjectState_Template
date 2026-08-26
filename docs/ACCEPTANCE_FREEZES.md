@@ -256,3 +256,11 @@ and must be protected from quiet regression.
   - StateIR, StatePack, and OKF retrieval benchmarks remain optional research.
 - human_override:
   used: no
+
+## Errata (2026-08-26)
+
+- Entries AF-2026-07-12/14 above cite `docs/RELEASE_NOTES_projectstate-template-v4.md`.
+  No file ever existed under that name; the actual tracked release notes are
+  `docs/RELEASE_NOTES_statedd-template-v4.md` (filename preserved verbatim
+  through the BL-RENAME-001 brand rename). Recorded here because this ledger is
+  append-only; historical entries remain unmodified.

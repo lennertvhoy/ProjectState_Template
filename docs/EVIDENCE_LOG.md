@@ -806,3 +806,22 @@
 - Notes: Human product acceptance remains separate. The external handoff
   receipt is authoritative for provider-created merge identity; tracked files
   never predict it.
+
+## EV-2026-08-26-001: Improve-run dogfood reconciliation and rot repairs
+
+- File: docs/evidence/2026-08-26-improve-run-001/README.md
+- File: docs/evidence/2026-08-26-improve-run-001/manifest.json
+- Title: BL-IMPROVE-RUN-001 first dogfooded /projectstate-improve run
+- Source/System: test | state_update
+- Action: Reconciled live truth after the cross-repo rollout (queue emptied,
+  BL-WORKFLOW-CATALOG-001 closed with outcome), corrected docs/AGENTS.md catalog
+  locations, appended append-only errata for the dangling v4 release-notes
+  filename, removed dead instruction-lint code, and extended QUICK_COMMANDS
+  with the adopt-first and improve-loop paths.
+- Shows:
+  - queue returned to stable empty state with rollout outcome in BACKLOG CLOSED
+  - full CI-parity level-2 conformance gate exit 0 at the proof tree
+- Proves:
+  - local implementation and CI-parity validation of the reconciliation repairs
+- Type: implementation | test | state_update
+- as_of: 2026-08-26T01:00:00+02:00
