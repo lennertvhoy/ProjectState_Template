@@ -90,7 +90,9 @@ context_budgets:
       # its own verbose gate transcript (peak measured 2,708,119 bytes).
       # BL-STATEISOLATION-002 records the closure receipt in a small
       # reconciliation pack; measured at 409 files and 2,701,500 bytes.
-      max_footprint_files: 410
+      # BL-EVIDENCE-HYGIENE-001 removes two stray duplicates and adds its
+      # minimal hygiene pack; measured at 411 files and 2,700,900 bytes.
+      max_footprint_files: 412
       max_footprint_bytes: 2740000
     minimal:
       max_startup_files: 5
