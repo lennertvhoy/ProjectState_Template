@@ -1,0 +1,28 @@
+{
+  "arch": "x86_64",
+  "captured_at": "2026-08-26T11:19:10+02:00",
+  "checks": {
+    "head_recorded": true,
+    "runtime_not_applicable_recorded": true
+  },
+  "git_head": "c6a48a4d2854b4a87669add9bfd9359be8e1768f",
+  "in_container": false,
+  "kernel": "7.1.8-arch1-3",
+  "limits": [],
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
+  "python": "3.14.7",
+  "repo": {
+    "branch": "bl-bl-evidence-hygiene-001-agen-u8uea",
+    "head": "c6a48a4d2854b4a87669add9bfd9359be8e1768f",
+    "path": ".",
+    "status_porcelain": "",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "reason": "File removal only; no application runtime",
+    "required": false
+  },
+  "schema": "projectstate.runtime_identity.v2",
+  "timestamp": "2026-08-26T09:19:10.299977Z"
+}

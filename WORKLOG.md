@@ -1326,3 +1326,17 @@ blocker was cleared via the documented `--restart-session` restart.
   absence proven by the external receipt (copied into this slice's evidence
   pack).
 - EVIDENCE_LOG gains EV-2026-08-26-003 with the closure facts.
+
+## 2026-08-26 - BL-EVIDENCE-HYGIENE-001 remove stray duplicate evidence files
+
+**Type:** hygiene_subtraction
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-EVIDENCE-HYGIENE-001]
+**Branch:** bl-bl-evidence-hygiene-001-agen-u8uea
+
+### What changed
+
+- Removed two stray files from the docs/evidence root that were accidentally
+  duplicated there during BL-STATEISOLATION-001 packaging; the authoritative
+  copies live inside docs/evidence/2026-08-26-stateisolation/ and are
+  byte-identical (verified by hash before removal).

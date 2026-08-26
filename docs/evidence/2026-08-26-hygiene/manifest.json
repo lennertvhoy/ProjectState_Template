@@ -1,0 +1,67 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "80d6a67b95d15ceea7695a207bf9154164b1e3f43f5e5ab1a2d81b7b428ad6a5"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "d291613e0b22948218755984a6cb6e7b775e6d0b70f728f2bfda9e0f60c62035"
+    },
+    {
+      "kind": "command_output",
+      "path": "quality_gate_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "15b84a59cdcd68045045027e9ef9ddf65ef9ba05cba6386271057af15ed6c2ae"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "Two stray docs/evidence-root duplicates removed after proving byte-identity with the authoritative copies inside the BL-STATEISOLATION-001 pack.",
+      "evidence": [
+        "README.md",
+        "quality_gate_output.txt"
+      ],
+      "id": "stray-duplicates-removed",
+      "status": "validated"
+    },
+    {
+      "claim": "Runtime boundary recorded; repo truth is distinct from runtime truth.",
+      "evidence": [
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-08-26T14:05:00+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in quality_gate_output.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-evidence-hygiene-001-agen-u8uea",
+    "head": "c6a48a4d2854b4a87669add9bfd9359be8e1768f"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "projectstate.evidence_manifest.v1",
+  "slice_id": "BL-EVIDENCE-HYGIENE-001"
+}

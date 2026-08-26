@@ -1,0 +1,45 @@
+$ /tmp/opencode/psvenv/bin/python -m compileall -q scripts schemas/examples
+$ /tmp/opencode/psvenv/bin/python /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd/scripts/projectstate_profile_metrics.py --root /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd --check
+$ /tmp/opencode/psvenv/bin/python -m pytest scripts/ -q
+$ /tmp/opencode/psvenv/bin/python -m pytest schemas/examples/ -q
+$ ruff check .
+$ /tmp/opencode/psvenv/bin/python scripts/check_state_docs.py
+$ /tmp/opencode/psvenv/bin/python scripts/projectstate_validate_schema.py
+$ /tmp/opencode/psvenv/bin/python scripts/projectstate_evidence_pack.py check --strict /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd/docs/evidence/2026-08-26-hygiene
+$ /tmp/opencode/psvenv/bin/python scripts/projectstate_runtime_truth_check.py --artifact docs/evidence/2026-08-26-hygiene/runtime_identity.json
+$ /tmp/opencode/psvenv/bin/python scripts/projectstate_instruction_lint.py --fail-on error
+$ /tmp/opencode/psvenv/bin/python scripts/projectstate_efficiency_check.py --gate-level 2
+$ git rev-parse --verify HEAD
+$ git diff --check HEAD
+==================================================
+ProjectState Quality Gate
+Mode: template/profile conformance — NOT SLICE CLOSURE
+==================================================
+🧩 Compiling Python sources...
+  ✓ Python sources compile
+📏 Reproducing profile metrics...
+  ✓ Profile/context metrics reproduce from their recorded proof commit
+🧪 Running tests...
+  ✓ Tests passed (/tmp/opencode/psvenv/bin/python -m pytest scripts/ -q)
+  ✓ Tests passed (/tmp/opencode/psvenv/bin/python -m pytest schemas/examples/ -q)
+🔍 Running static analysis...
+  ✓ ruff passed
+📋 Validating state files...
+  ✓ State files valid
+📐 Validating schemas...
+  ✓ Schemas valid
+📦 Checking evidence...
+  ✓ Runtime truth checked (docs/evidence/2026-08-26-hygiene/runtime_identity.json)
+  ✓ Strict evidence pack valid (docs/evidence/2026-08-26-hygiene)
+🧊 Checking acceptance freezes...
+  ✓ Acceptance freezes present
+🔎 Linting instructions...
+  ✓ No instruction smells (errors)
+⚡ Running efficiency check...
+  ✓ Efficiency check passed
+🧹 Checking diff whitespace...
+  ✓ Git diff whitespace clean
+
+==================================================
+✅ CONFORMANCE PASS — NOT SLICE CLOSURE
+==================================================
