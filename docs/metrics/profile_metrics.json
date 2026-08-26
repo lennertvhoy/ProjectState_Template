@@ -3,10 +3,10 @@
   "generation_command": "python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit b64ed97d446834feeca55b9b971637ff3cae1ee5",
   "profiles": [
     {
-      "actual_tokens": null,
+      "actual_tokens": 95025,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": null,
+          "actual_tokens": 6123,
           "estimated_tokens": 6445,
           "file_count": 7,
           "included_files": [
@@ -31,7 +31,7 @@
           "total_bytes": 25771
         },
         "ci_diagnosis": {
-          "actual_tokens": null,
+          "actual_tokens": 7994,
           "estimated_tokens": 9460,
           "file_count": 5,
           "included_files": [
@@ -55,7 +55,7 @@
           "total_bytes": 37832
         },
         "closure_review": {
-          "actual_tokens": null,
+          "actual_tokens": 2019,
           "estimated_tokens": 2236,
           "file_count": 4,
           "included_files": [
@@ -77,7 +77,7 @@
           "total_bytes": 8939
         },
         "initial_orientation": {
-          "actual_tokens": null,
+          "actual_tokens": 2019,
           "estimated_tokens": 2236,
           "file_count": 4,
           "included_files": [
@@ -96,7 +96,7 @@
           "total_bytes": 8939
         },
         "interrupted_resume": {
-          "actual_tokens": null,
+          "actual_tokens": 2019,
           "estimated_tokens": 2236,
           "file_count": 4,
           "included_files": [
@@ -115,7 +115,7 @@
           "total_bytes": 8939
         },
         "normal_implementation": {
-          "actual_tokens": null,
+          "actual_tokens": 2411,
           "estimated_tokens": 2701,
           "file_count": 5,
           "included_files": [
@@ -150,17 +150,17 @@
         "core",
         "workflows"
       ],
-      "startup_actual_tokens": null,
+      "startup_actual_tokens": 2019,
       "startup_bytes": 8939,
       "startup_estimated_tokens": 2236,
       "startup_file_count": 4,
       "total_bytes": 417050
     },
     {
-      "actual_tokens": null,
+      "actual_tokens": 180570,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": null,
+          "actual_tokens": 6132,
           "estimated_tokens": 6451,
           "file_count": 7,
           "included_files": [
@@ -185,7 +185,7 @@
           "total_bytes": 25798
         },
         "ci_diagnosis": {
-          "actual_tokens": null,
+          "actual_tokens": 8003,
           "estimated_tokens": 9467,
           "file_count": 5,
           "included_files": [
@@ -209,7 +209,7 @@
           "total_bytes": 37862
         },
         "closure_review": {
-          "actual_tokens": null,
+          "actual_tokens": 3003,
           "estimated_tokens": 3284,
           "file_count": 5,
           "included_files": [
@@ -230,7 +230,7 @@
           "total_bytes": 13131
         },
         "initial_orientation": {
-          "actual_tokens": null,
+          "actual_tokens": 2028,
           "estimated_tokens": 2243,
           "file_count": 4,
           "included_files": [
@@ -249,7 +249,7 @@
           "total_bytes": 8969
         },
         "interrupted_resume": {
-          "actual_tokens": null,
+          "actual_tokens": 2028,
           "estimated_tokens": 2243,
           "file_count": 4,
           "included_files": [
@@ -268,7 +268,7 @@
           "total_bytes": 8969
         },
         "normal_implementation": {
-          "actual_tokens": null,
+          "actual_tokens": 2420,
           "estimated_tokens": 2708,
           "file_count": 5,
           "included_files": [
@@ -304,17 +304,17 @@
         "proof",
         "workflows"
       ],
-      "startup_actual_tokens": null,
+      "startup_actual_tokens": 2028,
       "startup_bytes": 8969,
       "startup_estimated_tokens": 2243,
       "startup_file_count": 4,
       "total_bytes": 791075
     },
     {
-      "actual_tokens": null,
+      "actual_tokens": 240062,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": null,
+          "actual_tokens": 6136,
           "estimated_tokens": 6452,
           "file_count": 7,
           "included_files": [
@@ -339,7 +339,7 @@
           "total_bytes": 25801
         },
         "ci_diagnosis": {
-          "actual_tokens": null,
+          "actual_tokens": 8007,
           "estimated_tokens": 9468,
           "file_count": 5,
           "included_files": [
@@ -363,7 +363,7 @@
           "total_bytes": 37865
         },
         "closure_review": {
-          "actual_tokens": null,
+          "actual_tokens": 3007,
           "estimated_tokens": 3285,
           "file_count": 5,
           "included_files": [
@@ -384,7 +384,7 @@
           "total_bytes": 13134
         },
         "initial_orientation": {
-          "actual_tokens": null,
+          "actual_tokens": 2032,
           "estimated_tokens": 2244,
           "file_count": 4,
           "included_files": [
@@ -403,7 +403,7 @@
           "total_bytes": 8972
         },
         "interrupted_resume": {
-          "actual_tokens": null,
+          "actual_tokens": 2032,
           "estimated_tokens": 2244,
           "file_count": 4,
           "included_files": [
@@ -422,7 +422,7 @@
           "total_bytes": 8972
         },
         "normal_implementation": {
-          "actual_tokens": null,
+          "actual_tokens": 2424,
           "estimated_tokens": 2709,
           "file_count": 5,
           "included_files": [
@@ -459,17 +459,17 @@
         "proof",
         "workflows"
       ],
-      "startup_actual_tokens": null,
+      "startup_actual_tokens": 2032,
       "startup_bytes": 8972,
       "startup_estimated_tokens": 2244,
       "startup_file_count": 4,
       "total_bytes": 1057194
     },
     {
-      "actual_tokens": null,
+      "actual_tokens": 240096,
       "contexts": {
         "architecture_audit": {
-          "actual_tokens": null,
+          "actual_tokens": 6151,
           "estimated_tokens": 6494,
           "file_count": 7,
           "included_files": [
@@ -494,7 +494,7 @@
           "total_bytes": 25964
         },
         "ci_diagnosis": {
-          "actual_tokens": null,
+          "actual_tokens": 8022,
           "estimated_tokens": 9508,
           "file_count": 5,
           "included_files": [
@@ -518,7 +518,7 @@
           "total_bytes": 38023
         },
         "closure_review": {
-          "actual_tokens": null,
+          "actual_tokens": 3022,
           "estimated_tokens": 3325,
           "file_count": 5,
           "included_files": [
@@ -539,7 +539,7 @@
           "total_bytes": 13292
         },
         "initial_orientation": {
-          "actual_tokens": null,
+          "actual_tokens": 2047,
           "estimated_tokens": 2284,
           "file_count": 4,
           "included_files": [
@@ -558,7 +558,7 @@
           "total_bytes": 9130
         },
         "interrupted_resume": {
-          "actual_tokens": null,
+          "actual_tokens": 2047,
           "estimated_tokens": 2284,
           "file_count": 4,
           "included_files": [
@@ -577,7 +577,7 @@
           "total_bytes": 9130
         },
         "normal_implementation": {
-          "actual_tokens": null,
+          "actual_tokens": 2439,
           "estimated_tokens": 2749,
           "file_count": 5,
           "included_files": [
@@ -615,7 +615,7 @@
         "regulated_controls",
         "workflows"
       ],
-      "startup_actual_tokens": null,
+      "startup_actual_tokens": 2047,
       "startup_bytes": 9130,
       "startup_estimated_tokens": 2284,
       "startup_file_count": 4,
@@ -719,10 +719,10 @@
   "template_commit": "b64ed97d446834feeca55b9b971637ff3cae1ee5",
   "template_version": "projectstate-template-v5",
   "tokenizer": {
-    "actual_counts_available": false,
+    "actual_counts_available": true,
     "actual_encoding": "o200k_base",
-    "actual_tokenizer_package": null,
-    "actual_tokenizer_version": null,
+    "actual_tokenizer_package": "tiktoken",
+    "actual_tokenizer_version": "0.12.0",
     "estimated_method": "sum(ceil(normalized_utf8_file_bytes/4))"
   }
 }
