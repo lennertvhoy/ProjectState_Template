@@ -43,6 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = "projectstate.runtime_identity.v2"
 SCHEMA_FILE = "runtime_identity_v2.schema.json"
 POST_PROOF_EXACT_PATHS = {
+    "BACKLOG.md",
     "STATUS.md",
     "PROJECT_STATE.yaml",
     "NEXT_ACTIONS.md",
