@@ -1378,3 +1378,34 @@ blocker was cleared via the documented `--restart-session` restart.
 
 - Local implementation and validation are proven; remote branch publication,
   PR exact-head closure, merge, and downstream migration remain pending.
+
+## 2026-08-29 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 CI tokenizer parity correction
+
+**Type:** defect_repair
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001]
+**Branch:** bl-bl-template-downstream-closure-001-agen-pscab
+
+### Finding and repair
+
+- GitHub Actions runs `33250377459` and `33250410399` reached the authoritative
+  conformance gate but failed only because CI installs `tiktoken==0.12.0` while
+  the committed profile metrics artifact had been generated without tiktoken.
+- Regenerated `docs/metrics/profile_metrics.json` with the exact CI dependency;
+  the artifact now records actual `o200k_base` counts and tokenizer metadata.
+- The correction is finalization-only after proof head `949e412`; implementation
+  scope and the typed evidence proof remain unchanged.
+
+### Validation
+
+- The full quality gate passes under an isolated environment containing the exact
+  CI dependencies, including `tiktoken==0.12.0`.
+- Metrics reproduction, tests, generated-profile conformance, schema/state
+  validation, strict evidence, runtime truth, instruction lint, efficiency, and
+  whitespace checks all pass.
+
+### Boundary
+
+- The corrected finalization successor must be pushed and pass fresh branch-head
+  and merge-candidate CI before exact-head remote closure; downstream migration
+  remains pending.

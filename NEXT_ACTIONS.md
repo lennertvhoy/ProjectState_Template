@@ -8,7 +8,7 @@
 
 ### P1 [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Remote closure and downstream handoff
 
-- Push the verified proof branch, publish or update the PR, and run exact-head remote closure before downstream profile migration.
+- Verify corrected branch-head and merge-candidate CI for PR #79, run exact-head remote closure, then hand off to downstream profile migration.
 
 ## Queue Rules
 

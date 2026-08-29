@@ -886,3 +886,24 @@
 - as_of: 2026-08-29T13:10:00+02:00
 - Notes: Remote publication, exact-head CI, merge, and downstream migration are
   not proven by this entry; human product acceptance remains separate.
+
+## EV-2026-08-29-002: CI tokenizer parity correction
+
+- File: docs/metrics/profile_metrics.json
+- Title: Corrected profile metrics to match the authoritative CI tokenizer
+- Source/System: GitHub Actions | local CI-parity reproduction
+- Action: Investigated failed PR #79 conformance runs `33250377459` and
+  `33250410399`, reproduced the drift caused by CI's pinned `tiktoken==0.12.0`,
+  and regenerated the metrics artifact with that exact dependency.
+- Shows:
+  - both branch-head jobs and the merge-candidate job passed every check before
+    failing only on profile metrics drift
+  - the corrected artifact records `o200k_base` actual counts and tiktoken `0.12.0`
+  - the complete local CI-parity Level-2 conformance gate passes after repair
+- Proves:
+  - the published PR's only observed CI failure has a bounded finalization-only
+    correction with local reproduction and validation
+- Type: defect_repair | test | state_update
+- as_of: 2026-08-29T13:43:17+02:00
+- Notes: The correction still requires fresh GitHub branch-head and
+  merge-candidate CI, exact-head remote closure, merge, and downstream handoff.
