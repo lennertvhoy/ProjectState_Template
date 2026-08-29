@@ -17,10 +17,10 @@
 - The workspace-lifecycle P0 remains closed with a receipt-backed lifecycle;
   all earlier clone/worktree features stay integrated on `main`.
 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 is locally validated at proof head
-  `949e412dac6c166c61eb4d7c73e362066e9f1456`; PR #79 is published, and a
-  finalization-only tokenizer-parity correction is ready for its CI rerun.
-- Level-2 CI-parity gates pass locally with `tiktoken==0.12.0`; remote closure and
-  the downstream handoff remain pending.
+  `949e412dac6c166c61eb4d7c73e362066e9f1456`; PR #79 is published and its
+  corrected finalization successor has green branch-head and merge-candidate CI.
+- Level-2 CI-parity gates pass locally with `tiktoken==0.12.0`; exact-head remote
+  closure and the downstream handoff remain pending finalizer verification.
 
 ## Acceptance And Freeze
 

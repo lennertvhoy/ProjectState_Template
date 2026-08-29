@@ -8,7 +8,7 @@
 
 ### P1 [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Remote closure and downstream handoff
 
-- Verify corrected branch-head and merge-candidate CI for PR #79, run exact-head remote closure, then hand off to downstream profile migration.
+- Run exact-head remote closure for PR #79 after the evidence-marker normalization, then hand off to downstream profile migration.
 
 ## Queue Rules
 

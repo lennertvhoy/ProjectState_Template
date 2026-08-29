@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-08-29T13:43:17+02:00
-  updated_by: agent-opencode_recording_bl-template-downstream-closure-001_ci_metrics_parity
+  updated_at: 2026-08-29T13:51:49+02:00
+  updated_by: agent-opencode_recording_bl-template-downstream-closure-001_remote_marker_normalization
   version: "projectstate-template-v5"
 
 workflow:

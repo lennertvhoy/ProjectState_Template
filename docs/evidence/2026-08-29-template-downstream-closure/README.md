@@ -4,8 +4,8 @@
 **Date:** 2026-08-29
 **Agent:** opencode integration agent (agent-opencode)
 **Branch:** `bl-bl-template-downstream-closure-001-agen-pscab`
-**HEAD:** `949e412dac6c166c61eb4d7c73e362066e9f1456` (proof tree)
-**Proof head:** `949e412dac6c166c61eb4d7c73e362066e9f1456`
+**HEAD:** 949e412dac6c166c61eb4d7c73e362066e9f1456 (proof tree)
+Proof head: 949e412dac6c166c61eb4d7c73e362066e9f1456
 
 ## Claims
 

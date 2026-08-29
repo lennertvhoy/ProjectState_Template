@@ -907,3 +907,24 @@
 - as_of: 2026-08-29T13:43:17+02:00
 - Notes: The correction still requires fresh GitHub branch-head and
   merge-candidate CI, exact-head remote closure, merge, and downstream handoff.
+
+## EV-2026-08-29-003: Remote-finalizer marker normalization
+
+- File: docs/evidence/2026-08-29-template-downstream-closure/README.md
+- File: docs/evidence/2026-08-29-template-downstream-closure/manifest.json
+- Title: Normalized exact-head evidence references for remote closure
+- Source/System: remote finalizer | evidence validation
+- Action: Repaired the finalizer-visible metadata after CI passed: removed the
+  duplicate PR-body evidence path, converted the tracked README's proof marker
+  to the supported plain form, and refreshed the manifest artifact hash.
+- Shows:
+  - the finalizer observed green CI, clean merge state, matching local/remote/PR
+    heads, and strict evidence before rejecting only marker formatting
+  - strict evidence validation passes after the metadata-only correction
+- Proves:
+  - the remaining remote blocker is bounded to finalizer metadata alignment;
+    implementation proof and CI results are unchanged
+- Type: state_reconciliation | test
+- as_of: 2026-08-29T13:51:49+02:00
+- Notes: Exact-head remote closure, merge, direct-main CI, physical release, and
+  downstream handoff remain unproven until the authoritative finish path passes.

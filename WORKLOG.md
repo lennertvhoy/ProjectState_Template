@@ -1409,3 +1409,31 @@ blocker was cleared via the documented `--restart-session` restart.
 - The corrected finalization successor must be pushed and pass fresh branch-head
   and merge-candidate CI before exact-head remote closure; downstream migration
   remains pending.
+
+## 2026-08-29 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 remote marker normalization
+
+**Type:** state_reconciliation
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001]
+**Branch:** bl-bl-template-downstream-closure-001-agen-pscab
+
+### Finding and repair
+
+- After corrected CI passed, the remote finalizer rejected the PR body because
+  the evidence path appeared twice and the evidence README's proof marker used
+  unsupported backtick-wrapped syntax.
+- Reduced the PR-body evidence reference to one unique path and normalized the
+  tracked README to one parser-compatible plain `Proof head:` marker.
+- Refreshed the strict manifest hash for the changed README; no implementation
+  or proof-tree content changed.
+
+### Validation
+
+- Strict evidence-pack validation passes after the marker and hash correction.
+- The corrected branch-head and merge-candidate CI remains green at the exact
+  pushed implementation head.
+
+### Boundary
+
+- The exact-head remote finalizer must pass before the confirmed agent-after-green
+  merge and post-merge handoff; downstream migration remains pending.

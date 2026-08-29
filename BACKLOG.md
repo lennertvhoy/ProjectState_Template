@@ -11,7 +11,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
-- [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Add explicit forward profile migration and safe managed clone resume; local proof is complete, PR #79 is published, and remote closure remains pending CI verification.
+- [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Add explicit forward profile migration and safe managed clone resume; local proof and CI are complete, PR #79 is published, and exact-head remote closure remains pending finalizer verification.
 
 ## NEXT
 
