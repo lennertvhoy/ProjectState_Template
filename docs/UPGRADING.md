@@ -45,9 +45,19 @@ python3 scripts/projectstate_upgrade.py /path/to/downstream/repo --include-asset
   they are not silently deleted. A successful second run is idempotent.
 - The target root, every managed path, and every template source are confined and
   symlink-safe before any mutation begins.
-- Profile transitions are not inferred by this release. An existing lock whose
-  profile differs from `--profile` fails closed pending an explicit semantic
-  migration.
+- Profile transitions are never inferred from `--profile`. Use the explicit
+  semantic migration path only for a forward profile change:
+
+  ```bash
+  python3 scripts/projectstate_upgrade.py /path/to/repo --migrate-profile team
+  python3 scripts/projectstate_upgrade.py /path/to/repo --migrate-profile team --apply
+  ```
+
+  The migration is transactional and fails closed unless the locked profile
+  matches both `PROJECT_STATE.yaml` and `PROJECT_ADAPTER.yaml`. It updates only
+  those documents' profile fields, preserves all other project truth, installs
+  the new profile assets, records the transition in `upgrade_history`, and
+  rejects downgrades. A normal `--profile` mismatch remains a refusal.
 - Optional module sets come from the catalog and may be enabled with repeatable
   `--include-asset-set`. `--include-github-assets` remains a compatibility alias.
 - `--report` writes a new external plan sidecar before target mutation. It never

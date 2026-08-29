@@ -600,6 +600,106 @@ def test_profile_transition_is_rejected_until_semantic_migration_exists() -> Non
             raise AssertionError("Rejected profile transition changed the target")
 
 
+def test_profile_migration_solo_to_team_updates_metadata_and_preserves_project_truth() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "profile-migration"
+        run_init(["new", "--name", "Profile", "--profile", "solo", "--target", str(target)])
+        readme_before = (target / "README.md").read_bytes()
+        state = target / "PROJECT_STATE.yaml"
+        state.write_text(
+            state.read_text(encoding="utf-8").replace(
+                "    profile: solo\n",
+                "    profile: solo\n    custom_project_fact: retained\n",
+                1,
+            ),
+            encoding="utf-8",
+        )
+        adapter = target / "PROJECT_ADAPTER.yaml"
+        adapter.write_text(
+            adapter.read_text(encoding="utf-8").replace(
+                "  profile: solo\n",
+                "  profile: solo\n  custom_adapter_fact: retained\n",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        completed = run_upgrade(
+            [str(target), "--migrate-profile", "team", "--apply"],
+            expect_success=True,
+        )
+        if "Target profile: team" not in completed.stdout:
+            raise AssertionError(f"Migration plan did not name the target profile:\n{completed.stdout}")
+        if "scripts/projectstate_agent_worktree.py" not in completed.stdout:
+            raise AssertionError("Migration did not plan the collaboration assets")
+
+        manifest = manifest_payload(target)
+        if manifest["profile"] != "team":
+            raise AssertionError("Migration did not update the asset-lock profile")
+        if "collaboration" not in manifest["asset_sets"]:
+            raise AssertionError("Migration did not resolve the collaboration asset set")
+        migration_records = [
+            item
+            for item in manifest["upgrade_history"]
+            if item.get("kind") == "profile_migration"
+        ]
+        if len(migration_records) != 1 or migration_records[0].get("from_profile") != "solo" or migration_records[0].get("to_profile") != "team":
+            raise AssertionError("Migration history does not record solo -> team")
+        if "    profile: team\n" not in state.read_text(encoding="utf-8"):
+            raise AssertionError("PROJECT_STATE.yaml profile was not migrated")
+        if "  profile: team\n" not in adapter.read_text(encoding="utf-8"):
+            raise AssertionError("PROJECT_ADAPTER.yaml profile was not migrated")
+        if "custom_project_fact: retained" not in state.read_text(encoding="utf-8"):
+            raise AssertionError("Migration discarded project state content")
+        if "custom_adapter_fact: retained" not in adapter.read_text(encoding="utf-8"):
+            raise AssertionError("Migration discarded adapter content")
+        if (target / "README.md").read_bytes() != readme_before:
+            raise AssertionError("Migration changed project README truth")
+        if not (target / "scripts" / "projectstate_agent_worktree.py").is_file():
+            raise AssertionError("Migration did not install managed worktree support")
+        if not (target / "docs" / "UPGRADING.md").is_file():
+            raise AssertionError("Migration did not install upgrade guidance")
+
+
+def test_profile_migration_rejects_downgrade_without_writes() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "profile-downgrade"
+        run_init(["new", "--name", "Profile", "--profile", "team", "--target", str(target)])
+        before = tree_digest(target)
+
+        completed = run_upgrade(
+            [str(target), "--migrate-profile", "solo", "--apply"],
+            expect_success=False,
+        )
+
+        if "downgrade" not in completed.stdout:
+            raise AssertionError(f"Downgrade refusal was not explicit:\n{completed.stdout}")
+        if tree_digest(target) != before:
+            raise AssertionError("Rejected profile downgrade changed the target")
+
+
+def test_profile_migration_refuses_manifest_metadata_mismatch_without_writes() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "profile-mismatch"
+        run_init(["new", "--name", "Profile", "--profile", "solo", "--target", str(target)])
+        state = target / "PROJECT_STATE.yaml"
+        state.write_text(
+            state.read_text(encoding="utf-8").replace("    profile: solo\n", "    profile: team\n", 1),
+            encoding="utf-8",
+        )
+        before = tree_digest(target)
+
+        completed = run_upgrade(
+            [str(target), "--migrate-profile", "team", "--apply"],
+            expect_success=False,
+        )
+
+        if "profile_metadata_does_not_match_manifest" not in completed.stdout:
+            raise AssertionError(f"Metadata conflict was not reported:\n{completed.stdout}")
+        if tree_digest(target) != before:
+            raise AssertionError("Metadata conflict caused partial migration writes")
+
+
 def test_reintroduced_retired_asset_recovers_ownership_and_is_not_still_retired() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "reintroduced"
@@ -679,6 +779,9 @@ def main() -> int:
         test_successful_apply_updates_manifest_and_second_run_is_idempotent,
         test_malformed_v2_top_level_and_history_fail_before_writes,
         test_profile_transition_is_rejected_until_semantic_migration_exists,
+        test_profile_migration_solo_to_team_updates_metadata_and_preserves_project_truth,
+        test_profile_migration_rejects_downgrade_without_writes,
+        test_profile_migration_refuses_manifest_metadata_mismatch_without_writes,
         test_reintroduced_retired_asset_recovers_ownership_and_is_not_still_retired,
         test_modified_generated_control_conflicts_then_force_regenerates_and_locks_hash,
     ]

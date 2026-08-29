@@ -165,6 +165,79 @@ def test_default_start_creates_independent_clone() -> None:
         assert not alternates.exists() or not alternates.read_text(encoding="utf-8").strip()
 
 
+def test_resume_clones_existing_remote_branch_at_exact_head() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        branch = "agent/bl-006-feedback-policy-v2"
+        git(repo, "switch", "-c", branch)
+        (repo / "resume.txt").write_text("resume me\n", encoding="utf-8")
+        git(repo, "add", "resume.txt")
+        git(repo, "commit", "-m", "resume branch")
+        expected_head = git(repo, "rev-parse", "HEAD")
+        git(repo, "push", "-u", "origin", branch)
+        git(repo, "switch", "main")
+
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "start",
+                "--slice-id",
+                "BL-RESUME-001",
+                "--agent-id",
+                "agent-a1b2",
+                "--resume",
+                "--branch",
+                branch,
+                "--expected-head",
+                expected_head,
+            ],
+            cwd=repo,
+            expect_code=0,
+        )
+        clone = Path(next(line.split(":", 1)[1].strip() for line in completed.stdout.splitlines() if line.startswith("Agent clone ready:")))
+        context = json.loads((clone / ".projectstate" / "agent.context").read_text(encoding="utf-8"))
+        assert context["branch"] == branch
+        assert context["base_branch"] == "origin/main"
+        assert git(clone, "rev-parse", "HEAD") == expected_head
+        assert (clone / "resume.txt").read_text(encoding="utf-8") == "resume me\n"
+        assert "Resumed remote branch head: " + expected_head in completed.stdout
+        assert git(repo, "branch", "--show-current") == "main"
+
+
+def test_resume_head_mismatch_fails_before_creating_managed_clone() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = init_repo(Path(tmp))
+        branch = "agent/resume-mismatch"
+        git(repo, "switch", "-c", branch)
+        (repo / "resume.txt").write_text("remote\n", encoding="utf-8")
+        git(repo, "add", "resume.txt")
+        git(repo, "commit", "-m", "resume branch")
+        git(repo, "push", "-u", "origin", branch)
+        git(repo, "switch", "main")
+
+        completed = run(
+            [
+                "--repo",
+                str(repo),
+                "start",
+                "--slice-id",
+                "BL-RESUME-002",
+                "--agent-id",
+                "agent-a1b2",
+                "--resume",
+                "--branch",
+                branch,
+                "--expected-head",
+                "0" * 40,
+            ],
+            cwd=repo,
+            expect_code=1,
+        )
+        assert "expected head" in completed.stderr
+        assert not (Path(tmp) / ".projectstate-test-workspaces").exists()
+
+
 def test_worktree_creation_is_blocked_without_explicit_opt_in() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = init_repo(Path(tmp))

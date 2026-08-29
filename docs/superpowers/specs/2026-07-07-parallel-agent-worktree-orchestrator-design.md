@@ -74,6 +74,7 @@ A CLI orchestrator with these subcommands:
 | Subcommand | Purpose |
 |------------|---------|
 | `start --slice-id BL-XXX [--agent-id id] [--base branch]` | Create branch, worktree, reservation ref, and agent.context. |
+| `start --slice-id BL-XXX --resume --branch branch [--expected-head sha]` | Clone an existing remote branch into a new managed full clone, optionally requiring its exact head. |
 | `guard [--mode start-slice\|closure]` | Run worktree guard inside the agent context. |
 | `handoff` | Generate handoff snapshot, validate dirty classification, optionally release reservation. |
 | `close --pr N` | Push branch, run closure checks + remote closure finalizer, then remove worktree and reservation on success. |
@@ -90,6 +91,17 @@ A CLI orchestrator with these subcommands:
 6. Write `.projectstate/agent.context` inside the worktree.
 7. Write reservation ref: `git update-ref refs/projectstate/reservations/<branch> <base-commit>` with agent context in message.
 8. Print the worktree path and branch.
+
+### Resume flow
+
+1. Require an explicit non-default `--branch`; the command never guesses which
+   remote branch represents the slice.
+2. Read exactly `refs/heads/<branch>` with `git ls-remote` before creating the
+   managed target. If `--expected-head` is supplied, refuse any mismatch.
+3. Clone that branch with an independent Git object database into the centrally
+   managed active root and verify the checked-out branch and optional exact head.
+4. Write the normal clone `agent.context`; a failed verification leaves the
+   clone intact for diagnosis and does not alter the source repository.
 
 ### Guard flow
 

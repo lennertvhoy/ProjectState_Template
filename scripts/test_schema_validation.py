@@ -48,6 +48,46 @@ def test_root_schema_validation_passes() -> None:
     run([str(VALIDATOR)], expect_success=True)
 
 
+def test_asset_lock_state_and_adapter_profiles_must_agree() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "profile-agreement"
+        run_init(["new", "--name", "Profile Agreement", "--profile", "solo", "--target", str(target)])
+        adapter = target / "PROJECT_ADAPTER.yaml"
+        adapter.write_text(
+            adapter.read_text(encoding="utf-8").replace("  profile: solo\n", "  profile: team\n", 1),
+            encoding="utf-8",
+        )
+
+        completed = run(
+            [str(target / "scripts" / "projectstate_validate_schema.py"), str(target)],
+            cwd=target,
+            expect_success=False,
+        )
+
+        assert_output_contains(completed, "manifest/project metadata agreement")
+        assert_output_contains(completed, "must match asset manifest profile 'solo'")
+
+
+def test_asset_lock_requires_profile_metadata_in_both_documents() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "profile-metadata-required"
+        run_init(["new", "--name", "Profile Metadata", "--profile", "solo", "--target", str(target)])
+        adapter = target / "PROJECT_ADAPTER.yaml"
+        adapter.write_text(
+            adapter.read_text(encoding="utf-8").replace("  profile: solo\n", "", 1),
+            encoding="utf-8",
+        )
+
+        completed = run(
+            [str(target / "scripts" / "projectstate_validate_schema.py"), str(target)],
+            cwd=target,
+            expect_success=False,
+        )
+
+        assert_output_contains(completed, "PROJECT_ADAPTER.yaml.project.profile")
+        assert_output_contains(completed, "profile is missing")
+
+
 def test_invalid_project_state_fails_with_actionable_message() -> None:
     completed = run(
         [
@@ -394,6 +434,8 @@ def test_adopted_repo_includes_schema_validation_assets_and_passes() -> None:
 def main() -> int:
     tests = [
         test_root_schema_validation_passes,
+        test_asset_lock_state_and_adapter_profiles_must_agree,
+        test_asset_lock_requires_profile_metadata_in_both_documents,
         test_invalid_project_state_fails_with_actionable_message,
         test_invalid_evidence_readme_fails_contract,
         test_runtime_not_applicable_fixture_passes,

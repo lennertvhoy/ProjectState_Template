@@ -275,6 +275,20 @@
               "null"
             ],
             "pattern": "^[0-9a-f]{40}$"
+          },
+          "kind": {
+            "enum": [
+              "template_upgrade",
+              "profile_migration"
+            ]
+          },
+          "from_profile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to_profile": {
+            "type": "string",
+            "minLength": 1
           }
         }
       }

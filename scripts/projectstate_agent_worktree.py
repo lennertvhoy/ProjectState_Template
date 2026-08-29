@@ -21,6 +21,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -214,6 +215,40 @@ def current_branch(repo: Path) -> str:
     if not branch:
         raise RuntimeError("detached HEAD cannot be used for agent isolation")
     return branch
+
+
+def validate_branch_name(branch: str, *, repo: Path) -> str:
+    """Accept only a real Git branch ref, never an option or symbolic ref."""
+    value = branch.strip()
+    if not value or value in {".", "..", "HEAD"} or value.startswith("-"):
+        raise RuntimeError(f"invalid agent branch name: {branch!r}")
+    if value.startswith("refs/") or "@{" in value:
+        raise RuntimeError(f"agent branch must be a branch name, not a ref expression: {branch!r}")
+    code, _, stderr = run_command(["git", "check-ref-format", "--branch", value], repo)
+    if code != 0:
+        raise RuntimeError(f"invalid agent branch name {branch!r}: {stderr or 'git ref validation failed'}")
+    return value
+
+
+def remote_branch_head(source_url: str, branch: str, *, cwd: Path) -> str:
+    """Read one remote branch identity without fetching or changing local state."""
+    code, stdout, stderr = run_command(
+        ["git", "ls-remote", source_url, f"refs/heads/{branch}"], cwd
+    )
+    if code != 0:
+        raise RuntimeError(f"remote branch inspection failed: {stderr or stdout or 'no diagnostic'}")
+    rows = [line.split("\t", 1) for line in stdout.splitlines() if "\t" in line]
+    matches = [sha for sha, ref in rows if ref == f"refs/heads/{branch}"]
+    if len(matches) != 1 or not re.fullmatch(r"[0-9a-f]{40}", matches[0]):
+        raise RuntimeError(f"remote branch does not have one valid full head: {branch}")
+    return matches[0]
+
+
+def validate_expected_head(value: str) -> str:
+    expected = value.strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", expected):
+        raise RuntimeError("--expected-head must be a full 40-character lowercase Git SHA")
+    return expected
 
 
 def origin_default_branch(repo: Path) -> str:
@@ -604,7 +639,11 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
         print("Source repository cannot be read reliably enough to provision a clone.", file=sys.stderr)
         return 1
 
-    branch = args.branch or compute_branch_name(slice_id, short_id)
+    resume = bool(args.resume)
+    if resume and not args.branch:
+        print("--resume requires --branch so an existing remote branch is explicit.", file=sys.stderr)
+        return 1
+    branch = validate_branch_name(args.branch or compute_branch_name(slice_id, short_id), repo=source)
     default = source_report.get("repository", {}).get("default_branch", "")
     base = (args.base or default).removeprefix("origin/")
     if not base or base == "not proven":
@@ -622,6 +661,29 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
     if not source_url or source_url.startswith("not proven"):
         source_url = str(source)
 
+    expected_head = None
+    if args.expected_head:
+        if not resume:
+            print("--expected-head is only valid with --resume.", file=sys.stderr)
+            return 1
+        expected_head = validate_expected_head(args.expected_head)
+    if resume:
+        if branch == base:
+            print("--resume cannot use the default/base branch as an agent branch.", file=sys.stderr)
+            return 1
+        try:
+            remote_head = remote_branch_head(source_url, branch, cwd=source)
+        except RuntimeError as exc:
+            print(f"Remote branch resume refused: {exc}", file=sys.stderr)
+            return 1
+        if expected_head is not None and remote_head != expected_head:
+            print(
+                "Remote branch resume refused: expected head "
+                f"{expected_head}, observed {remote_head}.",
+                file=sys.stderr,
+            )
+            return 1
+
     target.parent.mkdir(parents=True, exist_ok=True)
     reject_symlink_components(target.parent)
     code, _, stderr = run_command(
@@ -631,7 +693,7 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
             "--no-local",
             "--no-hardlinks",
             "--branch",
-            base,
+            branch if resume else base,
             source_url,
             str(target),
         ],
@@ -644,14 +706,25 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
             print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
         print(f"Any partial target is left intact for read-only diagnosis: {target}", file=sys.stderr)
         return 1
-    code, _, stderr = run_command(["git", "switch", "-c", branch], target)
-    if code != 0:
-        latch_error = record_required_git_failure(target, "git switch feature branch", stderr)
-        print(f"Clone exists but feature branch creation failed: {stderr}", file=sys.stderr)
-        if latch_error:
-            print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
-        print(f"Left intact for read-only diagnosis: {target}", file=sys.stderr)
-        return 1
+    if not resume:
+        code, _, stderr = run_command(["git", "switch", "-c", branch], target)
+        if code != 0:
+            latch_error = record_required_git_failure(target, "git switch feature branch", stderr)
+            print(f"Clone exists but feature branch creation failed: {stderr}", file=sys.stderr)
+            if latch_error:
+                print(f"Read-only latch persistence failed: {latch_error}", file=sys.stderr)
+            print(f"Left intact for read-only diagnosis: {target}", file=sys.stderr)
+            return 1
+    elif expected_head is not None:
+        actual_head = required_command(["git", "rev-parse", "HEAD"], target, "resumed branch HEAD inspection")
+        if actual_head != expected_head:
+            print(
+                "Remote branch resume refused after clone: checked-out head changed "
+                f"from expected {expected_head} to {actual_head}.",
+                file=sys.stderr,
+            )
+            print(f"Clone left intact for read-only diagnosis: {target}", file=sys.stderr)
+            return 1
 
     code, report, error = run_git_safety(
         target,
@@ -686,6 +759,8 @@ def cmd_start_clone(args: argparse.Namespace, source: Path, slice_id: str, agent
         return 2
     print(f"Agent clone ready: {target}")
     print(f"Branch: {branch}")
+    if resume:
+        print(f"Resumed remote branch head: {expected_head or required_command(['git', 'rev-parse', 'HEAD'], target, 'resumed HEAD inspection')}")
     print("Isolation mode: clone (independent Git common directory/object database)")
     return 0
 
@@ -1348,6 +1423,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     start.add_argument("--agent-id")
     start.add_argument("--base")
     start.add_argument("--branch")
+    start.add_argument(
+        "--resume",
+        action="store_true",
+        help="Clone an existing remote branch instead of creating a new branch from --base",
+    )
+    start.add_argument(
+        "--expected-head",
+        help="With --resume, require the remote branch to equal this full 40-character SHA",
+    )
     start.add_argument("--target")
     start.add_argument(
         "--isolation-mode",
