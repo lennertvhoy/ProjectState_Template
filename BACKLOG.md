@@ -2,7 +2,7 @@
 
 **Product:** ProjectState_Template
 **Execution Mode:** template-maintenance
-**Updated At:** 2026-08-26
+**Updated At:** 2026-08-29
 
 ## Purpose
 
@@ -11,6 +11,7 @@ Reference these IDs from `NEXT_ACTIONS.md`.
 
 ## NOW
 
+- [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Add explicit forward profile migration and safe managed clone resume; local proof and CI are complete, PR #79 is published, and exact-head remote closure remains pending finalizer verification.
 
 ## NEXT
 

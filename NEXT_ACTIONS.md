@@ -1,12 +1,14 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-08-26
+**Updated At:** 2026-08-29
 **Execution Mode:** template-maintenance
 **Max Items:** 10
 
 ## Active Work
 
-No mandatory implementation item.
+### P1 [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Remote closure and downstream handoff
+
+- Run exact-head remote closure for PR #79 after the evidence-marker normalization, then hand off to downstream profile migration.
 
 ## Queue Rules
 

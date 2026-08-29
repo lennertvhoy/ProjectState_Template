@@ -1,0 +1,119 @@
+{
+  "artifacts": [
+    {
+      "kind": "doc",
+      "path": "README.md",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "3faf3cd11096c22aac5f4555abf625b951865c2be1545bee880f06a11a4d7c54"
+    },
+    {
+      "kind": "runtime_identity",
+      "path": "runtime_identity.json",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "24c5b4b06b2d1518ad3d16fa9a20222493af4cfb67432e3212a9d76ee3bd5743"
+    },
+    {
+      "kind": "command_output",
+      "path": "pytest_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "86eb0d8b7a458256b2b2654278000aa63535729f5d0236921dd6e4854bc85f1e"
+    },
+    {
+      "kind": "command_output",
+      "path": "schema_validation_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b3f58105afc169259c10218bca4e6afb5b389fa47db14830fcc02566974e81f1"
+    },
+    {
+      "kind": "command_output",
+      "path": "state_docs_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "b94ff4d9be7c33fb54ae7ea31293c2d13aab98b6f65978232b211980f847070d"
+    },
+    {
+      "kind": "command_output",
+      "path": "profile_metrics_check.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "ffd38609a7653627d1ac5f7201003792862d3c0ac4099cd2790ce882efbecddb"
+    },
+    {
+      "kind": "command_output",
+      "path": "quality_gate_output.txt",
+      "redaction_status": "checked_with_limits",
+      "sensitive_data": "none_found",
+      "sha256": "2fc0d9ae13b77ca3d54bce424fe2503a090384368d7efd970c8fbfd84e2a13e2"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "Managed clone resume requires explicit branch identity and optionally an exact remote head while preserving independent clone isolation.",
+      "evidence": [
+        "pytest_output.txt",
+        "quality_gate_output.txt"
+      ],
+      "id": "safe-clone-resume",
+      "status": "validated"
+    },
+    {
+      "claim": "Forward profile migration updates canonical metadata transactionally, preserves project truth, records history, and rejects unsafe transitions without writes.",
+      "evidence": [
+        "pytest_output.txt",
+        "schema_validation_output.txt"
+      ],
+      "id": "transactional-profile-migration",
+      "status": "validated"
+    },
+    {
+      "claim": "The complete local test, schema, state, metrics, and quality-gate contracts pass for the proof tree.",
+      "evidence": [
+        "profile_metrics_check.txt",
+        "state_docs_output.txt",
+        "quality_gate_output.txt"
+      ],
+      "id": "local-contracts-pass",
+      "status": "validated"
+    },
+    {
+      "claim": "No application runtime or browser surface is part of this tooling-only slice.",
+      "evidence": [
+        "README.md",
+        "runtime_identity.json"
+      ],
+      "id": "runtime-boundary",
+      "status": "validated"
+    }
+  ],
+  "created_at": "2026-08-29T12:52:10+02:00",
+  "manifest_status": "complete",
+  "redaction": {
+    "automated_scan": "passed",
+    "known_limits": [
+      "Automated scan found no obvious patterns in README.md; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in runtime_identity.json; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in pytest_output.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in schema_validation_output.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in state_docs_output.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in profile_metrics_check.txt; this does not prove absence of secrets.",
+      "Automated scan found no obvious patterns in quality_gate_output.txt; this does not prove absence of secrets."
+    ],
+    "manual_review": "completed",
+    "status": "checked_with_limits"
+  },
+  "repo": {
+    "branch": "bl-bl-template-downstream-closure-001-agen-pscab",
+    "head": "949e412dac6c166c61eb4d7c73e362066e9f1456"
+  },
+  "runtime_identity": {
+    "path": "runtime_identity.json",
+    "required": false,
+    "status": "not_applicable"
+  },
+  "schema": "projectstate.evidence_manifest.v1",
+  "slice_id": "BL-TEMPLATE-DOWNSTREAM-CLOSURE-001"
+}

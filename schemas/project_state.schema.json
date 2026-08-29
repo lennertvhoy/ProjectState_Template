@@ -475,6 +475,10 @@
             "lifecycle_stage": {
               "type": "string",
               "minLength": 1
+            },
+            "profile": {
+              "type": "string",
+              "minLength": 1
             }
           }
         },

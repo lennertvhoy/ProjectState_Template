@@ -862,3 +862,69 @@
     BL-STATEISOLATION-001
 - Type: remote_ci | post_merge | release_receipt | state_update
 - as_of: 2026-08-26T11:00:00+02:00
+
+## EV-2026-08-29-001: Safe profile migration and managed clone resume
+
+- File: docs/evidence/2026-08-29-template-downstream-closure/README.md
+- File: docs/evidence/2026-08-29-template-downstream-closure/manifest.json
+- File: docs/evidence/2026-08-29-template-downstream-closure/runtime_identity.json
+- File: docs/evidence/2026-08-29-template-downstream-closure/quality_gate_output.txt
+- Title: BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 local implementation and validation
+- Source/System: test | schema | state_update
+- Action: Added explicit remote-branch resume with optional exact-head binding,
+  transactional forward profile migration, canonical profile agreement
+  validation, measured footprint updates, and focused regressions.
+- Shows:
+  - full tests and generated-profile conformance pass
+  - schema/state/metrics contracts agree at proof head
+  - strict evidence and runtime-boundary checks pass
+  - default `/tmp` quota failure was isolated from the verified alternate-TMPDIR
+    run
+- Proves:
+  - local implementation and validation truth for the slice
+- Type: implementation | test | state_update
+- as_of: 2026-08-29T13:10:00+02:00
+- Notes: Remote publication, exact-head CI, merge, and downstream migration are
+  not proven by this entry; human product acceptance remains separate.
+
+## EV-2026-08-29-002: CI tokenizer parity correction
+
+- File: docs/metrics/profile_metrics.json
+- Title: Corrected profile metrics to match the authoritative CI tokenizer
+- Source/System: GitHub Actions | local CI-parity reproduction
+- Action: Investigated failed PR #79 conformance runs `33250377459` and
+  `33250410399`, reproduced the drift caused by CI's pinned `tiktoken==0.12.0`,
+  and regenerated the metrics artifact with that exact dependency.
+- Shows:
+  - both branch-head jobs and the merge-candidate job passed every check before
+    failing only on profile metrics drift
+  - the corrected artifact records `o200k_base` actual counts and tiktoken `0.12.0`
+  - the complete local CI-parity Level-2 conformance gate passes after repair
+- Proves:
+  - the published PR's only observed CI failure has a bounded finalization-only
+    correction with local reproduction and validation
+- Type: defect_repair | test | state_update
+- as_of: 2026-08-29T13:43:17+02:00
+- Notes: The correction still requires fresh GitHub branch-head and
+  merge-candidate CI, exact-head remote closure, merge, and downstream handoff.
+
+## EV-2026-08-29-003: Remote-finalizer marker normalization
+
+- File: docs/evidence/2026-08-29-template-downstream-closure/README.md
+- File: docs/evidence/2026-08-29-template-downstream-closure/manifest.json
+- Title: Normalized exact-head evidence references for remote closure
+- Source/System: remote finalizer | evidence validation
+- Action: Repaired the finalizer-visible metadata after CI passed: removed the
+  duplicate PR-body evidence path, converted the tracked README's proof marker
+  to the supported plain form, and refreshed the manifest artifact hash.
+- Shows:
+  - the finalizer observed green CI, clean merge state, matching local/remote/PR
+    heads, and strict evidence before rejecting only marker formatting
+  - strict evidence validation passes after the metadata-only correction
+- Proves:
+  - the remaining remote blocker is bounded to finalizer metadata alignment;
+    implementation proof and CI results are unchanged
+- Type: state_reconciliation | test
+- as_of: 2026-08-29T13:51:49+02:00
+- Notes: Exact-head remote closure, merge, direct-main CI, physical release, and
+  downstream handoff remain unproven until the authoritative finish path passes.

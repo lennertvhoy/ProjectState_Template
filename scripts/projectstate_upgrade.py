@@ -35,7 +35,12 @@ try:
         resolve_profile,
         safe_root_path,
     )
-    from projectstate_validate_schema import load_schema as load_json_schema_contract, validate_json_schema
+    from projectstate_validate_schema import (
+        ProjectStateYamlError,
+        load_schema as load_json_schema_contract,
+        parse_yaml_text,
+        validate_json_schema,
+    )
     from projectstate_generated_controls import render_coding_agent_startup_prompt, render_downstream_workflow
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
     from scripts.projectstate_contracts import (
@@ -51,7 +56,12 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
         resolve_profile,
         safe_root_path,
     )
-    from scripts.projectstate_validate_schema import load_schema as load_json_schema_contract, validate_json_schema
+    from scripts.projectstate_validate_schema import (
+        ProjectStateYamlError,
+        load_schema as load_json_schema_contract,
+        parse_yaml_text,
+        validate_json_schema,
+    )
     from scripts.projectstate_generated_controls import render_coding_agent_startup_prompt, render_downstream_workflow
 
 
@@ -81,6 +91,12 @@ EXCLUDED_CLASSES = [
     "maintenance_changelog",
 ]
 HASH_PATTERN_LENGTH = 64
+PROFILE_MIGRATION_ORDER = {
+    "minimal": 0,
+    "solo": 1,
+    "team": 2,
+    "regulated": 3,
+}
 GENERATED_CONTROL_PATHS = {
     Path(".github/workflows/projectstate-validate.yml"),
     Path("prompts/CODING_AGENT_STARTUP_PROMPT.md"),
@@ -101,6 +117,169 @@ class ManifestState:
     upgrade_history: list[dict[str, Any]]
     optional_asset_sets: set[str]
     manifest_sha256: str | None
+
+
+def validate_profile_transition(catalog: dict[str, Any], source: str, target: str) -> None:
+    """Require a known forward profile transition before planning any writes."""
+    if source not in catalog["profiles"] or target not in catalog["profiles"]:
+        raise ContractError(f"profile migration references an unknown profile: {source!r} -> {target!r}")
+    if source == target:
+        raise ContractError(f"profile migration is already at {source!r}; choose a different target profile")
+    source_rank = PROFILE_MIGRATION_ORDER.get(source)
+    target_rank = PROFILE_MIGRATION_ORDER.get(target)
+    if source_rank is None or target_rank is None:
+        raise ContractError(
+            f"profile migration order is not defined for {source!r} -> {target!r}; refusing an unclassified transition"
+        )
+    if target_rank <= source_rank:
+        raise ContractError(
+            f"profile migration downgrade is forbidden: {source!r} -> {target!r}"
+        )
+
+
+def _nested_mapping_value(payload: Any, path: tuple[str, ...], field: str, label: str) -> Any:
+    current = payload
+    for key in path:
+        if not isinstance(current, dict) or key not in current:
+            raise ContractError(f"{label} is missing {'.'.join((*path, field))}")
+        current = current[key]
+    if not isinstance(current, dict) or field not in current:
+        raise ContractError(f"{label} is missing {'.'.join((*path, field))}")
+    return current[field]
+
+
+def _replace_yaml_mapping_scalar(
+    text: str,
+    path: tuple[str, ...],
+    field: str,
+    old_value: str,
+    new_value: str,
+) -> str:
+    """Replace one scalar while retaining all unrelated project-truth bytes."""
+    stack: list[tuple[int, str]] = []
+    matches: list[int] = []
+    lines = text.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        content = line.rstrip("\r\n")
+        stripped = content.lstrip(" ")
+        if not stripped or stripped.startswith("#") or stripped.startswith("-") or ":" not in stripped:
+            continue
+        indent = len(content) - len(stripped)
+        key, raw_value = stripped.split(":", 1)
+        key = key.strip()
+        raw_value = raw_value.strip()
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+        if key == field and tuple(item[1] for item in stack) == path:
+            value = raw_value
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+                value = value[1:-1]
+            if value == old_value:
+                matches.append(index)
+            continue
+        if not raw_value or raw_value in {"|", ">"}:
+            stack.append((indent, key))
+    if len(matches) != 1:
+        return text
+    index = matches[0]
+    line = lines[index]
+    newline = "\r\n" if line.endswith("\r\n") else "\n" if line.endswith("\n") else ""
+    prefix = line[: len(line) - len(line.lstrip(" "))]
+    lines[index] = f"{prefix}{field}: {new_value}{newline}"
+    return "".join(lines)
+
+
+def plan_profile_metadata_transition(
+    target: Path,
+    history: ManifestState,
+    source_profile: str,
+    target_profile: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Plan only profile-field updates in project-owned state and adapter files."""
+    metadata_specs = (
+        (Path("PROJECT_STATE.yaml"), ("current_state", "project")),
+        (Path("PROJECT_ADAPTER.yaml"), ("project",)),
+    )
+    actions: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    for relpath, mapping_path in metadata_specs:
+        destination = confined_path(target, relpath)
+        old_record = history.protected_records.get(relpath)
+        if old_record is None or old_record.get("owner") != "project":
+            conflicts.append(
+                {
+                    "relpath": relpath.as_posix(),
+                    "reason": "profile_metadata_is_not_manifest_owned",
+                }
+            )
+            continue
+        if destination.is_symlink() or not destination.is_file():
+            conflicts.append(
+                {
+                    "relpath": relpath.as_posix(),
+                    "reason": "profile_metadata_is_not_a_regular_file",
+                }
+            )
+            continue
+        try:
+            text = destination.read_text(encoding="utf-8")
+            payload = parse_yaml_text(text)
+            observed = _nested_mapping_value(payload, mapping_path, "profile", relpath.as_posix())
+        except (OSError, UnicodeDecodeError, ProjectStateYamlError, ContractError) as exc:
+            conflicts.append(
+                {
+                    "relpath": relpath.as_posix(),
+                    "reason": "profile_metadata_cannot_be_verified",
+                    "detail": str(exc),
+                }
+            )
+            continue
+        if observed != source_profile:
+            conflicts.append(
+                {
+                    "relpath": relpath.as_posix(),
+                    "reason": "profile_metadata_does_not_match_manifest",
+                    "observed_profile": observed,
+                    "manifest_profile": source_profile,
+                }
+            )
+            continue
+        replacement = _replace_yaml_mapping_scalar(
+            text,
+            mapping_path,
+            "profile",
+            source_profile,
+            target_profile,
+        )
+        if replacement == text:
+            conflicts.append(
+                {
+                    "relpath": relpath.as_posix(),
+                    "reason": "profile_metadata_field_not_replaceable",
+                }
+            )
+            continue
+        replacement_hash = sha256_bytes(replacement.encode("utf-8"))
+        record = dict(old_record)
+        record["installed_sha256"] = replacement_hash
+        desired_by = record.get("desired_by")
+        if isinstance(desired_by, list) and any(
+            isinstance(item, str) and item.startswith("profile:") for item in desired_by
+        ):
+            record["desired_by"] = [f"profile:{target_profile}"]
+        actions.append(
+            {
+                "relpath": relpath.as_posix(),
+                "reason": "profile_migration_metadata",
+                "target_hash": sha256_bytes(text.encode("utf-8")),
+                "template_hash": replacement_hash,
+                "replacement_content": replacement,
+                "old_profile": source_profile,
+                "new_profile": target_profile,
+                "manifest_record": record,
+            }
+        )
+    return actions, conflicts
 
 
 def sha256_bytes(content: bytes) -> str:
@@ -512,6 +691,7 @@ def plan_upgrade(
     resolved: ResolvedProfile,
     *,
     force_managed: bool,
+    profile_transition: tuple[str, str] | None = None,
 ) -> dict[str, Any]:
     will_add: list[dict[str, Any]] = []
     will_modify: list[dict[str, Any]] = []
@@ -718,6 +898,20 @@ def plan_upgrade(
             protected_observations[relpath] = None
         protected_records[relpath] = record
 
+    if profile_transition is not None:
+        source_profile, target_profile = profile_transition
+        metadata_actions, metadata_conflicts = plan_profile_metadata_transition(
+            target,
+            history,
+            source_profile,
+            target_profile,
+        )
+        will_modify.extend(metadata_actions)
+        conflicts.extend(metadata_conflicts)
+        for action in metadata_actions:
+            relpath = normalize_relative_path(action["relpath"])
+            protected_records[relpath] = action["manifest_record"]
+
     return {
         "will_add": will_add,
         "will_modify": will_modify,
@@ -731,6 +925,9 @@ def plan_upgrade(
         "protected_observations": protected_observations,
         "source_manifest_present": history.raw is not None,
         "source_manifest_hash": history.manifest_sha256,
+        "source_profile": history.profile,
+        "target_profile": resolved.profile,
+        "profile_transition": profile_transition,
     }
 
 
@@ -753,6 +950,7 @@ def build_manifest(
     catalog: dict[str, Any],
     resolved: ResolvedProfile,
     template_version: str,
+    profile_transition: tuple[str, str] | None = None,
 ) -> tuple[dict[str, Any], bool]:
     catalog_path = TEMPLATE_ROOT / "profiles" / "catalog.json"
     records = [
@@ -787,21 +985,43 @@ def build_manifest(
     if changed:
         source_head = git_head(TEMPLATE_ROOT)
         candidate["template_commit"] = source_head
-        transition = {
-            "from_template_version": history.template_version,
-            "to_template_version": template_version,
-            "source_commit": source_head,
-        }
-        if not candidate["upgrade_history"] or candidate["upgrade_history"][-1] != transition:
-            candidate["upgrade_history"].append(transition)
+        if profile_transition is not None:
+            source_profile, target_profile = profile_transition
+            transition = {
+                "from_template_version": history.template_version,
+                "to_template_version": template_version,
+                "source_commit": source_head,
+                "kind": "profile_migration",
+                "from_profile": source_profile,
+                "to_profile": target_profile,
+            }
+            if transition not in candidate["upgrade_history"]:
+                candidate["upgrade_history"].append(transition)
+        prior_commit = history.raw.get("template_commit") if history.raw else None
+        if template_version != history.template_version or source_head != prior_commit:
+            transition = {
+                "from_template_version": history.template_version,
+                "to_template_version": template_version,
+                "source_commit": source_head,
+            }
+            if transition not in candidate["upgrade_history"]:
+                candidate["upgrade_history"].append(transition)
     _validate_v2_payload(candidate, label="candidate manifest")
     return candidate, changed
 
 
-def print_plan(plan: dict[str, Any], target: Path, template_version: str, history: ManifestState, manifest_will_update: bool) -> None:
+def print_plan(
+    plan: dict[str, Any],
+    target: Path,
+    template_version: str,
+    history: ManifestState,
+    manifest_will_update: bool,
+) -> None:
     print("ProjectState Upgrade Plan")
     print(f"Target: {target}")
     print(f"Profile: {history.profile}")
+    if plan.get("target_profile") != history.profile:
+        print(f"Target profile: {plan['target_profile']}")
     print(f"Template version: {template_version}")
     print(f"Target version: {history.template_version or 'not detected'}")
 
@@ -909,9 +1129,11 @@ def execute_transaction(plan: dict[str, Any], target: Path, manifest: dict[str, 
             raise ContractError(f"protected asset changed after planning: {relpath}")
     for info in actions:
         relpath = normalize_relative_path(info["relpath"])
+        replacement_content = info.get("replacement_content")
         generated_content = info.get("generated_content")
-        if isinstance(generated_content, str):
-            if sha256_bytes(generated_content.encode("utf-8")) != info["template_hash"]:
+        planned_content = replacement_content if isinstance(replacement_content, str) else generated_content
+        if isinstance(planned_content, str):
+            if sha256_bytes(planned_content.encode("utf-8")) != info["template_hash"]:
                 raise ContractError(f"generated control changed after planning: {relpath}")
         else:
             source = regular_source_path(TEMPLATE_ROOT, relpath)
@@ -936,8 +1158,12 @@ def execute_transaction(plan: dict[str, Any], target: Path, manifest: dict[str, 
             relpath = normalize_relative_path(info["relpath"])
             destination = confined_path(target, relpath)
             _ensure_parent(target, destination, created_dirs)
+            replacement_content = info.get("replacement_content")
             generated_content = info.get("generated_content")
-            if isinstance(generated_content, str):
+            if isinstance(replacement_content, str):
+                content = replacement_content.encode("utf-8")
+                mode = stat.S_IMODE(destination.stat().st_mode) if destination.exists() else 0o644
+            elif isinstance(generated_content, str):
                 content = generated_content.encode("utf-8")
                 mode = 0o644
             else:
@@ -1008,7 +1234,11 @@ def write_report(
 ) -> None:
     def public_actions(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
         return [
-            {key: value for key, value in entry.items() if key != "generated_content"}
+            {
+                key: value
+                for key, value in entry.items()
+                if key not in {"generated_content", "replacement_content", "manifest_record"}
+            }
             for entry in entries
         ]
 
@@ -1018,6 +1248,8 @@ def write_report(
         "template_version": template_version,
         "target_version": history.template_version,
         "profile": history.profile,
+        "target_profile": plan.get("target_profile", history.profile),
+        "profile_transition": plan.get("profile_transition"),
         "apply_requested": not dry_run,
         "application_status": "not_proven_by_plan_report",
         "manifest_will_update": manifest_will_update,
@@ -1063,10 +1295,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--apply", action="store_true", help="Apply a conflict-free transactional plan")
     mode.add_argument("--dry-run", action="store_true", help="Explicitly select the default read-only mode")
-    parser.add_argument(
+    profile_options = parser.add_mutually_exclusive_group()
+    profile_options.add_argument(
         "--profile",
         choices=sorted(catalog["profiles"]),
         help="Explicit profile for a legacy/no-lock target; profile transitions require semantic migration",
+    )
+    profile_options.add_argument(
+        "--migrate-profile",
+        choices=sorted(catalog["profiles"]),
+        help="Semantically migrate an existing locked downstream to a higher profile",
     )
     parser.add_argument(
         "--force-managed",
@@ -1096,18 +1334,33 @@ def main(argv: list[str] | None = None) -> int:
         if target == TEMPLATE_ROOT:
             raise ContractError("target is the template root; upgrade is for downstream repositories")
         catalog = load_profile_catalog(TEMPLATE_ROOT)
-        history = load_manifest(target, explicit_profile=args.profile, catalog=catalog)
+        history = load_manifest(
+            target,
+            explicit_profile=args.profile if args.migrate_profile is None else None,
+            catalog=catalog,
+        )
         if args.apply and history.raw is None:
             raise ContractError(
                 "no-lock apply is refused because it cannot prove project-truth ownership; "
                 "use init_template.py adopt to establish a complete instance contract"
             )
+        target_profile = history.profile
+        profile_transition = None
+        if args.migrate_profile is not None:
+            if history.raw is None:
+                raise ContractError(
+                    "profile migration requires PROJECTSTATE_ASSETS.json; adopt first to establish ownership"
+                )
+            validate_profile_transition(catalog, history.profile, args.migrate_profile)
+            target_profile = args.migrate_profile
+            profile_transition = (history.profile, target_profile)
+
         optional_sets = set(history.optional_asset_sets) | set(args.include_asset_set)
         if args.include_github_assets:
             if "github" not in catalog["asset_sets"] or catalog["asset_sets"]["github"].get("optional") is not True:
                 raise ContractError("legacy --include-github-assets alias is unavailable in this catalog")
             optional_sets.add("github")
-        resolved = resolve_profile(catalog, history.profile, optional_asset_sets=optional_sets)
+        resolved = resolve_profile(catalog, target_profile, optional_asset_sets=optional_sets)
         template_version = read_version(TEMPLATE_ROOT)
         if template_version is None or template_version != catalog["template_version"]:
             raise ContractError("VERSION and profiles/catalog.json template_version do not agree")
@@ -1117,6 +1370,7 @@ def main(argv: list[str] | None = None) -> int:
             catalog,
             resolved,
             force_managed=args.force_managed,
+            profile_transition=profile_transition,
         )
         manifest, manifest_will_update = build_manifest(
             history,
@@ -1124,6 +1378,7 @@ def main(argv: list[str] | None = None) -> int:
             catalog,
             resolved,
             template_version,
+            profile_transition=profile_transition,
         )
         print_plan(plan, target, template_version, history, manifest_will_update)
         if args.report:

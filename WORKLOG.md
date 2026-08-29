@@ -1340,3 +1340,100 @@ blocker was cleared via the documented `--restart-session` restart.
   duplicated there during BL-STATEISOLATION-001 packaging; the authoritative
   copies live inside docs/evidence/2026-08-26-stateisolation/ and are
   byte-identical (verified by hash before removal).
+
+## 2026-08-29 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 safe migration and clone resume
+
+**Type:** compatibility_security_migration
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001]
+**Branch:** bl-bl-template-downstream-closure-001-agen-pscab
+**Git Head:** proof tree 949e412dac6c166c61eb4d7c73e362066e9f1456
+
+### What changed
+
+- `scripts/projectstate_agent_worktree.py` now supports explicit resume of an
+  existing remote branch, validates branch/ref input, checks the remote head
+  with `git ls-remote`, optionally enforces an exact expected SHA, and preserves
+  independent managed-clone isolation.
+- `scripts/projectstate_upgrade.py` now supports explicit forward profile
+  migration, updates only verified profile metadata fields, preserves project
+  truth, records `upgrade_history`, and refuses downgrade, mismatch, collision,
+  or partial-write paths.
+- Project state and adapter schemas plus the manifest schema and validator now
+  enforce agreement between the locked profile and canonical metadata.
+- Profile footprint budgets were recalibrated from measured generated outputs;
+  documentation and focused regression coverage were added.
+
+### Validation
+
+- Full `pytest` suite passed using
+  `TMPDIR=/home/ff/.cache/projectstate-tests` after the default `/tmp` quota
+  exhausted during the first attempt.
+- The authoritative Level-2 quality gate passed, including reproducible profile
+  metrics, generated-profile conformance, schema/state validation, strict
+  evidence, runtime-boundary proof, efficiency, and whitespace checks.
+- Strict evidence pack: `docs/evidence/2026-08-29-template-downstream-closure/`.
+
+### Boundary
+
+- Local implementation and validation are proven; remote branch publication,
+  PR exact-head closure, merge, and downstream migration remain pending.
+
+## 2026-08-29 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 CI tokenizer parity correction
+
+**Type:** defect_repair
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001]
+**Branch:** bl-bl-template-downstream-closure-001-agen-pscab
+
+### Finding and repair
+
+- GitHub Actions runs `33250377459` and `33250410399` reached the authoritative
+  conformance gate but failed only because CI installs `tiktoken==0.12.0` while
+  the committed profile metrics artifact had been generated without tiktoken.
+- Regenerated `docs/metrics/profile_metrics.json` with the exact CI dependency;
+  the artifact now records actual `o200k_base` counts and tokenizer metadata.
+- The correction is finalization-only after proof head `949e412`; implementation
+  scope and the typed evidence proof remain unchanged.
+
+### Validation
+
+- The full quality gate passes under an isolated environment containing the exact
+  CI dependencies, including `tiktoken==0.12.0`.
+- Metrics reproduction, tests, generated-profile conformance, schema/state
+  validation, strict evidence, runtime truth, instruction lint, efficiency, and
+  whitespace checks all pass.
+
+### Boundary
+
+- The corrected finalization successor must be pushed and pass fresh branch-head
+  and merge-candidate CI before exact-head remote closure; downstream migration
+  remains pending.
+
+## 2026-08-29 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 remote marker normalization
+
+**Type:** state_reconciliation
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001]
+**Branch:** bl-bl-template-downstream-closure-001-agen-pscab
+
+### Finding and repair
+
+- After corrected CI passed, the remote finalizer rejected the PR body because
+  the evidence path appeared twice and the evidence README's proof marker used
+  unsupported backtick-wrapped syntax.
+- Reduced the PR-body evidence reference to one unique path and normalized the
+  tracked README to one parser-compatible plain `Proof head:` marker.
+- Refreshed the strict manifest hash for the changed README; no implementation
+  or proof-tree content changed.
+
+### Validation
+
+- Strict evidence-pack validation passes after the marker and hash correction.
+- The corrected branch-head and merge-candidate CI remains green at the exact
+  pushed implementation head.
+
+### Boundary
+
+- The exact-head remote finalizer must pass before the confirmed agent-after-green
+  merge and post-merge handoff; downstream migration remains pending.

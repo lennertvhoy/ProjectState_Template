@@ -747,6 +747,67 @@ def validate_manifest_catalog_consistency(root: Path) -> list[ValidationIssue]:
     return issues
 
 
+def _profile_from_mapping(payload: Any, path: tuple[str, ...], label: str) -> tuple[str | None, ValidationIssue | None]:
+    current = payload
+    for key in path:
+        if not isinstance(current, dict) or key not in current:
+            return None, ValidationIssue(f"{label}.{'.'.join(path)}", "profile mapping is missing")
+        current = current[key]
+    if not isinstance(current, dict) or "profile" not in current:
+        return None, ValidationIssue(f"{label}.{'.'.join(path)}.profile", "profile is missing")
+    value = current["profile"]
+    if not isinstance(value, str) or not value:
+        return None, ValidationIssue(f"{label}.{'.'.join(path)}.profile", "profile must be a non-empty string")
+    return value, None
+
+
+def validate_manifest_project_metadata_consistency(root: Path) -> list[ValidationIssue]:
+    """Ensure the asset lock, canonical state, and adapter name one profile."""
+    manifest_path = resolve_assets_manifest(root)
+    if manifest_path is None:
+        return []
+    try:
+        manifest = load_json_file(manifest_path)
+    except ContractError as exc:
+        return [ValidationIssue("$", f"could not read asset manifest for profile agreement: {exc}")]
+    if not isinstance(manifest, dict) or manifest.get("schema") not in {
+        "projectstate.runtime_assets.v2",
+        "statedd.runtime_assets.v2",
+    }:
+        return []
+    manifest_profile = manifest.get("profile")
+    if not isinstance(manifest_profile, str) or not manifest_profile:
+        return [ValidationIssue("$.profile", "asset manifest profile must be a non-empty string")]
+
+    issues: list[ValidationIssue] = []
+    metadata_specs = (
+        ("PROJECT_STATE.yaml", ("current_state", "project")),
+        ("PROJECT_ADAPTER.yaml", ("project",)),
+    )
+    for relpath, mapping_path in metadata_specs:
+        path = confined_path(root, relpath)
+        label = relpath
+        if path.is_symlink() or not path.is_file():
+            issues.append(ValidationIssue(label, "profile agreement requires a regular file"))
+            continue
+        try:
+            payload = parse_yaml_text(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, ProjectStateYamlError) as exc:
+            issues.append(ValidationIssue(label, f"could not parse profile metadata: {exc}"))
+            continue
+        observed, issue = _profile_from_mapping(payload, mapping_path, label)
+        if issue is not None:
+            issues.append(issue)
+        elif observed != manifest_profile:
+            issues.append(
+                ValidationIssue(
+                    f"{label}.{'.'.join(mapping_path)}.profile",
+                    f"must match asset manifest profile {manifest_profile!r}; observed {observed!r}",
+                )
+            )
+    return issues
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate ProjectState schemas and markdown contracts")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
@@ -820,6 +881,14 @@ def validate_root(root: Path, quiet: bool) -> int:
     if consistency_issues:
         all_issues.append(("manifest/catalog agreement", consistency_issues))
     print_target_result("manifest/catalog agreement", consistency_issues, quiet)
+
+    try:
+        metadata_issues = validate_manifest_project_metadata_consistency(root)
+    except (ContractError, UnsafePathError, OSError) as exc:
+        metadata_issues = [ValidationIssue("$", f"could not validate manifest/project metadata agreement: {exc}")]
+    if metadata_issues:
+        all_issues.append(("manifest/project metadata agreement", metadata_issues))
+    print_target_result("manifest/project metadata agreement", metadata_issues, quiet)
 
     if all_issues:
         print(f"FAILED: {sum(len(issues) for _, issues in all_issues)} schema issue(s) found")

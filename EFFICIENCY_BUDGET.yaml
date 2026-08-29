@@ -92,8 +92,10 @@ context_budgets:
       # reconciliation pack; measured at 409 files and 2,701,500 bytes.
       # BL-EVIDENCE-HYGIENE-001 removes two stray duplicates and adds its
       # minimal hygiene pack; measured at 411 files and 2,700,900 bytes.
-      max_footprint_files: 412
-      max_footprint_bytes: 2740000
+      # The profile-migration/resume slice adds the implementation footprint
+      # plus one bounded closure evidence pack to the template repository.
+      max_footprint_files: 420
+      max_footprint_bytes: 2780000
     minimal:
       max_startup_files: 5
       max_startup_bytes: 9000
@@ -105,7 +107,9 @@ context_budgets:
       # After ProjectState rename: measured at 424,112 bytes with optional knowledge_okf.
       # BL-WORKFLOW-CATALOG-001 adds the improve skill and /projectstate-improve
       # command (+2 files, +7,459 bytes): 431,571 bytes with optional knowledge_okf.
-      max_footprint_bytes: 440000
+      # Profile metadata validation adds 2,594 bytes to the current measured
+      # optional-module footprint; retain proportional headroom for the contract.
+      max_footprint_bytes: 450000
     solo:
       max_startup_files: 5
       max_startup_bytes: 10000
@@ -115,7 +119,9 @@ context_budgets:
       # After ProjectState rename: measured at 775,688 bytes.
       # BL-WORKFLOW-CATALOG-001 adds +2 files (+7,459 bytes); measured with
       # optional knowledge_okf at 790,739 bytes.
-      max_footprint_bytes: 800000
+      # Profile migration and resume controls measure 805,347 bytes in the
+      # generated profile; keep a bounded margin for small contract additions.
+      max_footprint_bytes: 820000
     team:
       max_startup_files: 5
       max_startup_bytes: 10500
@@ -127,7 +133,9 @@ context_budgets:
       # After ProjectState rename (schema enum aliases, manifest resolver,
       # env-var fallbacks): measured at 1,041,807 bytes.
       # BL-WORKFLOW-CATALOG-001 adds +2 files, +7,459 bytes: 1,049,266 bytes.
-      max_footprint_bytes: 1060000
+      # Profile migration and resume controls measure 1,075,850 bytes in the
+      # generated profile; keep a bounded margin for small contract additions.
+      max_footprint_bytes: 1100000
     regulated:
       max_startup_files: 5
       max_startup_bytes: 11000
@@ -137,7 +145,9 @@ context_budgets:
       # Measured at 987,047 bytes with inherited finish controls and optional OKF.
       # After ProjectState rename: measured at 1,042,220 bytes.
       # BL-WORKFLOW-CATALOG-001 adds +2 files, +7,459 bytes: 1,049,679 bytes.
-      max_footprint_bytes: 1060000
+      # Profile migration and resume controls measure 1,076,298 bytes in the
+      # generated profile; keep a bounded margin for small contract additions.
+      max_footprint_bytes: 1100000
 
 evidence_budgets:
   default_max_files: 15

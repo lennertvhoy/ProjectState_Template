@@ -97,6 +97,10 @@ def test_dirty_same_head_is_rejected() -> None:
         assert any("uncommitted implementation" in failure for failure in checker.failures)
 
 
+def test_backlog_is_allowed_post_proof_state_finalization() -> None:
+    assert runtime_truth.path_is_allowed_after_proof("BACKLOG.md")
+
+
 def test_endpoint_port_and_process_digest_must_match() -> None:
     with tempfile.TemporaryDirectory(prefix="projectstate-runtime-process-") as tmp:
         checker = make_checker(Path(tmp))
@@ -219,6 +223,7 @@ def test_closure_preflight_invokes_explicit_runtime_artifact() -> None:
 def main() -> int:
     tests = [
         test_dirty_same_head_is_rejected,
+        test_backlog_is_allowed_post_proof_state_finalization,
         test_endpoint_port_and_process_digest_must_match,
         test_remote_artifact_cannot_trigger_implicit_probe,
         test_nested_symlink_artifact_is_rejected,
