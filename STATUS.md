@@ -1,6 +1,6 @@
 # ProjectState Template Status
 
-**Updated At:** 2026-08-26
+**Updated At:** 2026-08-29
 **Execution Mode:** template-maintenance
 **Project State:** operational_template_complete
 **Public URL:** https://github.com/lennertvhoy/ProjectState_Template/releases/tag/v5
@@ -16,6 +16,9 @@
   with exact-head, merge-candidate, and direct-`main` CI verified.
 - The workspace-lifecycle P0 remains closed with a receipt-backed lifecycle;
   all earlier clone/worktree features stay integrated on `main`.
+- BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 is locally validated at proof head
+  `949e412dac6c166c61eb4d7c73e362066e9f1456`; remote publication and closure are
+  still pending.
 - Level-2 local gates pass; the state reconciliation for the integration is
   the current maintenance slice.
 

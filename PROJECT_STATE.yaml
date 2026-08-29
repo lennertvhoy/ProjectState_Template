@@ -1,8 +1,8 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-08-26T13:05:00+02:00
-  updated_by: integration_agent_recording_bl-stateisolation-001_remote_closure
+  updated_at: 2026-08-29T13:10:00+02:00
+  updated_by: agent-opencode_recording_bl-template-downstream-closure-001_local_validation
   version: "projectstate-template-v5"
 
 workflow:
@@ -217,6 +217,6 @@ current_state:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
     artifact_root: docs/evidence
-    current_slice: docs/evidence/2026-07-14-workspace-lifecycle-closure
+    current_slice: docs/evidence/2026-08-29-template-downstream-closure
 
 active_problems: []

@@ -1,12 +1,14 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-08-26
+**Updated At:** 2026-08-29
 **Execution Mode:** template-maintenance
 **Max Items:** 10
 
 ## Active Work
 
-No mandatory implementation item.
+### P1 [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001] Remote closure and downstream handoff
+
+- Push the verified proof branch, publish or update the PR, and run exact-head remote closure before downstream profile migration.
 
 ## Queue Rules
 

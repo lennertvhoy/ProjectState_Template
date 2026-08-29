@@ -862,3 +862,27 @@
     BL-STATEISOLATION-001
 - Type: remote_ci | post_merge | release_receipt | state_update
 - as_of: 2026-08-26T11:00:00+02:00
+
+## EV-2026-08-29-001: Safe profile migration and managed clone resume
+
+- File: docs/evidence/2026-08-29-template-downstream-closure/README.md
+- File: docs/evidence/2026-08-29-template-downstream-closure/manifest.json
+- File: docs/evidence/2026-08-29-template-downstream-closure/runtime_identity.json
+- File: docs/evidence/2026-08-29-template-downstream-closure/quality_gate_output.txt
+- Title: BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 local implementation and validation
+- Source/System: test | schema | state_update
+- Action: Added explicit remote-branch resume with optional exact-head binding,
+  transactional forward profile migration, canonical profile agreement
+  validation, measured footprint updates, and focused regressions.
+- Shows:
+  - full tests and generated-profile conformance pass
+  - schema/state/metrics contracts agree at proof head
+  - strict evidence and runtime-boundary checks pass
+  - default `/tmp` quota failure was isolated from the verified alternate-TMPDIR
+    run
+- Proves:
+  - local implementation and validation truth for the slice
+- Type: implementation | test | state_update
+- as_of: 2026-08-29T13:10:00+02:00
+- Notes: Remote publication, exact-head CI, merge, and downstream migration are
+  not proven by this entry; human product acceptance remains separate.

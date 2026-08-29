@@ -1340,3 +1340,41 @@ blocker was cleared via the documented `--restart-session` restart.
   duplicated there during BL-STATEISOLATION-001 packaging; the authoritative
   copies live inside docs/evidence/2026-08-26-stateisolation/ and are
   byte-identical (verified by hash before removal).
+
+## 2026-08-29 - BL-TEMPLATE-DOWNSTREAM-CLOSURE-001 safe migration and clone resume
+
+**Type:** compatibility_security_migration
+**Status:** LOCAL_VALIDATED
+**Slice:** [BL-TEMPLATE-DOWNSTREAM-CLOSURE-001]
+**Branch:** bl-bl-template-downstream-closure-001-agen-pscab
+**Git Head:** proof tree 949e412dac6c166c61eb4d7c73e362066e9f1456
+
+### What changed
+
+- `scripts/projectstate_agent_worktree.py` now supports explicit resume of an
+  existing remote branch, validates branch/ref input, checks the remote head
+  with `git ls-remote`, optionally enforces an exact expected SHA, and preserves
+  independent managed-clone isolation.
+- `scripts/projectstate_upgrade.py` now supports explicit forward profile
+  migration, updates only verified profile metadata fields, preserves project
+  truth, records `upgrade_history`, and refuses downgrade, mismatch, collision,
+  or partial-write paths.
+- Project state and adapter schemas plus the manifest schema and validator now
+  enforce agreement between the locked profile and canonical metadata.
+- Profile footprint budgets were recalibrated from measured generated outputs;
+  documentation and focused regression coverage were added.
+
+### Validation
+
+- Full `pytest` suite passed using
+  `TMPDIR=/home/ff/.cache/projectstate-tests` after the default `/tmp` quota
+  exhausted during the first attempt.
+- The authoritative Level-2 quality gate passed, including reproducible profile
+  metrics, generated-profile conformance, schema/state validation, strict
+  evidence, runtime-boundary proof, efficiency, and whitespace checks.
+- Strict evidence pack: `docs/evidence/2026-08-29-template-downstream-closure/`.
+
+### Boundary
+
+- Local implementation and validation are proven; remote branch publication,
+  PR exact-head closure, merge, and downstream migration remain pending.
