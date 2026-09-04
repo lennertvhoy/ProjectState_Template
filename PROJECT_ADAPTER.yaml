@@ -1,6 +1,7 @@
 # PROJECT_ADAPTER.yaml - Optional project-specific adapter
+# Legacy v5 compatibility snapshot; it is not part of the v6 core.
 
-version: "projectstate-template-v5"
+version: "projectstate-template-v6"
 
 project:
   name: ProjectState_Template

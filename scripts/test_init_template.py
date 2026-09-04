@@ -61,7 +61,10 @@ def test_adopt_rejects_symlinked_managed_directory() -> None:
         outside.mkdir()
         os.symlink(outside, repo / "docs")
 
-        completed = run_init(["adopt", "--name", "Audit Demo", "--target", str(repo)], expect_success=False)
+        completed = run_init(
+            ["adopt", "--name", "Audit Demo", "--target", str(repo), "--profile", "team"],
+            expect_success=False,
+        )
 
         assert_mentions_symlink(completed)
         assert_no_external_files(outside)
@@ -85,6 +88,8 @@ def test_new_rejects_symlinked_existing_directory() -> None:
                 "Audit Demo",
                 "--target",
                 str(repo),
+                "--profile",
+                "team",
                 "--overwrite",
                 "--force-overwrite",
             ],
@@ -530,14 +535,20 @@ def assert_v2_assets_exist(root: Path) -> None:
 def test_new_includes_usability_assets() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Usability Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Usability Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_usability_assets_exist(target)
 
 
 def test_new_includes_version_assets_and_passes_version_check() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Version Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Version Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_version_assets_exist(target)
         completed = subprocess.run(
             [sys.executable, str(target / "scripts" / "projectstate_version_check.py"), str(target)],
@@ -556,14 +567,20 @@ def test_new_includes_version_assets_and_passes_version_check() -> None:
 def test_new_includes_runtime_proof_asset() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Runtime Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Runtime Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_runtime_proof_assets_exist(target)
 
 
 def test_new_includes_quality_firewall_assets() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Quality Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Quality Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_quality_firewall_assets_exist(target)
         assert_worktree_and_brittleness_assets_exist(target)
 
@@ -571,7 +588,10 @@ def test_new_includes_quality_firewall_assets() -> None:
 def test_new_includes_schema_validation_assets_and_passes_schema_validation() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Schema Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Schema Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_schema_validation_assets_exist(target)
         assert_evidence_pack_assets_exist(target)
         assert_upgrade_assets_exist(target)
@@ -594,7 +614,10 @@ def test_new_includes_schema_validation_assets_and_passes_schema_validation() ->
 def test_new_repo_still_fails_bootstrap_gate_until_investigated() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Bootstrap Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Bootstrap Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         completed = subprocess.run(
             [sys.executable, str(target / "scripts" / "check_state_docs.py"), "--bootstrap-gate", str(target)],
             cwd=target,
@@ -621,7 +644,10 @@ def test_new_includes_v2_executable_workflow_assets() -> None:
 def test_new_excludes_template_only_payload_and_manifest_is_exact() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "demo"
-        run_init(["new", "--name", "Boundary Demo", "--target", str(target)], expect_success=True)
+        run_init(
+            ["new", "--name", "Boundary Demo", "--target", str(target), "--profile", "team"],
+            expect_success=True,
+        )
         assert_template_only_payload_absent(target)
         assert_runtime_manifest_matches_files(target)
 
@@ -651,7 +677,10 @@ def test_adopt_installs_usability_assets() -> None:
         repo = Path(tmp) / "repo"
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
-        run_init(["adopt", "--name", "Usability Demo", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "Usability Demo", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
         assert_usability_assets_exist(repo)
 
 
@@ -660,7 +689,10 @@ def test_adopt_installs_version_assets_and_passes_version_check() -> None:
         repo = Path(tmp) / "repo"
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
-        run_init(["adopt", "--name", "Version Demo", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "Version Demo", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
         assert_version_assets_exist(repo)
         completed = subprocess.run(
             [sys.executable, str(repo / "scripts" / "projectstate_version_check.py"), str(repo)],
@@ -681,7 +713,10 @@ def test_adopt_installs_runtime_proof_asset() -> None:
         repo = Path(tmp) / "repo"
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
-        run_init(["adopt", "--name", "Runtime Demo", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "Runtime Demo", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
         assert_runtime_proof_assets_exist(repo)
 
 
@@ -690,7 +725,10 @@ def test_adopt_installs_quality_firewall_assets() -> None:
         repo = Path(tmp) / "repo"
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
-        run_init(["adopt", "--name", "Quality Adopted", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "Quality Adopted", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
         assert_quality_firewall_assets_exist(repo)
         assert_worktree_and_brittleness_assets_exist(repo)
 
@@ -700,7 +738,10 @@ def test_adopt_installs_schema_validation_assets_and_passes_schema_validation() 
         repo = Path(tmp) / "repo"
         repo.mkdir()
         (repo / "README.md").write_text("# Existing Project\n", encoding="utf-8")
-        run_init(["adopt", "--name", "Schema Adopted", "--target", str(repo)], expect_success=True)
+        run_init(
+            ["adopt", "--name", "Schema Adopted", "--target", str(repo), "--profile", "team"],
+            expect_success=True,
+        )
         assert_schema_validation_assets_exist(repo)
         assert_evidence_pack_assets_exist(repo)
         assert_upgrade_assets_exist(repo)

@@ -26,6 +26,10 @@ class UnsafePathError(ContractError):
 # Catalog validation IDs are executable/presence contracts, not descriptive
 # labels. Generated-profile quality gates dispatch every resolved ID here.
 VALIDATION_REQUIREMENTS: dict[str, dict[str, Any]] = {
+    "outcome_gate_contract": {
+        "minimum_gate_level": 1,
+        "required_paths": ("scripts/projectstate_gate.py",),
+    },
     "quality_gate_level_1": {
         "minimum_gate_level": 1,
         "required_paths": ("scripts/projectstate_quality_gate.py",),

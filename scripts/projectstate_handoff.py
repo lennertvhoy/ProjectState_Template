@@ -12,9 +12,28 @@ import sys
 from pathlib import Path
 
 try:
-    from projectstate_contracts import ContractError, UnsafePathError, load_json_file, safe_root_path
+    from projectstate_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_json_file,
+        safe_root_path,
+    )
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
-    from scripts.projectstate_contracts import ContractError, UnsafePathError, load_json_file, safe_root_path
+    from scripts.projectstate_contracts import (
+        ContractError,
+        UnsafePathError,
+        confined_path,
+        load_json_file,
+        safe_root_path,
+    )
+try:
+    from projectstate_gate import parse_state
+except ModuleNotFoundError:  # pragma: no cover
+    try:
+        from scripts.projectstate_gate import parse_state
+    except ModuleNotFoundError:  # v5 compatibility profiles do not install the v6 gate
+        parse_state = None
 try:
     from projectstate_git_safety_session import sanitized_git_environment
 except ModuleNotFoundError:  # pragma: no cover
@@ -180,6 +199,19 @@ def remote_branch_head(repo: Path, branch: str) -> str:
 
 
 def selected_evidence(repo: Path, agent_context: dict | None) -> Path | None:
+    outcome_state = load_outcome_state(repo)
+    if outcome_state:
+        current_slice = outcome_state.get("current_slice")
+        journey = current_slice.get("primary_journey") if isinstance(current_slice, dict) else None
+        ref = journey.get("evidence") if isinstance(journey, dict) else None
+        if isinstance(ref, str):
+            try:
+                evidence_file = confined_path(repo, ref)
+            except UnsafePathError:
+                return None
+            if evidence_file.is_file() and not evidence_file.is_symlink():
+                return evidence_file.parent
+
     if not agent_context:
         return None
     evidence_root = repo / "docs" / "evidence"
@@ -199,7 +231,24 @@ def selected_evidence(repo: Path, agent_context: dict | None) -> Path | None:
     return matches[0] if len(matches) == 1 else None
 
 
+def load_outcome_state(repo: Path) -> dict | None:
+    path = repo / "STATE.yaml"
+    if parse_state is None or path.is_symlink() or not path.is_file():
+        return None
+    try:
+        payload = parse_state(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
 def first_next_action(repo: Path) -> str:
+    outcome_state = load_outcome_state(repo)
+    if outcome_state:
+        action = outcome_state.get("next_action")
+        if isinstance(action, str) and action.strip():
+            return action.strip()
+
     path = repo / "NEXT_ACTIONS.md"
     try:
         text = path.read_text(encoding="utf-8")

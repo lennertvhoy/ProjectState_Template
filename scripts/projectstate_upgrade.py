@@ -66,6 +66,7 @@ except ModuleNotFoundError:  # pragma: no cover - pytest package import path
 
 
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
+OUTCOME_PROFILES = frozenset({"core", "hardened"})
 MANIFEST_PATH = Path("PROJECTSTATE_ASSETS.json")
 PROJECT_TRUTH_FILES = {
     Path("AGENTS.md"),
@@ -1330,6 +1331,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     try:
+        requested_profile = args.migrate_profile or args.profile
+        if requested_profile in OUTCOME_PROFILES:
+            raise ContractError(
+                "projectstate_upgrade.py only refreshes v5 compatibility profiles; "
+                "use the semantic migration in docs/UPGRADING.md for core or hardened"
+            )
         target = safe_root_path(args.target, must_exist=True)
         if target == TEMPLATE_ROOT:
             raise ContractError("target is the template root; upgrade is for downstream repositories")
@@ -1339,6 +1346,11 @@ def main(argv: list[str] | None = None) -> int:
             explicit_profile=args.profile if args.migrate_profile is None else None,
             catalog=catalog,
         )
+        if history.profile in OUTCOME_PROFILES:
+            raise ContractError(
+                "the outcome-first core has no asset-lock upgrade path; "
+                "review changes against docs/UPGRADING.md"
+            )
         if args.apply and history.raw is None:
             raise ContractError(
                 "no-lock apply is refused because it cannot prove project-truth ownership; "

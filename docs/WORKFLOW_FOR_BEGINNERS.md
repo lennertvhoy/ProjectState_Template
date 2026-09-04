@@ -1,174 +1,59 @@
-# ProjectState Workflow for Beginners
+# Outcome-first workflow for beginners
 
-This guide explains the ProjectState workflow in plain
-language, with a diagram, and shows exactly where to get each prompt and where
-to paste it.
+ProjectState keeps an agent from confusing busy work with a working product.
 
-## The human remains the product decision-maker
-
-ProjectState is not "let an AI agent run loose." It is a human-in-the-loop system
-with three roles:
-
-1. **Human / product owner** — decides what matters, confirms the delivery policy
-once, approves tradeoffs, and accepts or rejects the product result. With the
-recommended `agent_after_green` mode, the human is not the routine Git release
-operator.
-2. **CTO AI / product-architecture lead** — chooses the next slice, reviews
-handoffs, resolves contradictions, and writes the next coding-agent prompt.
-3. **Coding agent** — implements one coherent slice, verifies it with evidence,
-commits, pushes, opens the PR, and—when the confirmed policy is
-`agent_after_green`—merges the exact green head, verifies direct main CI, cleans
-the branch/isolation, and returns one final handoff to the CTO lane.
-
-The human can override any workflow step, but the agent must record the
-override honestly. An override does not turn partial work into closure-grade
-work.
-
-## Simple workflow diagram
-
-```mermaid
-flowchart LR
-    A[Human names project and confirms delivery policy once] --> B[CTO AI picks next slice]
-    B --> C[Coding agent writes slice contract]
-    C --> D[Coding agent implements + verifies]
-    D --> E[Coding agent creates tracked proof + updates stable state]
-    D --> F[Run authoritative local gate]
-    F --> G{Audit passes?}
-    G -->|No| D
-    G -->|Yes| H[Push + draft PR + exact-head CI]
-    H --> I{Confirmed merge mode?}
-    I -->|human_merge| J[Human performs configured merge]
-    I -->|agent_after_green| K[Agent rechecks and merges exact head]
-    J --> L[Agent verifies direct main CI + post-merge truth]
-    K --> L
-    L --> M[External final handoff + verified cleanup]
-    M --> N[CTO AI reviews product result]
-    N --> O{Accept?}
-    O -->|Reject| D
-    O -->|Conditionally accept| P[Fix conditions then return]
-    O -->|Accept| Q[CTO scopes next slice]
-    Q --> B
+```text
+PROJECT.md                 STATE.yaml
+human-owned outcome  ---> one current slice
+                               |
+                               v
+                       primary user journey
+                               |
+                     +---------+---------+
+                     |                   |
+                   fails               passes
+                     |                   |
+          simplify the assumption       v
+                     |          secondary checks may
+                     +--------> add blockers only
+                                         |
+                                         v
+                                human accepts or rejects
 ```
 
-## Where to start — prompts and where to paste them
+## The four files
 
-### I am the human with a new idea
+- `PROJECT.md`: who the product is for and what observable outcome matters.
+- `STATE.yaml`: the one thing being delivered now and its exact next action.
+- `AGENTS.md`: what an agent may change and where it must stop.
+- `evidence/<slice-id>/summary.md`: what actually ran, where, and with what result.
 
-1. Open `prompts/BOOTSTRAP_INTAKE_PROMPT.md`.
-2. Paste it into a CTO AI chat (ChatGPT, Claude, Gemini, etc.).
-3. Fill in your project name, goals, constraints, and known truth.
-4. The CTO AI will draft the initial state files and backlog.
+You do not need a mandatory backlog, worklog, release ledger, architecture file,
+or multi-agent matrix to start. Add one only when it solves a real coordination
+problem.
 
-### I am the CTO AI starting a review session
+## A normal session
 
-1. Open `prompts/CTO_SESSION_PROMPT.md`.
-2. Paste it into a new chat.
-3. Paste the current `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, and
-   `BACKLOG.md` into the chat as context.
-4. Review the latest coding-agent handoff using
-   `prompts/CTO_REVIEW_CHECKLIST.md`.
+1. Read the three root files.
+2. Try the primary journey early.
+3. Change the smallest amount of product code needed.
+4. Rerun the journey and record honest evidence.
+5. Run relevant tests and checks.
+6. Update `STATE.yaml` and hand off the exact next action.
 
-### I am the coding agent about to implement a slice
+If the journey fails, the result is not validated—even if thousands of unit tests
+pass. If the same boundary fails twice, stop adding machinery and simplify one
+assumption first.
 
-1. Read `AGENTS.md` first.
-2. Read `STATUS.md`, `PROJECT_STATE.yaml`, `PROJECT_DNA.yaml`, `NEXT_ACTIONS.md`,
-   and `BACKLOG.md`.
-3. Run `python3 scripts/projectstate_doctor.py` to see the current health snapshot.
-4. Write a slice contract using `prompts/SLICE_CONTRACT_TEMPLATE.md`.
-5. Implement the slice.
-6. Verify with tests, build, lint, and browser/runtime proof when user-facing.
-7. Create or update the evidence folder README using
-   `prompts/EVIDENCE_README_TEMPLATE.md`.
-8. Update only the state files where truth changed.
-9. Run `python3 scripts/projectstate_audit.py`.
-10. Push and open the PR. If policy is `agent_after_green`, use
-    `scripts/projectstate_finish_slice.py` to finish through exact-head merge, direct
-    main CI, post-merge verification, and cleanup.
-11. Use `prompts/FINAL_HANDOFF_TEMPLATE.md` to write the remote-first handoff back
-    to the CTO lane.
+## Who decides what
 
-### I am checking runtime identity before accepting UI changes
+The human owns outcome, scope, acceptance, governance, risk exceptions, and
+product acceptance. The agent owns implementation and honest observation inside
+those boundaries. The agent can propose a changed rule; it cannot adopt that rule
+to grade its own work.
 
-1. Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before saying a UI change works.
-2. Attach screenshot or Playwright/browser evidence to the evidence folder.
+## When to harden
 
-### I am freezing a user-facing milestone
-
-1. Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md`.
-2. Record the milestone in `docs/ACCEPTANCE_FREEZES.md`.
-
-### I need to choose tools or models
-
-1. Use `prompts/TOOL_MODEL_ROUTING_GUIDE.md` when the CTO lane must decide which
-   AI model, tool, or settings to use for a slice.
-
-## How to keep the workflow going
-
-1. **Never let the active queue grow.** `NEXT_ACTIONS.md` should stay short.
-2. **Close one slice before starting the next.** A slice is not done until it is
-   closure-grade or honestly marked as partial.
-3. **Always hand off to the CTO lane.** The coding agent should not choose the
-   next slice on its own — except inside an explicitly invoked
-   `/projectstate-improve` run, where the human delegated maintenance-class
-   selection within the autonomy ladder (see `AGENTS.md`).
-4. **Update state files only where truth changed.** Do not rewrite history or
-   speculate.
-5. **Keep evidence next to claims.** Every claim in the evidence README must
-   point to proof.
-6. **Run the gates before handoff.**
-
-   ```bash
-   python3 scripts/check_state_docs.py
-   python3 scripts/projectstate_audit.py
-   python3 scripts/projectstate_doctor.py
-   ```
-
-   For confirmed `agent_after_green`, the final handoff comes only after the
-   finish command verifies the merged default branch. Local tests never stand in
-   for unavailable CI; an exception requires a separate explicit human override.
-
-7. **Review with the checklist.** The CTO AI must explicitly answer the
-   `prompts/CTO_REVIEW_CHECKLIST.md` questions.
-8. **Accept human overrides, but record them.** If the human says "skip this
-   step," the agent records it as `Human override used: yes` and states the
-   remaining risk.
-
-## How to maintain quality
-
-- **Implemented ≠ validated ≠ closure-grade ≠ accepted.** Code exists is not
-the same as reviewed and accepted.
-- **No schema may exist only in prose.** Use
-  `prompts/SCHEMA_OWNERSHIP_TEMPLATE.md` for every external data shape.
-- **Subagent reviews must be strict.** Use
-  `prompts/SUBAGENT_REVIEW_TEMPLATE.md` so subagents return verdict, findings,
-  required fixes, evidence checked, and confidence only.
-- **Major decisions live in ADRs.** Use `docs/adr/` for canonical schema owner,
-  import behavior, persistence model, evidence rules, and no-workaround policy.
-- **Negative searches stay negative.** Say `not found`, `not currently
-  locatable`, or `not proven` instead of guessing.
-- **Runtime identity before UI acceptance.** Always prove which build, process,
-  port, and URL produced the screenshot.
-- **Audit before closure.** `projectstate_audit.py` should pass before a slice is
-  called closure-grade.
-
-## Quick command reference
-
-```bash
-# Health snapshot
-python3 scripts/projectstate_doctor.py
-
-# Closure audit
-python3 scripts/projectstate_audit.py
-
-# Documentation hygiene
-python3 scripts/check_state_docs.py
-
-# Before leaving bootstrap
-python3 scripts/check_state_docs.py --bootstrap-gate
-
-# Initialize a new repo from this template
-python3 scripts/init_template.py new --name "My Project" --target ./my-project
-
-# Adopt the workflow into an existing repo
-python3 scripts/init_template.py adopt --name "My Project" --target ./existing-repo
-```
+Use the `hardened` profile for a named security, compliance, review, or delivery
+obligation. Hardened checks can stop a release. They can never transform a failed
+user journey into a passing product.

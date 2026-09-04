@@ -1,22 +1,7 @@
-# CLAUDE.md — ProjectState Agent Instructions
+# Claude compatibility pointer
 
-This file is a compatibility shim for Claude Code. The authoritative agent contract is in **AGENTS.md**.
+`AGENTS.md` is the sole agent contract. Read it, then `PROJECT.md` and
+`STATE.yaml`. This file adds no policy.
 
-## Quick Reference
-- **Read first:** `AGENTS.md` (constitutional contract)
-- **Skills:** Load via `/skill-name` (e.g., `/close-slice`)
-- **Commands:** Invoke via `/projectstate-*` (e.g., `/projectstate-close-slice`)
-- **Quality gates:** Run `scripts/projectstate_quality_gate.py` before closure
-- **Handoff:** End every session with `scripts/projectstate_handoff.py`
-
-## Mode
-This repo operates in `template-maintenance` mode (see AGENTS.md).
-
-## Key Invariants
-- No fake completeness
-- Browser verification required for user-facing closure
-- Negative searches stay negative
-- End every session: handoff + hygiene check
-- Quality gates are executable, not prose
-
-See `AGENTS.md` for full contract.
+The primary user journey is dominant, governance is human-owned, and
+ProjectState must not become an application runtime dependency.

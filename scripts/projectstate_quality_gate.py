@@ -103,6 +103,10 @@ class QualityGate:
         workflow = payload.get("workflow") if isinstance(payload, dict) else None
         return isinstance(workflow, dict) and workflow.get("repo_role") == "template_repository"
 
+    def is_outcome_core_repository(self) -> bool:
+        """Return true for the v6 core, where budgets/metrics are noncanonical."""
+        return (self.root / "STATE.yaml").is_file() and (self.root / "PROJECT.md").is_file()
+
     def check_tests(self) -> bool:
         """Run every applicable declared test suite and aggregate failures."""
         print("🧪 Running tests...")
@@ -319,6 +323,9 @@ class QualityGate:
 
     def check_profile_metrics(self) -> bool:
         """Reproduce the canonical template metrics artifact when applicable."""
+        if self.is_outcome_core_repository():
+            self.warnings.append("Legacy profile metrics are compatibility evidence, not a v6 closure gate")
+            return True
         if not self.is_template_repository():
             return True
         artifact = self.root / "docs" / "metrics" / "profile_metrics.json"
@@ -531,6 +538,9 @@ class QualityGate:
 
     def check_efficiency(self) -> bool:
         """Run efficiency budget check."""
+        if self.is_outcome_core_repository():
+            self.warnings.append("Fixed line/footprint budgets are not part of the v6 outcome core")
+            return True
         print("⚡ Running efficiency check...")
         code, out, err = self.run_cmd(
             [sys.executable, "scripts/projectstate_efficiency_check.py", "--gate-level", str(self.gate_level)]

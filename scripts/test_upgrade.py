@@ -49,6 +49,8 @@ def run_upgrade(args: list[str], *, expect_success: bool) -> subprocess.Complete
 
 
 def run_init(args: list[str]) -> subprocess.CompletedProcess[str]:
+    if "--profile" not in args:
+        args = [*args, "--profile", "team"]
     completed = subprocess.run(
         [sys.executable, str(INIT_SCRIPT), *args],
         cwd=ROOT,
@@ -77,6 +79,15 @@ def manifest_payload(target: Path) -> dict[str, object]:
 
 def test_dry_run_on_current_repo_refuses_template_root() -> None:
     run_upgrade([str(ROOT)], expect_success=False)
+
+
+def test_legacy_upgrader_refuses_outcome_core_semantic_migration() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "core"
+        run_init(["new", "--name", "Core", "--profile", "core", "--target", str(target)])
+        completed = run_upgrade([str(target), "--profile", "core"], expect_success=False)
+        if "semantic migration" not in completed.stdout:
+            raise AssertionError(f"Missing semantic-migration guidance:\n{completed.stdout}")
 
 
 def test_dry_run_on_generated_repo_is_no_op_or_safe() -> None:
@@ -424,7 +435,7 @@ def test_pristine_old_base_updates_without_force_but_local_change_conflicts() ->
         completed = run_upgrade([str(target), "--apply"], expect_success=True)
         if "unmodified_since_previous_install" not in completed.stdout:
             raise AssertionError(f"Pristine base was not recognized:\n{completed.stdout}")
-        if path.read_text(encoding="utf-8").strip() != "projectstate-template-v5":
+        if path.read_text(encoding="utf-8").strip() != "projectstate-template-v6":
             raise AssertionError("Pristine old asset was not upgraded")
 
 

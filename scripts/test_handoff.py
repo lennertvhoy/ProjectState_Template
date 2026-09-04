@@ -6,6 +6,46 @@ from pathlib import Path
 import projectstate_handoff
 
 
+def test_handoff_prefers_v6_state_for_evidence_and_next_action(tmp_path: Path) -> None:
+    evidence = tmp_path / "evidence" / "slice-001"
+    evidence.mkdir(parents=True)
+    (evidence / "summary.md").write_text("# Evidence\n", encoding="utf-8")
+    (tmp_path / "NEXT_ACTIONS.md").write_text("### Legacy action\n", encoding="utf-8")
+    (tmp_path / "STATE.yaml").write_text(
+        'version: "projectstate-template-v6"\n'
+        "profile: core\n"
+        "project:\n"
+        '  outcome_ref: "PROJECT.md#outcome"\n'
+        "current_slice:\n"
+        "  id: slice-001\n"
+        '  objective: "Prove the journey."\n'
+        "  status: validated\n"
+        "  acceptance:\n"
+        '    - "The journey passes."\n'
+        "  primary_journey:\n"
+        '    description: "Run it."\n'
+        '    command: "false"\n'
+        '    environment: "test"\n'
+        "    status: passed\n"
+        '    evidence: "evidence/slice-001/summary.md"\n'
+        "validation:\n"
+        "  primary_journey: passed\n"
+        "  automated_tests: passed\n"
+        "  human_acceptance: pending\n"
+        "delivery_boundary:\n"
+        "  name: local\n"
+        "  failed_attempts: []\n"
+        "  simplification_review: null\n"
+        "blockers: []\n"
+        "risks: []\n"
+        'next_action: "Human reviews the outcome."\n',
+        encoding="utf-8",
+    )
+
+    assert projectstate_handoff.first_next_action(tmp_path) == "Human reviews the outcome."
+    assert projectstate_handoff.selected_evidence(tmp_path, None) == evidence
+
+
 def init_repo(path: Path) -> None:
     subprocess.run(["git", "init", "-q", str(path)], check=True)
 

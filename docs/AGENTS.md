@@ -1,46 +1,28 @@
 ---
-scope: "docs"
-purpose: "ProjectState reference documentation, failure taxonomy, quality gates, incidents"
+scope: docs
+purpose: Optional reference and migration documentation
 ---
 
-# Docs Agent Instructions
+# Docs agent instructions
 
-## Scope
-This directory holds reference documentation for ProjectState: failure taxonomy, quality firewall, incident response, failure scans, quality gates, and ADRs. These are **read-only reference** for agents — not executable.
+`PROJECT.md`, `STATE.yaml`, and the current slice evidence summary are the
+only current product/workflow truth. Documents here are references, historical
+evidence, or compatibility material.
 
-## Document Catalog
-| File | Purpose |
-|------|---------|
-| `../FAILURE_TAXONOMY.md` (repo root) | Severity/class vocabulary for bad events |
-| `../QUALITY_FIREWALL.md` (repo root) | Reusable closure-gate contract |
-| `../INCIDENT_RESPONSE.md` (repo root) | Standard bad-event ingestion workflow |
-| `failure_scans/TEMPLATE.md` | Pre-mortem template for risky work |
-| `quality_gates/README.md` | Downstream project-specific gate index |
-| `adr/` | Architecture Decision Records |
-| `EVIDENCE_LOG.md` | Append-only proof ledger |
-| `ACCEPTANCE_FREEZES.md` | Accepted user-facing milestones |
-| `BROWSER_VERIFICATION.md` | Browser verification standards |
-| `UPGRADING.md` | Version upgrade guide |
-| `WORKFLOW_FOR_BEGINNERS.md` | New user onboarding |
-| `ADOPTION_PROFILES.md` | Project adoption patterns |
-| `BOOTSTRAP_QUALITY.md` | Bootstrap quality standards |
-| `GETTING_STARTED_5_MIN.md` | Quick start |
-| `QUICK_COMMANDS.md` | Command reference |
+## Rules
 
-## Agent Rules for Docs
-1. **Read before acting** — Consult `FAILURE_TAXONOMY.md` and `QUALITY_FIREWALL.md` before closure
-2. **Write to evidence, not docs** — `EVIDENCE_LOG.md` and `docs/incidents/` are append-only; do not edit history
-3. **Failure scans are mandatory** — Before risky work, create `docs/failure_scans/<slice-id>.md` from TEMPLATE
-4. **ADRs for architecture decisions** — Create `docs/adr/NNN-title.md` for long-lived reasoning
-5. **Quality gates are project-specific** — `docs/quality_gates/` is populated per downstream project
-6. **Do not bloat docs** — Reference only; procedural detail goes in skills/commands/scripts
+- Read only the document relevant to the task.
+- Keep current outcome and slice state out of reference docs.
+- Add an ADR only for a durable architectural decision that future maintainers
+  would otherwise have to rediscover.
+- Add a failure scan only when a risky change benefits from an adversarial
+  pre-mortem; it is not a routine checkbox.
+- Keep new evidence under `evidence/<slice-id>/summary.md` unless a selected
+  hardened or legacy workflow explicitly requires more.
+- Historical ledgers and incidents remain immutable evidence. Do not rewrite
+  them to make current state look consistent.
+- Do not duplicate exact metrics, command catalogs, or state across documents.
+- A document can explain a gate but cannot turn prose into proof.
 
-## Hygiene
-- `docs/incidents/` and `docs/failure_scans/` are append-only
-- `EVIDENCE_LOG.md` append-only
-- `ACCEPTANCE_FREEZES.md` append-only
-- Max 1 ADR per architecture decision
-- Cross-link from skills/commands to relevant docs
-
-## Human Override
-Explicit human direction overrides doc workflows. Record in handoff.
+When updating migration or profile guidance, verify the initializer output rather
+than copying assumptions from earlier docs.

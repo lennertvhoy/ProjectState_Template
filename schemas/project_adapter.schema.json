@@ -14,6 +14,7 @@
   "properties": {
     "version": {
       "enum": [
+        "projectstate-template-v6",
         "projectstate-template-v5",
         "statedd-template-v5"
       ]

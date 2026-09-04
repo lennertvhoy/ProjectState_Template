@@ -1,0 +1,44 @@
+# Canonical current truth. Keep exactly one active slice; history belongs in Git.
+version: "projectstate-template-v6"
+profile: core
+project:
+  outcome_ref: "PROJECT.md#outcome"
+current_slice:
+  id: outcome-core-001
+  objective: "Make the generated default workflow outcome-first and minimal."
+  status: validated
+  # Human-owned. Agents may report results but may not weaken these criteria.
+  acceptance:
+    - "Default new and adopt flows generate PROJECT.md, STATE.yaml, AGENTS.md, and one bounded evidence summary as the only canonical coordination artifacts."
+    - "A failed or unrun primary journey blocks validated, ready-for-human, and accepted states even when secondary tests pass."
+    - "Agents cannot authorize changes to outcome, acceptance criteria, or governance."
+    - "Two evidenced failures at one delivery boundary require a simplification review before more implementation."
+    - "Risk handling considers severity, consequence, exposure, affected environment, owner, and expiry instead of flattening every finding into one stop condition."
+    - "Strict release and compliance policy is opt-in through the hardened profile."
+    - "Coordination files are not application runtime dependencies."
+  primary_journey:
+    description: "Generate a clean default project, record a passing real journey, and have its local outcome gate pass."
+    command: "python3 scripts/test_outcome_core.py"
+    environment: "Linux 7.1.9-arch1-2 x86_64; Python 3.14.7"
+    status: passed
+    evidence: "evidence/outcome-core-001/summary.md"
+validation:
+  primary_journey: passed
+  automated_tests: passed
+  human_acceptance: pending
+delivery_boundary:
+  name: template_generation_and_adoption
+  failed_attempts: []
+  simplification_review: null
+blockers: []
+risks:
+  - id: legacy-profile-compatibility
+    category: compatibility
+    severity: medium
+    exposure: opt_in_only
+    affected_environment: "Explicitly selected v5 compatibility profiles"
+    consequence: "Existing consumers need a deliberate migration path instead of silent removal."
+    owner: template_maintainer
+    decision: resolved
+    expires: null
+next_action: "Have the human review the generated core and accept, reject, or refine the product outcome."

@@ -1,5 +1,9 @@
 # ProjectState Quality Firewall
 
+> **Optional hardened/legacy reference.** This is not part of the v6 core
+> workflow and is not copied by the default `core` profile. Projects adopt
+> only the controls justified by their actual risk and delivery boundary.
+
 **Purpose:** Make ProjectState a failure-discovery workflow, not only a traceability workflow.
 
 The quality firewall is a reusable layer that every downstream project adapts to

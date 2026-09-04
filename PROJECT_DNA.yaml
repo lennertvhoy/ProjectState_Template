@@ -1,6 +1,7 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
+# Legacy v5 compatibility snapshot; v6 durable product truth is PROJECT.md.
 
-version: "projectstate-template-v5"
+version: "projectstate-template-v6"
 schema_version: "1.0"
 
 product:

@@ -40,7 +40,11 @@ def _shim_names() -> list[str]:
 
 
 def test_every_canonical_script_has_a_legacy_shim() -> None:
-    canonical = sorted(p.name for p in (ROOT / "scripts").glob("projectstate_*.py"))
+    canonical = sorted(
+        p.name
+        for p in (ROOT / "scripts").glob("projectstate_*.py")
+        if p.name != "projectstate_gate.py"
+    )
     shims = _shim_names()
     expected_shims = sorted(f"statedd_{name.removeprefix('projectstate_')}" for name in canonical)
     assert shims == expected_shims, (
@@ -110,10 +114,10 @@ def test_assets_schema_accepts_both_runtime_asset_identifiers() -> None:
          ["template-maintenance", "bootstrap", "operating"]),
         ("project_dna.schema.json",
          ["properties", "version", "enum"],
-         ["projectstate-template-v5", "statedd-template-v5"]),
+         ["projectstate-template-v6", "projectstate-template-v5", "statedd-template-v5"]),
         ("project_adapter.schema.json",
          ["properties", "version", "enum"],
-         ["projectstate-template-v5", "statedd-template-v5"]),
+         ["projectstate-template-v6", "projectstate-template-v5", "statedd-template-v5"]),
         ("runtime_identity_v2.schema.json",
          ["properties", "schema", "enum"],
          ["projectstate.runtime_identity.v2", "statedd.runtime_identity.v2"]),

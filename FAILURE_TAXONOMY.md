@@ -1,5 +1,9 @@
 # ProjectState Failure Taxonomy
 
+> **Optional reference.** This vocabulary is retained for hardened and v5
+> compatibility workflows. The v6 core needs only the risk and blocker fields
+> required by the active user journey.
+
 **Purpose:** Standard vocabulary for classifying failures before fixing them.
 
 Use this taxonomy in `docs/failure_scans/`, `docs/incidents/`, backlog items,

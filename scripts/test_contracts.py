@@ -80,10 +80,17 @@ def test_confined_path_rejects_nested_symlink_even_when_referent_is_inside() -> 
 def test_profile_catalog_expands_dependencies_and_enforces_capabilities() -> None:
     root = Path(__file__).resolve().parents[1]
     catalog = load_profile_catalog(root)
+    outcome_core = resolve_profile(catalog, "core")
+    hardened = resolve_profile(catalog, "hardened")
     minimal = resolve_profile(catalog, "minimal")
     team = resolve_profile(catalog, "team")
     regulated = resolve_profile(catalog, "regulated")
     assert set(minimal.assets) < set(regulated.assets)
+    assert outcome_core.assets == (Path("scripts/projectstate_gate.py"),)
+    assert hardened.profile_dependencies == ("core",)
+    assert Path("HARDENED_POLICY.md") in hardened.assets
+    assert "dominant_primary_journey" in outcome_core.capabilities
+    assert "outcome_gate_contract" in hardened.validations
     assert regulated.profile_dependencies == ("minimal", "solo", "team")
     assert regulated.asset_sets == ("collaboration", "core", "proof", "regulated_controls", "workflows")
     assert regulated.required_gate_level == 2

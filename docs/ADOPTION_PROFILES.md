@@ -1,133 +1,69 @@
-# ProjectState Adoption Profiles
+# ProjectState adoption profiles
 
-Profiles let you initialize or adopt a repo with a ProjectState footprint matched to
-the project's needs. `profiles/catalog.json` is the machine-readable authority
-for dependencies, asset sets, capabilities, validation, and required gate level.
-Capability IDs describe the interface a profile intends to expose; they are not
-proof by themselves. Resolved validation IDs dispatch executable/presence
-contracts in the generated quality gate and are the enforceable capability proof.
-Profiles do not change core truth rules.
+Use `core` unless a concrete obligation requires more. Profile choice never
+changes the product outcome or makes a failed primary journey acceptable.
 
-## Delivery policy is confirmed separately
+## `core` (default)
 
-Generated `team` state proposes `agent_after_green`. The smaller `minimal` and
-`solo` profiles and the cautious `regulated` profile propose `human_merge`.
-A profile recommendation is never merge authority. Structured bootstrap must
-record exactly one human-confirmed mode before delivery automation can act:
+Installs:
 
-- `human_merge`: the coding agent validates and prepares remote closure, then
-  stops before merge;
-- `agent_after_green`: after every configured exact-head, review/thread,
-  merge-state, evidence, remote-closure, and CI condition passes, the coding
-  agent owns squash merge, direct-main CI, post-merge verification, the external
-  final handoff, and branch deletion after verification.
+- `AGENTS.md`
+- `PROJECT.md`
+- `STATE.yaml`
+- `evidence/bootstrap-001/summary.md`
+- `scripts/projectstate_gate.py`
 
-Either mode may be selected for any profile. The coding agent never silently
-changes a confirmed mode, infers a CI-unavailable override, force-pushes, or
-rewrites shared history. Final product acceptance remains human.
-
-## Which profile should I choose?
-
-**Default recommendation: `solo`.**
-
-Use `minimal` if:
-
-- you want the smallest useful ProjectState footprint
-- you want core state/schema/hygiene/efficiency/quality gates without optional
-  runtime, audit, evidence-pack, team, or review helpers
-
-Use `solo` if:
-
-- you are one developer or one human + one coding agent
-- you are unsure which profile to choose
-- you want runtime/evidence/closure helpers without template-maintenance payload
-
-Use `team` if:
-
-- multiple humans or agents will review handoffs and evidence
-- pull requests and shared review are part of your workflow
-
-Use `regulated` if:
-
-- acceptance, audit trail, runtime proof, and redaction records matter
-- you need explicit acceptance freezes and override records by default
-
-## Available Profiles
-
-### `minimal`
-
-Use when you want the smallest useful ProjectState footprint.
-
-- Core state files plus schema, hygiene, efficiency, and quality gates remain.
-- Runtime, audit, evidence-pack, browser, team, and deep-reference helpers are
-  omitted until the project needs them.
-- The bootstrap gate remains intact; unknowns must still be explicit.
-- Does **not** relax evidence or runtime-proof requirements when a claim needs them.
-
-### `solo`
-
-Default profile for a single developer.
-
-- Curated downstream surface including runtime proof, evidence, browser, audit,
-  closure, schema, and handoff helpers.
-- Standard handoff and evidence defaults.
-- Good balance of discipline and low overhead.
-
-### `team`
-
-Use when multiple people will read handoffs, review evidence, or open pull requests.
-
-- `solo` assets plus managed agent workspaces, remote closure, CTO/review prompts,
-  upgrade guidance, and ADR templates.
-- Generated `AGENTS.md` emphasizes slice contracts, claim ledgers, and CTO review.
-- Encourages stricter evidence and audit hygiene by default.
-
-### `regulated`
-
-Use when acceptance criteria, audit trails, or runtime proof are non-negotiable.
-
-- `team` assets plus post-merge verification.
-- Generated `AGENTS.md` explicitly requires:
-  - runtime identity proof for runtime/user-facing acceptance claims,
-  - evidence-pack manifests with redaction status,
-  - acceptance freeze records for accepted milestones,
-  - explicit human override records when defaults are overridden.
-- Do not claim closure-grade in this profile without satisfying those defaults.
-
-### Optional `knowledge_okf` module
-
-OKF knowledge is not part of any ordinary profile. Install it only when the
-project needs a contained `knowledge/` bundle for durable domain concepts,
-metrics, schema explanations, interfaces, or playbooks:
+For a new repository, the initializer also creates a product `README.md`.
+Adoption preserves an existing README.
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --profile team --asset-set knowledge_okf
-python3 scripts/init_template.py adopt --name "Your Project" --profile team --asset-set knowledge_okf
+python3 scripts/init_template.py new --name "Your Project" --profile core
+python3 scripts/init_template.py adopt --name "Your Project" --profile core --dry-run
 ```
 
-The module installs the pinned OKF v0.1 validator, ProjectState provenance and
-staleness contract, and a project-owned `knowledge/index.md` scaffold. It does
-not duplicate ProjectState operational truth or add knowledge files to `minimal`,
-`solo`, or `team` unless explicitly selected.
+The initial outcome gate fails until a human confirms the project definition and
+the real primary journey passes. This is intentional.
 
-## Usage
+## `hardened` (opt-in)
+
+Adds `HARDENED_POLICY.md` for explicit security, compliance, and delivery
+stop-lines. Choose it when real exposure or obligations justify the extra policy,
+not as a generic signal that a project is important.
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --profile minimal
-python3 scripts/init_template.py new --name "Your Project" --profile solo
-python3 scripts/init_template.py new --name "Your Project" --profile team
-python3 scripts/init_template.py new --name "Your Project" --profile regulated
-
-python3 scripts/init_template.py adopt --name "Your Project" --profile team
+python3 scripts/init_template.py new --name "Your Project" --profile hardened
 ```
 
-The `--minimal` flag is a legacy alias for `--profile minimal`.
+The hardened overlay cannot override the primary journey. Remote proof, signing,
+threat models, or audit retention are still required only when the project or
+current slice actually crosses those boundaries.
 
-Every profile is generated from an explicit allowlist and records its installed
-files and lifecycle hashes in `PROJECTSTATE_ASSETS.json`. No profile receives template-maintenance tests,
-fixtures, historical evidence, incident records, changelog, or release history.
-CI runs each generated profile's own quality gate. `EFFICIENCY_BUDGET.yaml`
-enforces startup files/bytes/estimated tokens and managed footprint files/bytes.
-Reproducible profile and task-context measurements live only in
-`docs/metrics/profile_metrics.json`; prose intentionally does not copy their
-exact values.
+## Compatibility profiles
+
+The v5 `minimal`, `solo`, `team`, and `regulated` profiles remain explicitly
+available so existing repositories can migrate deliberately. They retain the old
+multi-file state and closure tooling. They are not defaults and should not be
+selected for a new project without a compatibility reason.
+
+The legacy `--minimal` flag still maps to `--profile minimal`; it does not select
+the new core. Prefer the explicit `--profile core` spelling.
+
+## Optional assets
+
+Optional GitHub or knowledge assets can add substantial process surface. Install
+them only after checking that they advance an actual project need. The
+initializer refuses automatic optional-set expansion for `core` and `hardened`;
+add project-specific tooling in a separately reviewed change. Asset presence is
+not proof of product behavior.
+
+## Choosing
+
+Use `core` when the answer to all of these is yes:
+
+- Can one real journey establish the current slice?
+- Are ordinary Git review and project tests enough secondary proof?
+- Is there no current regulatory or externally audited obligation?
+
+Use `hardened` when a named risk owner can explain the extra stop-lines and who
+will maintain them. Use a v5 compatibility profile only while preserving or
+migrating an existing v5 installation.
