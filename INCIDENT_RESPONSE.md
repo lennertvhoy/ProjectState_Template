@@ -1,5 +1,9 @@
 # ProjectState Incident Response
 
+> **Optional hardened/legacy reference.** This playbook is not part of the v6
+> core scaffold. Adopt it only when the project's incident risk justifies the
+> additional process.
+
 **Purpose:** Turn bad observed behavior into durable product protection.
 
 Use this when a user reports a bad live event, a regression is observed, or a

@@ -6,10 +6,20 @@ All notable ProjectState template changes are tracked here.
 > on 2026-07-27. Historical entries below retain the prior name for accuracy.
 > Backward-compat aliases (script shims, command aliases, schema identifier
 > enums, legacy `STATEDD_*` env-var and filename fallbacks) are kept for one
-> migration cycle. Canonical identifiers are now `projectstate-template-v5`,
+> migration cycle. Canonical identifiers are now `projectstate-template-v6`,
 > `PROJECTSTATE_ASSETS.json`, and `scripts/projectstate_*.py`.
 
 ## Unreleased
+
+- **BL-OUTCOME-CORE-001: Replaced the default governance stack with an
+  outcome-first core.** New and adopted projects now default to `core` and use
+  `PROJECT.md`, `STATE.yaml`, `AGENTS.md`, and one slice evidence summary as
+  their canonical coordination surface. Added a dependency-free outcome gate
+  with primary-journey precedence, two-failure simplification review, and
+  exposure-aware risk stop-lines. Added an explicit `hardened` overlay; retained
+  v5 profiles only as opt-in compatibility paths. Removed asset locks, line
+  budgets, control-head binding, companion commits, and mandatory remote closure
+  from the default path.
 
 - **BL-AUTONOMY-001: Integrated the autonomous improvement workflow.** Added
   `skills/improve/SKILL.md` and `/projectstate-improve` as the sanctioned

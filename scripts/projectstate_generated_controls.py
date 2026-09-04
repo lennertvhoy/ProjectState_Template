@@ -24,7 +24,7 @@ def recommended_merge_mode(profile: str) -> str:
     the policy pending until structured bootstrap records human confirmation.
     """
 
-    if profile not in {"minimal", "solo", "team", "regulated"}:
+    if profile not in {"core", "hardened", "minimal", "solo", "team", "regulated"}:
         raise ValueError(f"unknown ProjectState profile: {profile!r}")
     return "agent_after_green" if profile == "team" else "human_merge"
 

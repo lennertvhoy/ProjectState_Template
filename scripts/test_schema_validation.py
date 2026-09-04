@@ -35,6 +35,8 @@ def run(args: list[str], *, cwd: Path = ROOT, expect_success: bool) -> subproces
 
 
 def run_init(args: list[str]) -> subprocess.CompletedProcess[str]:
+    if "--profile" not in args:
+        args = [*args, "--profile", "team"]
     return run([str(INIT_SCRIPT), *args], expect_success=True)
 
 

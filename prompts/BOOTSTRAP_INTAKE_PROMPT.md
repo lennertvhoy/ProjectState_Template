@@ -1,37 +1,19 @@
-# Bootstrap Intake Prompt
+# Bootstrap intake prompt
 
-Use this when initializing a new or inherited repo.
-This is typically the first question set the coding agent asks after reading the
-repo and noticing it is still in `bootstrap` mode.
+Ask only what is needed to establish the first real product journey:
 
-Rules:
-- ask only what is needed to unblock truthful bootstrap
-- do not invent architecture or maturity
-- preserve unknowns explicitly when the user cannot prove something yet
-- treat bootstrap as a broader discovery and planning phase, not a quick prelude to coding
-- do not pretend placeholder backlog items are enough to leave bootstrap
+1. Who is the primary user?
+2. What observable outcome should they achieve?
+3. What must this project not become?
+4. Which durable constraints are non-negotiable?
+5. What is the smallest end-to-end journey that would prove the first slice?
+6. In which representative environment must it work?
 
-Ask only the minimum strategic questions needed:
+Record the human-confirmed answers in `PROJECT.md` and `STATE.yaml`. Leave an
+unknown explicit when it cannot be confirmed. Do not invent architecture,
+deployment, integrations, backlog structure, release policy, or compliance
+machinery before the first journey makes them necessary.
 
-1. What is this project in one sentence?
-2. Who is the primary user or operator?
-3. What stage is the project in?
-4. What is the next milestone that matters?
-5. What must this project not become?
-6. What systems or integrations are non-negotiable?
-7. What deployment/runtime is targeted first?
-8. What are the top constraints?
-9. What is the biggest current blocker?
-10. What should the agent optimize first?
-
-Then present the profile recommendation and ask for one explicit delivery-policy
-choice:
-
-- `human_merge`: the coding agent stops before merge;
-- `agent_after_green`: after every configured exact-head, review/thread,
-  merge-state, evidence, remote-closure, and CI condition passes, the coding
-  agent owns squash merge and post-merge verification.
-
-Record `confirmation: human_confirmed` only after the user selects a mode. A
-generated proposal, silence, or an old policy field is not confirmation. Final
-product acceptance remains human in either mode.
+The default profile is `core`. Offer `hardened` only for a named security,
+compliance, review, or delivery obligation. Never infer permission for remote
+writes, merge, deployment, or product acceptance from profile choice.

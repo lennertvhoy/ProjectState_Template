@@ -769,7 +769,7 @@ def check_readme(path: Path) -> list[str]:
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
         "ProjectState Template",
-        "projectstate-template-v5",
+        "projectstate-template-v6",
         "scripts/projectstate_version_check.py",
         "repo_role",
         "projectstate_mode",
@@ -1161,6 +1161,27 @@ def print_failure_block(label: str, issues: list[str]) -> None:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv)
     root = Path(args.root).resolve()
+
+    # ProjectState v6 has one canonical state surface. Delegate before touching
+    # the v5 compatibility rules below; a failed primary journey must remain the
+    # dominant result even when legacy documentation happens to be consistent.
+    if (root / "STATE.yaml").is_file():
+        gate = root / "scripts" / "projectstate_gate.py"
+        if not gate.is_file():
+            gate = ROOT / "scripts" / "projectstate_gate.py"
+        completed = subprocess.run(
+            [sys.executable, str(gate), "--root", str(root)],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        print("ProjectState v6 outcome-first hygiene")
+        if completed.stdout:
+            print(completed.stdout.rstrip())
+        if completed.stderr:
+            print(completed.stderr.rstrip(), file=sys.stderr)
+        return completed.returncode
 
     print("============================================================")
     print("DOCUMENTATION HYGIENE CHECK")

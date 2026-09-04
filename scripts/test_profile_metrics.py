@@ -5,6 +5,7 @@ from pathlib import Path
 
 from projectstate_profile_metrics import (
     DEFAULT_SOURCE_DATE_EPOCH,
+    LEGACY_PROFILE_NAMES,
     build_metrics,
     metrics_match_after_squash,
     normalized_file_blobs,
@@ -25,9 +26,9 @@ def test_profile_metrics_are_deterministic_and_validate_every_profile() -> None:
 
     assert first == second
     assert first["provenance"]["commit_exists"] is True
-    assert [item["profile"] for item in first["profiles"]] == list(
-        load_profile_catalog(root)["profiles"]
-    )
+    assert [item["profile"] for item in first["profiles"]] == [
+        profile for profile in load_profile_catalog(root)["profiles"] if profile in LEGACY_PROFILE_NAMES
+    ]
     assert all(item["quality_gate"]["result"] == "pass" for item in first["profiles"])
     assert all("initial_orientation" in item["contexts"] for item in first["profiles"])
     assert all(item["startup_file_count"] == 4 for item in first["profiles"])

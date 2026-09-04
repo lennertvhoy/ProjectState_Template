@@ -1,9 +1,10 @@
 # PROJECT_STATE.yaml - Structured current truth
+# Legacy v5 compatibility snapshot; v6 current truth is STATE.yaml.
 
 metadata:
   updated_at: 2026-08-29T13:51:49+02:00
   updated_by: agent-opencode_recording_bl-template-downstream-closure-001_remote_marker_normalization
-  version: "projectstate-template-v5"
+  version: "projectstate-template-v6"
 
 workflow:
   repo_role: template_repository

@@ -1,5 +1,9 @@
 # ProjectState Maximum-Value Architecture Review
 
+> Superseded on 2026-09-04 by `docs/adr/0003-outcome-first-core.md`. Retained as
+> evidence of the v5 design assumptions; none of its multi-file defaults are
+> current v6 authority.
+
 ## Verified strengths
 
 - Canonical responsibilities are already separable: `PROJECT_STATE.yaml` is

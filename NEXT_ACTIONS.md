@@ -1,5 +1,8 @@
 # NEXT_ACTIONS - Active Execution Queue
 
+> Legacy v5 compatibility snapshot. The v6 exact next action lives only in
+> `STATE.yaml`.
+
 **Updated At:** 2026-08-29
 **Execution Mode:** template-maintenance
 **Max Items:** 10

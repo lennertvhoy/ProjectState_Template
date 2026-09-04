@@ -1,5 +1,7 @@
 # BACKLOG - Strategic Roadmap
 
+> Optional legacy planning history. It is not current v6 state or authority.
+
 **Product:** ProjectState_Template
 **Execution Mode:** template-maintenance
 **Updated At:** 2026-08-29

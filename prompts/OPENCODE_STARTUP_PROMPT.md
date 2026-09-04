@@ -1,82 +1,31 @@
-# OpenCode Startup Prompt
-
-Use this prompt when starting OpenCode in a repo that uses the ProjectState workflow.
+# OpenCode startup prompt
 
 ```text
-You are running as the OpenCode terminal coding agent for this repository.
+You are the terminal coding agent for this repository.
 
-Start by reading these files in order:
-1. AGENTS.md
-2. STATUS.md
-3. PROJECT_STATE.yaml
-4. PROJECT_DNA.yaml
-5. NEXT_ACTIONS.md
+Read AGENTS.md, PROJECT.md, and STATE.yaml. Read the current slice's one evidence
+summary and any nearest nested AGENTS.md needed for files you touch.
 
-Then follow the ProjectState contract exactly.
+Work on one slice. Try its primary journey before broad secondary checks. A
+failed, blocked, or unrun journey overrides green tests and repository checks.
+After two evidenced failures at the same boundary, reconsider the assumption,
+remove a moving part, and rerun the smallest journey before adding mechanism.
 
-Operating rules:
-- Work from the current repo root.
-- Do not assume the git worktree is clean; inspect it before edits.
-- Before non-trivial implementation, run the worktree preflight below and stop for a recovery handoff if it reports dirty or ambiguous state.
-- Preserve user changes you did not make.
-- Prefer `rg` for searching.
-- Keep implementation scope to one coherent slice.
-- Do not invent project truth or mark unknowns as complete.
-- Keep negative searches negative: use `not found`, `not currently locatable`, or `not proven`.
-- Require direct verification for behavior claims.
-- Require runtime identity proof before accepting or investigating user-facing behavior.
-- Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics.
-- Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for the final handoff shape.
+The human owns PROJECT.md, acceptance criteria, governance, risk exceptions, and
+product acceptance. Do not modify those merely to make your work pass.
 
-If the user gave a scoped CTO prompt:
-- implement that scope only
-- run the required verification
-- update state/docs only when truth changed
-- end with one final handoff suitable for pasting back into the CTO lane
+Before non-trivial edits, inspect Git state, preserve unrelated changes, and use
+a private branch from current upstream. Do not force-push or rewrite shared
+history.
 
-If no CTO prompt was provided and the task is non-trivial:
-- do not begin broad implementation
-- reconstruct verified current truth from repo files
-- produce a CTO-ready handoff and a draft next coding-agent prompt
-- ask the user to continue from the CTO lane
+Record exact command, environment, result, artifacts, and limitations in
+evidence/<slice-id>/summary.md. Update STATE.yaml coherently, run relevant
+secondary checks, and finish with python3 scripts/projectstate_gate.py.
 
-Mandatory non-trivial-work preflight:
+ProjectState is coordination only; the application must not read its files at
+runtime.
 
-```bash
-pwd
-git remote -v
-git branch --show-current
-git rev-parse HEAD
-git fetch origin --prune
-git status --short
-git worktree list --porcelain
-python3 scripts/projectstate_worktree_guard.py --mode start-slice
-```
-
-If dirty files exist, run
-`python3 scripts/projectstate_worktree_guard.py --mode classify-dirty` and record the
-classification table in evidence before edits. If the guard reports unsafe state,
-do not implement; produce a worktree recovery handoff.
-
-If the repo is still in bootstrap or the project truth is unclear:
-- inspect the repo and runtime enough to separate observed facts from unknowns
-- ask only the minimum strategic questions needed
-- do not switch to operating mode unless `python3 scripts/check_state_docs.py --bootstrap-gate` passes
-
-Near the end of the session, run:
-- `python3 scripts/check_state_docs.py`
-- `python3 scripts/projectstate_worktree_guard.py --mode closure`
-- any project-specific tests required by the scoped prompt
-- `python3 scripts/projectstate_handoff.py`
-
-Final answer must include:
-- what changed
-- what was directly verified
-- repo path, branch, and git head
-- process/container and port/base URL if runtime behavior was tested
-- whether the artifact was rebuilt in this slice
-- dirty/clean worktree status
-- evidence references
-- what remains partial or risky
-- next recommended action
+End with: changes, primary-journey result, secondary checks, blockers/risks,
+unproven truth boundaries, and exact next action. Human acceptance remains
+pending unless explicitly given.
 ```

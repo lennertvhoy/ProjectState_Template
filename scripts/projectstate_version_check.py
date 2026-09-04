@@ -52,6 +52,7 @@ HISTORICAL_PATHS = {
 HISTORICAL_DIRS = {
     "docs/evidence",
     "docs/incidents",
+    "docs/metrics",
 }
 
 

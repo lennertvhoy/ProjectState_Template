@@ -34,6 +34,7 @@ SCHEMA = "projectstate.profile_metrics.v1"
 DEFAULT_OUTPUT = Path("docs/metrics/profile_metrics.json")
 DEFAULT_SOURCE_DATE_EPOCH = 1783728000
 IGNORED_PARTS = {".git", ".pytest_cache", "__pycache__"}
+LEGACY_PROFILE_NAMES = frozenset({"minimal", "solo", "team", "regulated"})
 
 
 class MetricsError(RuntimeError):
@@ -319,9 +320,12 @@ def build_metrics(root: Path, *, template_commit: str, epoch: int) -> dict[str, 
     encoding_name, tokenizer_version, encoding = tokenizer()
     tree_hash, source_inputs = source_tree_digest(root, catalog)
     provenance = prove_source_commit(root, template_commit, source_inputs)
+    # This artifact measures the v5 compatibility surface only. The v6 core
+    # deliberately has no fixed context/footprint budget or asset lock.
     profiles = [
         measure_profile(root, profile, policies, epoch, encoding, template_commit)
         for profile in catalog["profiles"]
+        if profile in LEGACY_PROFILE_NAMES
     ]
     generated_at = __import__("datetime").datetime.fromtimestamp(
         epoch, tz=__import__("datetime").timezone.utc

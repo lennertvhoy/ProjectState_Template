@@ -1,104 +1,63 @@
-# Upgrading ProjectState
+# Upgrading to the outcome-first core
 
-Current ProjectState spec version: `projectstate-template-v5`
+Current template version: `projectstate-template-v6`
 
-Use this guide when bringing an existing ProjectState repo forward without overwriting local project truth.
+This is a semantic migration, not a file refresh. The v5 state surfaces may
+contain useful project truth, so do not delete them before extracting it.
 
-## Upgrade Rules
+## Safe migration
 
-- Treat `VERSION` as the canonical ProjectState template version.
-- Add `repo_role` and `projectstate_mode` when upgrading older ProjectState state files.
-- Use `repo_role: template_repository` and `projectstate_mode: template-maintenance` only for the ProjectState template repository itself.
-- Use `repo_role: downstream_project` and `projectstate_mode: bootstrap` for generated or adopted project repositories until their baseline is proven.
-- Preserve project-specific `PROJECT_STATE.yaml`, `STATUS.md`, `BACKLOG.md`, `NEXT_ACTIONS.md`, and `WORKLOG.md` content unless the human explicitly approves a replacement.
-- Upgrade reusable workflow assets first: `scripts/`, `prompts/`, `docs/`, and `.github/` files.
-- Align version-bearing state files only after checking whether their project-specific fields are still true.
-- Record the upgrade in `WORKLOG.md` and link any verification in `docs/EVIDENCE_LOG.md`.
+1. Create a private migration branch from a clean, current checkout.
+2. Read the existing project documents and identify:
+   - the primary user and observable outcome;
+   - durable scope, non-goals, and constraints;
+   - the one slice actually in progress;
+   - its acceptance criteria and smallest real journey;
+   - open blockers, risks, and the exact next action.
+3. Generate a fresh core instance in a temporary directory:
 
-## Assisted Upgrade With `projectstate_upgrade.py`
+   ```bash
+   python3 scripts/init_template.py new --name "Your Project" --profile core --target /tmp/your-projectstate-core --no-init-git
+   ```
 
-The template now ships `scripts/projectstate_upgrade.py` for non-destructive downstream upgrades.
+4. Transfer only the extracted truth into `PROJECT.md`, `STATE.yaml`, and the
+   current evidence summary.
+5. Run the real primary journey and `python3 scripts/projectstate_gate.py`.
+6. Keep old files for review until the new core has been accepted. Remove or
+   archive them in one explicit migration change; do not maintain both models as
+   live truth.
 
-```bash
-python3 scripts/projectstate_upgrade.py /path/to/downstream/repo
-python3 scripts/projectstate_upgrade.py /path/to/downstream/repo --apply
-python3 scripts/projectstate_upgrade.py /path/to/downstream/repo --apply --force-managed
-python3 scripts/projectstate_upgrade.py /path/to/downstream/repo --include-asset-set github
-```
+## Mapping
 
-- Default mode is dry-run.
-- The current profile catalog defines the desired future asset set. The existing
-  `PROJECTSTATE_ASSETS.json` records historical ownership and installed/base hashes;
-  it never prevents a newly introduced profile asset from being offered.
-- A missing lock may be inspected read-only only when `--profile` explicitly
-  establishes legacy intent. No-lock `--apply` is refused because it cannot prove
-  project-truth ownership; use `init_template.py adopt` to establish the first
-  complete instance contract. Malformed, duplicate, unsafe, or unsupported locks
-  fail before writes.
-- `--apply` creates missing assets, replaces only unmodified template-owned
-  assets, regenerates the lock last, and rolls back an interrupted operation.
-- Locally modified template-owned assets are conflicts. Project-owned truth is
-  preserved; a missing required protected file is a blocking conflict.
-  `--force-managed` may replace only a historically template-owned modified
-  asset; it is not a merge and never overrides project truth.
-- Assets removed from the current profile are recorded as retired and reported;
-  they are not silently deleted. A successful second run is idempotent.
-- The target root, every managed path, and every template source are confined and
-  symlink-safe before any mutation begins.
-- Profile transitions are never inferred from `--profile`. Use the explicit
-  semantic migration path only for a forward profile change:
+| v5 material | v6 destination |
+| --- | --- |
+| product/user/scope across DNA, status, or state | `PROJECT.md` |
+| active slice, blockers, risks, next action | `STATE.yaml` |
+| current command results and limitations | `evidence/<slice-id>/summary.md` |
+| closed worklog entries | Git history; retain separately only if legally needed |
+| backlog | optional `BACKLOG.md` if the project genuinely needs one |
+| release/remote/compliance controls | explicit `hardened` or project-specific policy |
+| control-head bindings, counters, fixed line budgets | no migration; retire them |
 
-  ```bash
-  python3 scripts/projectstate_upgrade.py /path/to/repo --migrate-profile team
-  python3 scripts/projectstate_upgrade.py /path/to/repo --migrate-profile team --apply
-  ```
+Do not translate a green v5 repository gate into a passed primary journey. Rerun
+the journey in a representative environment.
 
-  The migration is transactional and fails closed unless the locked profile
-  matches both `PROJECT_STATE.yaml` and `PROJECT_ADAPTER.yaml`. It updates only
-  those documents' profile fields, preserves all other project truth, installs
-  the new profile assets, records the transition in `upgrade_history`, and
-  rejects downgrades. A normal `--profile` mismatch remains a refusal.
-- Optional module sets come from the catalog and may be enabled with repeatable
-  `--include-asset-set`. `--include-github-assets` remains a compatibility alias.
-- `--report` writes a new external plan sidecar before target mutation. It never
-  overwrites an existing path, records `apply_requested`, and deliberately does
-  not claim that application succeeded.
+## Existing automated upgrader
 
-### Delivery-policy migration
+`scripts/projectstate_upgrade.py` remains a v5 compatibility tool. It can safely
+refresh assets inside a locked v5 profile, but it does not perform this semantic
+migration and must not claim that it does. The v6 core intentionally has no asset
+lock or self-updating governance.
 
-Upgrades refresh the generated coding-agent control, but they preserve
-project-owned `PROJECT_STATE.yaml`. A legacy `merge_to_main` field is therefore
-not silently translated into merge authority. Review the new safeguards and
-record one explicit confirmed mode:
+## Compatibility profiles
 
-- `human_merge` keeps merge as a human operation;
-- `agent_after_green` lets the coding agent squash-merge the exact verified PR
-  head and own direct-main CI plus post-merge closure.
+`minimal`, `solo`, `team`, and `regulated` remain selectable for existing
+consumers during the migration window. New projects default to `core`.
+Compatibility-profile maintenance does not change the v6 project outcome or
+acceptance criteria.
 
-Until `status: confirmed`, `confirmation: human_confirmed`, and a supported
-`merge.mode` agree, the policy is non-authorizing. Changing an already confirmed
-mode requires a separate explicit human decision. Force-push, shared-history
-rewrite, and automatic merge without CI remain forbidden in either mode.
+## Truth at handoff
 
-## Manual Upgrade Checklist
-
-1. Read the source repo `VERSION`.
-2. Run `python3 scripts/projectstate_upgrade.py /path/to/repo --dry-run` to see every
-   planned action, conflict, and retired asset.
-3. Copy or merge reusable assets from the new template.
-4. Run the upgraded repository's required gate level from
-   `PROJECTSTATE_ASSETS.json`: `python3 scripts/projectstate_quality_gate.py --gate-level N`.
-5. Commit and push normally, then use exact-head remote closure when the claim
-   crosses the remote/CI boundary.
-
-## Common Conflicts
-
-- Older repos may only have `repo_mode`. Keep it as a compatibility alias if needed, but make `repo_role` and `projectstate_mode` explicit.
-- `PROJECT_ADAPTER.yaml` may carry an older adapter version while `PROJECT_STATE.yaml` and `PROJECT_DNA.yaml` have moved forward.
-- Existing project `CHANGELOG.md` files may be product history, not ProjectState template history. Do not overwrite them during adoption without explicit human approval.
-- A copied prompt or script can be newer than the state files. Run the version check before handoff.
-- Semantic or three-way migration of customized project truth is not implemented.
-  Preserve it and perform an explicit reviewed migration.
-- Older delivery-policy shapes are preserved rather than inferred. Migrate them
-  through an explicit confirmed policy update; a regenerated prompt alone never
-  changes merge authority.
+Report local implementation, primary-journey validation, remote branch, CI,
+deployment, and human acceptance separately. A local migration can be complete
+without being pushed; it must say so.

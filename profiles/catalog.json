@@ -1,8 +1,42 @@
 {
   "schema": "projectstate.profile_catalog.v1",
-  "catalog_version": 1,
-  "template_version": "projectstate-template-v5",
+  "catalog_version": 2,
+  "template_version": "projectstate-template-v6",
   "asset_sets": {
+    "outcome_core": {
+      "version": 1,
+      "depends_on": [],
+      "conflicts_with": [],
+      "capabilities": [
+        "single_current_state",
+        "dominant_primary_journey",
+        "two_strike_simplification",
+        "risk_tiered_stop_lines",
+        "human_owned_governance"
+      ],
+      "validation": [
+        "outcome_gate_contract"
+      ],
+      "assets": [
+        "scripts/projectstate_gate.py"
+      ]
+    },
+    "outcome_hardened": {
+      "version": 1,
+      "depends_on": [],
+      "conflicts_with": [],
+      "capabilities": [
+        "explicit_hardened_policy",
+        "exposure_aware_security_review",
+        "bounded_risk_acceptance"
+      ],
+      "validation": [
+        "outcome_gate_contract"
+      ],
+      "assets": [
+        "HARDENED_POLICY.md"
+      ]
+    },
     "core": {
       "version": 1,
       "depends_on": [],
@@ -206,6 +240,34 @@
     }
   },
   "profiles": {
+    "core": {
+      "depends_on": [],
+      "asset_sets": [
+        "outcome_core"
+      ],
+      "required_capabilities": [
+        "single_current_state",
+        "dominant_primary_journey",
+        "two_strike_simplification",
+        "risk_tiered_stop_lines",
+        "human_owned_governance"
+      ],
+      "required_gate_level": 1
+    },
+    "hardened": {
+      "depends_on": [
+        "core"
+      ],
+      "asset_sets": [
+        "outcome_hardened"
+      ],
+      "required_capabilities": [
+        "explicit_hardened_policy",
+        "exposure_aware_security_review",
+        "bounded_risk_acceptance"
+      ],
+      "required_gate_level": 1
+    },
     "minimal": {
       "depends_on": [],
       "asset_sets": [

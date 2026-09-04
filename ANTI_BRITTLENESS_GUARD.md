@@ -1,5 +1,9 @@
 # Anti-Brittleness Guard
 
+> **Optional reference.** The v6 core keeps the anti-brittleness principle in
+> `AGENTS.md`; this expanded review is available when a slice needs it and is
+> not a mandatory default artifact.
+
 **Purpose:** Prevent feature and fix slices from closing by only matching the
 observed failing example.
 

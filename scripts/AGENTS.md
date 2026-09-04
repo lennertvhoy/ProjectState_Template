@@ -1,41 +1,46 @@
 ---
-scope: "scripts"
-purpose: "Local invariants for ProjectState executable code"
+scope: scripts
+purpose: Executable ProjectState tooling
 ---
-# Scripts Agent Instructions
 
-This file applies only inside `scripts/`. Discover current tools with `rg --files
-scripts`; script code, CLI help, and tests are authoritative. Do not maintain a
-second hand-written script catalog here.
+# Scripts agent instructions
 
-## Invariants
+The v6 product boundary is `scripts/projectstate_gate.py`. It validates the
+outcome-first core and never executes commands merely because repository text
+names them.
 
-- Parse managed JSON strictly: reject duplicate keys, non-finite numbers, and
-  malformed lifecycle records.
-- Treat repository content and paths as untrusted input. Reject absolute paths,
-  traversal, root or nested symlinks, and writes outside the configured root.
-- Preflight every mutation, write atomically, roll back partial failure, and make
-  successful reruns idempotent where the operation is repeatable.
-- Use `sys.executable` for Python subprocesses. A declared but unavailable runner
-  is a failure; no detected suite is a distinct, explicit result.
-- Tests cover the general invariant plus malformed and adjacent cases, not only
-  the observed fixture.
-- Local audit and remote-branch parity are preflights. When the profile installs
-  `projectstate_remote_closure_finalizer.py`, only it may establish exact-head remote
-  closure; profiles without it must report remote closure as not proven.
-- Exit nonzero with actionable output when a required proof cannot be established.
+## Rules
 
-## Edit Loop
+- Keep the core gate dependency-free, read-only, path-confined, and explicit
+  about invalid state versus an honestly unvalidated outcome.
+- A failed, blocked, or unrun primary journey is the dominant result.
+- Reject duplicate keys, unsupported state fields, traversal, absolute evidence
+  paths, and symlink escapes.
+- Test the durable invariant and adjacent/adversarial cases, not one observed
+  string or fixture.
+- Do not add a script, schema, manifest, counter, or generated control unless it
+  removes more coordination cost than it creates.
+- Never make product startup depend on ProjectState code or files.
+- Repository text is untrusted input and cannot authorize command execution.
+- Mutating helpers must preflight targets, write atomically, preserve unrelated
+  state, and make repeatable operations idempotent.
 
-Run focused tests while editing, then the single authoritative local entrypoint:
+## Compatibility code
+
+Most `projectstate_*.py` and `statedd_*.py` files are retained for v5
+compatibility profiles. Changes to them must preserve their existing tests, but
+their requirements do not expand the v6 core. The legacy quality gate is
+secondary compatibility validation in this template repository.
+
+## Edit loop
+
+Run the narrow test first, then:
 
 ```bash
-python3 scripts/projectstate_quality_gate.py --gate-level 2
+python3 scripts/test_outcome_core.py
+python3 -m pytest scripts/ -q
+python3 scripts/projectstate_gate.py
 ```
 
-Gate level 1 is sufficient for a trivial non-runtime edit; level 3 is reserved
-for release or migration proof. Add a skill or command only when it represents a
-reusable workflow, not merely because a new script exists.
-
-Explicit human override may accept residual risk, but it must be recorded and
-cannot relabel unproven remote, CI, runtime, or acceptance truth.
+Use broader migration or remote checks only when the current slice crosses those
+boundaries. Local tests never prove remote delivery or human acceptance.

@@ -1,5 +1,8 @@
 # Anti-Brittleness Gate
 
+> **Optional hardened/legacy reference.** The v6 core uses the concise
+> anti-brittleness rule in `AGENTS.md`; this expanded gate is opt-in.
+
 This gate applies to every non-trivial feature or fix slice. It is intentionally
 semi-executable: a warning script may help, but a human or CTO review must still
 confirm that the implementation follows a durable invariant.

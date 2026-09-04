@@ -1,5 +1,8 @@
 # ProjectState Template Status
 
+> Legacy v5 compatibility snapshot. It is not current authority; read
+> `PROJECT.md` and `STATE.yaml`. Do not keep this file synchronized with v6.
+
 **Updated At:** 2026-08-29
 **Execution Mode:** template-maintenance
 **Project State:** operational_template_complete

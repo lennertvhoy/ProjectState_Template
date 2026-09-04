@@ -1,122 +1,64 @@
-# Getting Started In 5 Minutes
+# ProjectState in five minutes
 
-Use this when you want the shortest safe path from an empty or inherited repo to a ProjectState-guided coding-agent session.
+## 1. Generate or adopt
 
-You only need Python 3 and a terminal. No external dependencies are required.
-
-> **Tip:** If you are unsure which profile to choose, use `--profile solo`. It is the default recommendation. See `docs/ADOPTION_PROFILES.md` for the full decision tree.  
-> **Tip:** For a one-page command cheat sheet, see `docs/QUICK_COMMANDS.md`.
-
-## 1. Create or adopt a repo
-
-For a new project:
+New project:
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --profile solo
+python3 scripts/init_template.py new --name "Your Project" --target ../your-project
 ```
 
-For an existing repo, preview first so you can see what will change:
+Existing project:
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project" --dry-run
+python3 scripts/init_template.py adopt --name "Your Project" --target ../your-project --dry-run
+python3 scripts/init_template.py adopt --name "Your Project" --target ../your-project
 ```
 
-Then adopt when the preview is acceptable:
+The default profile is `core`. Adoption preserves the existing product README.
+
+## 2. Confirm the project contract
+
+Open `PROJECT.md`. Replace the honest placeholders with:
+
+- the primary user;
+- one observable outcome;
+- current scope and non-goals;
+- durable product constraints.
+
+The human owns these choices. An agent can draft them, but cannot approve them.
+
+## 3. Define one slice
+
+Open `STATE.yaml`. Keep one current slice. Its primary journey should be the
+smallest representative path that would convince the user the slice works.
+
+For example:
+
+> Clean checkout → documented start command → browser opens → user completes one
+> real operation → result survives restart.
+
+Do not begin with the broad test suite. Try this journey early enough that a bad
+packaging or architecture assumption is cheap to change.
+
+## 4. Record bounded evidence
+
+Run the journey yourself. Update `evidence/bootstrap-001/summary.md` with the
+exact command, environment, result, artifacts, and limitations. Then align the
+journey status in `STATE.yaml`.
+
+## 5. Run the outcome gate
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project" --profile solo
+python3 scripts/projectstate_gate.py
 ```
 
-## 2. Paste the startup prompt into your coding agent
+A new scaffold initially returns `OUTCOME NOT VALIDATED`. That is correct until
+the real journey passes. Passing tests cannot overrule it.
 
-For OpenCode:
+If the same delivery boundary fails twice, fill the simplification review in
+`STATE.yaml`: reconsider the assumption, remove a moving part, and name the
+smallest rerun.
 
-```text
-Read prompts/OPENCODE_STARTUP_PROMPT.md and follow it exactly.
-```
-
-For another terminal coding agent:
-
-```text
-Read prompts/CODING_AGENT_STARTUP_PROMPT.md and follow it exactly.
-```
-
-## 3. Let the agent read the state files
-
-The first agent session should read:
-
-1. `AGENTS.md`
-2. `STATUS.md`
-3. `PROJECT_STATE.yaml`
-4. `PROJECT_DNA.yaml`
-5. `NEXT_ACTIONS.md`
-
-If the repo is still unclear, the agent should inspect first and ask only the minimum strategic questions needed. It should not invent project truth.
-
-## 4. Use the CTO lane for non-trivial work
-
-For work that changes multiple files, architecture, runtime behavior, state structure, integrations, or user-facing behavior, open a separate planning chat and paste:
-
-```text
-Read prompts/CTO_SESSION_PROMPT.md and act as the CTO lane for this repo.
-```
-
-The CTO lane should produce one scoped coding-agent prompt, not a broad plan.
-
-## 5. Work in small slices
-
-Each implementation slice should:
-
-- define one coherent scope
-- verify directly with commands or runtime evidence
-- update state files only when truth changes
-- keep `NEXT_ACTIONS.md` active-only
-- end with a final handoff
-
-Use this helper near the end of a slice:
-
-```bash
-python3 scripts/projectstate_handoff.py
-```
-
-For a concrete, tested example of a schema driving both validation and prompt generation, see `schemas/examples/schema_prompt_loop/`.
-
-If you want the helper to run validation and include the output:
-
-```bash
-python3 scripts/projectstate_handoff.py --test-command "python3 scripts/check_state_docs.py"
-```
-
-## 6. Run the gates
-
-For normal hygiene:
-
-```bash
-python3 scripts/check_state_docs.py
-python3 scripts/projectstate_validate_schema.py
-python3 scripts/test_init_template.py
-python3 scripts/test_schema_validation.py
-python3 scripts/projectstate_doctor.py
-```
-
-Before claiming closure-grade:
-
-```bash
-python3 scripts/projectstate_audit.py
-```
-
-Before leaving bootstrap:
-
-```bash
-python3 scripts/check_state_docs.py --bootstrap-gate
-```
-
-If the bootstrap gate fails, keep the repo in `bootstrap` and fix the reported baseline gaps instead of claiming operating mode.
-
-## What not to do
-
-- Do not treat chat memory as repo truth.
-- Do not accept screenshots without runtime identity proof.
-- Do not turn a failed search into "never existed".
-- Do not let `NEXT_ACTIONS.md` become a long backlog.
-- Do not switch to `operating` until the baseline is proven.
+Select `--profile hardened` only when a real security, compliance, or delivery
+obligation justifies the overlay.
