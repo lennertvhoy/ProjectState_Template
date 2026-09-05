@@ -38,6 +38,10 @@ For example:
 > Clean checkout → documented start command → browser opens → user completes one
 > real operation → result survives restart.
 
+If users install a package, start from that package in the intended clean
+environment. Record its identity and setup in the evidence summary. A source
+checkout or a preconfigured development machine can hide missing package files.
+
 Do not begin with the broad test suite. Try this journey early enough that a bad
 packaging or architecture assumption is cheap to change.
 
@@ -56,9 +60,14 @@ python3 scripts/projectstate_gate.py
 A new scaffold initially returns `OUTCOME NOT VALIDATED`. That is correct until
 the real journey passes. Passing tests cannot overrule it.
 
+A successful gate prints `RECORDED OUTCOME VALIDATED`. It checks the records;
+it does not run the journey or authenticate the human's acceptance.
+
 If the same delivery boundary fails twice, fill the simplification review in
 `STATE.yaml`: reconsider the assumption, remove a moving part, and name the
 smallest rerun.
 
 Select `--profile hardened` only when a real security, compliance, or delivery
 obligation justifies the overlay.
+
+For a runnable failure-and-recovery lesson, use the [worked example](WORKED_EXAMPLE.md).

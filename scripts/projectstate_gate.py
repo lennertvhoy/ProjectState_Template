@@ -3,8 +3,9 @@
 
 The parser intentionally supports the conservative YAML subset used by
 ``STATE.yaml`` so a generated project needs only Python's standard library.
-Exit 0 means the primary journey and applicable stop-lines pass. Exit 1 means
-the state is honest but not closure-ready. Exit 2 means the contract is invalid.
+Exit 0 means recorded evidence supports validation and no recorded stop-line
+blocks it. This does not execute journeys or authenticate human approval.
+Exit 1 means the state is honest but not closure-ready. Exit 2 means it is invalid.
 """
 
 from __future__ import annotations
@@ -116,7 +117,7 @@ def _lines(text: str) -> list[tuple[int, str, int]]:
         if not raw.strip() or raw.lstrip().startswith("#"):
             continue
         indent = len(raw) - len(raw.lstrip(" "))
-        if "\t" in raw[:indent] or indent % 2:
+        if "\t" in raw[:len(raw) - len(raw.lstrip())] or indent % 2:
             raise StateSyntaxError(f"line {number}: use two-space indentation and no tabs")
         result.append((indent, raw[indent:].rstrip(), number))
     return result
@@ -260,20 +261,57 @@ def _list(value: Any, path: str, errors: list[str]) -> list[Any]:
     return value
 
 
-def _project_sections(text: str) -> dict[str, str]:
+def _defined_text(value: Any, path: str, errors: list[str], blockers: list[str]) -> str:
+    text = _text(value, path, errors)
+    visible = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL).strip()
+    if text and (not visible or re.search(
+        r"^[ \t]*[-*>` \t]*(?:not yet defined\b|(?:TODO|TBD)(?:[ \t]*$|[ \t]*[:—-]))",
+        visible, re.IGNORECASE | re.MULTILINE
+    )):
+        blockers.append(f"{path} is unresolved; replace placeholders with the human-owned contract and observed journey")
+    return text
+
+
+def _is_choice(value: Any, choices: set[str]) -> bool:
+    return isinstance(value, str) and value in choices
+
+
+def _markdown_sections(text: str, path: str, errors: list[str]) -> dict[str, str]:
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
     headings = list(re.finditer(r"^##\s+(.+?)\s*$", text, re.MULTILINE))
     result: dict[str, str] = {}
     for index, match in enumerate(headings):
         end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
-        result[match.group(1).strip().lower()] = text[match.end() : end].strip()
+        heading = match.group(1).strip().lower()
+        if heading in result:
+            errors.append(f"{path} has duplicate ## {heading} sections")
+        result[heading] = text[match.end() : end].strip()
     return result
 
 
 def _summary_value(text: str, label: str) -> str | None:
-    match = re.search(rf"^-\s+{re.escape(label)}:\s*(.+?)\s*$", text, re.MULTILINE | re.IGNORECASE)
-    if not match:
+    matches = re.findall(rf"^-\s+{re.escape(label)}:[ \t]*(.*?)[ \t]*$", text, re.MULTILINE | re.IGNORECASE)
+    if len(matches) != 1:
         return None
-    return match.group(1).strip().strip("`")
+    return matches[0].strip().strip("`")
+
+
+def _local_file(root: Path, relative: PurePosixPath, errors: list[str]) -> Path | None:
+    """Refuse symlinks before reading any contract or evidence content."""
+    current = root
+    try:
+        for part in relative.parts:
+            current /= part
+            if current.is_symlink():
+                errors.append(f"{relative} is symlinked")
+                return None
+        if not current.is_file():
+            errors.append(f"{relative} is missing or not a regular file")
+            return None
+    except (OSError, ValueError) as exc:
+        errors.append(f"cannot inspect {relative}: {exc}")
+        return None
+    return current
 
 
 def _evidence_path(root: Path, raw: Any, slice_id: str, errors: list[str]) -> Path | None:
@@ -285,16 +323,7 @@ def _evidence_path(root: Path, raw: Any, slice_id: str, errors: list[str]) -> Pa
     if relative.is_absolute() or ".." in relative.parts or relative != expected:
         errors.append(f"primary journey evidence must be {expected.as_posix()}")
         return None
-    path = root.joinpath(*relative.parts)
-    if path.is_symlink() or not path.is_file():
-        errors.append(f"evidence summary is missing or symlinked: {relative.as_posix()}")
-        return None
-    try:
-        path.resolve().relative_to(root.resolve())
-    except ValueError:
-        errors.append("evidence summary resolves outside the repository")
-        return None
-    return path
+    return _local_file(root, relative, errors)
 
 
 def _attempt_evidence_path(
@@ -314,15 +343,7 @@ def _attempt_evidence_path(
     ):
         errors.append(f"{label} must name a supporting file directly under {expected_parent}")
         return
-    path = root.joinpath(*relative.parts)
-    current = root
-    for part in relative.parts:
-        current /= part
-        if current.is_symlink():
-            errors.append(f"{label} is symlinked")
-            return
-    if not path.is_file():
-        errors.append(f"{label} is missing: {value}")
+    _local_file(root, relative, errors)
 
 
 def _validate_failures(
@@ -408,11 +429,11 @@ def _validate_risks(raw_risks: Any, errors: list[str], blockers: list[str], warn
             errors.append(f"risks[{index}].decision is invalid")
         accepted = decision == "accept_temporarily" and _temporary_acceptance_is_valid(risk, errors, index)
         mandatory = category in MANDATORY_STOP_CATEGORIES
-        exposed_security = category in {"security_vulnerability", "vulnerability"} and severity in {
+        exposed_risk = severity in {
             "critical",
             "high",
         } and exposure in EXPOSED
-        if (mandatory or exposed_security) and decision != "resolved" and not accepted:
+        if (mandatory or exposed_risk) and decision != "resolved" and not accepted:
             blockers.append(f"risk {risk_id!r} crosses a mandatory stop-line")
         elif decision != "resolved":
             warnings.append(
@@ -424,7 +445,9 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     errors: list[str] = []
     blockers: list[str] = []
     warnings: list[str] = []
-    state_path = root / "STATE.yaml"
+    state_path = _local_file(root, PurePosixPath("STATE.yaml"), errors)
+    if state_path is None:
+        return errors, blockers, warnings
     try:
         payload = parse_state(state_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, StateSyntaxError) as exc:
@@ -433,24 +456,26 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     _exact_keys(payload, TOP_LEVEL_KEYS, "STATE.yaml", errors)
     if payload.get("version") != VERSION:
         errors.append(f"STATE.yaml version must be {VERSION!r}")
-    if payload.get("profile") not in {"core", "hardened"}:
+    if not _is_choice(payload.get("profile"), {"core", "hardened"}):
         errors.append("STATE.yaml profile must be core or hardened")
 
     project = _mapping(payload.get("project"), "project", errors)
     _exact_keys(project, {"outcome_ref"}, "project", errors)
     if project.get("outcome_ref") != "PROJECT.md#outcome":
         errors.append("project.outcome_ref must be PROJECT.md#outcome")
-    project_path = root / "PROJECT.md"
+    project_path = _local_file(root, PurePosixPath("PROJECT.md"), errors)
     try:
-        project_text = project_path.read_text(encoding="utf-8")
+        project_text = project_path.read_text(encoding="utf-8") if project_path else ""
     except (OSError, UnicodeDecodeError) as exc:
         errors.append(f"cannot read PROJECT.md: {exc}")
         project_text = ""
-    sections = _project_sections(project_text)
+    sections = _markdown_sections(project_text, "PROJECT.md", errors)
     for heading in ("user", "outcome", "scope", "non-goals", "durable constraints"):
         body = sections.get(heading, "")
         if not body:
             errors.append(f"PROJECT.md needs a non-empty ## {heading.title()} section")
+        else:
+            _defined_text(body, f"PROJECT.md ## {heading.title()}", errors, blockers)
 
     slice_state = _mapping(payload.get("current_slice"), "current_slice", errors)
     _exact_keys(
@@ -462,15 +487,17 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     slice_id = _text(slice_state.get("id"), "current_slice.id", errors)
     if slice_id and not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slice_id):
         errors.append("current_slice.id must use lowercase letters, digits, and hyphens")
-    _text(slice_state.get("objective"), "current_slice.objective", errors)
+    _defined_text(slice_state.get("objective"), "current_slice.objective", errors, blockers)
     status = slice_state.get("status")
-    if status not in SLICE_STATUSES:
+    if not _is_choice(status, SLICE_STATUSES):
         errors.append(f"current_slice.status must be one of {sorted(SLICE_STATUSES)}")
+    if status == "blocked":
+        blockers.append("current slice is explicitly blocked")
     acceptance = _list(slice_state.get("acceptance"), "current_slice.acceptance", errors)
     if not acceptance:
         errors.append("current_slice.acceptance must contain observable criteria")
     for index, criterion in enumerate(acceptance):
-        _text(criterion, f"current_slice.acceptance[{index}]", errors)
+        _defined_text(criterion, f"current_slice.acceptance[{index}]", errors, blockers)
 
     journey = _mapping(slice_state.get("primary_journey"), "current_slice.primary_journey", errors)
     _exact_keys(
@@ -479,28 +506,30 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
         "current_slice.primary_journey",
         errors,
     )
-    _text(journey.get("description"), "current_slice.primary_journey.description", errors)
-    command = _text(journey.get("command"), "current_slice.primary_journey.command", errors)
-    environment = _text(journey.get("environment"), "current_slice.primary_journey.environment", errors)
+    _defined_text(journey.get("description"), "current_slice.primary_journey.description", errors, blockers)
+    command = _defined_text(journey.get("command"), "current_slice.primary_journey.command", errors, blockers)
+    environment = _defined_text(journey.get("environment"), "current_slice.primary_journey.environment", errors, blockers)
     journey_status = journey.get("status")
-    if journey_status not in PRIMARY_STATUSES:
+    if not _is_choice(journey_status, PRIMARY_STATUSES):
         errors.append(f"primary journey status must be one of {sorted(PRIMARY_STATUSES)}")
     evidence_path = _evidence_path(root, journey.get("evidence"), slice_id, errors)
 
     validation = _mapping(payload.get("validation"), "validation", errors)
     _exact_keys(validation, {"primary_journey", "automated_tests", "human_acceptance"}, "validation", errors)
-    if validation.get("primary_journey") not in PRIMARY_STATUSES:
+    if not _is_choice(validation.get("primary_journey"), PRIMARY_STATUSES):
         errors.append("validation.primary_journey is invalid")
     if validation.get("primary_journey") != journey_status:
         errors.append("validation.primary_journey must match current_slice.primary_journey.status")
     automated = validation.get("automated_tests")
-    if automated not in AUTOMATED_STATUSES:
+    if not _is_choice(automated, AUTOMATED_STATUSES):
         errors.append("validation.automated_tests is invalid")
     if automated == "failed":
         blockers.append("automated tests are explicitly failed")
     human = validation.get("human_acceptance")
-    if human not in HUMAN_STATUSES:
+    if not _is_choice(human, HUMAN_STATUSES):
         errors.append("validation.human_acceptance is invalid")
+    if human == "rejected":
+        blockers.append("human product acceptance is rejected")
     if human == "accepted" and status != "accepted":
         errors.append("human acceptance requires current_slice.status: accepted")
     if status == "accepted" and human != "accepted":
@@ -508,7 +537,7 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
 
     if journey_status != "passed":
         blockers.insert(0, f"primary journey is {journey_status}; secondary checks cannot override it")
-    if status in CLOSURE_STATUSES and journey_status != "passed":
+    if _is_choice(status, CLOSURE_STATUSES) and journey_status != "passed":
         errors.append(f"current_slice.status {status!r} requires a passed primary journey")
     raw_blockers = _list(payload.get("blockers"), "blockers", errors)
     for index, blocker in enumerate(raw_blockers):
@@ -525,12 +554,10 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     _validate_risks(payload.get("risks"), errors, blockers, warnings)
     _text(payload.get("next_action"), "next_action", errors)
 
-    agents_path = root / "AGENTS.md"
-    if agents_path.is_symlink() or not agents_path.is_file():
-        errors.append("AGENTS.md is missing or symlinked")
+    _local_file(root, PurePosixPath("AGENTS.md"), errors)
 
-    if payload.get("profile") == "hardened" and not (root / "HARDENED_POLICY.md").is_file():
-        errors.append("hardened profile requires HARDENED_POLICY.md")
+    if payload.get("profile") == "hardened":
+        _local_file(root, PurePosixPath("HARDENED_POLICY.md"), errors)
 
     if evidence_path is not None:
         try:
@@ -538,18 +565,20 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
         except (OSError, UnicodeDecodeError) as exc:
             errors.append(f"cannot read evidence summary: {exc}")
             summary = ""
+        evidence_sections = _markdown_sections(summary, "evidence summary", errors)
         for heading in ("Primary journey", "Secondary checks", "Artifacts", "Limitations"):
-            if not re.search(rf"^##\s+{re.escape(heading)}\s*$", summary, re.MULTILINE):
+            if heading.lower() not in evidence_sections:
                 errors.append(f"evidence summary needs ## {heading}")
+        primary_evidence = evidence_sections.get("primary journey", "")
         if journey_status == "passed":
-            if (_summary_value(summary, "Result") or "").lower() != "passed":
+            if (_summary_value(primary_evidence, "Result") or "").lower() != "passed":
                 errors.append("passed primary journey needs evidence Result: passed")
-            if _summary_value(summary, "Exit code") != "0":
+            if _summary_value(primary_evidence, "Exit code") != "0":
                 errors.append("passed primary journey needs evidence Exit code: 0")
-            recorded_command = _summary_value(summary, "Command")
+            recorded_command = _summary_value(primary_evidence, "Command")
             if recorded_command != command:
                 errors.append("evidence Command must match STATE.yaml primary journey command")
-            recorded_environment = _summary_value(summary, "Environment")
+            recorded_environment = _summary_value(primary_evidence, "Environment")
             if recorded_environment != environment:
                 errors.append("evidence Environment must match STATE.yaml primary journey environment")
 
@@ -578,9 +607,10 @@ def main(argv: list[str] | None = None) -> int:
         for blocker in blockers:
             print(f"- {blocker}")
         return 1
-    print("OUTCOME VALIDATED")
-    print("- primary journey: passed")
+    print("RECORDED OUTCOME VALIDATED")
+    print("- primary journey: recorded as passed")
     print("- secondary checks: do not override the primary journey")
+    print("- this gate does not execute journeys or authenticate human approval")
     return 0
 
 

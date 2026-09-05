@@ -41,9 +41,21 @@ problem.
 5. Run relevant tests and checks.
 6. Update `STATE.yaml` and hand off the exact next action.
 
+On resume, compare the recorded next action with the actual worktree and the
+current evidence. Preserve a failed journey until it has been rerun successfully.
+If code or packaging changes invalidate an earlier pass, rerun the affected
+journey before claiming validation again.
+
 If the journey fails, the result is not validated—even if thousands of unit tests
 pass. If the same boundary fails twice, stop adding machinery and simplify one
 assumption first.
+
+Keep journey status to `not_run`, `passed`, `failed`, or `blocked`. For example,
+publishing an installer while its intended Windows test machine is unavailable
+is supporting progress; the Windows journey stays `blocked` or `not_run`.
+
+The [worked example](WORKED_EXAMPLE.md) demonstrates a source run passing while
+its packaged launcher fails, then resumes from the saved handoff and recovers.
 
 ## Who decides what
 

@@ -61,3 +61,15 @@ acceptance criteria.
 Report local implementation, primary-journey validation, remote branch, CI,
 deployment, and human acceptance separately. A local migration can be complete
 without being pushed; it must say so.
+
+For an existing v6 core, review and copy the updated `scripts/projectstate_gate.py`
+from a fresh temporary core; preserve the project's contract, state, and evidence.
+The corrected gate blocks reachable or unknown-exposure high/critical findings
+regardless of category, recognizes unresolved contract placeholders, and rejects
+ambiguous primary evidence and symlinked inputs. Exit codes remain `0`, `1`, `2`;
+success now prints `RECORDED OUTCOME VALIDATED`. Prefer exit codes in automation.
+
+If a downstream gate added statuses such as `publicly_verified`, retain that
+progress in the evidence summary and restore the primary journey's actual
+execution status. Do not mark a target-environment journey passed because a
+different environment or a publication step succeeded.

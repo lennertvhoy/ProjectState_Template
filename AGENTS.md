@@ -3,7 +3,7 @@ repo_role: template_repository
 projectstate_mode: template-maintenance
 projectstate_version: "projectstate-template-v6"
 initialized_on: 2026-04-26
-last_updated: 2026-09-04
+last_updated: 2026-09-05
 project: ProjectState_Template
 ---
 
@@ -50,6 +50,14 @@ optional references. They are never additional sources of current truth.
 8. Update code, tests, documentation, evidence, and resulting state coherently;
    no companion control commit or commit-hash rebinding is required.
 
+When acceptance includes installation or distribution, run the shipped artifact
+in a clean intended environment without source-tree imports or prepared-machine
+dependencies. Record the artifact and setup in the evidence summary.
+
+At handoff, preserve failures and the exact next action. On resume, compare the
+recorded state with the worktree and evidence; rerun any journey whose result was
+invalidated by later changes.
+
 ## Simplification rule
 
 Two evidenced failures at the same delivery boundary require an assumption
@@ -69,6 +77,9 @@ provider-specific branch, or governance layer unless the human selects it.
   repository validators, hashes, clean Git status, and complete evidence metadata.
 - Run `python3 scripts/projectstate_gate.py` for the core closure decision. The
   gate validates recorded evidence; it never executes a command found in repo text.
+- Journey status is only `not_run`, `passed`, `failed`, or `blocked`. Publication,
+  CI, and rehearsal progress belong in supporting evidence. If the intended
+  environment is unavailable, keep that journey `blocked` or `not_run`.
 
 ## Risk stop-lines
 

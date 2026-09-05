@@ -7,34 +7,51 @@
 - Result: passed
 - Exit code: 0
 
+Default generation and adoption preserve the minimal core. The packaged-product
+example actually executes a note-saving CLI: source succeeds, a clean archive
+fails on a missing resource, a new interpreter reads the saved failure and next
+action, the packaging filter is removed, and the rebuilt archive saves and
+restores a note across processes. It also runs with ProjectState files hidden.
+
 ## Secondary checks
 
-- Focused tests: 12 passed; default generation, adoption, dry-run safety, journey precedence,
-  non-execution of recorded commands, symlink confinement, governance-field
-  rejection, explicit human-acceptance enforcement, simplification, and risk
-  exposure were exercised.
-- Full compatibility and schema suite: `python3 -m pytest scripts/ schemas/examples -q` passed,
-  including the root outcome-closure assertion.
-- Static analysis: Ruff passed for the new gate and regressions.
-- Legacy Level-2 conformance: passed; it explicitly reported profile metrics
-  and fixed budgets as noncanonical compatibility evidence, not closure gates.
+- Focused regressions: 20 passed, including category-independent reachable-risk
+  blocking, bounded risk exceptions, unresolved contract/journey placeholders,
+  human rejection, primary-only evidence, malformed status types, symlink
+  confinement, non-execution of recorded commands, and profile isolation.
+- Before the fixes, the added gate regressions produced 49 failed assertions.
+  Afterward all pass; the toy product's expected packaging failure also ran.
+- Full compatibility/schema suite: `python3 -m pytest scripts/ schemas/examples -q`
+  passed with exit 0.
+- Static analysis: `ruff check scripts/projectstate_gate.py scripts/test_outcome_core.py scripts/init_template.py`
+  passed with exit 0.
+- Legacy conformance: `python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance --verbose`
+  passed with exit 0, including compilation, script/schema tests, repository-wide
+  Ruff, state/schema validation, instruction lint, and whitespace checks. Legacy
+  metrics and fixed budgets were explicitly reported as noncanonical.
+- CI configuration parsed successfully; both jobs execute the focused journey
+  before the recorded-evidence gate. Remote CI has not run for this change.
 
 ## Artifacts
 
-- Generated core projects contained only `AGENTS.md`, `PROJECT.md`, `STATE.yaml`,
+- `scripts/test_outcome_core.py`: executable packaged-product lesson and gate
+  regressions. Synthetic record-consistency fixtures are explicitly identified;
+  they are separate from the product-executing example.
+- `docs/WORKED_EXAMPLE.md`: teaching walkthrough and limits of its evidence.
+- Generated core still has six files: `AGENTS.md`, `PROJECT.md`, `STATE.yaml`,
   `evidence/bootstrap-001/summary.md`, product `README.md`, and the outcome gate.
-- Informational footprint from the same checkout: core generated 6 files / 29,908
-  bytes; the v5 `minimal` compatibility profile generated 41 files / 424,972
-  bytes. These measurements are evidence, not fixed acceptance budgets.
-- Initial generated gate returned `OUTCOME NOT VALIDATED`; the same generated
-  project passed only after its project contract, real journey result, evidence,
-  and blocker state were updated.
-- Anti-brittleness review: closure depends on typed state and path/result
-  invariants, not prompt keywords, provider names, sleeps, or observed fixture text.
+  Hardened adds only its explicit policy; v5 truth files stay out of both profiles.
+- The example's archive, failure output, and recovery output are created in a
+  temporary workspace and removed after assertions. Rerun the command to reproduce.
 
 ## Limitations
 
 - Human product acceptance is pending.
-- Remote branch, pull request, CI, merge, and release state are not proven by this local evidence.
-- v5 profiles and root snapshots remain only for deliberate compatibility; their
-  later removal is not part of this slice.
+- The gate validates recorded consistency; it cannot authenticate an approver,
+  verify arbitrary prose or command execution, or enforce prose-only hardened policy.
+- The handoff test uses a new interpreter, not a new AI agent. It establishes
+  recoverable on-disk state, not agent effectiveness or no-template superiority.
+- This is local Linux/Python evidence. Windows/WSL, remote branch, PR, CI, merge,
+  release, and downstream project migration have not been exercised here.
+- Existing v5 scripts and snapshots remain compatibility material. The optional
+  maintainer path and worked example make the current core easier to find.

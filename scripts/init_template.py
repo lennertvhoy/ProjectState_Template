@@ -225,6 +225,14 @@ never become additional sources of current truth.
    control commits or bind mutable state to Git hashes.
 7. Run `python3 scripts/projectstate_gate.py` before claiming validation.
 
+When acceptance includes installation or distribution, run the shipped artifact
+in a clean intended environment without source-tree imports or prepared-machine
+dependencies. Record the artifact and setup in the evidence summary.
+
+At handoff, preserve failures and the exact next action. On resume, compare the
+recorded state with the worktree and evidence; rerun any journey whose result was
+invalidated by later changes.
+
 ## Outcome precedence
 
 - `implemented` means the change exists.
@@ -233,6 +241,11 @@ never become additional sources of current truth.
 - `accepted` is human product acceptance and cannot be inferred by an agent.
 - Passing tests, linters, hashes, or repository checks never override a failed,
   blocked, or unrun primary journey.
+- Journey status is only `not_run`, `passed`, `failed`, or `blocked`. Publication,
+  CI, and rehearsal progress belong in supporting evidence. If the intended
+  environment is unavailable, keep that journey `blocked` or `not_run`.
+- The gate checks recorded consistency; it does not execute the journey,
+  authenticate human approval, or enforce prose-only hardened policy.
 
 ## Simplification and risk
 
@@ -373,6 +386,9 @@ This repository uses the ProjectState `{profile}` profile.
 
 The initial gate is expected to fail until the real journey is defined and
 passed. That failure is truthful bootstrap state, not a setup defect. {overlay}
+
+`RECORDED OUTCOME VALIDATED` means the records support validation; the gate does
+not execute the journey or authenticate human approval.
 
 ProjectState files coordinate work only. The application must start and run
 without reading them.

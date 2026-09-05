@@ -17,7 +17,7 @@ current_slice:
     - "Strict release and compliance policy is opt-in through the hardened profile."
     - "Coordination files are not application runtime dependencies."
   primary_journey:
-    description: "Generate a clean default project, record a passing real journey, and have its local outcome gate pass."
+    description: "Generate and adopt default core projects; run a packaged note-saving product through failure, a fresh-process handoff, recovery, restart, and recorded validation."
     command: "python3 scripts/test_outcome_core.py"
     environment: "Linux 7.1.9-arch1-2 x86_64; Python 3.14.7"
     status: passed
@@ -41,4 +41,4 @@ risks:
     owner: template_maintainer
     decision: resolved
     expires: null
-next_action: "Have the human review the generated core and accept, reject, or refine the product outcome."
+next_action: "Have the human review the corrected gate and docs/WORKED_EXAMPLE.md, try the packaged-product lesson, and accept, reject, or refine the product outcome."

@@ -36,8 +36,8 @@ Both commands use the `core` profile unless you explicitly choose another one.
 | `evidence/<slice-id>/summary.md` | Commands, environment, results, artifacts, and unresolved limitations |
 
 The generated core also contains `scripts/projectstate_gate.py`, a small
-dependency-free checker. It validates the four artifacts and makes the primary
-journey the closure decision. `README.md` remains product documentation, not a
+dependency-free checker. It checks recorded contract and evidence consistency,
+with the primary journey dominant. `README.md` remains product documentation, not a
 second state surface.
 
 The first gate run is expected to fail. A scaffold cannot honestly know the
@@ -62,7 +62,25 @@ cannot turn a failed, blocked, or unrun primary journey green. Secondary checks
 may add blockers; they never reverse the primary result.
 
 The gate reads recorded state and evidence. It never executes a command merely
-because repository text contains one.
+because repository text contains one. Exit codes are:
+
+| Code | Meaning |
+| --- | --- |
+| `0` | `RECORDED OUTCOME VALIDATED`: recorded evidence supports validation with no recorded blockers |
+| `1` | `OUTCOME NOT VALIDATED`: honest unfinished work, unresolved placeholders, or a blocking finding |
+| `2` | `INVALID PROJECTSTATE CORE`: malformed, unsafe, or contradictory records |
+
+The gate rejects recognizable `Not yet defined`, `TODO`, and `TBD` placeholders
+in the contract and journey. It cannot judge whether arbitrary prose defines a
+good product, verify that a command actually ran, authenticate a human approval,
+or enforce checks described only in `HARDENED_POLICY.md`. Those require real
+observation and human review; record applicable check failures as blockers.
+
+When installation is in scope, test the distributed artifact in the intended
+clean environment. Source tests and a prepared development machine do not prove
+that package contents, launchers, or installation work. Keep publication and
+rehearsal results in supporting evidence; the primary journey retains its actual
+`not_run`, `passed`, `failed`, or `blocked` status.
 
 ## Human-owned governance
 
@@ -91,7 +109,8 @@ on two concrete failure records, not a general-purpose correction counter.
 
 The core fails closed for unresolved data-loss, destructive-operation,
 privilege-escalation, secrets/private-data exposure, and permission-boundary
-risk. Critical or high externally reachable vulnerabilities also block.
+risk. Critical or high findings with `reachable` or `unknown` exposure block
+regardless of category spelling. Category labels cannot bypass that stop-line.
 
 Other findings are assessed by severity, exposure, consequence, and affected
 environment. A vulnerability confined to build tooling or a demonstrably
@@ -152,6 +171,11 @@ Git history is the default work history. Do not duplicate it into a mandatory
 workflow ledger.
 
 ## Maintainer notes
+
+Start with the core files above, `scripts/init_template.py`,
+`scripts/projectstate_gate.py`, and `scripts/test_outcome_core.py`.
+[The worked example](docs/WORKED_EXAMPLE.md) runs a packaged product through
+failure, a handoff read by a new process, recovery, and restart.
 
 The design decision and migration boundary are recorded in
 `docs/adr/0003-outcome-first-core.md`. The template repository retains the v5

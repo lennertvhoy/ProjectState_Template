@@ -9,6 +9,8 @@ needed for the files you will touch.
 
 Reconstruct the current outcome, slice, primary journey, blockers, risks, and
 exact next action. Do not infer that passing tests means the product works.
+Compare the handoff with the actual worktree and current evidence. Rerun a
+journey when later changes invalidate its recorded result.
 
 The human owns PROJECT.md, acceptance criteria, governance, risk exceptions, and
 product acceptance. You may draft a proposed change, but do not apply one merely
@@ -29,6 +31,9 @@ For implementation:
 
 A failed, blocked, or unrun primary journey overrides green tests, linters,
 hashes, repository validators, remote checks, and metadata.
+When acceptance includes installation, run the distributed artifact in the
+intended clean environment. Publication or rehearsal belongs in supporting
+evidence; it does not change the primary journey's execution status.
 
 Fail closed for destructive action, data loss/corruption, privilege escalation,
 secrets/private-data exposure, and permission-boundary changes. Assess other

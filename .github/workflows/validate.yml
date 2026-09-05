@@ -36,11 +36,11 @@ jobs:
         run: |
           python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
 
-      - name: Run dominant product-journey gate
-        run: python3 scripts/projectstate_gate.py
-
-      - name: Prove the generated outcome-first core
+      - name: Exercise generated core and packaged-product journey
         run: python3 scripts/test_outcome_core.py
+
+      - name: Check recorded core evidence
+        run: python3 scripts/projectstate_gate.py
 
       - name: Run legacy compatibility validation
         run: |
@@ -88,7 +88,10 @@ jobs:
       - name: Install dependencies
         run: python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
 
-      - name: Run dominant product-journey gate for merge candidate
+      - name: Exercise generated core and packaged-product journey for merge candidate
+        run: python3 scripts/test_outcome_core.py
+
+      - name: Check recorded core evidence for merge candidate
         run: python3 scripts/projectstate_gate.py
 
       - name: Run legacy compatibility validation for merge candidate
