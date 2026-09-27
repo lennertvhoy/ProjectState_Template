@@ -1,6 +1,6 @@
 === BL-007 Verification Log ===
 Date: 2026-06-23T17:01:57+02:00
-Repo: /home/ff/Documents/Projects/StateDD_Template
+Repo: ~/Documents/Projects/StateDD_Template
 Branch: main
 HEAD: aa6362225d0f5e4f951468160b647373dc2ed250
 Worktree status: 1 uncommitted changes
@@ -10,7 +10,7 @@ PASS: py_compile
 
 === Version check ===
 StateDD Version Check
-Root: /home/ff/Documents/Projects/StateDD_Template
+Root: ~/Documents/Projects/StateDD_Template
 Expected: statedd-template-v4
 Result: pass
 
@@ -224,7 +224,7 @@ PASS: valid_slice.json
 FAIL: invalid_slice.json
   Reason: - $: missing required property 'goal'
 Example validation complete.
-Wrote generated prompt to /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generated_prompt.md
+Wrote generated prompt to ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generated_prompt.md
 PASS test_valid_slice_passes
 PASS test_invalid_slice_fails
 PASS test_generated_prompt_includes_required_fields

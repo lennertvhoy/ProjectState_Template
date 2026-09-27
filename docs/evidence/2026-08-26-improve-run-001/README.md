@@ -97,4 +97,4 @@
 
 ## Risks / What Remains Partial
 
-- Remote closure pending; downstream upgrade PRs (#1 talentlms-content, #2 packettracer-mcp-gui) remain open in their repos by design.
+- Remote closure pending; downstream upgrade PRs (#1 example-project-31, #2 packettracer-mcp-gui) remain open in their repos by design.

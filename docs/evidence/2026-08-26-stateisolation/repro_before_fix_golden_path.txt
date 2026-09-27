@@ -2,19 +2,19 @@
 # scratch root contents:
 global.latch.json
 Traceback (most recent call last):
-  File "/home/ff/Projects/ProjectState_Template/scripts/test_golden_path.py", line 621, in <module>
+  File "~/Projects/ProjectState_Template/scripts/test_golden_path.py", line 621, in <module>
     test_golden_path()
     ~~~~~~~~~~~~~~~~^^
-  File "/home/ff/Projects/ProjectState_Template/scripts/test_golden_path.py", line 283, in test_golden_path
+  File "~/Projects/ProjectState_Template/scripts/test_golden_path.py", line 283, in test_golden_path
     agent_a, branch_a = start_agent(downstream, "BL-GOLDEN-PATH-001", "agent-a111")
                         ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ff/Projects/ProjectState_Template/scripts/test_golden_path.py", line 85, in start_agent
+  File "~/Projects/ProjectState_Template/scripts/test_golden_path.py", line 85, in start_agent
     output = run(
         [
     ...<10 lines>...
         repo,
     )
-  File "/home/ff/Projects/ProjectState_Template/scripts/test_golden_path.py", line 65, in run
+  File "~/Projects/ProjectState_Template/scripts/test_golden_path.py", line 65, in run
     raise AssertionError(
     ...<4 lines>...
     )

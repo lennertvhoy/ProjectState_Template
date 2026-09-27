@@ -1,11 +1,11 @@
 $ /usr/bin/python3 -m compileall -q scripts schemas/examples
-$ /usr/bin/python3 /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/scripts/projectstate_profile_metrics.py --root /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605 --check
+$ /usr/bin/python3 ~/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/scripts/projectstate_profile_metrics.py --root ~/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605 --check
 $ /usr/bin/python3 -m pytest scripts/ -q
 $ /usr/bin/python3 -m pytest schemas/examples/ -q
 $ ruff check .
 $ /usr/bin/python3 scripts/check_state_docs.py
 $ /usr/bin/python3 scripts/projectstate_validate_schema.py
-$ /usr/bin/python3 scripts/projectstate_evidence_pack.py check --strict /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/docs/evidence/2026-08-26-stateisolation
+$ /usr/bin/python3 scripts/projectstate_evidence_pack.py check --strict ~/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-stateisolation-001-agen-6wnng-b811d51605/docs/evidence/2026-08-26-stateisolation
 $ /usr/bin/python3 scripts/projectstate_runtime_truth_check.py --artifact docs/evidence/2026-08-26-stateisolation/runtime_identity.json
 $ /usr/bin/python3 scripts/projectstate_instruction_lint.py --fail-on error
 $ /usr/bin/python3 scripts/projectstate_efficiency_check.py --gate-level 2

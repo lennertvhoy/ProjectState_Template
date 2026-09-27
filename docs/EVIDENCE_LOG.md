@@ -70,11 +70,11 @@
 
 ## EV-2026-07-07-001: Template logic-hole repair failure scan (BL-SANITY-002)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
-- File: /home/ff/Documents/Projects/StateDD_Template/STATUS.md
-- File: /home/ff/Documents/Projects/StateDD_Template/NEXT_ACTIONS.md
-- File: /home/ff/Documents/Projects/StateDD_Template/BACKLOG.md
-- File: /home/ff/Documents/Projects/StateDD_Template/PROJECT_STATE.yaml
+- File: ~/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
+- File: ~/Documents/Projects/StateDD_Template/STATUS.md
+- File: ~/Documents/Projects/StateDD_Template/NEXT_ACTIONS.md
+- File: ~/Documents/Projects/StateDD_Template/BACKLOG.md
+- File: ~/Documents/Projects/StateDD_Template/PROJECT_STATE.yaml
 - Title: BL-SANITY-002 failure scan and state integration
 - Source/System: code review
 - Action: Performed an ultra-critical sanity check, identified critical logic holes, integrated BL-SANITY-002 into backlog/state, and produced a failure scan with mitigations.
@@ -91,10 +91,10 @@
 
 ## EV-2026-07-07-002: Template logic-hole repair closure evidence (BL-SANITY-002)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-sanity-logic-repair/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/failure_scans/BL-SANITY-002.md
 - Title: BL-SANITY-002 template logic-hole repair and regression tests
 - Source/System: test
 - Action: Repaired the critical logic holes discovered by the 2026-07-07 ultra-critical sanity check and added regression tests; ran the full StateDD gate suite.
@@ -115,15 +115,15 @@
 
 ## EV-2026-07-03-001: Worktree isolation and anti-brittleness guardrails (BL-WORKFLOW-002)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/incident_analysis.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/anti_brittleness_gate_design.md
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_worktree_guard.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_worktree_guard.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_brittleness_check.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_brittleness_check.py
-- File: /home/ff/Documents/Projects/StateDD_Template/ANTI_BRITTLENESS_GUARD.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/quality_gates/ANTI_BRITTLENESS_GATE.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/incident_analysis.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/anti_brittleness_gate_design.md
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_worktree_guard.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_worktree_guard.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_brittleness_check.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_brittleness_check.py
+- File: ~/Documents/Projects/StateDD_Template/ANTI_BRITTLENESS_GUARD.md
+- File: ~/Documents/Projects/StateDD_Template/docs/quality_gates/ANTI_BRITTLENESS_GATE.md
 - Title: BL-WORKFLOW-002 worktree isolation and anti-brittleness guardrails
 - Source/System: test
 - Action: Added pre-slice worktree/source-of-truth guardrails, dirty-file classification, upstream/topology handoff fields, anti-brittleness review contract, advisory brittleness scanner, audit marker checks, and downstream propagation.
@@ -142,16 +142,16 @@
 
 ## EV-2026-06-29-002: StateDD repo coherence and efficiency repair (BL-SANITY-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/EFFICIENCY_BUDGET.yaml
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_efficiency_check.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_efficiency_check.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_post_merge_verify.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_post_merge_verify.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_check_state_docs.py
-- File: /home/ff/Documents/Projects/StateDD_Template/fixtures/efficiency_bloat_overcorrection/
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-sanity-repair/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/EFFICIENCY_BUDGET.yaml
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_efficiency_check.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_efficiency_check.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_post_merge_verify.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_post_merge_verify.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_check_state_docs.py
+- File: ~/Documents/Projects/StateDD_Template/fixtures/efficiency_bloat_overcorrection/
 - Title: BL-SANITY-001 repo coherence and efficiency repair
 - Source/System: test
 - Action: Salvaged the efficiency layer from PR #2, added backlog structure validation, repaired truth files, repaired remote closure evidence, added a post-merge verifier, and updated CI.
@@ -174,13 +174,13 @@
 
 ## EV-2026-06-28-001: StateDD quality firewall template hardening (BL-QUALITY-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/check_state_docs.txt
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/schema_validation.txt
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_upgrade.txt
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/check_state_docs.txt
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/schema_validation.txt
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_init_template.txt
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-28-quality-firewall-template/command_outputs/test_upgrade.txt
 - Title: BL-QUALITY-001 reusable quality firewall contract
 - Source/System: test
 - Action: Added generic quality firewall docs, failure taxonomy, incident response, failure scan and quality gate templates, state fields, schema support, generated downstream propagation, upgrade propagation, and prompt/evidence handoff updates.
@@ -199,15 +199,15 @@
 
 ## EV-2026-06-23-009: Provider-agnostic browser verification contract (BL-BROWSER-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/command_outputs/verification_log.txt
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/browser_verification.schema.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/BROWSER_VERIFICATION.md
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_browser_verify.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_browser_verification.py
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/browser_verification.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-provider-agnostic-browser-verification/command_outputs/verification_log.txt
+- File: ~/Documents/Projects/StateDD_Template/schemas/browser_verification.schema.json
+- File: ~/Documents/Projects/StateDD_Template/docs/BROWSER_VERIFICATION.md
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_browser_verify.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_browser_verification.py
 - Title: BL-BROWSER-001 provider-agnostic browser verification contract
 - Source/System: test
 - Action: Implemented the provider-agnostic browser verification contract, helper script, schema, tests, fixtures, audit/doctor/CI integration, and governance/acceptance updates.
@@ -227,15 +227,15 @@
 
 ## EV-2026-06-23-008: Public usability and release-readiness polish (BL-007)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/command_outputs/verification_log.txt
-- File: /home/ff/Documents/Projects/StateDD_Template/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/QUICK_COMMANDS.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/ADOPTION_PROFILES.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/GETTING_STARTED_5_MIN.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/RELEASE_NOTES_statedd-template-v4.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-release-readiness-polish/command_outputs/verification_log.txt
+- File: ~/Documents/Projects/StateDD_Template/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/QUICK_COMMANDS.md
+- File: ~/Documents/Projects/StateDD_Template/docs/ADOPTION_PROFILES.md
+- File: ~/Documents/Projects/StateDD_Template/docs/GETTING_STARTED_5_MIN.md
+- File: ~/Documents/Projects/StateDD_Template/docs/RELEASE_NOTES_statedd-template-v4.md
 - Title: BL-007 public usability and release-readiness polish
 - Source/System: test
 - Action: Simplified README top half, added quick commands cheat sheet, improved adoption profile chooser, polished 5-minute guide, finalized release notes as release-candidate ready, and updated state/history files.
@@ -255,14 +255,14 @@
 
 ## EV-2026-06-23-007: Canonical schema/prompt example project (BL-005)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/feature_slice.schema.json
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/valid_slice.json
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/invalid_slice.json
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/validate_example.py
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generate_prompt.py
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-canonical-schema-prompt-example/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/feature_slice.schema.json
+- File: ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/valid_slice.json
+- File: ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/invalid_slice.json
+- File: ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/validate_example.py
+- File: ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generate_prompt.py
+- File: ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/test_schema_prompt_loop.py
 - Title: BL-005 canonical schema/export/import example project
 - Source/System: test
 - Action: Implemented a stdlib-only schema/prompt loop example under `schemas/examples/schema_prompt_loop/`, validated it, wired it into CI, and created a closure evidence pack.
@@ -281,11 +281,11 @@
 
 ## EV-2026-06-23-006: Closure evidence hardening (BL-015)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_evidence_pack.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_evidence_pack.py
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/evidence_manifest.schema.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_evidence_pack.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_evidence_pack.py
+- File: ~/Documents/Projects/StateDD_Template/schemas/evidence_manifest.schema.json
 - Title: BL-015 closure evidence hardening cleanup
 - Source/System: test
 - Action: Fixed the human override flag in the closure evidence README, populated the closure manifest with non-empty claims and artifacts, added manifest_status to the schema, tightened --strict to reject empty claims/artifacts unless skeleton/legacy, and added regression tests.
@@ -303,9 +303,9 @@
 
 ## EV-2026-06-23-005: Adoption-ready template release verified
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-adoption-ready-evidence-release/manifest.json
 - Title: BL-012/013/014 closure evidence pack manifests, upgrade tooling, adoption profiles, and bootstrap wizard
 - Source/System: test
 - Action: Implemented the three backlog items, ran the full test suite, updated state/docs/changelog, and created a closure evidence folder with a valid manifest.
@@ -324,12 +324,12 @@
 
 ## EV-2026-06-23-004: Schema-backed validation integrated
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_validate_schema.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_schema_validation.py
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/project_state.schema.json
-- File: /home/ff/Documents/Projects/StateDD_Template/schemas/runtime_identity.schema.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-schema-backed-validation/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_validate_schema.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_schema_validation.py
+- File: ~/Documents/Projects/StateDD_Template/schemas/project_state.schema.json
+- File: ~/Documents/Projects/StateDD_Template/schemas/runtime_identity.schema.json
 - Title: Schema-backed validation added for StateDD state, evidence, runtime proof, and handoff contracts
 - Source/System: test
 - Action: Added executable schemas/contracts, stdlib-only validator, valid/invalid fixtures, initializer coverage, CI coverage, and hygiene/audit/doctor integration.
@@ -348,10 +348,10 @@
 
 ## EV-2026-06-23-003: Runtime proof integrated into template contract
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_runtime_proof.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_runtime_proof.py
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-runtime-proof-integration/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_runtime_proof.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_runtime_proof.py
 - Title: Runtime identity proof hardened and wired into template output, CI, audit, and doctor
 - Source/System: test
 - Action: Fixed remote URL process ownership handling, added runtime proof tests, shipped the helper to new/adopted repos, added CI smoke coverage, and exposed runtime_identity.json in audit/doctor/templates.
@@ -371,10 +371,10 @@
 
 ## EV-2026-06-23-002: Template-maintenance mode split verified
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/before-check_state_docs.txt
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/generated-new-project-state.yaml
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/generated-adopt-project-state.yaml
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/before-check_state_docs.txt
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/generated-new-project-state.yaml
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-template-maintenance-mode/generated-adopt-project-state.yaml
 - Title: Root template-maintenance state split from downstream bootstrap state
 - Source/System: test
 - Action: Added `repo_role` and `statedd_mode`, made checks mode-aware, updated generator output, docs, fixtures, and tests
@@ -392,10 +392,10 @@
 
 ## EV-2026-06-23-001: StateDD version source normalized
 
-- File: /home/ff/Documents/Projects/StateDD_Template/VERSION
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_version_check.py
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/UPGRADING.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-statedd-version-source/README.md
+- File: ~/Documents/Projects/StateDD_Template/VERSION
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_version_check.py
+- File: ~/Documents/Projects/StateDD_Template/docs/UPGRADING.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-23-statedd-version-source/README.md
 - Title: Canonical StateDD version source and alignment check added
 - Source/System: test
 - Action: Added version source, changelog, upgrade guidance, alignment script, validator wiring, initializer coverage, and CI command coverage
@@ -415,10 +415,10 @@
 
 ## EV-2026-06-14-001: Tool/model routing template integration verified
 
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/TOOL_MODEL_ROUTING_GUIDE.md
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/CTO_SESSION_PROMPT.md
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/init_template.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_init_template.py
+- File: ~/Documents/Projects/StateDD_Template/prompts/TOOL_MODEL_ROUTING_GUIDE.md
+- File: ~/Documents/Projects/StateDD_Template/prompts/CTO_SESSION_PROMPT.md
+- File: ~/Documents/Projects/StateDD_Template/scripts/init_template.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_init_template.py
 - Title: Dynamic CTO-lane tool/model routing guide integrated into template prompts and initializer
 - Source/System: test
 - Action: Ran `python3 scripts/check_state_docs.py` and `python3 scripts/test_init_template.py`
@@ -435,10 +435,10 @@
 
 ## EV-2026-06-14-002: Beginner onboarding and handoff helper integration verified
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/GETTING_STARTED_5_MIN.md
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/OPENCODE_STARTUP_PROMPT.md
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_handoff.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_init_template.py
+- File: ~/Documents/Projects/StateDD_Template/docs/GETTING_STARTED_5_MIN.md
+- File: ~/Documents/Projects/StateDD_Template/prompts/OPENCODE_STARTUP_PROMPT.md
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_handoff.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_init_template.py
 - Title: Beginner onboarding, OpenCode startup, and read-only handoff snapshot helper integrated
 - Source/System: test
 - Action: Ran Python syntax checks, documentation hygiene check, initializer regression tests, handoff helper with validation output, and bootstrap gate
@@ -458,11 +458,11 @@
 
 ## EV-2026-06-14-003: Teaching-rights-reserved license policy integrated
 
-- File: /home/ff/Documents/Projects/StateDD_Template/LICENSE
-- File: /home/ff/Documents/Projects/StateDD_Template/LICENSE_FAQ.md
-- File: /home/ff/Documents/Projects/StateDD_Template/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/check_state_docs.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/test_init_template.py
+- File: ~/Documents/Projects/StateDD_Template/LICENSE
+- File: ~/Documents/Projects/StateDD_Template/LICENSE_FAQ.md
+- File: ~/Documents/Projects/StateDD_Template/README.md
+- File: ~/Documents/Projects/StateDD_Template/scripts/check_state_docs.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/test_init_template.py
 - Title: Custom license updated to allow free/commercial use while reserving teaching and training rights
 - Source/System: test
 - Action: Updated license wording, README note, template copy surface, validator checks, and initializer regression tests
@@ -480,14 +480,14 @@
 
 ## EV-2026-06-14-004: StateDD v2 executable workflow implemented
 
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_audit.py
-- File: /home/ff/Documents/Projects/StateDD_Template/scripts/statedd_doctor.py
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/SLICE_CONTRACT_TEMPLATE.md
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/EVIDENCE_README_TEMPLATE.md
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/SUBAGENT_REVIEW_TEMPLATE.md
-- File: /home/ff/Documents/Projects/StateDD_Template/prompts/CTO_REVIEW_CHECKLIST.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_audit.py
+- File: ~/Documents/Projects/StateDD_Template/scripts/statedd_doctor.py
+- File: ~/Documents/Projects/StateDD_Template/prompts/SLICE_CONTRACT_TEMPLATE.md
+- File: ~/Documents/Projects/StateDD_Template/prompts/EVIDENCE_README_TEMPLATE.md
+- File: ~/Documents/Projects/StateDD_Template/prompts/SCHEMA_OWNERSHIP_TEMPLATE.md
+- File: ~/Documents/Projects/StateDD_Template/prompts/SUBAGENT_REVIEW_TEMPLATE.md
+- File: ~/Documents/Projects/StateDD_Template/prompts/CTO_REVIEW_CHECKLIST.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-14-statedd-v2-executable-workflow/README.md
 - Title: StateDD v2 executable workflow assets added and validated
 - Source/System: test
 - Action: Added audit, doctor, slice contract, claim ledger, schema ownership, subagent output, CTO checklist, ADR template, human override rule, and wired them into init/validation
@@ -501,13 +501,13 @@
   - the initializer and validator recognize and propagate the new assets
 - Type: docs-render-verification
 - as_of: 2026-06-14T13:40:01+00:00
-- Notes: Template repo remains in bootstrap mode. The SkillSignal-specific canonical schema/export/import loop is deferred to a downstream slice.
+- Notes: Template repo remains in bootstrap mode. The example-project-17-specific canonical schema/export/import loop is deferred to a downstream slice.
 
 ## EV-2026-06-29-001: Remote CI/CD Closure Finalizer (BL-REMOTE-CLOSURE-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/runtime_identity.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure/manifest.json
 - Title: GitHub-backed remote closure finalizer implemented and verified
 - Source/System: test
 - Action: Added scripts/statedd_remote_closure_finalizer.py, regression tests, AGENTS.md invariant, skill/command wiring, and CI step; fixed bootstrap fixture versions and CI tmpdir bug
@@ -526,10 +526,10 @@
 
 ## EV-2026-07-07-003: Parallel-Agent Worktree Orchestrator (BL-PARALLEL-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-PARALLEL-001.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/docs/failure_scans/BL-PARALLEL-001.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/README.md
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-07-parallel-agent-worktree/runtime_identity.json
 - Title: First-class concurrent-agent worktree isolation
 - Source/System: test
 - Action: Implemented scripts/statedd_agent_worktree.py, updated existing scripts for agent-context awareness, added regression tests and CI smoke test, and updated state/docs/skills/prompts.
@@ -548,7 +548,7 @@
 
 ## EV-2026-07-10-001: Generated-repo correctness baseline and failure scan (BL-CONTEXT-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/failure_scans/BL-CONTEXT-001.md
+- File: ~/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/failure_scans/BL-CONTEXT-001.md
 - Title: Fresh profile footprint and self-gate contradiction captured before repair
 - Source/System: test
 - Action: Generated all four profiles, measured their file/byte/startup payload, ran a fresh solo repo's own quality gate, and classified adjacent failure modes.
@@ -566,9 +566,9 @@
 
 ## EV-2026-07-10-002: Generated-repo correctness repair locally validated (BL-CONTEXT-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/README.md
-- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/manifest.json
-- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/runtime_identity.json
+- File: ~/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/README.md
+- File: ~/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/manifest.json
+- File: ~/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/runtime_identity.json
 - Title: Explicit downstream asset boundary, strict state, and measurable profile budgets
 - Source/System: test
 - Action: Replaced broad copying with profile manifests, removed template-only payload, added profile self-gates and budgets, rejected duplicate YAML, and enforced semantic lifecycle agreement.
@@ -586,7 +586,7 @@
 
 ## EV-2026-07-10-003: BL-CONTEXT-001 CI-verified proof head and closure candidate
 
-- File: /home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/README.md
+- File: ~/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa/docs/evidence/2026-07-10-context-generator-hygiene/README.md
 - Title: GitHub Actions validates the generator/context repair proof head
 - Source/System: ci
 - Action: Pushed PR #5, used the semantic gate to catch and repair a fixture lifecycle contradiction, and reran both push and PR workflows on proof head `8840a3c`.
@@ -602,7 +602,7 @@
 
 ## EV-2026-07-11-001: Merged correctness blockers and failure scan (BL-MAX-VALUE-001)
 
-- File: /home/ff/Documents/Projects/StateDD_Template/docs/failure_scans/BL-MAX-VALUE-001.md
+- File: ~/Documents/Projects/StateDD_Template/docs/failure_scans/BL-MAX-VALUE-001.md
 - Title: Upgrade, validation, path-confinement, context, and closure risks reopened after PR #5 merge
 - Source/System: GitHub review and local repository inspection
 - Action: Verified PR #4 and PR #5 merge truth, confirmed that PR #5 merged after an owner review recorded unresolved blockers, reopened the failures in canonical state, and completed the pre-implementation failure scan.

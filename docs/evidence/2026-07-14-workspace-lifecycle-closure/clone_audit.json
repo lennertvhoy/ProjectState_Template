@@ -3,7 +3,7 @@
   "captured_at": "2026-07-14T17:23:11+02:00",
   "canonical_remote": "https://github.com/lennertvhoy/StateDD_Template.git",
   "audited_main_head": "917f3f35d191f120be4439ae4cd3d5ba5d50599c",
-  "archive_path": "/home/ff/Documents/Projects/_archive/StateDD_Template-clones-20260714",
+  "archive_path": "~/Documents/Projects/_archive/StateDD_Template-clones-20260714",
   "creator_provenance": "Hermes Agent <hermes@ff-fedora.local>",
   "visible_clone_count_before_archive": 9,
   "visible_clone_count_after_archive": 0,
@@ -11,14 +11,14 @@
     {
       "name": "StateDD_Template-integration-BL-STATEDD-INTEGRATION-001",
       "head": "b9712a514d25b799a35a10bac35e00fc713a620e",
-      "source_repo": "/home/ff/Documents/Projects/StateDD_Template",
+      "source_repo": "~/Documents/Projects/StateDD_Template",
       "integration_status": "integrated",
       "integrated_via": "f92d2610a5d2616b71ee40a4e5358cf3f45cc6a2"
     },
     {
       "name": "StateDD_Template-OKF-BL-OKF-001",
       "head": "1b24e033a3605bea3cd1a5e3a481f33e139f31ff",
-      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-integration-BL-STATEDD-INTEGRATION-001",
+      "source_repo": "~/Documents/Projects/StateDD_Template-integration-BL-STATEDD-INTEGRATION-001",
       "integration_status": "integrated",
       "integrated_via": "0aab4c02b0ff2ec4c7983f4e3807983b7f1ac8c4"
     },
@@ -32,7 +32,7 @@
     {
       "name": "StateDD_Template-golden-path-closure-managed",
       "head": "9def2b0b3477ef0d28a4667fae9ea3a866ad4212",
-      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-golden-path-closure",
+      "source_repo": "~/Documents/Projects/StateDD_Template-golden-path-closure",
       "integration_status": "duplicate_integrated",
       "integrated_via": "6c43f3aaa98b0c9e4595778655585881d682b9a7"
     },
@@ -60,14 +60,14 @@
     {
       "name": "StateDD_Template-finish-delete-repair",
       "head": "f7b029fd3b53597490be940b6d023661b97684f9",
-      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-golden-path-closure-managed",
+      "source_repo": "~/Documents/Projects/StateDD_Template-golden-path-closure-managed",
       "integration_status": "integrated",
       "integrated_via": "5779baf293a9b5357f896d9725fd7edae2528445"
     },
     {
       "name": "StateDD_Template-cto-acceptance",
       "head": "6dc6ef8cfe116e45ee10a4dbb1a8acac0eaaeafe",
-      "source_repo": "/home/ff/Documents/Projects/StateDD_Template-finish-delete-repair",
+      "source_repo": "~/Documents/Projects/StateDD_Template-finish-delete-repair",
       "integration_status": "integrated",
       "integrated_via": "917f3f35d191f120be4439ae4cd3d5ba5d50599c"
     }

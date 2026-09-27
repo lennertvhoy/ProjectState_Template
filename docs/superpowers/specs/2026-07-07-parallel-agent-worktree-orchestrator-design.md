@@ -36,7 +36,7 @@ A small JSON file `.projectstate/agent.context` lives in the root of each agent 
   "agent_id": "agent-7f3a",
   "slice_id": "BL-BROWSER-002",
   "reservation_ref": "refs/projectstate/reservations/bl-browser-002-agent-7f3a-abc12",
-  "worktree_path": "/home/ff/Documents/Projects/ProjectState_Template/.worktrees/bl-browser-002-agent-7f3a-abc12",
+  "worktree_path": "~/Documents/Projects/ProjectState_Template/.worktrees/bl-browser-002-agent-7f3a-abc12",
   "branch": "bl-browser-002-agent-7f3a-abc12",
   "base_branch": "main",
   "created_at": "2026-07-07T21:30:00+02:00"

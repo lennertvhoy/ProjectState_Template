@@ -5,7 +5,7 @@
   "ci_state": "SUCCESS",
   "closure_label": "merged",
   "correction_note": "Post-merge correction: the original handoff was generated before the final metadata commit. The committed closure.json now records the actual merged PR head (ba52e09...) and the merge commit SHA, matching GitHub truth for PR #3.",
-  "evidence_folder": "/home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure",
+  "evidence_folder": "~/Documents/Projects/StateDD_Template/docs/evidence/2026-06-29-remote-closure",
   "failures": [],
   "generated_at": "2026-06-29T10:41:21+02:00",
   "local_head": "ba52e09159e687529e7a22c562f9a729e2313614",
@@ -17,7 +17,7 @@
   "pr_url": "https://github.com/lennertvhoy/StateDD_Template/pull/3",
   "proof_head": "cea70efe72306f08632016488db37055884e5a42",
   "remote_url": "https://github.com/lennertvhoy/StateDD_Template.git",
-  "repo_path": "/home/ff/Documents/Projects/StateDD_Template",
+  "repo_path": "~/Documents/Projects/StateDD_Template",
   "schema": "statedd.remote_closure_handoff.v1",
   "warnings": [],
   "worktree_clean": true

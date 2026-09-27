@@ -1,11 +1,11 @@
 $ /tmp/opencode/psvenv/bin/python -m compileall -q scripts schemas/examples
-$ /tmp/opencode/psvenv/bin/python /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd/scripts/projectstate_profile_metrics.py --root /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd --check
+$ /tmp/opencode/psvenv/bin/python ~/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd/scripts/projectstate_profile_metrics.py --root ~/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd --check
 $ /tmp/opencode/psvenv/bin/python -m pytest scripts/ -q
 $ /tmp/opencode/psvenv/bin/python -m pytest schemas/examples/ -q
 $ ruff check .
 $ /tmp/opencode/psvenv/bin/python scripts/check_state_docs.py
 $ /tmp/opencode/psvenv/bin/python scripts/projectstate_validate_schema.py
-$ /tmp/opencode/psvenv/bin/python scripts/projectstate_evidence_pack.py check --strict /home/ff/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd/docs/evidence/2026-08-26-hygiene
+$ /tmp/opencode/psvenv/bin/python scripts/projectstate_evidence_pack.py check --strict ~/.local/state/projectstate/workspaces/ProjectState_Template-73b39b42f20f2bff/active/bl-bl-evidence-hygiene-001-agen-u8uea-5f16d7b0bd/docs/evidence/2026-08-26-hygiene
 $ /tmp/opencode/psvenv/bin/python scripts/projectstate_runtime_truth_check.py --artifact docs/evidence/2026-08-26-hygiene/runtime_identity.json
 $ /tmp/opencode/psvenv/bin/python scripts/projectstate_instruction_lint.py --fail-on error
 $ /tmp/opencode/psvenv/bin/python scripts/projectstate_efficiency_check.py --gate-level 2

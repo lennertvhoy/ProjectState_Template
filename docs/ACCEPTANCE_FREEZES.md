@@ -41,7 +41,7 @@ and must be protected from quiet regression.
 - Scope: Root template repository uses `repo_role: template_repository` and `projectstate_mode: template-maintenance`; generated/adopted downstream repositories use `repo_role: downstream_project` and start in `projectstate_mode: bootstrap`.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/ProjectState_Template
+- repo_path: ~/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 00b5bf13ced5bcc4c19a0d8001fc69fdedad983a
 - process_or_container: not applicable; docs/scripts-only template-governance slice
@@ -63,7 +63,7 @@ and must be protected from quiet regression.
 - Scope: Evidence pack manifests/redaction gate, non-destructive downstream upgrade tooling MVP, adoption profiles, and bootstrap wizard MVP are accepted as the current reusable template baseline.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/ProjectState_Template
+- repo_path: ~/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 9f940ddd5c00f11896df6ab5b14bfe0dfe18bf8f
 - process_or_container: not applicable; docs/scripts-only template-maintenance release
@@ -109,7 +109,7 @@ and must be protected from quiet regression.
 - Scope: Added `schemas/browser_verification.schema.json`, `docs/BROWSER_VERIFICATION.md`, `scripts/projectstate_browser_verify.py`, `scripts/test_browser_verification.py`, fixtures, and audit/doctor/CI integration so ProjectState accepts browser-verification evidence from any recognized provider.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/ProjectState_Template
+- repo_path: ~/Documents/Projects/ProjectState_Template
 - branch: feature/provider-agnostic-browser-verification
 - head: eb0cd886e900c2e35ddb8123b9fd599631335f89
 - process_or_container: not applicable; docs/scripts-only template-maintenance slice
@@ -146,7 +146,7 @@ and must be protected from quiet regression.
 - Scope: Simplified README top half, added `docs/QUICK_COMMANDS.md`, improved `docs/ADOPTION_PROFILES.md` chooser with explicit `solo` default, polished `docs/GETTING_STARTED_5_MIN.md`, and finalized `docs/RELEASE_NOTES_projectstate-template-v4.md` as release-candidate ready.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/ProjectState_Template
+- repo_path: ~/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 947a8964085b8377017d6681e20fa24d266dcab9
 - process_or_container: not applicable; docs/scripts-only template-maintenance slice
@@ -180,7 +180,7 @@ and must be protected from quiet regression.
 - Scope: The `schemas/examples/schema_prompt_loop/` example demonstrates a schema-driven loop where one schema validates data and generates deterministic prompt material, with regression tests and CI coverage.
 - Closure-grade: yes
 - Accepted: yes
-- repo_path: /home/ff/Documents/Projects/ProjectState_Template
+- repo_path: ~/Documents/Projects/ProjectState_Template
 - branch: main
 - head: 0c17d4fe46e7a6cb73396b11e562b4cc008f6bad
 - process_or_container: not applicable; docs/scripts-only template-maintenance release
@@ -222,7 +222,7 @@ and must be protected from quiet regression.
 - Acceptance authority: human CTO
 - Acceptance type: engineering_and_architecture
 - Accepted on: 2026-07-12
-- repo_path: /home/ff/Documents/Projects/ProjectState_Template
+- repo_path: ~/Documents/Projects/ProjectState_Template
 - branch: main
 - accepted_head: 5779baf293a9b5357f896d9725fd7edae2528445
 - process_or_container: not applicable; template repository has no application runtime

@@ -15,7 +15,7 @@ FAIL: invalid_slice.json
 Example validation complete.
 
 === generate_prompt.py ===
-Wrote generated prompt to /home/ff/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generated_prompt.md
+Wrote generated prompt to ~/Documents/Projects/StateDD_Template/schemas/examples/schema_prompt_loop/generated_prompt.md
 
 === test_schema_prompt_loop.py ===
 PASS test_valid_slice_passes

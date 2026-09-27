@@ -30,7 +30,7 @@
 - The archived clone and linked-worktree feature reconciliation is recorded in
   `docs/evidence/2026-07-14-workspace-lifecycle-closure/clone_audit.json`.
 - The nine visible clone directories were moved, without deletion, to
-  `/home/ff/Documents/Projects/_archive/ProjectState_Template-clones-20260714` before
+  `~/Documents/Projects/_archive/ProjectState_Template-clones-20260714` before
   implementation began.
 
 ## Confirmed Root Cause

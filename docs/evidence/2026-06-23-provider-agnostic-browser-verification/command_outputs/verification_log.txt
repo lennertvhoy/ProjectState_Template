@@ -8,7 +8,7 @@ py_compile: exit 0
 
 === statedd_version_check ===
 StateDD Version Check
-Root: /home/ff/Documents/Projects/StateDD_Template/.worktrees/feature-provider-agnostic-browser-verification
+Root: ~/Documents/Projects/StateDD_Template/.worktrees/feature-provider-agnostic-browser-verification
 Expected: statedd-template-v4
 Result: pass
 

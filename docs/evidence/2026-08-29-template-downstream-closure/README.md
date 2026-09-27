@@ -35,7 +35,7 @@ Proof head: 949e412dac6c166c61eb4d7c73e362066e9f1456
   lifecycle regressions are covered by the repository suite.
 - Known environmental issue: the default `/tmp` quota was exhausted during the
   first full-suite attempt; the verified rerun used
-  `TMPDIR=/home/ff/.cache/projectstate-tests`.
+  `TMPDIR=~/.cache/projectstate-tests`.
 
 ## Worktree Dirty File Classification
 
@@ -60,7 +60,7 @@ Proof head: 949e412dac6c166c61eb4d7c73e362066e9f1456
 
 | Check | Command / Path | Result |
 | --- | --- | --- |
-| full test suite | `TMPDIR=/home/ff/.cache/projectstate-tests python3 -m pytest -q` | pass; all tests passed |
+| full test suite | `TMPDIR=~/.cache/projectstate-tests python3 -m pytest -q` | pass; all tests passed |
 | schema validation | `python3 scripts/projectstate_validate_schema.py .` | pass |
 | documentation/state validation | `python3 scripts/check_state_docs.py .` | pass |
 | profile metrics | `python3 scripts/projectstate_profile_metrics.py --output docs/metrics/profile_metrics.json --template-commit 949e412dac6c166c61eb4d7c73e362066e9f1456` | pass; regenerated from proof head |

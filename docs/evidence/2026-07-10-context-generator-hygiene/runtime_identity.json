@@ -16,7 +16,7 @@
   "repo": {
     "branch": "bl-bl-context-001-code-a1daa",
     "head": "976a3f0e2a38ba7bf096a300db16b95b65bd53f4",
-    "path": "/home/ff/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa",
+    "path": "~/Documents/Projects/StateDD_Template/.worktrees/bl-bl-context-001-code-a1daa",
     "status_porcelain": "M .github/workflows/validate.yml\n M BACKLOG.md\n M EFFICIENCY_BUDGET.yaml\n M NEXT_ACTIONS.md\n M PROJECT_STATE.yaml\n M README.md\n M STATUS.md\n M docs/ADOPTION_PROFILES.md\n M docs/EVIDENCE_LOG.md\n M scripts/AGENTS.md\n M scripts/check_state_docs.py\n M scripts/init_template.py\n M scripts/statedd_efficiency_check.py\n M scripts/statedd_quality_gate.py\n M scripts/statedd_upgrade.py\n M scripts/statedd_validate_schema.py\n M scripts/statedd_version_check.py\n M scripts/test_adoption_profiles.py\n M scripts/test_check_state_docs.py\n M scripts/test_efficiency_check.py\n M scripts/test_init_template.py\n M scripts/test_schema_validation.py\n M scripts/test_upgrade.py\n?? .statedd/\n?? docs/failure_scans/BL-CONTEXT-001.md\n?? schemas/statedd_assets.schema.json",
     "worktree_clean": false
   },

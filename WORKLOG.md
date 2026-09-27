@@ -779,7 +779,7 @@
 
 ### Notes
 - The template repo remains in bootstrap mode.
-- The SkillSignal-specific canonical schema/export/import loop is a downstream application of the new `SCHEMA_OWNERSHIP_TEMPLATE.md`, not implemented in this slice.
+- The example-project-17-specific canonical schema/export/import loop is a downstream application of the new `SCHEMA_OWNERSHIP_TEMPLATE.md`, not implemented in this slice.
 - The Human Override Rule was added explicitly so the workflow stays a strong default, not a prison.
 - Subagent review feedback was integrated: fixed `.jpg` suffix detection, expanded override marker checks, hardened `statedd_doctor.py` file reads, added `AGENTS.md` freshness to doctor output, and aligned generated `PROJECT_DNA.yaml` / `PROJECT_ADAPTER.yaml` versions to v4.
 
@@ -1367,7 +1367,7 @@ blocker was cleared via the documented `--restart-session` restart.
 ### Validation
 
 - Full `pytest` suite passed using
-  `TMPDIR=/home/ff/.cache/projectstate-tests` after the default `/tmp` quota
+  `TMPDIR=~/.cache/projectstate-tests` after the default `/tmp` quota
   exhausted during the first attempt.
 - The authoritative Level-2 quality gate passed, including reproducible profile
   metrics, generated-profile conformance, schema/state validation, strict

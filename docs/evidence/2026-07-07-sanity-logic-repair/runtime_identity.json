@@ -16,7 +16,7 @@
   "repo": {
     "branch": "bl-workflow-002-worktree-brittleness",
     "head": "a39d26dc95e3ad000e726832942c1314280ed467",
-    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "path": "~/Documents/Projects/StateDD_Template",
     "status_porcelain": "?? runtime_identity.json",
     "worktree_clean": false
   },

@@ -31,6 +31,14 @@ TOP_LEVEL_KEYS = {
     "next_action",
 }
 CLOSURE_STATUSES = {"validated", "ready_for_human", "accepted"}
+# STATE.yaml is current truth; history belongs in Git and evidence. Measured 2026-09-27 on a real
+# adopter: `blockers` had become a 329-entry, 1 MB append-only journal ("RESOLVED ..." narratives),
+# so every agent read ~250k tokens of history, the gate listed resolved work as open blockers, and
+# every commit re-stored a megabyte. These bounds keep the file a current-state view.
+MAX_STATE_BYTES = 64 * 1024
+MAX_BLOCKERS = 12
+MAX_BLOCKER_CHARS = 600
+RESOLVED_BLOCKER = re.compile(r"^\W*(resolved|fixed|closed|done|superseded|cleared)\b", re.IGNORECASE)
 PRIMARY_STATUSES = {"not_run", "passed", "failed", "blocked"}
 AUTOMATED_STATUSES = {"not_run", "passed", "failed", "not_applicable"}
 HUMAN_STATUSES = {"pending", "accepted", "rejected"}
@@ -448,6 +456,10 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     state_path = _local_file(root, PurePosixPath("STATE.yaml"), errors)
     if state_path is None:
         return errors, blockers, warnings
+    state_bytes = state_path.stat().st_size
+    if state_bytes > MAX_STATE_BYTES:
+        errors.append(f"STATE.yaml is {state_bytes} bytes (max {MAX_STATE_BYTES}); it is a current-state view, "
+                      "move history to Git and evidence")
     try:
         payload = parse_state(state_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, StateSyntaxError) as exc:
@@ -543,7 +555,16 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     for index, blocker in enumerate(raw_blockers):
         text = _text(blocker, f"blockers[{index}]", errors)
         if text:
+            if RESOLVED_BLOCKER.match(text):
+                errors.append(f"blockers[{index}] records resolved work; STATE.yaml holds open blockers only "
+                              "(history belongs in Git and evidence)")
+                continue
+            if len(text) > MAX_BLOCKER_CHARS:
+                warnings.append(f"blockers[{index}] is {len(text)} chars; keep one line and put detail in evidence")
             blockers.append(text)
+    if len(raw_blockers) > MAX_BLOCKERS:
+        errors.append(f"blockers has {len(raw_blockers)} entries (max {MAX_BLOCKERS}); keep open blockers only "
+                      "and move history to evidence")
     _validate_failures(
         root,
         slice_id,

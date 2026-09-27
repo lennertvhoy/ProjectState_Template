@@ -152,7 +152,7 @@ StateDD Worktree Guard
 Mode: start-slice
 
 Repo truth
-- repo root: /home/ff/Documents/Projects/StateDD_Template
+- repo root: ~/Documents/Projects/StateDD_Template
 - current branch: bl-workflow-002-worktree-brittleness
 - local HEAD: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
 - origin remote URL: https://github.com/lennertvhoy/StateDD_Template.git
@@ -165,21 +165,21 @@ Repo truth
 
 Worktree topology
 - worktree topology captured: yes
-- current worktree path: /home/ff/Documents/Projects/StateDD_Template
+- current worktree path: ~/Documents/Projects/StateDD_Template
 - linked worktrees:
-  - /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+  - ~/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
 - git worktree list --porcelain:
-  worktree /home/ff/Documents/Projects/StateDD_Template
+  worktree ~/Documents/Projects/StateDD_Template
   HEAD 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
   branch refs/heads/bl-workflow-002-worktree-brittleness
   
-  worktree /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+  worktree ~/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
   HEAD 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
   branch refs/heads/efficiency-layer
 
 Dirty state
 - dirty files classified: no
-- classification file: /home/ff/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
+- classification file: ~/Documents/Projects/StateDD_Template/docs/evidence/2026-07-03-worktree-and-brittleness-guardrails/README.md
 - dirty file count: 20
 - staged file count: 1
 - unstaged file count: 18
@@ -220,7 +220,7 @@ Generated: 2026-07-07T21:10:16+02:00
 
 ## Repo Identity
 
-- repo path: /home/ff/Documents/Projects/StateDD_Template
+- repo path: ~/Documents/Projects/StateDD_Template
 - branch: bl-workflow-002-worktree-brittleness
 - head: 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
 - origin remote URL: https://github.com/lennertvhoy/StateDD_Template.git
@@ -236,15 +236,15 @@ Generated: 2026-07-07T21:10:16+02:00
 ## Worktree Topology
 
 - worktree topology captured: yes
-- current worktree path: /home/ff/Documents/Projects/StateDD_Template
+- current worktree path: ~/Documents/Projects/StateDD_Template
 - linked worktrees:
-  - /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+  - ~/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
 - git worktree list --porcelain:
-  worktree /home/ff/Documents/Projects/StateDD_Template
+  worktree ~/Documents/Projects/StateDD_Template
   HEAD 0c2a13639894cd799506a9a5e94ecb1f3a070ffe
   branch refs/heads/bl-workflow-002-worktree-brittleness
   
-  worktree /home/ff/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
+  worktree ~/Documents/Projects/StateDD_Template/.worktrees/efficiency-layer
   HEAD 20b446d6401fff3d74fe4beb64cc0c45aea90b5e
   branch refs/heads/efficiency-layer
 

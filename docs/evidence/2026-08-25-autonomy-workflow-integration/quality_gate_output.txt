@@ -1,5 +1,5 @@
 $ /tmp/opencode/psvenv/bin/python3 -m compileall -q scripts schemas/examples
-$ /tmp/opencode/psvenv/bin/python3 /home/ff/Projects/ProjectState_Template/scripts/projectstate_profile_metrics.py --root /home/ff/Projects/ProjectState_Template --check
+$ /tmp/opencode/psvenv/bin/python3 ~/Projects/ProjectState_Template/scripts/projectstate_profile_metrics.py --root ~/Projects/ProjectState_Template --check
 $ /tmp/opencode/psvenv/bin/python3 -m pytest scripts/ -q
 $ /tmp/opencode/psvenv/bin/python3 -m pytest schemas/examples/ -q
 $ ruff check .

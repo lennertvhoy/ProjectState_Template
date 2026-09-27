@@ -16,7 +16,7 @@
   "repo": {
     "branch": "bl-workflow-002-worktree-brittleness",
     "head": "434f882ea28291584cdcb8b145d39bf35a419e91",
-    "path": "/home/ff/Documents/Projects/StateDD_Template",
+    "path": "~/Documents/Projects/StateDD_Template",
     "status_porcelain": "M .github/workflows/validate.yml\n M AGENTS.md\n M BACKLOG.md\n M NEXT_ACTIONS.md\n M PROJECT_STATE.yaml\n M prompts/CODING_AGENT_STARTUP_PROMPT.md\n M scripts/init_template.py\n M scripts/statedd_audit.py\n M scripts/statedd_closure_check.py\n M scripts/statedd_handoff.py\n M scripts/statedd_remote_closure_finalizer.py\n M scripts/statedd_upgrade.py\n M scripts/statedd_worktree_guard.py\n M skills/close-slice/SKILL.md\n?? docs/evidence/2026-07-07-parallel-agent-worktree/\n?? docs/failure_scans/BL-PARALLEL-001.md\n?? scripts/statedd_agent_worktree.py\n?? scripts/test_agent_worktree.py",
     "worktree_clean": false
   },

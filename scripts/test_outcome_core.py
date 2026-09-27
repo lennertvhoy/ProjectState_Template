@@ -388,6 +388,38 @@ class OutcomeCoreTests(unittest.TestCase):
                 state_path.write_text(state.replace(before, after, 1))
                 self.assertEqual(run_gate(target).returncode, 1)
 
+    def test_state_stays_a_current_view_not_a_journal(self) -> None:
+        # Measured 2026-09-27: an adopter's blockers became a 329-entry, 1 MB journal of resolved work.
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "core"
+            self.assertEqual(run_init(target).returncode, 0)
+            record_passing_fixture(target)
+            state_path = target / "STATE.yaml"
+            state = state_path.read_text()
+            self.assertEqual(run_gate(target).returncode, 0)
+
+            state_path.write_text(state.replace(
+                "blockers: []", 'blockers:\n  - "RESOLVED 2026-09-27: the flaky fixture was pinned."', 1))
+            result = run_gate(target)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("resolved work", result.stdout)
+
+            many = "".join(f'\n  - "Open item {i}."' for i in range(13))
+            state_path.write_text(state.replace("blockers: []", "blockers:" + many, 1))
+            result = run_gate(target)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("13 entries", result.stdout)
+
+            state_path.write_text(state.replace("blockers: []", 'blockers:\n  - "' + "x" * 700 + '"', 1))
+            result = run_gate(target)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("WARN: blockers[0] is 700 chars", result.stdout)
+
+            state_path.write_text(state + "# " + "y" * (64 * 1024) + "\n")
+            result = run_gate(target)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("current-state view", result.stdout)
+
     def test_secondary_evidence_cannot_supply_a_primary_result(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "core"
