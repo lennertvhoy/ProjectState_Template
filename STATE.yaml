@@ -4,30 +4,30 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: improvement-rounds-001
-  objective: "Add an optional, opt-in measured-improvement-round asset (event-triggered, proposal-only, mechanically enforced stop rule and protected paths) without changing the generated core."
-  status: accepted
-  # Human-owned criteria derived from the requested integration and research brief.
+  id: release-channel-001
+  objective: "Ship release 6.3.0: release identity with a hash manifest, a managed contract block, a read-only fleet doctor with an owner inbox, a mechanical update command, and owner-decision records in the gate."
+  status: implementing
+  # Owner-approved CTO plan S1-S4 plus the gate part of S5 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
-    - "Default new generation keeps the six-file core and carries no improvement-round text; the asset exists only as a template-side prompt, an IMPROVE.md template, and a read-only checker."
-    - "An instance with no measure cannot enable rounds, and a disabled or unselected instance is refused."
-    - "The stop rule trips after N flat rounds, stays tripped, and only an owner edit re-arms it; proposals cannot touch gates, state, acceptance, the measure, or past evidence, and instruction files may only shrink."
-    - "Measured values must match verbatim raw output; unsupported fields, symlinks, traversal, and unverifiable patches are rejected."
-    - "No downstream refresh is queued and no generated profile changes."
+    - "A fresh core reports release 6.3.0, releases/index.json verifies its gate and managed-block hashes, and StatePort's own adapter validation command still accepts a generated core."
+    - "Generated AGENTS.md carries one managed block between markers plus project-owned local sections; opt-in workflows add no text until selected; fresh-core startup reading (AGENTS.md, PROJECT.md, STATE.yaml) is at most 2.5K tokens at four characters per token."
+    - "The fleet doctor runs read-only against the real ~/Projects, reproduces the review's gate-drift and pending-acceptance findings, lists the owner's decisions, and writes nothing inside any repository."
+    - "The update command converts and updates scratch copies of example-project-08 and example-project-05; the doctor then reports both current, bytes outside the managed regions are unchanged, and a second run changes nothing."
+    - "The gate accepts an accepted, rejected, or waived owner decision only with a matching Owner decision section in the slice summary."
   primary_journey:
-    description: "Generate a core project, copy the optional asset in, and exercise enable, measure, proposal, stop, and re-arm paths plus adversarial records; confirm default core and long-run behavior are unchanged."
-    command: "python3 scripts/test_outcome_core.py && python3 scripts/test_long_run_control.py && python3 scripts/test_improvement_rounds.py"
-    environment: "Local Linux workstation; Python 3.13.15; temporary generated core projects"
-    status: passed
-    evidence: "evidence/improvement-rounds-001/summary.md"
+    description: "Generate fresh core and hardened projects and verify release hashes and StatePort's adapter check; run the fleet doctor against the real ~/Projects with a no-write audit; update scratch copies of two real instances and rerun the doctor on them."
+    command: "python3 scripts/test_release_channel.py --fleet-root ~/Projects"
+    environment: "Local Linux workstation; system Python 3 with PyYAML; real ~/Projects read-only; scratch copies outside ~/Projects"
+    status: not_run
+    evidence: "evidence/release-channel-001/summary.md"
 validation:
-  primary_journey: passed
-  automated_tests: passed
-  human_acceptance: accepted
+  primary_journey: not_run
+  automated_tests: not_run
+  human_acceptance: pending
 delivery_boundary:
-  name: template_generation_and_adoption
+  name: template_release_channel
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Start release-channel-001 (release 6.3.0) from the owner-approved CTO plan."
+next_action: "Integrate the four worker branches (gate and release tool, managed contract, fleet doctor, update command), add the journey test, and run it."

@@ -1,0 +1,57 @@
+{
+  "format": "projectstate-release-index/1",
+  "state_schema": "projectstate-template-v6",
+  "latest": "6.3.0",
+  "releases": [
+    {
+      "release": "6.0.0",
+      "date": "2026-09-04",
+      "tag": "v6.0.0",
+      "status": "released",
+      "gate_sha256": "16565c1823c01411bc0cdcd4da8fd833be07f6c66bce6da545fdcf6f18e187bd",
+      "contract_sha256": null,
+      "instance_action": "semantic",
+      "summary": "Outcome-first core replaces the v5 default."
+    },
+    {
+      "release": "6.0.1",
+      "date": "2026-09-05",
+      "tag": "v6.0.1",
+      "status": "released",
+      "gate_sha256": "66e7c9b32a10bf44e6478ce3cf91223c803a27a8cb7a92fb4dadd32ae18dbf37",
+      "contract_sha256": null,
+      "instance_action": "mechanical",
+      "summary": "Gate validates outcome claims truthfully; packaged-product journey."
+    },
+    {
+      "release": "6.1.0",
+      "date": "2026-09-27",
+      "tag": "v6.1.0",
+      "status": "released",
+      "gate_sha256": "26049a00a92893d46dffe04f8f1a04a53c1c78a64850d07a5ceabc27405a5683",
+      "contract_sha256": null,
+      "instance_action": "mechanical",
+      "summary": "Gate keeps STATE.yaml a current view: size, blocker-count and resolved-blocker limits."
+    },
+    {
+      "release": "6.2.0",
+      "date": "2026-10-06",
+      "tag": "v6.2.0",
+      "status": "released",
+      "gate_sha256": "26049a00a92893d46dffe04f8f1a04a53c1c78a64850d07a5ceabc27405a5683",
+      "contract_sha256": null,
+      "instance_action": "semantic",
+      "summary": "Contract gains continuation and optional persistent-thread sections; template-side improvement-rounds asset."
+    },
+    {
+      "release": "6.3.0",
+      "date": null,
+      "tag": "v6.3.0",
+      "status": "draft",
+      "gate_sha256": null,
+      "contract_sha256": null,
+      "instance_action": "mechanical",
+      "summary": "Release identity, managed contract block, fleet doctor, mechanical update, and owner-decision records."
+    }
+  ]
+}

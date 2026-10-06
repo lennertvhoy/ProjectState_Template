@@ -19,6 +19,8 @@ from typing import Any
 
 
 VERSION = "projectstate-template-v6"
+# Template release that shipped this gate; releases/index.json records its sha256.
+RELEASE = "6.3.0"
 TOP_LEVEL_KEYS = {
     "version",
     "profile",

@@ -39,7 +39,14 @@ def _shim_names() -> list[str]:
     return sorted(p.name for p in (ROOT / "scripts").glob("statedd_*.py"))
 
 
-V6_ONLY_SCRIPTS = {"projectstate_gate.py", "projectstate_improve_check.py"}  # never had a statedd_ name
+V6_ONLY_SCRIPTS = {  # never had a statedd_ name
+    "projectstate_gate.py",
+    "projectstate_improve_check.py",
+    "projectstate_release.py",
+    "projectstate_fleet.py",
+    "projectstate_update.py",
+    "projectstate_decide.py",
+}
 
 
 def test_every_canonical_script_has_a_legacy_shim() -> None:
