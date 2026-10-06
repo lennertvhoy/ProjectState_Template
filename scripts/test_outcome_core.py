@@ -6,16 +6,58 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 import zipapp
+from collections.abc import Iterator
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+import init_template  # noqa: E402
+from projectstate_release import (  # noqa: E402
+    contract_sha256,
+    extract_managed_block,
+    gate_release,
+    managed_block_text,
+    normalize_newlines,
+)
+
 INIT = ROOT / "scripts" / "init_template.py"
+GATE = ROOT / "scripts" / "projectstate_gate.py"
+EXISTING_README = "# Existing product\n\nRun it with `make start`.\n"
+HARDENED_RULE = (
+    "This project uses the hardened profile. Read `HARDENED_POLICY.md` before release, security, or "
+    "compliance work; its checks can add blockers but never override the primary journey."
+)
+LOCAL_HEADINGS = ["## Local rules", "## Owner directives"]
+# Opt-in workflows add nothing to the generated file until the owner selects one.
+OPT_IN_PHRASES = ("Continuation decision", "Optional persistent threads", "IMPROVE", "improvement round")
+STARTUP_FILES = ("AGENTS.md", "PROJECT.md", "STATE.yaml")
+STARTUP_BUDGET_CHARS = 10000  # 2.5K tokens at four characters per token
+THREADS_PROMPT = ROOT / "prompts" / "PERSISTENT_THREADS.md"
+THREADS_COPY_HEADING = "## Copy into the project's local sections when the owner selects this workflow"
+# Distinctive sentences of the former generated "Optional persistent threads" rules.
+THREAD_RULE_PHRASES = (
+    "Use named threads only when the human selects this workflow and the current slice has separable work.",
+    "One coordinator owns integration and writes canonical state and evidence.",
+    "A thread name or past conversation is not an assignment or fresh authority.",
+    "Concurrent writers use separate private branches and worktrees (or clones where required).",
+    "replace stale assignments rather than adding a ledger.",
+    "escalate failed narrow work instead of assuming a cheaper model plus review is always economical.",
+    "Worker tests or reviewer confidence cannot establish product validation.",
+    "Persistent conversations can become stale.",
+    "Do not silently substitute subagents or launch background work.",
+    "Two failures still trigger the simplification rule.",
+)
 LEGACY_TRUTH_FILES = {
     "BACKLOG.md",
     "EFFICIENCY_BUDGET.yaml",
@@ -55,6 +97,21 @@ def run_gate(target: Path) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def generated_cases(root: Path, *, modes: tuple[bool, ...] = (False, True)) -> Iterator[tuple[str, bool, str, Path]]:
+    """Generate new and adopt for core and hardened with the real CLI: (label, adopt, profile, target)."""
+    for adopt in modes:
+        for profile in ("core", "hardened"):
+            label = f"{'adopt' if adopt else 'new'}-{profile}"
+            target = root / label
+            if adopt:
+                target.mkdir()
+                (target / "README.md").write_text(EXISTING_README, encoding="utf-8")
+            completed = run_init(target, profile=profile, adopt=adopt)
+            if completed.returncode != 0:
+                raise AssertionError(f"{label}: {completed.stdout}{completed.stderr}")
+            yield label, adopt, profile, target
 
 
 def record_passing_fixture(target: Path) -> None:
@@ -125,13 +182,145 @@ class OutcomeCoreTests(unittest.TestCase):
             for forbidden in ("controlHead", "behaviouralHead", "companion control commit", "line budget"):
                 self.assertNotIn(forbidden, combined)
             agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-            self.assertIn("The human owns", agents)
+            self.assertIn("The owner decides", agents)
             self.assertIn("primary journey", agents)
             self.assertIn("Two evidenced failures", agents)
-            self.assertIn("must never import", agents)
+            self.assertIn("never imports or requires ProjectState", agents)
             gate = run_gate(target)
             self.assertEqual(gate.returncode, 1, gate.stdout + gate.stderr)
             self.assertIn("primary journey is not_run", gate.stdout)
+
+    def test_generated_agents_md_carries_one_managed_block_stamped_with_the_gate_release(self) -> None:
+        canonical = managed_block_text()
+        release = gate_release(GATE.read_text(encoding="utf-8"))
+        self.assertIsNotNone(release, "the template gate must declare RELEASE")
+        regions = set()
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, _adopt, _profile, target in generated_cases(Path(tmp)):
+                with self.subTest(case=label):
+                    agents = normalize_newlines((target / "AGENTS.md").read_text(encoding="utf-8"))
+                    block, error = extract_managed_block(agents)
+                    self.assertIsNone(error)
+                    self.assertIsNotNone(block)
+                    self.assertEqual(agents.count("projectstate:managed:start"), 1)
+                    self.assertEqual(agents.count("projectstate:managed:end"), 1)
+                    self.assertEqual(contract_sha256(block.content), contract_sha256(canonical))
+                    self.assertEqual(block.release, release)
+                    vendored = (target / "scripts" / "projectstate_gate.py").read_text(encoding="utf-8")
+                    self.assertEqual(block.release, gate_release(vendored))
+                    regions.add(agents[block.start : block.end])
+        self.assertEqual(len(regions), 1, "the managed block must be byte-identical across profiles and modes")
+
+    def test_generated_agents_md_has_only_frontmatter_the_block_and_two_local_sections(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, _adopt, profile, target in generated_cases(Path(tmp)):
+                with self.subTest(case=label):
+                    agents = normalize_newlines((target / "AGENTS.md").read_text(encoding="utf-8"))
+                    block, error = extract_managed_block(agents)
+                    self.assertIsNone(error)
+                    before, after = agents[: block.start], agents[block.end :]
+                    self.assertRegex(before, r"\A---\n(?:[a-z_]+: .*\n)+---\n\n\Z")
+                    self.assertIn(f"\nprofile: {profile}\n", before)
+                    self.assertEqual(re.findall(r"^## .*$", after, flags=re.MULTILINE), LOCAL_HEADINGS)
+                    # Nothing else: only the headings, project-owned placeholder comments, and the hardened pointer.
+                    remainder = re.sub(r"<!--.*?-->", "", after, flags=re.DOTALL).replace(HARDENED_RULE, "")
+                    self.assertEqual([line for line in remainder.splitlines() if line.strip()], LOCAL_HEADINGS)
+                    if profile == "hardened":
+                        rule_at = after.index(HARDENED_RULE)
+                        self.assertLess(after.index("## Local rules"), rule_at)
+                        self.assertLess(rule_at, after.index("<!-- Project-owned"))
+                        self.assertLess(rule_at, after.index("## Owner directives"))
+                    else:
+                        self.assertNotIn("hardened", after.lower())
+
+    def test_generated_agents_md_carries_no_opt_in_workflow_text(self) -> None:
+        # The managed block's own pointer line names "improvement rounds"; any other mention would be
+        # opt-in text that must stay out of the generated file until the owner selects the workflow.
+        canonical = managed_block_text()
+        self.assertEqual({phrase for phrase in OPT_IN_PHRASES if phrase in canonical}, {"improvement round"})
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, _adopt, _profile, target in generated_cases(Path(tmp)):
+                with self.subTest(case=label):
+                    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+                    for phrase in OPT_IN_PHRASES:
+                        self.assertEqual(agents.count(phrase), canonical.count(phrase), phrase)
+
+    def test_persistent_thread_rules_live_in_the_prompt_not_the_generated_core(self) -> None:
+        prompt = THREADS_PROMPT.read_text(encoding="utf-8")
+        self.assertEqual(prompt.count(THREADS_COPY_HEADING), 1)
+        copyable = " ".join(prompt.split(THREADS_COPY_HEADING, 1)[1].split())
+        for phrase in THREAD_RULE_PHRASES:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, copyable)
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, _adopt, _profile, target in generated_cases(Path(tmp)):
+                with self.subTest(case=label):
+                    agents = " ".join((target / "AGENTS.md").read_text(encoding="utf-8").split())
+                    for phrase in THREAD_RULE_PHRASES:
+                        self.assertNotIn(phrase, agents)
+
+    def test_generated_startup_files_fit_the_context_budget(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, _adopt, _profile, target in generated_cases(Path(tmp)):
+                with self.subTest(case=label):
+                    sizes = {name: len((target / name).read_text(encoding="utf-8")) for name in STARTUP_FILES}
+                    self.assertLessEqual(sum(sizes.values()), STARTUP_BUDGET_CHARS, sizes)
+
+    def test_adoption_preserves_an_existing_readme_for_both_outcome_profiles(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, _adopt, _profile, target in generated_cases(Path(tmp), modes=(True,)):
+                with self.subTest(case=label):
+                    self.assertEqual((target / "README.md").read_text(encoding="utf-8"), EXISTING_README)
+
+    def test_template_root_agents_md_carries_the_managed_block_exactly(self) -> None:
+        agents = normalize_newlines((ROOT / "AGENTS.md").read_text(encoding="utf-8"))
+        block, error = extract_managed_block(agents)
+        self.assertIsNone(error)
+        self.assertIsNotNone(block)
+        self.assertEqual(block.content, managed_block_text())
+        self.assertEqual(block.release, gate_release(GATE.read_text(encoding="utf-8")))
+        for heading in ("## Template repository rules", "## Owner directives"):
+            self.assertIn(f"\n{heading}\n", agents[block.end :])
+        self.assertNotIn("Optional persistent threads", agents)
+
+    def assertRenderExits(self, case: str, expected: str) -> None:
+        with self.subTest(case=case):
+            with self.assertRaises(SystemExit) as caught:
+                init_template.render_outcome_agents_template("2026-10-06", "core")
+            self.assertIn(expected, str(caught.exception))
+
+    def test_missing_or_malformed_contract_sources_fail_loudly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = Path(tmp)
+            (fake / "core").mkdir()
+            (fake / "scripts").mkdir()
+            block_source = fake / "core" / "AGENTS.managed.md"
+            gate_source = fake / "scripts" / "projectstate_gate.py"
+            shutil.copy(ROOT / "core" / "AGENTS.managed.md", block_source)
+            gate_source.write_text('RELEASE = "6.3.0"\n', encoding="utf-8")
+            with mock.patch.object(init_template, "TEMPLATE_ROOT", fake):
+                rendered = init_template.render_outcome_agents_template("2026-10-06", "core")
+                block, error = extract_managed_block(rendered)
+                self.assertIsNone(error, "control: valid sources must render")
+                self.assertEqual(block.release, "6.3.0")
+
+                for case, text in (
+                    ("gate without a release line", "# gate\n"),
+                    ("gate with a malformed release", 'RELEASE = "6.3"\n'),
+                    ("gate with the release only in a comment", '# RELEASE = "6.3.0"\n'),
+                ):
+                    gate_source.write_text(text, encoding="utf-8")
+                    self.assertRenderExits(case, "RELEASE")
+
+                gate_source.write_text('RELEASE = "6.3.0"\n', encoding="utf-8")
+                block_source.unlink()
+                self.assertRenderExits("missing block source", "Cannot read the managed AGENTS.md")
+                block_source.symlink_to(ROOT / "core" / "AGENTS.managed.md")
+                self.assertRenderExits("symlinked block source", "Cannot read the managed AGENTS.md")
+                block_source.unlink()
+                shutil.copy(ROOT / "core" / "AGENTS.managed.md", block_source)
+                gate_source.unlink()
+                self.assertRenderExits("missing gate", "Cannot read the managed AGENTS.md")
 
     def test_consistent_passing_records_can_validate_core(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -249,7 +438,7 @@ class OutcomeCoreTests(unittest.TestCase):
             self.assertEqual(handoff["state"]["current_slice"]["primary_journey"]["status"], "failed")
             self.assertIn("title.txt", handoff["evidence"])
             self.assertIn("after restarting", handoff["project"])
-            self.assertIn("The human owns", handoff["agents"])
+            self.assertIn("The owner decides", handoff["agents"])
 
             # Remove the incomplete packaging filter and retry the unchanged journey.
             zipapp.create_archive(product, target=artifact)
