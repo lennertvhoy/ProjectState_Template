@@ -6,7 +6,7 @@ project:
 current_slice:
   id: improvement-rounds-001
   objective: "Add an optional, opt-in measured-improvement-round asset (event-triggered, proposal-only, mechanically enforced stop rule and protected paths) without changing the generated core."
-  status: validated
+  status: accepted
   # Human-owned criteria derived from the requested integration and research brief.
   acceptance:
     - "Default new generation keeps the six-file core and carries no improvement-round text; the asset exists only as a template-side prompt, an IMPROVE.md template, and a read-only checker."
@@ -23,11 +23,11 @@ current_slice:
 validation:
   primary_journey: passed
   automated_tests: passed
-  human_acceptance: pending
+  human_acceptance: accepted
 delivery_boundary:
   name: template_generation_and_adoption
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Human review of the staged persistent-threads and long-run-control work plus this unstaged improvement-rounds addition; before enabling rounds on any instance, record a measure-only baseline there."
+next_action: "Start release-channel-001 (release 6.3.0) from the owner-approved CTO plan."

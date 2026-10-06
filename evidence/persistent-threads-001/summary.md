@@ -87,3 +87,11 @@ future coding-agent sessions or completion of the downstream semantic migrations
   deployment, automatic thread routing, or downstream migration is claimed.
 - The missing example-project-06 remote blocks its local staging, not queue
   delivery: the inherited user directive supplies its exact first task.
+
+## Owner decision
+
+- Decision: accepted
+- Date: 2026-10-06
+- Owner words: "i choose all ur recs"
+- Context: Reply to the CTO review recommendations D1–D6 (https://claude.ai/artifact/B33ZdP3MDpGeskmMcNJwNv).
+- Scope: D1: accepted as already deployed; to be slimmed into an opt-in prompt by the 6.3.0 managed contract.

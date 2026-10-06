@@ -55,3 +55,11 @@ restores a note across processes. It also runs with ProjectState files hidden.
   release, and downstream project migration have not been exercised here.
 - Existing v5 scripts and snapshots remain compatibility material. The optional
   maintainer path and worked example make the current core easier to find.
+
+## Owner decision
+
+- Decision: accepted
+- Date: 2026-10-06
+- Owner words: "i choose all ur recs"
+- Context: Reply to the CTO review recommendations D1–D6 (https://claude.ai/artifact/B33ZdP3MDpGeskmMcNJwNv).
+- Scope: D1: accept the kernel.

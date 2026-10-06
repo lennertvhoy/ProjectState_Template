@@ -63,3 +63,11 @@ patches, unsupported fields, symlinks, dirty worktree, token cap).
 - Follow-ups for the owner, not done here: model-name refresh in untracked
   `opencode/` (see `research.md`), a machine-level read-only lessons feed, and
   choice of the pilot instances.
+
+## Owner decision
+
+- Decision: accepted
+- Date: 2026-10-06
+- Owner words: "i choose all ur recs"
+- Context: Reply to the CTO review recommendations D1–D6 (https://claude.ai/artifact/B33ZdP3MDpGeskmMcNJwNv).
+- Scope: D1: accepted as experimental: kept in the template, never generated, never rolled out.
