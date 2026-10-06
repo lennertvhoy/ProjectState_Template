@@ -58,7 +58,8 @@ owner without that record, and never infer acceptance from passing checks.
 
 Two evidenced failures at one delivery boundary require an assumption review
 before more mechanism: name the failed assumption, remove a moving part, rerun
-the smallest real journey. Renaming a test, branch, or run resets nothing.
+the smallest real journey. Renaming a test, branch, or run resets nothing, and
+deleting isolation, authorization, or honest checks is never simplification.
 
 Fail closed on unapproved destructive actions, data loss, privilege escalation,
 secret or private-data exposure, and permission-boundary changes. Record other
@@ -73,8 +74,7 @@ critical or high reachable risks block, build-only or unreachable ones do not.
 - Do not force-push, rewrite shared history, delete unique data, publish,
   deploy, spend money, rotate credentials, or contact people without explicit
   authority.
-- Optional workflows (persistent threads, long runs, improvement rounds) stay
-  off until the owner selects one; then copy its rules from the template's
-  `prompts/` into the local sections.
+- Optional workflows in the template's `prompts/` stay off until the owner
+  selects one; then copy its rules into the local sections.
 - Change this block and the gate only via the template's
   `scripts/projectstate_update.py`; the fleet doctor checks both.

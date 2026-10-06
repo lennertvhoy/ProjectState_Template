@@ -234,10 +234,10 @@ class OutcomeCoreTests(unittest.TestCase):
                         self.assertNotIn("hardened", after.lower())
 
     def test_generated_agents_md_carries_no_opt_in_workflow_text(self) -> None:
-        # The managed block's own pointer line names "improvement rounds"; any other mention would be
-        # opt-in text that must stay out of the generated file until the owner selects the workflow.
+        # Opt-in workflow text stays out of the generated file until the owner selects the workflow;
+        # the managed block points at prompts/ without naming any workflow.
         canonical = managed_block_text()
-        self.assertEqual({phrase for phrase in OPT_IN_PHRASES if phrase in canonical}, {"improvement round"})
+        self.assertEqual({phrase for phrase in OPT_IN_PHRASES if phrase in canonical}, set())
         with tempfile.TemporaryDirectory() as tmp:
             for label, _adopt, _profile, target in generated_cases(Path(tmp)):
                 with self.subTest(case=label):

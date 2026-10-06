@@ -49,3 +49,6 @@ security_best_practices_report.md
 
 # Ephemeral ProjectState agent context
 .projectstate/
+
+# Claude Code worker worktrees
+.claude/worktrees/
