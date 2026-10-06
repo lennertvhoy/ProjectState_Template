@@ -383,9 +383,15 @@ class OutcomeCoreTests(unittest.TestCase):
             record_passing_fixture(target)
             state_path = target / "STATE.yaml"
             state = state_path.read_text()
-            for before, after in (("human_acceptance: pending", "human_acceptance: rejected"),
-                                  ("status: validated", "status: blocked")):
+            summary_path = target / "evidence/bootstrap-001/summary.md"
+            summary = summary_path.read_text()
+            # A decided acceptance needs its Owner decision record (release 6.3.0); rejection still blocks.
+            rejection = (summary + "\n## Owner decision\n\n- Decision: rejected\n"
+                         f"- Date: {dt.date.today().isoformat()}\n- Owner words: \"This is not what I asked for.\"\n")
+            for before, after, evidence in (("human_acceptance: pending", "human_acceptance: rejected", rejection),
+                                            ("status: validated", "status: blocked", summary)):
                 state_path.write_text(state.replace(before, after, 1))
+                summary_path.write_text(evidence)
                 self.assertEqual(run_gate(target).returncode, 1)
 
     def test_state_stays_a_current_view_not_a_journal(self) -> None:
