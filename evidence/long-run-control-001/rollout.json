@@ -1,0 +1,105 @@
+{
+  "snapshot": "~/Projects/.projectstate-handoffs/long-run-control-2026-09-06",
+  "projects": [
+    {
+      "project": ".local",
+      "result": "skipped: no AGENTS.md; inherited queue only"
+    },
+    {
+      "project": "example-project-41",
+      "result": "skipped: no AGENTS.md; inherited queue only"
+    },
+    {
+      "project": "example-project-01",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-02",
+      "result": "inherited queue only: preflight blocked (required real write probes did not pass; mandatory git fetch synchronization did not pass; worktree identity is unknown for one or more registered worktrees)"
+    },
+    {
+      "project": "example-project-03",
+      "result": "inherited queue only: preflight blocked (a previous mandatory Git failure latched this repository read-only; repair it and rerun with --restart-session; required real write probes did not pass; mandatory git fetch synchronization did not pass; worktree identity is unknown for one or more registered worktrees)"
+    },
+    {
+      "project": "example-project-06",
+      "result": "inherited queue only: preflight blocked (a previous mandatory Git failure latched this repository read-only; repair it and rerun with --restart-session; required real write probes did not pass; mandatory git fetch synchronization did not pass)"
+    },
+    {
+      "project": "example-project-07",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-09",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-11",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-13",
+      "result": "inherited queue only: preflight blocked (mandatory git fetch synchronization did not pass)"
+    },
+    {
+      "project": "example-project-14",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-16",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "StatePort",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-38",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "StatePort-Site",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "StudyState_Template",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-19",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "SupportPlane",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-20",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-23",
+      "result": "inherited queue only: preflight blocked (mandatory git fetch synchronization did not pass)"
+    },
+    {
+      "project": "example-project-25",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-26",
+      "result": "inherited queue only: preflight blocked (mandatory git fetch synchronization did not pass)"
+    },
+    {
+      "project": "example-project-31",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "example-project-32",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    },
+    {
+      "project": "the-last-light",
+      "result": "notice written to worktree; unstaged, product files untouched"
+    }
+  ]
+}

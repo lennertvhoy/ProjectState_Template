@@ -73,3 +73,54 @@ If a downstream gate added statuses such as `publicly_verified`, retain that
 progress in the evidence summary and restore the primary journey's actual
 execution status. Do not mark a target-environment journey passed because a
 different environment or a publication step succeeded.
+
+## Bounded long-run control refresh (2026-09-06)
+
+For this revision, generate a temporary core and semantically merge its
+`Continuation decision (separate from closure)` section into the project's
+`AGENTS.md`. Preserve all project-specific rules, outcome, acceptance, state,
+and evidence. This section is advisory unless the actual runner refuses
+inadmissible actions; a passed outcome gate never authorizes unfinished work
+to continue.
+
+Key points to carry across: decide continue/replan/wait-monitor/finalize/stop
+before delegating, before expensive tests/builds/rehearsals, after failure
+clusters or completed increments, and on deadline/budget warnings; protect the
+critical path without polling an unchanged blocked lane; treat renaming as no
+fresh retry and prior simplification review as no indefinite permission; verify
+reproducer → affected integration → installed/release proof with an
+invalidation reason for full reruns; record any selected long-run envelope
+(deadline, finalization boundary, work limits, usage budget) in existing state
+or assignment fields, never as new `STATE.yaml` top-level keys.
+
+The optional `prompts/LONG_RUN_CONTROL.md` in the template holds the
+selected-run record format, worker/finalization rules, and unknown-usage
+fallback. Read or copy it only when the human explicitly selects a long run.
+It is not a canonical artifact and is not needed at startup. Do not paste
+unsupported run fields into `STATE.yaml`; the gate still rejects unknown
+top-level keys. Do not claim quota savings without a same-model comparison.
+
+A queued refresh is complete only after the instructions are updated, project
+truth is preserved, the real primary journey is rerun, and the resulting
+evidence is recorded. If blocked, retain the notice and record the exact
+blocker and next action.
+
+## Optional persistent-thread refresh (2026-09-05)
+
+For this revision, generate a temporary core and semantically merge its
+`Optional persistent threads` section into the project's `AGENTS.md`. Preserve
+all project-specific rules, outcome, acceptance, state, and evidence. This small
+section is inert until the human selects the workflow; installing it does not
+authorize launching threads, choosing paid models, or running parallel work.
+
+The optional `prompts/PERSISTENT_THREADS.md` in the template contains role prompts
+and an assignment/return format. Read or copy it only when the workflow is
+selected. It is not a fifth canonical artifact and is not needed at startup.
+Existing model-routing guidance remains optional. Do not import the historical
+v5 worktree orchestrator, reservation ledger, or automatic upgrade machinery.
+
+A queued refresh is complete only after the instructions and applicable gate
+are updated, project truth is preserved, the real primary journey is rerun, and
+the resulting evidence is recorded. If blocked, retain the notice and record the
+exact blocker and next action; do not repeatedly scaffold or overwrite files on
+resume. Preserve the pending product task and return to it after setup.

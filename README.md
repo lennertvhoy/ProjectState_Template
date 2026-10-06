@@ -167,6 +167,12 @@ Add these only when the project needs them:
 The initializer refuses automatic optional asset-set expansion for the v6
 profiles; add justified project-specific tooling in a separately reviewed change.
 
+For user-selected persistent threads, generated `AGENTS.md` includes compact
+ownership, assignment, recovery, and integration rules. The optional
+[persistent-thread guide and role prompts](prompts/PERSISTENT_THREADS.md) explain
+how to use them. There is no automatic thread routing or model selection, and
+the generated default still contains six files.
+
 Git history is the default work history. Do not duplicate it into a mandatory
 workflow ledger.
 

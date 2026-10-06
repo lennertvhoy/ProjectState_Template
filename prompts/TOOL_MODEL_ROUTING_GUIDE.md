@@ -1,12 +1,16 @@
 # Tool And Model Routing Guide
 
-Use this guide from the CTO lane when the next slice would benefit from a
+Use this optional guide when the human selects model routing and the next slice
+would benefit from a
 deliberate choice of chatbot, coding agent, model, reasoning setting, tool
 surface, context strategy, or budget posture.
 
 This guide is intentionally model-agnostic. Model catalogs, pricing, context
 windows, and tool support change often. Do not bake stale benchmark claims into
 the project state or coding-agent prompts.
+
+For user-selected persistent threads, use [PERSISTENT_THREADS.md](PERSISTENT_THREADS.md)
+for assignment and integration rules. A CTO lane is not required by the v6 core.
 
 ## Routing Inputs
 

@@ -1,0 +1,126 @@
+{
+  "source": "~/Projects/.projectstate-handoffs/persistent-threads-2026-09-05",
+  "backup": "/tmp/projectstate-queue-backup-83_nvrod",
+  "projects": [
+    {
+      "project": "example-project-01",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "6a7f62652019cd5982706712a99a721df3fb4880bf6b1b9ab8dc456cd5cc5750"
+    },
+    {
+      "project": "example-project-02",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "7806a5d5b342cc92bbe253d9b84759eef29e4256fe799b47dbb11bc7d611c1e8"
+    },
+    {
+      "project": "example-project-03",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "7806a5d5b342cc92bbe253d9b84759eef29e4256fe799b47dbb11bc7d611c1e8"
+    },
+    {
+      "project": "example-project-06",
+      "result": "inherited queue only",
+      "reason": "Git preflight blocked: no remote"
+    },
+    {
+      "project": "example-project-07",
+      "result": "notice written; directory has no Git repository",
+      "before_sha256": "5438c0bd29c820d88a7a87f894b6e129886b5de8ad8641b57c428f656d78800c"
+    },
+    {
+      "project": "example-project-09",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "b9ae65967b05175116b6a5dfbf86a2456ffd9a0192133082855c8e9bf3c64b16"
+    },
+    {
+      "project": "example-project-11",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "cd8e5d1403a15011fb116ffa1a80a6c84ade1f7d7fa5df60af4332371cb893d5"
+    },
+    {
+      "project": "example-project-13",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "2372e6d2e11c0eb8a8828d858ed22e175424c4906509e60074c243491b4bd91f"
+    },
+    {
+      "project": "example-project-14",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "5666bd24dad7ff11123fc24a6b247c9adb868cbc783c2800c5ff96bc5f6f88fe"
+    },
+    {
+      "project": "example-project-16",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "dec722643aa1eaf02f8aa2bfccb585e235ea5e113bf94d77d5e17223aa9d50b7"
+    },
+    {
+      "project": "StatePort",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "992da81d64e64908c103563b2c3101c218202b662c1429fd706ed56621bd57f0"
+    },
+    {
+      "project": "example-project-38",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "cf0fb170c17ca2859a78ffeb31136db5af9f2ac1268f1f2856588024c0765a22"
+    },
+    {
+      "project": "StatePort-Site",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "3188a51108d96325249a6f4439f2a3a7b52fc85d109690c5e26ac40e7e0d7a21"
+    },
+    {
+      "project": "StudyState_Template",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "b435bf52e60cda654799e6b3dffa923ae7203b2e0483155d8c70a08cfb2628e1"
+    },
+    {
+      "project": "example-project-19",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "d27638918cf9c83edfd46c6793f424255f7c75eaa5bc6f4ee02d477416b7e7fc"
+    },
+    {
+      "project": "SupportPlane",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "fe2d7346a87eec966492fbc114991923db132ee7aac288c73d88f3f5358f1f0b"
+    },
+    {
+      "project": "example-project-20",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "f1e3b98927525bdb2df4139038c1b8a3290dacd365385443150764ed7dd7ae52"
+    },
+    {
+      "project": "example-project-23",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "c11f0e1f6a7d669b9cc47363e594ef82e4f9492d053366eea897c3e9218d4c04"
+    },
+    {
+      "project": "example-project-25",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "fb7ad2024b37c0d23641d4432b18fa812dbcafed325564c997edc70fd6b661fc"
+    },
+    {
+      "project": "example-project-26",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "7ef6ac617c8b55d4b6ec2f6d2f2e1e42791ed36e2298414d86fd0d23c2dbeace"
+    },
+    {
+      "project": "example-project-31",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "c13f74767e9e9ec651964dc3c9861f10a133c38c5643fd0f8b98fcaf8dd9e9f7"
+    },
+    {
+      "project": "example-project-32",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "f3abfc83bb245ce8e5f24527c66ebf095308c5e6c4658f454884a03f5110f78f"
+    },
+    {
+      "project": "example-project-33",
+      "result": "inherited queue only",
+      "reason": "recovery evidence folder; preserved"
+    },
+    {
+      "project": "the-last-light",
+      "result": "notice staged; unrelated index and worktree content preserved",
+      "before_sha256": "922ed72588a5a3ed47f54c989b267ebd6c846fd8a9da613eb3ea953e1b75b91c"
+    }
+  ]
+}

@@ -16,6 +16,10 @@ The human owns PROJECT.md, acceptance criteria, governance, risk exceptions, and
 product acceptance. You may draft a proposed change, but do not apply one merely
 to make your own work pass.
 
+If the human selected persistent threads, apply the optional thread rules in
+AGENTS.md. Only the coordinator updates canonical state and evidence; workers
+return their scoped changes and proof. Otherwise continue as a single agent.
+
 For implementation:
 1. verify a clean or explicitly classified worktree and use a private branch for
    non-trivial work;

@@ -201,8 +201,8 @@ ProjectState helps deliver the product. It is not the product.
 4. Read only `evidence/<slice-id>/summary.md` when the slice needs proof.
 5. Read the nearest nested `AGENTS.md` before working in a subtree.
 
-Backlogs, history, architecture records, and release ledgers are optional. They
-never become additional sources of current truth.
+Backlogs, history, architecture records, release ledgers, and agent session
+memories are optional. They never become additional sources of current truth.
 
 ## Authority
 
@@ -233,6 +233,89 @@ At handoff, preserve failures and the exact next action. On resume, compare the
 recorded state with the worktree and evidence; rerun any journey whose result was
 invalidated by later changes.
 
+## Continuation decision (separate from closure)
+
+Closure (`scripts/projectstate_gate.py`, exit 0/1/2) judges recorded outcome
+only. Before the next unit of work, make a separate continuation decision at
+each action boundary: before delegating, before an expensive test/build/
+rehearsal, after a failure cluster or completed increment, and when a
+deadline/budget warning appears.
+
+Name the unchanged acceptance criterion, release dependency, or safety boundary
+addressed; the material information or behavior change expected; why this is the
+smallest sufficient check or change; what changed since any equivalent attempt
+(source, artifact, environment, fixture, or hypothesis); and whether
+prerequisites and remaining budget allow completion or safe checkpointing
+including integration and reporting.
+
+Dispositions are continue, replan, wait/monitor, finalize, or stop. A passed
+gate never authorizes unfinished work to continue. This rule is advisory unless
+the actual runner refuses inadmissible actions; the validator never executes
+commands found in repository text.
+
+Protect the critical path: prefer dependency-ready work by its relation to the
+authorized outcome; safety stop-lines first. A primary blocker does not forbid
+genuinely independent authorized work, but secondary polishing must not consume
+a slot needed for a now-runnable primary dependency. Do not poll an unchanged
+blocked lane to satisfy a quota; name the event that makes it actionable again.
+Bound one working increment and its integration proof; do not open competing
+active slices or silently narrow acceptance. A new defect, a ruled-out
+hypothesis, or a newly isolated external prerequisite is progress of its
+category, not shipped progress.
+
+Verify at the right level: focused reproducer, then affected integration, then
+installed/release proof when the change or acceptance crosses that boundary. A
+full rerun needs an invalidation reason; reuse prior evidence only for the same
+source/artifact/environment and scope. A changed candidate or
+security-sensitive restore may require a new end-to-end rehearsal. In a safe
+batch, collect independent failures without aborting everything at the first
+error; keep isolation and fail-fast where state is shared or destructive.
+Fixture fixes must preserve the invariant and be explained; single-test passes
+across different revisions are not a combined pass. Keep unrun and blocked cases
+explicit.
+
+For an explicitly selected long run, record one absolute UTC deadline, the
+finalization boundary, the work envelope, delegation limits, and the usage
+budget in existing state/assignment fields — never as new STATE.yaml top-level
+keys the gate rejects. Separate the maximum work window from any monitoring
+obligation. Reserve integration and handoff capacity; workers inherit the
+deadline and return while integration is still feasible. At finalization admit
+no broad new work; checkpoint honestly without promoting it to validated.
+Missing closure is interruption, not success. When model usage is unobservable,
+label it unknown and use authorized fallback limits on batches, retries, and
+elapsed time; do not invent ceilings or claim savings without a same-model
+comparison. Keep the evidence summary a current view with linked detail, not a
+full history dump; never omit safety and authority instructions to save
+context. See `prompts/LONG_RUN_CONTROL.md` in the template when a long run is
+selected; it is optional and is not part of the default six-file core.
+
+## Optional persistent threads
+
+Use named threads only when the human selects this workflow and the current
+slice has separable work. A single agent remains the default; no thread roster,
+model matrix, scheduler, or extra state file is required.
+
+- One coordinator owns integration and writes canonical state and evidence.
+  Workers return changes and proof; they do not edit shared coordination truth.
+- Assign one bounded task with slice ID, objective, allowed paths, repository,
+  branch/base revision, dependencies, required proof, and stop conditions.
+  A thread name or past conversation is not an assignment or fresh authority.
+- Concurrent writers use separate private branches and worktrees (or clones
+  where required). Serialize overlapping work and shared runtime resources.
+- Refresh from AGENTS.md, PROJECT.md, STATE.yaml, and relevant evidence on each
+  assignment. Keep a concise active assignment in the slice summary only when
+  needed for recovery; replace stale assignments rather than adding a ledger.
+- Choose models by task difficulty, risk, available tools, and observed results.
+  Reserve stronger reasoning for ambiguity and review; escalate failed narrow
+  work instead of assuming a cheaper model plus review is always economical.
+- Review actual changes and rerun the primary journey on the integrated result.
+  Worker tests or reviewer confidence cannot establish product validation.
+- Before replacing a thread, preserve changes, proof, unresolved failures, and
+  exact next action outside chat. Persistent conversations can become stale.
+- Route messages manually unless the host's cross-thread capability and human
+  authorization are established. Do not silently substitute subagents or launch
+  background work. Two failures still trigger the simplification rule.
+
 ## Outcome precedence
 
 - `implemented` means the change exists.
@@ -251,7 +334,15 @@ invalidated by later changes.
 
 Two evidenced failures at the same delivery boundary require an assumption
 review: name the failed assumption, remove a moving part, and rerun the smallest
-real journey before adding mechanism.
+real journey before adding mechanism. The boundary is substantive
+(delivery/fixture), not the spelling of a test, branch, worker, or run name;
+renaming does not grant fresh retries and independent failures must not be
+collapsed into one cause. A prior review is not indefinite permission: if the
+revised hypothesis fails without new information, replan before another
+expensive attempt, with any extension explicit and bounded. Do not game
+simplification by deleting isolation, observability, authorization checks, or
+honest assertions; when the rule cannot be satisfied safely, preserve the
+blocker and propose the governance decision.
 
 Fail closed for unapproved destructive action, data loss or corruption,
 privilege escalation, secrets or private-data exposure, and permission-boundary

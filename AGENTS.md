@@ -19,8 +19,9 @@ ProjectState exists to help deliver the product. It is not the product.
 4. Read only that slice's `evidence/<slice-id>/summary.md` when proof is needed.
 5. Read the nearest nested `AGENTS.md` before working in a subtree.
 
-Backlogs, history, architecture decisions, release records, and inventories are
-optional references. They are never additional sources of current truth.
+Backlogs, history, architecture decisions, release records, inventories, and
+agent session memories are optional references. They are never additional
+sources of current truth.
 
 ## Authority
 
@@ -99,6 +100,33 @@ automatically block the product journey. Only a human can approve an exception.
 - Do not force-push, rewrite shared history, delete unique data, publish, deploy,
   spend money, rotate credentials, or contact people without explicit authority.
 - Commit hashes are evidence pointers, not mutable control state.
+
+## Optional persistent threads
+
+Use named threads only when the human selects this workflow and the current
+slice has separable work. A single agent remains the default; no thread roster,
+model matrix, scheduler, or extra state file is required.
+
+- One coordinator owns integration and writes canonical state and evidence.
+  Workers return changes and proof; they do not edit shared coordination truth.
+- Assign one bounded task with slice ID, objective, allowed paths, repository,
+  branch/base revision, dependencies, required proof, and stop conditions.
+  A thread name or past conversation is not an assignment or fresh authority.
+- Concurrent writers use separate private branches and worktrees (or clones
+  where required). Serialize overlapping work and shared runtime resources.
+- Refresh from AGENTS.md, PROJECT.md, STATE.yaml, and relevant evidence on each
+  assignment. Keep a concise active assignment in the slice summary only when
+  needed for recovery; replace stale assignments rather than adding a ledger.
+- Choose models by task difficulty, risk, available tools, and observed results.
+  Reserve stronger reasoning for ambiguity and review; escalate failed narrow
+  work instead of assuming a cheaper model plus review is always economical.
+- Review actual changes and rerun the primary journey on the integrated result.
+  Worker tests or reviewer confidence cannot establish product validation.
+- Before replacing a thread, preserve changes, proof, unresolved failures, and
+  exact next action outside chat. Persistent conversations can become stale.
+- Route messages manually unless the host's cross-thread capability and human
+  authorization are established. Do not silently substitute subagents or launch
+  background work. Two failures still trigger the simplification rule.
 
 ## Profiles
 

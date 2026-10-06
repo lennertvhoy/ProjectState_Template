@@ -4,24 +4,21 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: outcome-core-001
-  objective: "Make the generated default workflow outcome-first and minimal."
+  id: long-run-control-001
+  objective: "Add bounded long-run continuation control to the generated v6 core and queue its refresh across the user's Projects folder."
   status: validated
-  # Human-owned. Agents may report results but may not weaken these criteria.
+  # Human-owned criteria derived from the requested implementation brief.
   acceptance:
-    - "Default new and adopt flows generate PROJECT.md, STATE.yaml, AGENTS.md, and one bounded evidence summary as the only canonical coordination artifacts."
-    - "A failed or unrun primary journey blocks validated, ready-for-human, and accepted states even when secondary tests pass."
-    - "Agents cannot authorize changes to outcome, acceptance criteria, or governance."
-    - "Two evidenced failures at one delivery boundary require a simplification review before more implementation."
-    - "Risk handling considers severity, consequence, exposure, affected environment, owner, and expiry instead of flattening every finding into one stop condition."
-    - "Strict release and compliance policy is opt-in through the hardened profile."
-    - "Coordination files are not application runtime dependencies."
+    - "Default new and adopt retain the six-file core and carry a compact continuation decision separate from closure."
+    - "An optional long-run prompt holds the selected-run envelope without new STATE.yaml top-level keys or scheduler machinery."
+    - "Generated-fixture behavior is tested: continuation, critical-path, renaming, verification ladder, and gate rejection of unknown run fields."
+    - "Queue the updated template as the next agent task across home Projects while preserving project rules and unrelated work."
   primary_journey:
-    description: "Generate and adopt default core projects; run a packaged note-saving product through failure, a fresh-process handoff, recovery, restart, and recorded validation."
-    command: "python3 scripts/test_outcome_core.py"
-    environment: "Linux 7.1.9-arch1-2 x86_64; Python 3.14.7"
+    description: "Generate and adopt core projects with continuation rules; run outcome-core and long-run-control fixtures plus full script suite and gate."
+    command: "python3 scripts/test_outcome_core.py && python3 scripts/test_long_run_control.py"
+    environment: "Local Linux workstation; Python 3.14.7; temporary generated projects and existing home Projects checkouts"
     status: passed
-    evidence: "evidence/outcome-core-001/summary.md"
+    evidence: "evidence/long-run-control-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
@@ -31,14 +28,5 @@ delivery_boundary:
   failed_attempts: []
   simplification_review: null
 blockers: []
-risks:
-  - id: legacy-profile-compatibility
-    category: compatibility
-    severity: medium
-    exposure: opt_in_only
-    affected_environment: "Explicitly selected v5 compatibility profiles"
-    consequence: "Existing consumers need a deliberate migration path instead of silent removal."
-    owner: template_maintainer
-    decision: resolved
-    expires: null
-next_action: "Have the human review the corrected gate and docs/WORKED_EXAMPLE.md, try the packaged-product lesson, and accept, reject, or refine the product outcome."
+risks: []
+next_action: "Human review of the staged long-run-control integration; downstream agents complete their queued semantic refresh and real primary journey before ordinary work."
