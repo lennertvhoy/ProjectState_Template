@@ -56,10 +56,9 @@ owner without that record, and never infer acceptance from passing checks.
 
 ## Simplification and risk
 
-Two evidenced failures at the same delivery boundary require an assumption
-review before adding mechanism: name the failed assumption, remove a moving
-part, and rerun the smallest real journey. Renaming a test, branch, or run does
-not reset the count.
+Two evidenced failures at one delivery boundary require an assumption review
+before more mechanism: name the failed assumption, remove a moving part, rerun
+the smallest real journey. Renaming a test, branch, or run resets nothing.
 
 Fail closed on unapproved destructive actions, data loss, privilege escalation,
 secret or private-data exposure, and permission-boundary changes. Record other
