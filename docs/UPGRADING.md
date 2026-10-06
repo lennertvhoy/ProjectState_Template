@@ -124,3 +124,23 @@ are updated, project truth is preserved, the real primary journey is rerun, and
 the resulting evidence is recorded. If blocked, retain the notice and record the
 exact blocker and next action; do not repeatedly scaffold or overwrite files on
 resume. Preserve the pending product task and return to it after setup.
+
+## Optional measured improvement rounds (2026-10-06)
+
+No refresh is required and none is queued. The generated core, `AGENTS.md`, and
+`STATE.yaml` are unchanged, and existing instances need nothing from this
+revision. It is an opt-in asset for an instance that has a deterministic,
+repeatable measure of its own outcome.
+
+To opt in, copy `prompts/IMPROVE_MD_TEMPLATE.md` to `IMPROVE.md` and
+`scripts/projectstate_improve_check.py` to the same path in the instance, then
+follow `prompts/IMPROVEMENT_ROUNDS.md`. The template ships `enabled: false`; the
+owner records the measure, its baseline, the evaluator files under `protected`,
+the stop rule, and a hard token cap before enabling it. Do not paste its fields
+into `STATE.yaml` (the gate still rejects unknown top-level keys), do not widen
+the agent's scope beyond the instance, and do not let a round apply its own
+proposal. Do not add the `AGENTS.md` trigger line unless the owner wants it.
+
+The workflow is not validated as beneficial. Record a measure-only baseline on
+one real instance before enabling proposals, and disable it when the stop rule
+trips rather than re-arming it by habit.

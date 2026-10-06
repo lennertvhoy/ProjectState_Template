@@ -173,6 +173,14 @@ ownership, assignment, recovery, and integration rules. The optional
 how to use them. There is no automatic thread routing or model selection, and
 the generated default still contains six files.
 
+For an instance that has a measurable outcome, the optional
+[measured improvement rounds guide](prompts/IMPROVEMENT_ROUNDS.md) describes an
+event-triggered, proposal-only workflow with a mechanically enforced stop rule.
+It is copied in by hand (`prompts/IMPROVE_MD_TEMPLATE.md` plus
+`scripts/projectstate_improve_check.py`), adds no generated text or `STATE.yaml`
+key, and stays inert until the owner sets `enabled: true`. An instance with no
+measure should not use it.
+
 Git history is the default work history. Do not duplicate it into a mandatory
 workflow ledger.
 

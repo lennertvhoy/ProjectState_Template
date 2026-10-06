@@ -39,11 +39,14 @@ def _shim_names() -> list[str]:
     return sorted(p.name for p in (ROOT / "scripts").glob("statedd_*.py"))
 
 
+V6_ONLY_SCRIPTS = {"projectstate_gate.py", "projectstate_improve_check.py"}  # never had a statedd_ name
+
+
 def test_every_canonical_script_has_a_legacy_shim() -> None:
     canonical = sorted(
         p.name
         for p in (ROOT / "scripts").glob("projectstate_*.py")
-        if p.name != "projectstate_gate.py"
+        if p.name not in V6_ONLY_SCRIPTS
     )
     shims = _shim_names()
     expected_shims = sorted(f"statedd_{name.removeprefix('projectstate_')}" for name in canonical)

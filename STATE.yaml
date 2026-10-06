@@ -4,21 +4,22 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: long-run-control-001
-  objective: "Add bounded long-run continuation control to the generated v6 core and queue its refresh across the user's Projects folder."
+  id: improvement-rounds-001
+  objective: "Add an optional, opt-in measured-improvement-round asset (event-triggered, proposal-only, mechanically enforced stop rule and protected paths) without changing the generated core."
   status: validated
-  # Human-owned criteria derived from the requested implementation brief.
+  # Human-owned criteria derived from the requested integration and research brief.
   acceptance:
-    - "Default new and adopt retain the six-file core and carry a compact continuation decision separate from closure."
-    - "An optional long-run prompt holds the selected-run envelope without new STATE.yaml top-level keys or scheduler machinery."
-    - "Generated-fixture behavior is tested: continuation, critical-path, renaming, verification ladder, and gate rejection of unknown run fields."
-    - "Queue the updated template as the next agent task across home Projects while preserving project rules and unrelated work."
+    - "Default new generation keeps the six-file core and carries no improvement-round text; the asset exists only as a template-side prompt, an IMPROVE.md template, and a read-only checker."
+    - "An instance with no measure cannot enable rounds, and a disabled or unselected instance is refused."
+    - "The stop rule trips after N flat rounds, stays tripped, and only an owner edit re-arms it; proposals cannot touch gates, state, acceptance, the measure, or past evidence, and instruction files may only shrink."
+    - "Measured values must match verbatim raw output; unsupported fields, symlinks, traversal, and unverifiable patches are rejected."
+    - "No downstream refresh is queued and no generated profile changes."
   primary_journey:
-    description: "Generate and adopt core projects with continuation rules; run outcome-core and long-run-control fixtures plus full script suite and gate."
-    command: "python3 scripts/test_outcome_core.py && python3 scripts/test_long_run_control.py"
-    environment: "Local Linux workstation; Python 3.14.7; temporary generated projects and existing home Projects checkouts"
+    description: "Generate a core project, copy the optional asset in, and exercise enable, measure, proposal, stop, and re-arm paths plus adversarial records; confirm default core and long-run behavior are unchanged."
+    command: "python3 scripts/test_outcome_core.py && python3 scripts/test_long_run_control.py && python3 scripts/test_improvement_rounds.py"
+    environment: "Local Linux workstation; Python 3.13.15; temporary generated core projects"
     status: passed
-    evidence: "evidence/long-run-control-001/summary.md"
+    evidence: "evidence/improvement-rounds-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
@@ -29,4 +30,4 @@ delivery_boundary:
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Human review of the staged long-run-control integration; downstream agents complete their queued semantic refresh and real primary journey before ordinary work."
+next_action: "Human review of the staged persistent-threads and long-run-control work plus this unstaged improvement-rounds addition; before enabling rounds on any instance, record a measure-only baseline there."
