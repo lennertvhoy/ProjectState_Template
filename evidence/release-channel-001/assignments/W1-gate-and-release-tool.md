@@ -1,0 +1,33 @@
+# Assignment W1-gate-and-release-tool (stopped 2026-10-06; resume from its worktree)
+
+You are a worker on the ProjectState template repository (Python, standard library only). You run in your own git worktree created from branch feat/release-channel-6.3 at commit 189f31b; confirm with `git log -1 --oneline` and work only inside your worktree. A coordinator integrates your branch, owns STATE.yaml, PROJECT.md, evidence/, CHANGELOG.md and docs/, and reviews your diff. Other workers change other files in parallel.
+
+Before coding, read: AGENTS.md (root), scripts/AGENTS.md, core/AGENTS.managed.md, releases/index.json, scripts/projectstate_release.py (shared helpers), scripts/projectstate_gate.py.
+
+Rules:
+- Standard library only; match the existing style (from __future__ import annotations, type hints, argparse, small functions).
+- Edit only the files listed under "Allowed files". Never edit STATE.yaml, PROJECT.md, evidence/, CHANGELOG.md or docs/. Never write inside any other repository.
+- Do not push, tag or merge. Commit on your worktree branch; end each commit message with the line: Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+- Test the invariant plus adjacent and adversarial cases. Run your new tests, then `python3 scripts/test_outcome_core.py` and `python3 -m pytest scripts/ -q -p no:cacheprovider --deselect scripts/test_init_template.py::test_template_root_bootstrap_gate_passes` (that test fails until the coordinator records the slice journey; leave it). If a legacy v5 test fails only because it does not know a new v6 file, register the file minimally and say so; never weaken a check.
+- Stop and report instead of guessing when the spec is ambiguous in a way that changes behavior, or when two attempts at the same failure do not converge.
+
+TASK W1: gate features and the release tool for release 6.3.0.
+
+Allowed files: scripts/projectstate_gate.py, scripts/projectstate_release.py, scripts/test_release.py (new), scripts/test_gate_owner_decision.py (new), scripts/test_outcome_core.py (only where an existing assertion must follow a deliberate output change below).
+
+A. Gate (scripts/projectstate_gate.py). Keep it self-contained (it must not import projectstate_release), read-only and path-confined; it never executes anything. Keep existing behavior and output except as listed.
+1. `--version` prints `projectstate-gate <RELEASE> (state schema <VERSION>)` and exits 0 without reading any file.
+2. Allow `waived` as a validation.human_acceptance value. It adds no blocker; current_slice.status `accepted` still requires human_acceptance `accepted`.
+3. Owner decision record. When human_acceptance is accepted, rejected or waived, the slice summary (the primary journey evidence file) must contain a `## Owner decision` section with exactly one `- Decision:` line whose value equals human_acceptance, exactly one `- Date:` line holding an ISO date that is not in the future, and exactly one `- Owner words:` line whose text is non-empty after stripping quotes and whitespace. A missing or mismatched record is an error (exit 2). A `## Owner decision` section while human_acceptance is pending is also an error (the records disagree). Reuse `_markdown_sections` and `_summary_value`. This must work whatever the journey status is (for example rejected with a failed journey).
+4. Warnings only (print `WARN: ...`; never change the exit code): STATE.yaml larger than 16384 bytes (the existing 65536-byte error stays); PROJECT.md larger than 6144 bytes; AGENTS.md without a managed block: `WARN: AGENTS.md has no managed ProjectState block; update it with the template's scripts/projectstate_update.py`; AGENTS.md whose lines outside the managed block and outside a leading YAML frontmatter exceed 150. Detect the block with the same two marker patterns as scripts/projectstate_release.py (copy the patterns; keep the gate standalone). Malformed markers (more than one start or end, an end before the start, or a stray `projectstate:managed:` marker) are an error.
+5. When the result is validated (exit 0) and human_acceptance is pending, print one more line after the existing ones: `- owner decision: pending; ask the owner to accept, reject, or waive`.
+
+B. Release tool (scripts/projectstate_release.py). Keep every existing helper and its signature; other workers import them. Replace the placeholder main with subcommands:
+- `check` (the default): validate releases/index.json. format string; state_schema equals the gate VERSION; `latest` equals the gate RELEASE; releases strictly ascending by semver, unique release numbers and tags; each entry has exactly the keys release, date, tag, status, gate_sha256, contract_sha256, instance_action, summary; status is released or draft and only the last entry may be draft; instance_action is none, mechanical or semantic; hashes are 64 lowercase hex characters or null (a null gate hash only on a draft; a null contract hash only on a draft or on releases before 6.3.0). If the latest entry is released, its gate_sha256 must equal sha256 of the gate file bytes and its contract_sha256 must equal contract_sha256(managed_block_text()). If it is a draft, print the computed hashes and exit 0. For released entries whose tag exists locally, compare sha256 of `git show <tag>:scripts/projectstate_gate.py` with gate_sha256 (read-only git; report and skip when git or the tag is missing; tags v6.0.0, v6.0.1, v6.1.0 and v6.2.0 exist). Exit 0 when consistent, otherwise 2 with one line per problem.
+- `cut --date YYYY-MM-DD`: only when the latest entry is a draft; fill both hashes from the current files, set date and status released, and rewrite the index atomically with 2-space indentation, unchanged key order and a trailing newline. Refuse when the latest entry is already released. Never create tags.
+- `hashes`: print the computed gate and contract hashes as JSON (current behavior).
+- Support `--template DIR` on all subcommands (default: this repository) so tests can use temporary template roots.
+
+Tests: scripts/test_gate_owner_decision.py (every owner-decision rule, waived, pending with a record, malformed markers, each warning, --version, the extra pending line) and scripts/test_release.py (check on the real index; adversarial copies in a temporary template root: duplicate keys, unsorted releases, two drafts, malformed hash, latest/RELEASE mismatch, released latest with a wrong hash; cut fills hashes and check then passes; cut refuses on a released latest). Build fixtures in temporary directories; never modify the real index or managed block in tests.
+
+Report (final message, under 400 words): branch and commit hashes; files changed; exact test commands with pass/fail counts; any deviation from this spec and why; known limitations.

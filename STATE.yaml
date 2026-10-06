@@ -30,4 +30,4 @@ delivery_boundary:
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Integrate the four worker branches (gate and release tool, managed contract, fleet doctor, update command), add the journey test, and run it."
+next_action: "Resume from the Handoff section of evidence/release-channel-001/summary.md: review and merge the W1, W3 and W4 WIP branches, write scripts/test_release_channel.py, run it, then cut 6.3.0."
