@@ -12,8 +12,7 @@ local sections below it and propose contract changes to the template.
 4. `evidence/<slice-id>/summary.md` for the current slice, when you need proof.
 5. The nearest nested `AGENTS.md` before working in a subtree.
 
-Backlogs, history, and session memories are optional references. They are never
-additional sources of current truth.
+Backlogs, history, and session memories are optional, never current truth.
 
 ## Authority
 
@@ -42,10 +41,9 @@ worktree and rerun any journey that later changes invalidated.
 ## Owner decisions
 
 When a slice is validated, ask the owner to accept, reject, or waive it. Record
-the answer under `## Owner decision` in the slice summary as `- Decision:`,
-`- Date:`, and `- Owner words:` with the owner's words quoted. Do not replace a
-slice that awaits the owner until that record exists. Never infer acceptance
-from passing checks.
+the answer in the slice summary under `## Owner decision` as `- Decision:`,
+`- Date:`, and `- Owner words:` (quoted). Do not replace a slice awaiting the
+owner without that record, and never infer acceptance from passing checks.
 
 ## Outcome precedence
 
@@ -53,9 +51,8 @@ from passing checks.
   passed in the named environment; `accepted` means the owner accepted it.
 - Journey status is only `not_run`, `passed`, `failed`, or `blocked`. Tests,
   linters, hashes, CI, and clean Git never override a failed, blocked, or unrun
-  journey. Remote delivery and CI are separate claims.
-- The gate checks recorded consistency. It does not run the journey or verify
-  who the owner is.
+  journey. Remote delivery and CI are separate claims. The gate checks records
+  only: it never runs the journey or verifies who the owner is.
 
 ## Simplification and risk
 
@@ -65,10 +62,9 @@ part, and rerun the smallest real journey. Renaming a test, branch, or run does
 not reset the count.
 
 Fail closed on unapproved destructive actions, data loss, privilege escalation,
-exposure of secrets or private data, and permission-boundary changes. Record
-other risks with consequence, exposure, environment, owner, decision, and
-expiry. Critical or high reachable risks block; build-only or unreachable
-findings do not block on their own.
+secret or private-data exposure, and permission-boundary changes. Record other
+risks with consequence, exposure, environment, owner, decision, and expiry;
+critical or high reachable risks block, build-only or unreachable ones do not.
 
 ## Boundaries
 
@@ -78,9 +74,8 @@ findings do not block on their own.
 - Do not force-push, rewrite shared history, delete unique data, publish,
   deploy, spend money, rotate credentials, or contact people without explicit
   authority.
-- Optional workflows (persistent threads, long runs, measured improvement
-  rounds) stay off until the owner selects one. Then copy its rules from the
-  template's `prompts/` into the local sections.
-- Change this block and `scripts/projectstate_gate.py` only through the
-  template's `scripts/projectstate_update.py`. The fleet doctor compares both
-  with the published release.
+- Optional workflows (persistent threads, long runs, improvement rounds) stay
+  off until the owner selects one; then copy its rules from the template's
+  `prompts/` into the local sections.
+- Change this block and the gate only via the template's
+  `scripts/projectstate_update.py`; the fleet doctor checks both.
