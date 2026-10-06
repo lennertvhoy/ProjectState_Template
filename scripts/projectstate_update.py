@@ -707,17 +707,17 @@ def build_plan(target: Path, template: Template, args: argparse.Namespace) -> Pl
 
 def write_atomic(path: Path, data: bytes, mode: int) -> None:
     """Write beside the target, then os.replace; the original survives any failure."""
-    handle, name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    handle, tmp_path = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
     try:
         with os.fdopen(handle, "wb") as stream:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        os.chmod(name, mode)
-        os.replace(name, path)
+        os.chmod(tmp_path, mode)
+        os.replace(tmp_path, path)
     except BaseException:
         try:
-            os.unlink(name)
+            os.unlink(tmp_path)
         except FileNotFoundError:
             pass
         raise
