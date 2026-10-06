@@ -41,9 +41,26 @@ MAX_STATE_BYTES = 64 * 1024
 MAX_BLOCKERS = 12
 MAX_BLOCKER_CHARS = 600
 RESOLVED_BLOCKER = re.compile(r"^\W*(resolved|fixed|closed|done|superseded|cleared)\b", re.IGNORECASE)
+# Soft limits: a larger file still validates but is probably carrying history or detail it should not.
+WARN_STATE_BYTES = 16 * 1024
+WARN_PROJECT_BYTES = 6 * 1024
+WARN_AGENTS_LINES = 150
+# Managed AGENTS.md block markers. Keep identical to scripts/projectstate_release.py; this gate stays standalone.
+START_MARKER = re.compile(r"^<!-- projectstate:managed:start release=(\d+\.\d+\.\d+) -->$", re.MULTILINE)
+END_MARKER = re.compile(r"^<!-- projectstate:managed:end -->$", re.MULTILINE)
+MANAGED_MARKER = "projectstate:managed:"
+ISO_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
+# Quote characters ignored when deciding whether the owner's recorded words are empty.
+QUOTE_CHARS = (
+    "\"'`"
+    "\N{LEFT DOUBLE QUOTATION MARK}\N{RIGHT DOUBLE QUOTATION MARK}\N{DOUBLE LOW-9 QUOTATION MARK}"
+    "\N{LEFT SINGLE QUOTATION MARK}\N{RIGHT SINGLE QUOTATION MARK}\N{SINGLE LOW-9 QUOTATION MARK}"
+    "\N{LEFT-POINTING DOUBLE ANGLE QUOTATION MARK}\N{RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK}"
+    "\N{SINGLE LEFT-POINTING ANGLE QUOTATION MARK}\N{SINGLE RIGHT-POINTING ANGLE QUOTATION MARK}"
+)
 PRIMARY_STATUSES = {"not_run", "passed", "failed", "blocked"}
 AUTOMATED_STATUSES = {"not_run", "passed", "failed", "not_applicable"}
-HUMAN_STATUSES = {"pending", "accepted", "rejected"}
+HUMAN_STATUSES = {"pending", "accepted", "rejected", "waived"}
 SLICE_STATUSES = {
     "planned",
     "implementing",
@@ -324,6 +341,39 @@ def _local_file(root: Path, relative: PurePosixPath, errors: list[str]) -> Path 
     return current
 
 
+def _validate_agents(path: Path, errors: list[str], warnings: list[str]) -> None:
+    """Check the managed-block markers and keep the project-owned part of AGENTS.md short."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        errors.append(f"cannot read AGENTS.md: {exc}")
+        return
+    starts = list(START_MARKER.finditer(text))
+    ends = list(END_MARKER.finditer(text))
+    stray = text.count(MANAGED_MARKER) - len(starts) - len(ends)
+    skipped: set[int] = set()  # zero-based line numbers that are not project-owned: managed block, frontmatter
+    if not starts and not ends and not stray:
+        warnings.append("AGENTS.md has no managed ProjectState block; update it with the template's "
+                        "scripts/projectstate_update.py")
+    elif len(starts) != 1 or len(ends) != 1 or ends[0].start() <= starts[0].end() or stray:
+        errors.append("AGENTS.md has malformed managed block markers; expect one start line, then one end "
+                      "line, and no other projectstate:managed: text")
+        return
+    else:
+        skipped.update(range(text.count("\n", 0, starts[0].start()), text.count("\n", 0, ends[0].start()) + 1))
+    lines = text.split("\n")
+    if lines[-1] == "":
+        lines.pop()
+    if lines and lines[0].rstrip() == "---":
+        closing = next((number for number in range(1, len(lines)) if lines[number].rstrip() == "---"), None)
+        if closing is not None:
+            skipped.update(range(closing + 1))
+    local = sum(1 for number in range(len(lines)) if number not in skipped)
+    if local > WARN_AGENTS_LINES:
+        warnings.append(f"AGENTS.md has {local} lines outside the managed block and frontmatter "
+                        f"(above {WARN_AGENTS_LINES}); keep the local rules short and link to detail")
+
+
 def _evidence_path(root: Path, raw: Any, slice_id: str, errors: list[str]) -> Path | None:
     value = _text(raw, "current_slice.primary_journey.evidence", errors)
     if not value:
@@ -354,6 +404,57 @@ def _attempt_evidence_path(
         errors.append(f"{label} must name a supporting file directly under {expected_parent}")
         return
     _local_file(root, relative, errors)
+
+
+def _iso_date(value: str) -> dt.date | None:
+    """Parse a strict YYYY-MM-DD date; None for anything else (no basic or week-date forms)."""
+    if not ISO_DATE.fullmatch(value):
+        return None
+    try:
+        return dt.date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _owner_decision_errors(record: str, human: str) -> list[str]:
+    """Problems in an `## Owner decision` record, which must agree with validation.human_acceptance."""
+    problems: list[str] = []
+    decision = _summary_value(record, "Decision")
+    if decision is None:
+        problems.append("## Owner decision needs exactly one '- Decision:' line")
+    elif decision != human:
+        problems.append(f"## Owner decision records {decision!r} but validation.human_acceptance is {human!r}")
+    date = _summary_value(record, "Date")
+    if date is None:
+        problems.append("## Owner decision needs exactly one '- Date:' line")
+    else:
+        recorded = _iso_date(date)
+        if recorded is None:
+            problems.append(f"## Owner decision Date {date!r} must be an ISO date (YYYY-MM-DD)")
+        elif recorded > dt.date.today():
+            problems.append(f"## Owner decision Date {date} is in the future")
+    words = _summary_value(record, "Owner words")
+    if words is None:
+        problems.append("## Owner decision needs exactly one '- Owner words:' line")
+    elif not any(not char.isspace() and char not in QUOTE_CHARS for char in words):
+        problems.append("## Owner decision '- Owner words:' must quote what the owner said, not be empty")
+    return problems
+
+
+def _validate_owner_decision(sections: dict[str, str], human: Any, errors: list[str]) -> None:
+    """The slice summary records the owner's decision exactly when human_acceptance is no longer pending."""
+    if not _is_choice(human, HUMAN_STATUSES):
+        return
+    record = sections.get("owner decision")
+    if human == "pending":
+        if record is not None:
+            errors.append("evidence summary has an ## Owner decision section but "
+                          "validation.human_acceptance is pending; the records disagree")
+    elif record is None:
+        errors.append(f"validation.human_acceptance is {human} but the evidence summary has no "
+                      "## Owner decision section")
+    else:
+        errors.extend(_owner_decision_errors(record, human))
 
 
 def _validate_failures(
@@ -452,20 +553,29 @@ def _validate_risks(raw_risks: Any, errors: list[str], blockers: list[str], warn
 
 
 def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
+    errors, blockers, warnings, _ = _validate(root)
+    return errors, blockers, warnings
+
+
+def _validate(root: Path) -> tuple[list[str], list[str], list[str], Any]:
+    """Return (errors, blockers, warnings, human_acceptance); the last is None when STATE.yaml is unusable."""
     errors: list[str] = []
     blockers: list[str] = []
     warnings: list[str] = []
     state_path = _local_file(root, PurePosixPath("STATE.yaml"), errors)
     if state_path is None:
-        return errors, blockers, warnings
+        return errors, blockers, warnings, None
     state_bytes = state_path.stat().st_size
     if state_bytes > MAX_STATE_BYTES:
         errors.append(f"STATE.yaml is {state_bytes} bytes (max {MAX_STATE_BYTES}); it is a current-state view, "
                       "move history to Git and evidence")
+    if state_bytes > WARN_STATE_BYTES:
+        warnings.append(f"STATE.yaml is {state_bytes} bytes (above {WARN_STATE_BYTES}); keep it a current view "
+                        "of the one slice and move history to Git and evidence")
     try:
         payload = parse_state(state_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, StateSyntaxError) as exc:
-        return [f"cannot read STATE.yaml: {exc}"], [], []
+        return [f"cannot read STATE.yaml: {exc}"], [], [], None
 
     _exact_keys(payload, TOP_LEVEL_KEYS, "STATE.yaml", errors)
     if payload.get("version") != VERSION:
@@ -480,9 +590,13 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     project_path = _local_file(root, PurePosixPath("PROJECT.md"), errors)
     try:
         project_text = project_path.read_text(encoding="utf-8") if project_path else ""
+        project_bytes = project_path.stat().st_size if project_path else 0
     except (OSError, UnicodeDecodeError) as exc:
         errors.append(f"cannot read PROJECT.md: {exc}")
-        project_text = ""
+        project_text, project_bytes = "", 0
+    if project_bytes > WARN_PROJECT_BYTES:
+        warnings.append(f"PROJECT.md is {project_bytes} bytes (above {WARN_PROJECT_BYTES}); keep the owner's "
+                        "contract short and link to detail elsewhere")
     sections = _markdown_sections(project_text, "PROJECT.md", errors)
     for heading in ("user", "outcome", "scope", "non-goals", "durable constraints"):
         body = sections.get(heading, "")
@@ -577,7 +691,9 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
     _validate_risks(payload.get("risks"), errors, blockers, warnings)
     _text(payload.get("next_action"), "next_action", errors)
 
-    _local_file(root, PurePosixPath("AGENTS.md"), errors)
+    agents_path = _local_file(root, PurePosixPath("AGENTS.md"), errors)
+    if agents_path is not None:
+        _validate_agents(agents_path, errors, warnings)
 
     if payload.get("profile") == "hardened":
         _local_file(root, PurePosixPath("HARDENED_POLICY.md"), errors)
@@ -592,6 +708,8 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
         for heading in ("Primary journey", "Secondary checks", "Artifacts", "Limitations"):
             if heading.lower() not in evidence_sections:
                 errors.append(f"evidence summary needs ## {heading}")
+        # Whatever the journey status: a rejected owner decision can accompany a failed journey.
+        _validate_owner_decision(evidence_sections, human, errors)
         primary_evidence = evidence_sections.get("primary journey", "")
         if journey_status == "passed":
             if (_summary_value(primary_evidence, "Result") or "").lower() != "passed":
@@ -605,15 +723,23 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
             if recorded_environment != environment:
                 errors.append("evidence Environment must match STATE.yaml primary journey environment")
 
-    return errors, blockers, warnings
+    return errors, blockers, warnings, human
+
+
+def version_line() -> str:
+    return f"projectstate-gate {RELEASE} (state schema {VERSION})"
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate outcome-first ProjectState truth")
     parser.add_argument("--root", default=".", help="Repository root")
+    parser.add_argument("--version", action="store_true", help="Print the gate release and state schema, then exit")
     args = parser.parse_args(argv)
+    if args.version:
+        print(version_line())
+        return 0
     root = Path(args.root).resolve()
-    errors, blockers, warnings = validate(root)
+    errors, blockers, warnings, human = _validate(root)
     for warning in warnings:
         print(f"WARN: {warning}")
     if errors:
@@ -634,6 +760,8 @@ def main(argv: list[str] | None = None) -> int:
     print("- primary journey: recorded as passed")
     print("- secondary checks: do not override the primary journey")
     print("- this gate does not execute journeys or authenticate human approval")
+    if human == "pending":
+        print("- owner decision: pending; ask the owner to accept, reject, or waive")
     return 0
 
 
