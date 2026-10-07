@@ -4,28 +4,30 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: acceptance-loop-001
-  objective: "Turn the owner's decisions into one command each: the fleet inbox prints it, projectstate_decide.py records it, the gate checks it, and the doctor stops listing it."
-  status: validated
-  # Owner-approved CTO plan S5 (owner words 2026-10-06: "i choose all ur recs").
+  id: fleet-rollout-001
+  objective: "Bring every active v6 instance to release 6.3.0, remove stale refresh notices, and point ~/Projects/AGENTS.md at the update and fleet commands."
+  status: blocked
+  # Owner-approved CTO plan S6 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
-    - "The doctor's inbox prints, for every validated slice awaiting the owner, the exact decide command for that repository."
-    - "Running it with accept, waive or reject records the owner's quoted words under Owner decision, updates STATE.yaml, and the gate accepts the result; a second decision is refused."
-    - "After a decision the doctor no longer lists that slice; replacements made before a repository adopted the rule are history, not review items."
+    - "The fleet doctor reports every active v6 instance with gate and contract current at the latest release."
+    - "No update overwrites another session's uncommitted work; judgment conversions keep project rules and land on branches."
+    - "~/Projects/AGENTS.md names the update and fleet commands and adds no first action."
   primary_journey:
-    description: "On git-archive copies of three real instances awaiting the owner, run the inbox's decide command with accept, waive and reject, then check the gate and the doctor."
-    command: "python3 scripts/test_acceptance_loop.py --fleet-root ~/Projects"
-    environment: "local Linux workstation; real ~/Projects read-only; scratch copies via git archive outside ~/Projects"
-    status: passed
-    evidence: "evidence/acceptance-loop-001/summary.md"
+    description: "Run the read-only fleet doctor over the real ~/Projects and check that every active v6 instance is current."
+    command: "python3 scripts/projectstate_fleet.py --root ~/Projects --stdout --format json"
+    environment: "local Linux workstation; real ~/Projects, read only for the check"
+    status: blocked
+    evidence: "evidence/fleet-rollout-001/summary.md"
 validation:
-  primary_journey: passed
+  primary_journey: blocked
   automated_tests: passed
-  human_acceptance: waived
+  human_acceptance: pending
 delivery_boundary:
-  name: owner_decision_loop
+  name: fleet_update
   failed_attempts: []
   simplification_review: null
-blockers: []
+blockers:
+  - "Owner: fast-forward the 4 reviewed update branches listed under ready_to_merge in the fleet doctor (example-project-22, StatePort, example-project-34, example-project-20)."
+  - "6 instances (example-project-38, example-project-19, example-project-26, example-project-13, StatePort-Site, example-project-31) carry other sessions' uncommitted AGENTS.md or gate edits; each updates when its session commits and runs projectstate_update.py."
 risks: []
-next_action: "Start fleet-rollout-001: update every active v6 instance to 6.3.0 on private branches, fast-forward where AGENTS.md and the gate are clean, and point ~/Projects/AGENTS.md at the update and fleet commands."
+next_action: "Proceed to legacy-split-001 while the rollout waits on the owner's merges and the six project sessions; recheck with the fleet doctor afterwards."
