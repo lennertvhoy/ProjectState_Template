@@ -9,7 +9,70 @@ All notable ProjectState template changes are tracked here.
 > migration cycle. Canonical identifiers are now `projectstate-template-v6`,
 > `PROJECTSTATE_ASSETS.json`, and `scripts/projectstate_*.py`.
 
-## Unreleased
+## 6.3.0 - 2026-10-07
+
+Instance action: mechanical. Run `scripts/projectstate_update.py` on each v6
+instance; `docs/UPGRADING.md` explains the report and its refusals.
+
+- **Managed contract block.** Generated `AGENTS.md` is one template-owned block
+  between markers (source `core/AGENTS.managed.md`) followed by the project's
+  own `## Local rules` and `## Owner directives`. The continuation-decision and
+  persistent-thread sections left the generated contract: opt-in workflows live
+  in `prompts/` and add nothing to a generated core.
+- **Release index, check and cut.** `releases/index.json` records each release's
+  gate and block sha256 and its instance action. `scripts/projectstate_release.py`
+  adds `check` (the index against the gate, the block and the local tags),
+  `cut --date` (records a draft's hashes and marks it released; it never tags)
+  and `hashes`. The gate gains `--version`, and CI runs `check` in both
+  validation jobs.
+- **Fleet doctor.** `scripts/projectstate_fleet.py` is a read-only report over a
+  folder of repositories: release and drift of the gate and block (`current`,
+  `behind`, `draft` for an uncut candidate, or matching no release), startup
+  size, the gate verdict, and an owner inbox of decisions, blocked slices, items
+  to review and unmerged update branches. It writes `fleet.md` and `fleet.json`
+  to `~/.local/state/projectstate` unless told otherwise. Slice replacements made
+  before a repository adopted the managed block count as history
+  (`summary.silent_replacements_before_rule`), not review items.
+- **Update command.** `scripts/projectstate_update.py` (dry run by default, with
+  `--check` and `--apply`) replaces an instance's vendored gate and managed
+  block. It converts an `AGENTS.md` that has no block by recognizing the texts
+  earlier releases generated (`releases/contract-history.json`), removes the old
+  refresh notices, and refuses an edited gate, an edited block, modified template
+  sections, or uncommitted changes to either file unless a flag says otherwise.
+  It checks for a clean tree only when it would write, and never touches
+  `PROJECT.md`, `STATE.yaml` or evidence.
+- **Decide command.** `scripts/projectstate_decide.py` records the owner's
+  `accept`, `reject` or `waive`, with the owner's words, in `STATE.yaml` and the
+  slice summary, and never commits. `scripts/test_acceptance_loop.py` proves it
+  on copies of real instances.
+- **Gate owner-decision rules and warnings.** `waived` joins `accepted` and
+  `rejected` as a decision. Each of the three needs a matching `## Owner decision`
+  section (`- Decision:`, `- Date:`, `- Owner words:`) in the slice summary, and
+  that section beside a `pending` decision is an error. New `WARN:` lines never
+  change the exit code: an oversized `STATE.yaml` or `PROJECT.md`, a long
+  project-owned part of `AGENTS.md`, or no managed block. Malformed block
+  markers are an error. A validated result with a pending decision says so.
+- **Instances update mechanically.** One command replaces the two template-owned
+  parts and leaves project text, `PROJECT.md`, `STATE.yaml` and evidence alone,
+  so this release needs no hand merge.
+
+## 6.2.0 - 2026-10-06
+
+- Contract gains continuation and optional persistent-thread sections; template-side improvement-rounds asset. Instance action: semantic.
+
+## 6.1.0 - 2026-09-27
+
+- Gate keeps STATE.yaml a current view: size, blocker-count and resolved-blocker limits. Instance action: mechanical.
+
+## 6.0.1 - 2026-09-05
+
+- Gate validates outcome claims truthfully; packaged-product journey. Instance action: mechanical.
+
+## 6.0.0 - 2026-09-04
+
+- Outcome-first core replaces the v5 default. Instance action: semantic.
+
+Merged since `v4` and first tagged with 6.0.0:
 
 - **BL-OUTCOME-CORE-001: Replaced the default governance stack with an
   outcome-first core.** New and adopted projects now default to `core` and use
