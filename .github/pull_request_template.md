@@ -1,21 +1,20 @@
 ## What changed
 
-- 
+Describe the change and why it is needed.
 
-## Verification
+## Primary journey result
 
-- 
+- Command:
+- Environment:
+- Result: passed | failed | blocked | not run
 
-## Evidence refs
+Tests and CI are secondary checks. They do not replace this result.
 
-- 
+## Owner decision needed
 
-## Contract checks
+yes | no. If yes, name the decision and what the owner chooses between.
 
-- [ ] README, prompts, scripts, and state docs stay aligned
-- [ ] User-facing claims have evidence or are explicitly marked unproven
-- [ ] State files were updated if repo truth changed
+## Unproven boundaries
 
-## What remains unproven
-
-- 
+List what this change does not prove (other environments, remote delivery,
+human acceptance), or write "none".

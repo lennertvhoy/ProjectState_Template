@@ -7,7 +7,43 @@ All notable ProjectState template changes are tracked here.
 > Backward-compat aliases (script shims, command aliases, schema identifier
 > enums, legacy `STATEDD_*` env-var and filename fallbacks) are kept for one
 > migration cycle. Canonical identifiers are now `projectstate-template-v6`,
-> `PROJECTSTATE_ASSETS.json`, and `scripts/projectstate_*.py`.
+> `PROJECTSTATE_ASSETS.json`, and `scripts/projectstate_*.py`. The aliases and
+> `PROJECTSTATE_ASSETS.json` left main with the legacy split (see Unreleased) and
+> are at tag `v5-final`.
+
+## Unreleased
+
+Instance action: none. The gate, the managed block, and everything a generated
+project receives are unchanged, so no release is cut for this.
+
+- **Legacy split: main is v6 only** (owner decision D4, plan item S8). Removed:
+  the v5 profiles `minimal`, `solo`, `team`, and `regulated`; 95 scripts and tests
+  (the `statedd_*` shims, the v5 `projectstate_*` tools, `check_state_docs.py`, the
+  legacy quality gate, and the old automatic upgrader); `schemas/`, `fixtures/`,
+  `profiles/`, `commands/`, `skills/`, and `knowledge/`; the v5 state files and
+  ledgers; the v5 docs, evidence, failure scans, and incident records; and nine v5
+  prompt templates. That is 470 of 546 tracked files. All of it stays at tag
+  `v5-final`, the commit of release 6.3.0 (`git worktree add ../projectstate-v5
+  v5-final`). The v5-to-v6 migration stays in `docs/UPGRADING.md`.
+- **Generator.** `scripts/init_template.py` is v6 only (2254 to 642 lines). `new`
+  and `adopt` for `core` and `hardened` write byte-identical files to 6.3.0. The
+  four v5 profile names and the old `--minimal` alias exit with code 2 and point
+  at `v5-final`. `--asset-set` and `--install-github-assets` are gone. A symlinked
+  destination inside the target is now a one-line refusal instead of a traceback.
+- **Tests.** The generator tests live in `scripts/test_outcome_core.py`: legacy
+  names refused, core and hardened output pinned to digests recorded from 6.3.0,
+  and the safety behavior (unsafe targets, collisions, hard links, rollback,
+  conflicts, dry run, README link).
+- **CI.** v6 checks only: the core journey, `projectstate_release.py check`, the
+  test suite, the template's own gate, and the clean-checkout assertion, in both
+  jobs. It installs only pytest. The legacy quality gate, the v5 profile loop, and
+  tiktoken are gone.
+- **Docs.** The README, `docs/UPGRADING.md`, the `AGENTS.md` files, and
+  `docs/README.md` describe v6 only. `docs/adr/0004-release-channel-and-legacy-split.md`
+  records the release channel and the split. The pull request template asks for the
+  primary journey result and whether the owner must decide. The documented
+  `--target ../your-project` examples for the generator failed because it refuses
+  `..`; they now use an absolute path.
 
 ## 6.3.0 - 2026-10-07
 

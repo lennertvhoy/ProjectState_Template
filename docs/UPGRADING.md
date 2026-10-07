@@ -155,6 +155,17 @@ doctor (`projectstate_fleet.py`) then reports the instance's gate and block as
 This is a semantic migration, not a file refresh. The v5 state surfaces may
 contain useful project truth, so do not delete them before extracting it.
 
+The v5 tooling is no longer in this repository. The v5 profiles (`minimal`,
+`solo`, `team`, `regulated`), the v5 scripts and schemas, and the old automatic
+upgrader (`projectstate_upgrade.py`) are at tag `v5-final`:
+
+```bash
+git worktree add ../projectstate-v5 v5-final
+```
+
+The generator here refuses the four v5 profile names (exit code 2). Migrating a
+v5 repository is the procedure below.
+
 ## Safe migration
 
 1. Create a private migration branch from a clean, current checkout.
@@ -192,21 +203,14 @@ contain useful project truth, so do not delete them before extracting it.
 Do not translate a green v5 repository gate into a passed primary journey. Rerun
 the journey in a representative environment.
 
-## Existing automated upgrader
+## The old automatic upgrader
 
-`scripts/projectstate_upgrade.py` remains a v5 compatibility tool. It can safely
-refresh assets inside a locked v5 profile, but it does not perform this semantic
-migration and must not claim that it does. The v6 core intentionally has no asset
-lock or self-updating governance. For a v6 instance use
-`scripts/projectstate_update.py` (the 6.3.0 section above), which a person runs
-from the template; an instance never updates itself.
-
-## Compatibility profiles
-
-`minimal`, `solo`, `team`, and `regulated` remain selectable for existing
-consumers during the migration window. New projects default to `core`.
-Compatibility-profile maintenance does not change the v6 project outcome or
-acceptance criteria.
+`projectstate_upgrade.py` was a v5 tool, now at tag `v5-final`. It could refresh
+assets inside a locked v5 profile, but it never performed this semantic
+migration. The v6 core intentionally has no asset lock or self-updating
+governance. For a v6 instance use `scripts/projectstate_update.py` (the 6.3.0
+section above), which a person runs from the template; an instance never updates
+itself.
 
 ## Truth at handoff
 

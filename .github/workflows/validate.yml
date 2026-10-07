@@ -1,6 +1,6 @@
 name: Validate Template Docs
 
-# v6 only: the v5 compatibility checks live at tag v5-final.
+# v6 only: the v5 checks live at tag v5-final.
 # The "Check recorded core evidence" step runs the template's own gate. It exits 1 while the template's
 # current slice is not validated, and that is intended: a red job here means the slice is not done.
 

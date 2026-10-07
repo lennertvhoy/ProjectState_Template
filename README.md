@@ -11,20 +11,21 @@ failed user journey always outranks passing secondary checks.
 
 ## Start
 
-Create a new project:
+Create a new project. `--target` is an absolute path (the generator refuses a
+path with `..` in it), and `new` creates it:
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --target ../your-project
+python3 scripts/init_template.py new --name "Your Project" --target /path/to/your-project
 ```
 
 Adopt an existing repository without replacing its README:
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project" --target ../your-project --dry-run
-python3 scripts/init_template.py adopt --name "Your Project" --target ../your-project
+python3 scripts/init_template.py adopt --name "Your Project" --target /path/to/your-project --dry-run
+python3 scripts/init_template.py adopt --name "Your Project" --target /path/to/your-project
 ```
 
-Both commands use the `core` profile unless you explicitly choose another one.
+Both commands use the `core` profile unless you choose `--profile hardened`.
 
 ## The core
 
@@ -168,7 +169,7 @@ outcome gate. Backlogs, worklogs, ADRs, release ledgers, multi-agent matrices,
 and compliance records are optional project choices.
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --profile core
+python3 scripts/init_template.py new --name "Your Project" --target /path/to/your-project --profile core
 ```
 
 ### `hardened` — explicit opt-in
@@ -178,15 +179,12 @@ additional policy. It adds `HARDENED_POLICY.md`; hardened checks may add blocker
 but cannot override the primary journey.
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --profile hardened
+python3 scripts/init_template.py new --name "Your Project" --target /path/to/your-project --profile hardened
 ```
 
-### v5 compatibility profiles
-
-`minimal`, `solo`, `team`, and `regulated` remain explicitly selectable during
-migration. They preserve the earlier multi-file and remote-closure workflows for
-existing consumers. They are not recommended for new projects and are never
-selected implicitly.
+The earlier v5 profiles, scripts and state files live at tag `v5-final`
+(`git worktree add ../projectstate-v5 v5-final`). This repository is v6 only,
+and the generator refuses the v5 profile names with exit code 2.
 
 ## Runtime independence
 
@@ -252,8 +250,8 @@ Add these only when the project needs them:
 - signing, audit retention, or compliance evidence when obligations require it;
 - multi-agent ownership rules when agents actually run concurrently.
 
-The initializer refuses automatic optional asset-set expansion for the v6
-profiles; add justified project-specific tooling in a separately reviewed change.
+The initializer installs no optional tooling; add justified project-specific
+tooling in a separately reviewed change.
 
 Opt-in workflows live in `prompts/` and add nothing to the generated core: no
 text in `AGENTS.md`, no `STATE.yaml` key, no extra file. Each stays inert until
@@ -291,16 +289,17 @@ passes on a draft and prints the hashes that `cut --date YYYY-MM-DD` will
 record. After `cut`, commit the index and create the tag yourself. Both
 validation jobs in CI run `check`.
 
-The design decision and migration boundary are recorded in
-`docs/adr/0003-outcome-first-core.md`. The template repository retains the v5
-implementation and historical files as compatibility material, but its current
-authority is `AGENTS.md`, `PROJECT.md`, and `STATE.yaml`.
+The design decisions are recorded in `docs/adr/`: the outcome-first core in
+`0003-outcome-first-core.md`, the release channel and the removal of v5 from
+this repository in `0004-release-channel-and-legacy-split.md`. The v5
+implementation lives at tag `v5-final`; this repository's current authority is
+`AGENTS.md`, `PROJECT.md`, and `STATE.yaml`.
 
-Run the focused core journey:
+Run the focused core journey, then the whole suite:
 
 ```bash
 python3 scripts/test_outcome_core.py
+python3 -m pytest scripts/ -q
 ```
 
-Also run relevant legacy compatibility tests before publishing a migration. A
-local pass is not remote delivery, CI verification, release, or human acceptance.
+A local pass is not remote delivery, CI verification, release, or human acceptance.

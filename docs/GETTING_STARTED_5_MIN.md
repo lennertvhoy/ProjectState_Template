@@ -5,17 +5,18 @@
 New project:
 
 ```bash
-python3 scripts/init_template.py new --name "Your Project" --target ../your-project
+python3 scripts/init_template.py new --name "Your Project" --target /path/to/your-project
 ```
 
 Existing project:
 
 ```bash
-python3 scripts/init_template.py adopt --name "Your Project" --target ../your-project --dry-run
-python3 scripts/init_template.py adopt --name "Your Project" --target ../your-project
+python3 scripts/init_template.py adopt --name "Your Project" --target /path/to/your-project --dry-run
+python3 scripts/init_template.py adopt --name "Your Project" --target /path/to/your-project
 ```
 
 The default profile is `core`. Adoption preserves the existing product README.
+`--target` must not contain `..`; the generator refuses such a path.
 
 ## 2. Confirm the project contract
 

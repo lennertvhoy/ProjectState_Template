@@ -21,6 +21,3 @@ Prompts are optional conveniences, not executable policy or additional state.
 - Keep handoffs concise: outcome, changes, journey result, secondary checks,
   blockers/risks, unproven boundaries, and exact next action.
 - Prompts must not make ProjectState an application runtime dependency.
-
-The v5 templates retained here are compatibility material. When touching one,
-label its boundary instead of teaching it as the v6 default.

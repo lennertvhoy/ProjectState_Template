@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Create a ProjectState project (`new`) or install the workflow into a repository (`adopt`).
 
-Profiles: `core` (the default) and `hardened`. The v5 compatibility profiles live at tag v5-final.
+Profiles: `core` (the default) and `hardened`. The v5 profiles live at tag v5-final.
 SOURCE_DATE_EPOCH, when set, fixes the generated dates.
 """
 
@@ -513,7 +513,7 @@ def run_adopt(args: argparse.Namespace, target: Path, assets: list[Path], files:
 
 def legacy_profile_message(profile: str) -> str:
     return (
-        f"profile {profile!r} was a v5 compatibility profile and is not part of this template any more. "
+        f"profile {profile!r} was a v5 profile and is not part of this template any more. "
         f"The v5 material lives at tag {V5_TAG}: git worktree add ../projectstate-v5 {V5_TAG}"
     )
 

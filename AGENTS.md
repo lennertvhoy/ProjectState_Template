@@ -96,11 +96,6 @@ critical or high reachable risks block, build-only or unreachable ones do not.
   artifacts plus the small outcome gate.
 - `hardened` is explicit opt-in for justified security, compliance, review, or
   delivery controls. Its checks can add blockers but never override the journey.
-- `minimal`, `solo`, `team`, and `regulated` are v5 compatibility profiles,
-  retained until the legacy split. Do not select them for a new project unless
-  compatibility is required.
-- This repository retains v5 scripts and state files so existing users can
-  migrate deliberately. They are compatibility material, not current authority.
 - `scripts/`, `prompts/`, and `docs/` each have a nested `AGENTS.md`; changes
   there also obey the nearest one.
 - Before claiming a template slice, validate default `new` and `adopt`
@@ -110,5 +105,4 @@ The managed block's source is core/AGENTS.managed.md. Never edit the block in th
 
 ## Owner directives
 
-- 2026-10-06, until release 6.3.0 ships: feature freeze. No new workflows, opt-ins, or generated text beyond the release channel (owner decision D2).
 - 2026-10-06, until the CTO roadmap completes: the owner selected a coordinator with Sonnet workers. The coordinator integrates and alone writes STATE.yaml and evidence; workers use separate worktrees and do not edit coordination files.

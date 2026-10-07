@@ -1,20 +1,21 @@
 # Documentation
 
-This folder holds durable project documentation and evidence.
+Reference and migration documentation. The user guide for the template is the
+repository root `README.md`. The current outcome, slice, and proof live in
+`PROJECT.md`, `STATE.yaml`, and `evidence/`, never here.
 
-The primary user guide for the template lives in the repository root `README.md`.
+## Files
 
-## Current Files
-
-- `EVIDENCE_LOG.md` - ledger of verification artifacts
-- `ACCEPTANCE_FREEZES.md` - accepted user-facing milestone ledger
-- `GETTING_STARTED_5_MIN.md` - short beginner path for first setup and first agent session
-- `BOOTSTRAP_QUALITY.md` - rubric for judging bootstrap output
-- `UPGRADING.md` - ProjectState upgrade guidance for downstream repos
+- `GETTING_STARTED_5_MIN.md` - short first-setup path for a new or adopted project
+- `WORKFLOW_FOR_BEGINNERS.md` - the outcome-first workflow on one page
+- `WORKED_EXAMPLE.md` - a runnable lesson: a packaged product fails, is handed off, and recovers
+- `UPGRADING.md` - updating a v6 project to the current release, and migrating a v5 project
+- `adr/` - architecture decision records; accepted ADRs are history
+- `benchmarks/PROJECTSTATE_BENCHMARK_SPEC.md` - the controlled benchmark specification (a specification only)
 
 ## Rules
 
-- Put evidence in `docs/EVIDENCE_LOG.md`.
-- Put durable screenshots, logs, and outputs under `docs/evidence/` when practical.
+- Put proof for a slice in `evidence/<slice-id>/summary.md`, not here.
 - Do not use generated or temporary paths as durable references.
-- Keep historical notes in `WORKLOG.md`, not in current-status docs.
+- History lives in Git, the ADRs, and `CHANGELOG.md`. The v5 documents live at
+  tag `v5-final`.
