@@ -571,11 +571,26 @@ def needed_flags(plan: dict[str, Any]) -> list[str]:
     return flags
 
 
+def pre_update_revision(source: Path) -> str:
+    """HEAD, or the parent of the commit that first added a managed block once the instance is already updated.
+
+    The journey must exercise a real conversion, so an instance that the rollout already brought to a
+    managed release is exported as it was just before that update.
+    """
+    found = run(["git", "-C", str(source), "log", "--reverse", "--format=%H", "-S", "projectstate:managed:start",
+                 "--", "AGENTS.md"])
+    first = found.out.split()[0] if found.code == 0 and found.out.split() else None
+    return f"{first}^" if first else "HEAD"
+
+
 def export_instance(source: Path, destination: Path) -> Run:
-    """git archive HEAD of a real instance, extracted into a fresh directory; the original is only read."""
+    """git archive of a real instance before any managed update, extracted fresh; the original is only read."""
     destination.mkdir(parents=True)
+    revision = pre_update_revision(source)
+    if revision != "HEAD":
+        print(f"INFO  {source.name}: already updated; exporting its pre-update revision {revision}")
     with tempfile.TemporaryFile() as errors:
-        archive = subprocess.Popen(["git", "-C", str(source), "archive", "HEAD"], stdout=subprocess.PIPE,
+        archive = subprocess.Popen(["git", "-C", str(source), "archive", revision], stdout=subprocess.PIPE,
                                    stderr=errors, env=clean_env())
         assert archive.stdout is not None
         untar = subprocess.run(["tar", "-x", "-C", str(destination)], stdin=archive.stdout, capture_output=True,
