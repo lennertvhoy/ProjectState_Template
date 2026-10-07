@@ -4,28 +4,28 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: resume-eval-001
-  objective: "Measure whether the ProjectState core helps a fresh agent session resume a project correctly, with and without the core, and record the numbers whatever they show."
+  id: legacy-split-001
+  objective: "Make main v6 only: remove the v5 compatibility profiles, scripts, schemas, fixtures and historical evidence, keeping them at tag v5-final, without changing generated output."
   status: validated
-  # Owner-approved CTO plan S7 (owner words 2026-10-06: "i choose all ur recs").
+  # Owner-approved CTO plan S8 under owner decision D4 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
-    - "A reproducible harness builds seeded scenarios with and without the core, runs a fresh headless session per scenario, and grades outcomes and honesty with trusted code."
-    - "One real run on Claude Code is recorded with success, honesty, tokens, cost and time per condition, within the agreed budget."
-    - "The result is stated plainly in the evidence, including findings that do not favor ProjectState."
+    - "A fresh clone of the branch passes the core journey and the full test suite with only v6 material on main."
+    - "Generated core and hardened output for new and adopt is byte-identical to the pre-split generator."
+    - "Legacy profile names are refused with a pointer to tag v5-final, and CI checks v6 only."
   primary_journey:
-    description: "Run five seeded resume scenarios with and without the core on headless Claude Code (Sonnet) and grade each run."
-    command: "python3 evals/resume/run.py --model sonnet --repeats 1 --max-turns 15 --out ~/.local/state/projectstate/evals/resume-20261007T083444Z"
-    environment: "local Linux workstation; Claude Code 2.1.291 headless, model sonnet, isolated settings; scenarios built under /tmp outside every repository"
+    description: "Clone the branch fresh, then run the core journey and the full v6 test suite there."
+    command: "git clone -q --branch feat/release-channel-6.3 ~/Projects/ProjectState_Template <scratchpad>/fresh-clone && cd <scratchpad>/fresh-clone && python3 scripts/test_outcome_core.py && python3 -m pytest scripts/ evals/ -q"
+    environment: "local Linux workstation; fresh local clone of feat/release-channel-6.3 in the session scratchpad; system Python 3"
     status: passed
-    evidence: "evidence/resume-eval-001/summary.md"
+    evidence: "evidence/legacy-split-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
   human_acceptance: waived
 delivery_boundary:
-  name: template_measurement
+  name: template_repository
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Integrate legacy-split-001 (worker running), then domain-packs-001; the fleet rollout still waits on the owner's four merges and six project sessions."
+next_action: "Start domain-packs-001: domain-neutral wording and optional packs for software, learning, operations and content projects."
