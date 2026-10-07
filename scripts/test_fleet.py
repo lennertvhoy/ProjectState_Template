@@ -480,9 +480,11 @@ class SilentReplacementTests(FleetTestCase):
         if date:
             commit(repo, f"start {new_id}", date)
 
-    def waiting_repo(self, name: str, *, owner_decision: bool = False) -> Path:
+    def waiting_repo(self, name: str, *, owner_decision: bool = False, managed: bool = True) -> Path:
+        # A managed block committed with the repository means the owner-decision rule applies from then on.
+        agents = managed_agents("1.1.0", BLOCK_CURRENT) if managed else PLAIN_AGENTS
         return self.ws.add_v6(name, slice_id="alpha-001", status="validated", journey="passed",
-                              owner_decision=owner_decision)
+                              owner_decision=owner_decision, agents=agents)
 
     def test_replacement_without_an_owner_decision_is_reported(self) -> None:
         repo = self.waiting_repo("swap")
@@ -494,6 +496,15 @@ class SilentReplacementTests(FleetTestCase):
         self.assertEqual(kinds_of(report, "needs_review"), [("swap", "silent-replacement")])
         self.assertIn("slice alpha-001 was replaced by beta-002 (on 2026-09-03)", report["inbox"]["needs_review"][0]["message"])
         self.assertEqual(repo_of(report, "swap")["slice"]["id"], "beta-002")
+
+    def test_replacement_before_the_rule_was_adopted_is_history_not_review(self) -> None:
+        repo = self.waiting_repo("legacy", managed=False)
+        self.replace_slice(repo, "beta-002", date=DATE_2)
+        report = self.ws.report()
+        self.assertEqual(len(repo_of(report, "legacy")["silent_replacements"]), 1)  # still recorded as data
+        self.assertIsNone(repo_of(report, "legacy")["rule_since"])
+        self.assertEqual(report["inbox"]["needs_review"], [])
+        self.assertEqual(report["summary"]["silent_replacements_before_rule"], 1)
 
     def test_owner_decision_record_clears_the_replacement(self) -> None:
         repo = self.waiting_repo("recorded", owner_decision=True)

@@ -606,12 +606,32 @@ def scan_repository(path: Path, payload: dict[str, Any] | None, kind: str, probl
     repo["slice"] = slice_report(payload, ctx.today)
     repo["history"] = {"first_commit": None, "age_days": None, "state_commits": None, "all_commits": None}
     repo["silent_replacements"] = []
+    repo["rule_since"] = None
     repo["update_branch"] = None
     if git_usable(repo["git"]):
         repo["history"] = slice_history(path, repo["slice"]["id"], ctx.today)
         repo["silent_replacements"] = silent_replacements(path, payload)
+        repo["rule_since"] = rule_since(path, managed, ctx.today)
         repo["update_branch"] = update_branch(path, ctx.current)
     return repo
+
+
+def rule_since(path: Path, managed: bool, today: dt.date) -> str | None:
+    """Date the owner-decision rule reached this repository: the first commit adding the managed block.
+
+    Before that date no rule told agents to record a decision, so earlier replacements are history.
+    A block present only in the working tree counts from today; no block means the rule is not adopted.
+    """
+    if not managed:
+        return None
+    first = git_line(path, "log", "--reverse", "--format=%cs", "-S", "projectstate:managed:start", "--", "AGENTS.md")
+    return first or today.isoformat()
+
+
+def counts_against_rule(found: dict[str, Any], since: str | None) -> bool:
+    if since is None:
+        return False
+    return found["date"] is None or found["date"] >= since
 
 
 def discover(root: Path) -> list[Path]:
@@ -686,6 +706,8 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
                 review.append(inbox_item(repo, "contract-malformed",
                                          f"{name}: AGENTS.md has malformed managed block markers"))
         for found in repo["silent_replacements"]:
+            if not counts_against_rule(found, repo.get("rule_since")):
+                continue  # replaced before this repository adopted the owner-decision rule: history only
             when = f"on {found['date']}" if found["date"] else "uncommitted"
             review.append(inbox_item(
                 repo, "silent-replacement",
@@ -723,6 +745,9 @@ def summarize(repos: list[dict[str, Any]], inbox: dict[str, list[dict[str, Any]]
         "verdicts": {state: sum(repo["verdict"]["verdict"] == state for repo in v6) for state in VERDICTS},
         "size_flagged": sum(bool(repo["sizes"]["flags"]) for repo in v6),
         "notices": sum(repo["notices"]["total"] for repo in v6),
+        "silent_replacements_before_rule": sum(
+            1 for repo in v6 for found in repo["silent_replacements"]
+            if not counts_against_rule(found, repo.get("rule_since"))),
         "inbox": {section: len(items) for section, items in inbox.items()},
     }
 

@@ -4,28 +4,28 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: fleet-pilot-001
-  objective: "Prove the 6.3.0 mechanical update in two live instances (example-project-08, example-project-05) before any wider rollout."
+  id: acceptance-loop-001
+  objective: "Turn the owner's decisions into one command each: the fleet inbox prints it, projectstate_decide.py records it, the gate checks it, and the doctor stops listing it."
   status: validated
-  # Owner-approved CTO plan S4 under owner decision D3 (owner words 2026-10-06: "i choose all ur recs").
+  # Owner-approved CTO plan S5 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
-    - "Each pilot is updated on a private branch in a separate worktree, committed there, and fast-forwarded only when AGENTS.md and the gate were clean."
-    - "Afterwards the fleet doctor reports both pilots with gate and contract current at 6.3.0, and the update's --check exits 0 for both."
-    - "Project text outside the managed block, PROJECT.md, STATE.yaml and evidence are unchanged, and each project's gate verdict is unchanged or better."
+    - "The doctor's inbox prints, for every validated slice awaiting the owner, the exact decide command for that repository."
+    - "Running it with accept, waive or reject records the owner's quoted words under Owner decision, updates STATE.yaml, and the gate accepts the result; a second decision is refused."
+    - "After a decision the doctor no longer lists that slice; replacements made before a repository adopted the rule are history, not review items."
   primary_journey:
-    description: "Read-only check that both live pilots match the current release after their update commits."
-    command: "python3 scripts/projectstate_update.py --target ~/Projects/example-project-08 --check && python3 scripts/projectstate_update.py --target ~/Projects/example-project-05 --check"
-    environment: "local Linux workstation; live checkouts ~/Projects/example-project-08 (main) and ~/Projects/example-project-05 (feat/github-drive-career-evidence-20260910)"
+    description: "On git-archive copies of three real instances awaiting the owner, run the inbox's decide command with accept, waive and reject, then check the gate and the doctor."
+    command: "python3 scripts/test_acceptance_loop.py --fleet-root ~/Projects"
+    environment: "local Linux workstation; real ~/Projects read-only; scratch copies via git archive outside ~/Projects"
     status: passed
-    evidence: "evidence/fleet-pilot-001/summary.md"
+    evidence: "evidence/acceptance-loop-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
   human_acceptance: waived
 delivery_boundary:
-  name: fleet_update
+  name: owner_decision_loop
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Start acceptance-loop-001: prove projectstate_decide.py end to end on copies of instances awaiting the owner."
+next_action: "Start fleet-rollout-001: update every active v6 instance to 6.3.0 on private branches, fast-forward where AGENTS.md and the gate are clean, and point ~/Projects/AGENTS.md at the update and fleet commands."
