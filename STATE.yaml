@@ -4,28 +4,28 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: legacy-split-001
-  objective: "Make main v6 only: remove the v5 compatibility profiles, scripts, schemas, fixtures and historical evidence, keeping them at tag v5-final, without changing generated output."
+  id: handoff-eval-001
+  objective: "Measure whether a session that follows the ProjectState core leaves a better handoff than one that does not, using two real sessions and a hidden acceptance suite."
   status: validated
-  # Owner-approved CTO plan S8 under owner decision D4 (owner words 2026-10-06: "i choose all ur recs").
+  # Owner request 2026-10-07: "proceed" on building a harder eval before adding anything new.
   acceptance:
-    - "A fresh clone of the branch passes the core journey and the full test suite with only v6 material on main."
-    - "Generated core and hardened output for new and adopt is byte-identical to the pre-split generator."
-    - "Legacy profile names are refused with a pointer to tag v5-final, and CI checks v6 only."
+    - "A two-session harness gives session 1 owner constraints in its prompt only, runs a fresh session 2 on the repository, and grades the result with trusted hidden checks."
+    - "The grader is proven with a reference implementation, the skeleton and single-fault mutations before any model run."
+    - "Results are recorded as measured, including findings that do not favor the core, with limits stated."
   primary_journey:
-    description: "Clone the branch fresh, then run the core journey and the full v6 test suite there."
-    command: "git clone -q --branch feat/release-channel-6.3 ~/Projects/ProjectState_Template <scratchpad>/fresh-clone && cd <scratchpad>/fresh-clone && python3 scripts/test_outcome_core.py && python3 -m pytest scripts/ evals/ -q"
-    environment: "local Linux workstation; fresh local clone of feat/release-channel-6.3 in the session scratchpad; system Python 3"
+    description: "Run three plain-prompt two-session chains with the core and three without on headless Claude Code (haiku) and grade each."
+    command: "python3 evals/resume/handoff.py --model haiku --repeats 3 --variants plain --budget-usd 3 --out ~/.local/state/projectstate/evals/handoff-haiku-plain-20261007T145814Z"
+    environment: "local Linux workstation; Claude Code 2.1.291 headless, model haiku, isolated settings; repositories built under /tmp outside every repository"
     status: passed
-    evidence: "evidence/legacy-split-001/summary.md"
+    evidence: "evidence/handoff-eval-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
-  human_acceptance: waived
+  human_acceptance: pending
 delivery_boundary:
-  name: template_repository
+  name: template_measurement
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Next session: domain-packs-001 (plan S9) from evidence/domain-packs-001/assignment.md; the fleet rollout still waits on the owner's four merges and six project sessions."
+next_action: "Owner: read evidence/handoff-eval-001/summary.md and decide whether to fund a design-fixed rerun (owner-accept step between sessions, a PROJECT.md constraints rule, and a resume-first-run-the-journey rule) before any contract change; domain-packs-001 stays held until then."
