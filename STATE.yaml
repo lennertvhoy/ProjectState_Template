@@ -4,30 +4,28 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: fleet-rollout-001
-  objective: "Bring every active v6 instance to release 6.3.0, remove stale refresh notices, and point ~/Projects/AGENTS.md at the update and fleet commands."
-  status: blocked
-  # Owner-approved CTO plan S6 (owner words 2026-10-06: "i choose all ur recs").
+  id: resume-eval-001
+  objective: "Measure whether the ProjectState core helps a fresh agent session resume a project correctly, with and without the core, and record the numbers whatever they show."
+  status: validated
+  # Owner-approved CTO plan S7 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
-    - "The fleet doctor reports every active v6 instance with gate and contract current at the latest release."
-    - "No update overwrites another session's uncommitted work; judgment conversions keep project rules and land on branches."
-    - "~/Projects/AGENTS.md names the update and fleet commands and adds no first action."
+    - "A reproducible harness builds seeded scenarios with and without the core, runs a fresh headless session per scenario, and grades outcomes and honesty with trusted code."
+    - "One real run on Claude Code is recorded with success, honesty, tokens, cost and time per condition, within the agreed budget."
+    - "The result is stated plainly in the evidence, including findings that do not favor ProjectState."
   primary_journey:
-    description: "Run the read-only fleet doctor over the real ~/Projects and check that every active v6 instance is current."
-    command: "python3 scripts/projectstate_fleet.py --root ~/Projects --stdout --format json"
-    environment: "local Linux workstation; real ~/Projects, read only for the check"
-    status: blocked
-    evidence: "evidence/fleet-rollout-001/summary.md"
+    description: "Run five seeded resume scenarios with and without the core on headless Claude Code (Sonnet) and grade each run."
+    command: "python3 evals/resume/run.py --model sonnet --repeats 1 --max-turns 15 --out ~/.local/state/projectstate/evals/resume-20261007T083444Z"
+    environment: "local Linux workstation; Claude Code 2.1.291 headless, model sonnet, isolated settings; scenarios built under /tmp outside every repository"
+    status: passed
+    evidence: "evidence/resume-eval-001/summary.md"
 validation:
-  primary_journey: blocked
+  primary_journey: passed
   automated_tests: passed
-  human_acceptance: pending
+  human_acceptance: waived
 delivery_boundary:
-  name: fleet_update
+  name: template_measurement
   failed_attempts: []
   simplification_review: null
-blockers:
-  - "Owner: fast-forward the 4 reviewed update branches listed under ready_to_merge in the fleet doctor (example-project-22, StatePort, example-project-34, example-project-20)."
-  - "6 instances (example-project-38, example-project-19, example-project-26, example-project-13, StatePort-Site, example-project-31) carry other sessions' uncommitted AGENTS.md or gate edits; each updates when its session commits and runs projectstate_update.py."
+blockers: []
 risks: []
-next_action: "Proceed to legacy-split-001 while the rollout waits on the owner's merges and the six project sessions; recheck with the fleet doctor afterwards."
+next_action: "Integrate legacy-split-001 (worker running), then domain-packs-001; the fleet rollout still waits on the owner's four merges and six project sessions."
