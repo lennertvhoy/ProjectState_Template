@@ -29,8 +29,7 @@ changing acceptance or governance. Two failures at one delivery boundary require
 simplifying an assumption and removing a moving part before adding machinery.
 
 Use --profile hardened only if I explicitly select it for a named security,
-compliance, review, or delivery obligation. Do not select a v5 compatibility
-profile implicitly.
+compliance, review, or delivery obligation.
 
 Configure or push to a remote only when that external action is in scope. Keep
 remote delivery, CI, deployment, and human acceptance as separate claims.

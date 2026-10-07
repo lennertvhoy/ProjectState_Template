@@ -1,5 +1,9 @@
 name: Validate Template Docs
 
+# v6 only: the v5 checks live at tag v5-final.
+# The "Check recorded core evidence" step runs the template's own gate. It exits 1 while the template's
+# current slice is not validated, and that is intended: a red job here means the slice is not done.
+
 on:
   push:
   pull_request:
@@ -32,9 +36,10 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install dependencies
-        run: |
-          python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
+      # The suite imports pytest and the standard library. PyYAML (requirements-dev.txt) is only for the
+      # fleet journeys, which read the owner's own repositories and do not run here.
+      - name: Install test dependencies
+        run: python3 -m pip install pytest==9.0.3
 
       - name: Exercise generated core and packaged-product journey
         run: python3 scripts/test_outcome_core.py
@@ -42,22 +47,11 @@ jobs:
       - name: Check release identity
         run: python3 scripts/projectstate_release.py check
 
+      - name: Run the test suite
+        run: python3 -m pytest scripts/ -q
+
       - name: Check recorded core evidence
         run: python3 scripts/projectstate_gate.py
-
-      - name: Run legacy compatibility validation
-        run: |
-          python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance --verbose
-
-      - name: Generate and self-validate v5 compatibility profiles
-        run: |
-          tmpdir="$(mktemp -d)"
-          for profile in minimal solo team regulated; do
-            profile_target="$tmpdir/profile-$profile"
-            python3 scripts/init_template.py new --name "CI $profile" --profile "$profile" --target "$profile_target"
-            gate_level="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["required_gate_level"])' "$profile_target/PROJECTSTATE_ASSETS.json")"
-            python3 "$profile_target/scripts/projectstate_quality_gate.py" --root "$profile_target" --gate-level "$gate_level" --conformance
-          done
 
       - name: Prove validation left the checkout clean
         run: |
@@ -88,8 +82,8 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install dependencies
-        run: python3 -m pip install -r requirements-dev.txt tiktoken==0.12.0
+      - name: Install test dependencies
+        run: python3 -m pip install pytest==9.0.3
 
       - name: Exercise generated core and packaged-product journey for merge candidate
         run: python3 scripts/test_outcome_core.py
@@ -97,8 +91,13 @@ jobs:
       - name: Check release identity for merge candidate
         run: python3 scripts/projectstate_release.py check
 
+      - name: Run the test suite for merge candidate
+        run: python3 -m pytest scripts/ -q
+
       - name: Check recorded core evidence for merge candidate
         run: python3 scripts/projectstate_gate.py
 
-      - name: Run legacy compatibility validation for merge candidate
-        run: python3 scripts/projectstate_quality_gate.py --gate-level 2 --conformance --verbose
+      - name: Prove validation left the merge candidate clean
+        run: |
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=all)"

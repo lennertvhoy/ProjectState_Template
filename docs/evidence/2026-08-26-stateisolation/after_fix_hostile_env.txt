@@ -1,9 +1,0 @@
-# After fix — clone branch bl-bl-stateisolation-001-agen-6wnng, same hostile env (latched root)
-## golden path:
-PASS test_golden_path
-exit=0
-## agent_worktree suite:
-PASS test_clean_worktree_release_removes_path_and_reservation_without_force
-PASS test_remote_identity_normalizes_transport_and_credentials
-PASS test_local_remote_identity_resolves_relative_to_repository
-exit=0

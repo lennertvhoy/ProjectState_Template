@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -70,6 +71,67 @@ LEGACY_TRUTH_FILES = {
     "WORKLOG.md",
     "docs/EVIDENCE_LOG.md",
 }
+# The v5 profiles moved to tag v5-final with the legacy split; the generator refuses their names.
+LEGACY_PROFILES = ("minimal", "solo", "team", "regulated")
+V5_POINTER = "git worktree add ../projectstate-v5 v5-final"
+GOLDEN_EPOCH = "1791244800"  # 2026-10-06T00:00:00Z: pins the generated dates
+# sha256 of what the release 6.3.0 generator (commit 0f34205) wrote for the name "Golden Demo", recorded before the
+# legacy split. The managed block and the template-owned copies (the gate and the hardened policy) are compared with
+# the template's own files instead, so a release that changes them leaves these alone. A change here changes what
+# every new project receives: that is a release, not a test fix.
+GOLDEN_DIGESTS = {
+    "new-core": {
+        "AGENTS.md before the block": "57e2d4f15ba835b467abc51d2de1e23875350052667dafc3e1bd1c1318a32744",
+        "AGENTS.md after the block": "4cc5f68de2adc2c7e11ef5c82067c10916abbbf022c46a64866887a8848b969e",
+        "PROJECT.md": "cfe5427f4c9d2293268bf6198bdfbe82ff78c6a563ca32f4c2c9e83c5a569cc9",
+        "STATE.yaml": "d0f152b464f07df41c34e497405b0e8c6fbeb6c9ccd887d893977bfb36bacf8f",
+        "evidence/bootstrap-001/summary.md": "634725f16b029802f8d784c44971e65a204bdc49deeff87704c63978db71529b",
+        "README.md": "2d74e36b177f34d9d9e8eff9cd5fcefd52d8c01c345bdc63705891c905e3a7d7",
+    },
+    "new-hardened": {
+        "AGENTS.md before the block": "d0e010988b3b9b8267a221c5b76f2da84e422ec6a9535935b6e417f7ab91cc05",
+        "AGENTS.md after the block": "7d8267f59b40d0120f0b9b85f07fa897ee8e14a43c952ebf91e7e94ac07005c3",
+        "PROJECT.md": "cfe5427f4c9d2293268bf6198bdfbe82ff78c6a563ca32f4c2c9e83c5a569cc9",
+        "STATE.yaml": "609cd2833069d103685b322c0d640233d05cea426f4ac2cb9822444fa3bfd6db",
+        "evidence/bootstrap-001/summary.md": "634725f16b029802f8d784c44971e65a204bdc49deeff87704c63978db71529b",
+        "README.md": "a19781e1ef3911749efac5318a77704005e3945ca68a4e460df7cc462261492f",
+    },
+    "adopt-core": {
+        "AGENTS.md before the block": "57e2d4f15ba835b467abc51d2de1e23875350052667dafc3e1bd1c1318a32744",
+        "AGENTS.md after the block": "4cc5f68de2adc2c7e11ef5c82067c10916abbbf022c46a64866887a8848b969e",
+        "PROJECT.md": "d4fcaae2801ce36c0f68460ef452f203f88675a4e4380dc7f77ac32f2c9ec1b4",
+        "STATE.yaml": "d0f152b464f07df41c34e497405b0e8c6fbeb6c9ccd887d893977bfb36bacf8f",
+        "evidence/bootstrap-001/summary.md": "634725f16b029802f8d784c44971e65a204bdc49deeff87704c63978db71529b",
+    },
+    "adopt-hardened": {
+        "AGENTS.md before the block": "d0e010988b3b9b8267a221c5b76f2da84e422ec6a9535935b6e417f7ab91cc05",
+        "AGENTS.md after the block": "7d8267f59b40d0120f0b9b85f07fa897ee8e14a43c952ebf91e7e94ac07005c3",
+        "PROJECT.md": "d4fcaae2801ce36c0f68460ef452f203f88675a4e4380dc7f77ac32f2c9ec1b4",
+        "STATE.yaml": "609cd2833069d103685b322c0d640233d05cea426f4ac2cb9822444fa3bfd6db",
+        "evidence/bootstrap-001/summary.md": "634725f16b029802f8d784c44971e65a204bdc49deeff87704c63978db71529b",
+    },
+}
+
+
+def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    """The generator exactly as a user runs it, from the template checkout."""
+    return subprocess.run(
+        [sys.executable, str(INIT), *args], cwd=ROOT, capture_output=True, text=True, check=False, env=env
+    )
+
+
+def generated_digests(target: Path, *, adopt: bool) -> dict[str, str]:
+    """sha256 of each generated file the template does not own; AGENTS.md is split around its managed block."""
+    agents = normalize_newlines((target / "AGENTS.md").read_text(encoding="utf-8"))
+    block, error = extract_managed_block(agents)
+    assert error is None and block is not None, error
+    contents = {
+        "AGENTS.md before the block": agents[: block.start].encode("utf-8"),
+        "AGENTS.md after the block": agents[block.end :].encode("utf-8"),
+    }
+    for name in ("PROJECT.md", "STATE.yaml", "evidence/bootstrap-001/summary.md", *(() if adopt else ("README.md",))):
+        contents[name] = (target / name).read_bytes()
+    return {name: hashlib.sha256(data).hexdigest() for name, data in contents.items()}
 
 
 def run_init(target: Path, *, profile: str | None = None, adopt: bool = False) -> subprocess.CompletedProcess[str]:
@@ -876,6 +938,312 @@ class OutcomeCoreTests(unittest.TestCase):
                 {path.relative_to(target).as_posix() for path in target.rglob("*") if path.is_file()},
                 {"README.md"},
             )
+
+
+class GeneratorTests(unittest.TestCase):
+    """The v6-only generator: legacy profiles are refused, core and hardened output is unchanged, and unsafe
+    or conflicting writes are refused before anything is written."""
+
+    def test_legacy_profile_names_are_refused_with_the_v5_final_pointer(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for command in ("new", "adopt"):
+                for profile in LEGACY_PROFILES:
+                    with self.subTest(command=command, profile=profile):
+                        target = root / f"{command}-{profile}"
+                        if command == "adopt":
+                            target.mkdir()
+                        done = run_cli(command, "--name", "Legacy", "--target", str(target), "--profile", profile)
+                        self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+                        self.assertIn("v5-final", done.stderr)
+                        self.assertIn(V5_POINTER, done.stderr)
+                        self.assertEqual(done.stdout, "")
+                        self.assertEqual(list(target.iterdir()) if target.exists() else [], [])
+            for label, args in (
+                ("the old --minimal alias", ("new", "--name", "Legacy", "--target", str(root / "alias"), "--minimal")),
+                ("the form without a subcommand", ("--name", "Legacy", "--target", str(root / "bare"), "--profile", "team")),
+            ):
+                with self.subTest(label):
+                    done = run_cli(*args)
+                    self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+                    self.assertIn(V5_POINTER, done.stderr)
+                    self.assertFalse((root / "alias").exists() or (root / "bare").exists())
+            with self.subTest("a profile that never existed"):
+                done = run_cli("new", "--name", "Legacy", "--target", str(root / "unknown"), "--profile", "nonsense")
+                self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+                self.assertIn("core", done.stderr)
+                self.assertNotIn("v5-final", done.stderr)
+            for flag in ("--asset-set=github", "--install-github-assets"):
+                with self.subTest(removed_flag=flag):
+                    done = run_cli("adopt", "--name", "Legacy", "--target", str(root), flag)
+                    self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+
+    def test_core_and_hardened_generation_is_unchanged_from_release_6_3_0(self) -> None:
+        env = {**os.environ, "SOURCE_DATE_EPOCH": GOLDEN_EPOCH}
+        gate = ROOT / "scripts" / "projectstate_gate.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            for adopt in (False, True):
+                for profile in ("core", "hardened"):
+                    label = f"{'adopt' if adopt else 'new'}-{profile}"
+                    target = Path(tmp) / label
+                    if adopt:
+                        target.mkdir()
+                        (target / "README.md").write_text(EXISTING_README, encoding="utf-8")
+                    extra = () if adopt else ("--no-init-git",)
+                    done = run_cli("adopt" if adopt else "new", "--name", "Golden Demo", "--target", str(target),
+                                   "--profile", profile, *extra, env=env)
+                    self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+                    with self.subTest(case=label):
+                        self.assertEqual(generated_digests(target, adopt=adopt), GOLDEN_DIGESTS[label])
+                        copied = target / "scripts" / "projectstate_gate.py"
+                        self.assertEqual(copied.read_bytes(), gate.read_bytes())
+                        self.assertEqual(copied.stat().st_mode & 0o777, gate.stat().st_mode & 0o777)
+                        policy = target / "HARDENED_POLICY.md"
+                        if profile == "hardened":
+                            self.assertEqual(policy.read_bytes(), (ROOT / "HARDENED_POLICY.md").read_bytes())
+                        else:
+                            self.assertFalse(policy.exists())
+
+    def test_unsafe_targets_are_refused_and_nothing_is_written(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            real = root / "real"
+            real.mkdir()
+            link = root / "link"
+            link.symlink_to(real, target_is_directory=True)
+            nested = ROOT / "zz-nested-target"
+            for label, args, expected in (
+                ("symlinked root", ("new", "--target", str(link), "--no-init-git"), "symlink"),
+                ("symlinked parent", ("new", "--target", str(link / "child"), "--no-init-git"), "symlink"),
+                ("dot-dot traversal", ("new", "--target", f"{root}/a/../b", "--no-init-git"), "traversal"),
+                ("the template root", ("new", "--target", str(ROOT), "--no-init-git"), "template root"),
+                ("inside the template checkout", ("new", "--target", str(nested), "--dry-run"), "nested path"),
+                ("adopt a missing directory", ("adopt", "--target", str(root / "missing")), "existing directory"),
+                ("adopt a symlinked root", ("adopt", "--target", str(link)), "symlink"),
+            ):
+                with self.subTest(label):
+                    done = run_cli(args[0], "--name", "Unsafe", *args[1:])
+                    self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+                    self.assertIn(expected, (done.stdout + done.stderr).lower())
+                    self.assertEqual(list(real.iterdir()), [])
+                    self.assertFalse(nested.exists() or (root / "b").exists() or (root / "missing").exists())
+
+    def test_collisions_and_symlinked_destinations_are_refused_before_any_write(self) -> None:
+        def symlink_to_outside(name: str, is_dir: bool):
+            return lambda target, outside: (target / name).symlink_to(outside / name, target_is_directory=is_dir)
+
+        cases = {
+            "symlinked evidence directory": (symlink_to_outside("evidence", True), "symlink", {"evidence"}),
+            "symlinked AGENTS.md": (symlink_to_outside("AGENTS.md", False), "symlink", {"AGENTS.md"}),
+            "symlinked scripts directory": (symlink_to_outside("scripts", True), "symlink", {"scripts"}),
+            "directory where AGENTS.md goes": (lambda target, outside: (target / "AGENTS.md").mkdir(),
+                                               "non-file destination", {"AGENTS.md"}),
+            "file where scripts/ goes": (lambda target, outside: (target / "scripts").write_text("x\n"),
+                                         "non-directory destination parent", {"scripts"}),
+        }
+        for command in ("new", "adopt"):
+            for label, (prepare, expected, kept) in cases.items():
+                with self.subTest(command=command, case=label), tempfile.TemporaryDirectory() as tmp:
+                    target, outside = Path(tmp) / "target", Path(tmp) / "outside"
+                    target.mkdir()
+                    outside.mkdir()
+                    prepare(target, outside)
+                    extra = ("--no-init-git",) if command == "new" else ()
+                    done = run_cli(command, "--name", "Collide", "--target", str(target), "--overwrite",
+                                   "--force-overwrite", *extra)
+                    self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+                    self.assertIn(expected, (done.stdout + done.stderr).lower())
+                    self.assertNotIn("Traceback", done.stderr)
+                    self.assertEqual({path.name for path in target.iterdir()}, kept)
+                    self.assertEqual(list(outside.iterdir()), [])
+
+    def test_hard_linked_destinations_are_replaced_not_mutated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "target"
+            (target / "scripts").mkdir(parents=True)
+            externals = {}
+            for name in ("AGENTS.md", "scripts/projectstate_gate.py"):
+                externals[name] = root / ("external-" + name.replace("/", "-"))
+                externals[name].write_text("external sentinel\n", encoding="utf-8")
+                os.link(externals[name], target / name)
+            done = run_cli("new", "--name", "Linked", "--target", str(target), "--no-init-git",
+                           "--overwrite", "--force-overwrite")
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            for name, external in externals.items():
+                with self.subTest(name):
+                    self.assertEqual(external.read_text(encoding="utf-8"), "external sentinel\n")
+                    self.assertNotEqual((target / name).stat().st_ino, external.stat().st_ino)
+                    self.assertEqual(external.stat().st_nlink, 1)
+            self.assertEqual((target / "scripts" / "projectstate_gate.py").read_bytes(), GATE.read_bytes())
+
+    def test_a_failed_write_rolls_back_everything_the_run_did(self) -> None:
+        real_write = init_template.write_bytes
+
+        def fail_at(stop: str):
+            def write(root: Path, relpath: str | Path, content: bytes, mode: int | None = None) -> None:
+                if str(relpath) == stop:
+                    raise OSError("injected write failure")
+                real_write(root, relpath, content, mode)
+            return write
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            created = root / "created"  # the policy, the gate and AGENTS.md exist before PROJECT.md fails
+            with mock.patch.object(init_template, "write_bytes", side_effect=fail_at("PROJECT.md")):
+                with self.assertRaisesRegex(OSError, "injected write failure"):
+                    init_template.main(["init_template.py", "new", "--name", "Rollback", "--target", str(created),
+                                        "--profile", "hardened", "--no-init-git"])
+            self.assertFalse(created.exists(), "a failed run must not leave its target directory behind")
+
+            adopted = root / "adopted"  # only the README link is left to write when it fails
+            adopted.mkdir()
+            (adopted / "README.md").write_text(EXISTING_README, encoding="utf-8")
+            (adopted / "notes.txt").write_text("keep\n", encoding="utf-8")
+            with mock.patch.object(init_template, "write_bytes", side_effect=fail_at("README.md")):
+                with self.assertRaisesRegex(OSError, "injected write failure"):
+                    init_template.main(["init_template.py", "adopt", "--name", "Rollback", "--target", str(adopted),
+                                        "--profile", "hardened", "--readme-link"])
+            self.assertEqual({p.relative_to(adopted).as_posix() for p in adopted.rglob("*")},
+                             {"README.md", "notes.txt"})
+            self.assertEqual((adopted / "README.md").read_text(encoding="utf-8"), EXISTING_README)
+
+    def test_conflicting_files_are_never_replaced_without_both_flags(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for command in ("new", "adopt"):
+                extra = ("--no-init-git",) if command == "new" else ()
+
+                def fresh(name: str) -> Path:
+                    target = root / f"{command}-{name}"
+                    target.mkdir()
+                    (target / "AGENTS.md").write_text("# mine\n", encoding="utf-8")
+                    (target / "README.md").write_text(EXISTING_README, encoding="utf-8")
+                    return target
+
+                for label, flags, expected in (
+                    ("no flag", (), "not empty" if command == "new" else "would overwrite"),
+                    ("--overwrite alone", ("--overwrite",), "would be overwritten" if command == "new" else "would overwrite"),
+                    ("--force-overwrite alone", ("--force-overwrite",), "requires --overwrite"),
+                ):
+                    with self.subTest(command=command, flags=label):
+                        target = fresh(label.replace(" ", "-"))
+                        done = run_cli(command, "--name", "Conflict", "--target", str(target), *flags, *extra)
+                        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+                        self.assertIn(expected, done.stderr)
+                        self.assertEqual({p.name for p in target.iterdir()}, {"AGENTS.md", "README.md"})
+                        self.assertEqual((target / "AGENTS.md").read_text(encoding="utf-8"), "# mine\n")
+                        self.assertEqual((target / "README.md").read_text(encoding="utf-8"), EXISTING_README)
+                with self.subTest(command=command, flags="--overwrite --force-overwrite"):
+                    target = fresh("both")
+                    done = run_cli(command, "--name", "Conflict", "--target", str(target), "--overwrite",
+                                   "--force-overwrite", *extra)
+                    self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+                    self.assertIn("projectstate:managed:start", (target / "AGENTS.md").read_text(encoding="utf-8"))
+            with self.subTest("--overwrite without a collision keeps unrelated files"):
+                target = root / "unrelated"
+                target.mkdir()
+                (target / "notes.txt").write_text("keep\n", encoding="utf-8")
+                self.assertNotEqual(run_cli("new", "--name", "Keep", "--target", str(target), "--no-init-git").returncode, 0)
+                done = run_cli("new", "--name", "Keep", "--target", str(target), "--no-init-git", "--overwrite")
+                self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+                self.assertEqual((target / "notes.txt").read_text(encoding="utf-8"), "keep\n")
+                self.assertTrue((target / "STATE.yaml").is_file())
+
+    def test_dry_run_plans_but_writes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            created = Path(tmp) / "created"
+            done = run_cli("new", "--name", "Dry", "--target", str(created), "--dry-run")
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            self.assertIn("Planned managed-file writes:", done.stdout)
+            self.assertIn("  - write STATE.yaml", done.stdout)
+            self.assertIn("Dry run complete.", done.stdout)
+            self.assertFalse(created.exists())
+            adopted = Path(tmp) / "adopted"
+            adopted.mkdir()
+            done = run_cli("adopt", "--name", "Dry", "--target", str(adopted), "--profile", "hardened", "--dry-run")
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            self.assertIn("  - create HARDENED_POLICY.md", done.stdout)
+            self.assertIn("  - create scripts/projectstate_gate.py", done.stdout)
+            self.assertEqual(list(adopted.iterdir()), [])
+
+    def test_readme_link_appends_once_and_a_symlinked_readme_is_refused_first(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "linked"
+            target.mkdir()
+            (target / "README.md").write_text(EXISTING_README, encoding="utf-8")
+            done = run_cli("adopt", "--name", "Link", "--target", str(target), "--readme-link")
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            linked = (target / "README.md").read_text(encoding="utf-8")
+            self.assertTrue(linked.startswith(EXISTING_README.rstrip() + "\n\n## ProjectState workflow\n"))
+            self.assertEqual(linked.count("## ProjectState workflow"), 1)
+            again = run_cli("adopt", "--name", "Link", "--target", str(target), "--readme-link", "--overwrite",
+                            "--force-overwrite")
+            self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+            self.assertEqual((target / "README.md").read_text(encoding="utf-8"), linked)
+
+            external = root / "external.md"
+            external.write_text("# External\n", encoding="utf-8")
+            symlinked = root / "symlinked"
+            symlinked.mkdir()
+            (symlinked / "README.md").symlink_to(external)
+            done = run_cli("adopt", "--name", "Link", "--target", str(symlinked), "--readme-link")
+            self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+            self.assertIn("symlinked README.md", done.stderr)
+            self.assertEqual({p.name for p in symlinked.iterdir()}, {"README.md"})
+            self.assertEqual(external.read_text(encoding="utf-8"), "# External\n")
+            done = run_cli("adopt", "--name", "Link", "--target", str(symlinked))  # no link requested: left alone
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            self.assertTrue((symlinked / "README.md").is_symlink())
+            self.assertEqual(external.read_text(encoding="utf-8"), "# External\n")
+
+    def test_help_lists_both_subcommands_and_the_form_without_one_creates_a_new_project(self) -> None:
+        done = run_cli("--help")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        for command in ("new", "adopt"):
+            self.assertIn(command, done.stdout)
+        env = {**os.environ, "SOURCE_DATE_EPOCH": GOLDEN_EPOCH}
+        with tempfile.TemporaryDirectory() as tmp:
+            bare, explicit = Path(tmp) / "bare", Path(tmp) / "explicit"
+            self.assertEqual(run_cli("--name", "Same", "--target", str(bare), "--no-init-git", env=env).returncode, 0)
+            self.assertEqual(
+                run_cli("new", "--name", "Same", "--target", str(explicit), "--no-init-git", env=env).returncode, 0)
+
+            def tree(path: Path) -> dict[str, bytes]:
+                return {p.relative_to(path).as_posix(): p.read_bytes() for p in path.rglob("*") if p.is_file()}
+
+            self.assertEqual(tree(bare), tree(explicit))
+            self.assertIn("STATE.yaml", tree(bare))
+
+    @unittest.skipUnless(shutil.which("git"), "git is required to initialize a repository")
+    def test_new_starts_a_fresh_main_branch_unless_told_not_to(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            plain, fresh = Path(tmp) / "plain", Path(tmp) / "fresh"
+            self.assertEqual(run_cli("new", "--name", "Git", "--target", str(plain), "--no-init-git").returncode, 0)
+            self.assertFalse((plain / ".git").exists())
+            done = run_cli("new", "--name", "Git", "--target", str(fresh))
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            self.assertIn("Fresh Git repository: main", done.stdout)
+            self.assertEqual((fresh / ".git" / "HEAD").read_text(encoding="utf-8").strip(), "ref: refs/heads/main")
+            history = subprocess.run(["git", "-C", str(fresh), "rev-parse", "--verify", "HEAD"],
+                                     capture_output=True, text=True, check=False)
+            self.assertNotEqual(history.returncode, 0, "no template history may be inherited")
+
+    def test_the_template_version_must_match_the_generated_version(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = Path(tmp)
+            with mock.patch.object(init_template, "TEMPLATE_ROOT", fake):
+                with self.assertRaises(SystemExit) as caught:
+                    init_template.check_template_version()
+                self.assertIn("VERSION", str(caught.exception))
+                (fake / "VERSION").write_text("projectstate-template-v5\n", encoding="utf-8")
+                with self.assertRaises(SystemExit) as caught:
+                    init_template.check_template_version()
+                self.assertIn("mismatch", str(caught.exception))
+                (fake / "VERSION").write_text(init_template.TEMPLATE_VERSION + "\n", encoding="utf-8")
+                init_template.check_template_version()
+        self.assertEqual((ROOT / "VERSION").read_text(encoding="utf-8").strip(), init_template.TEMPLATE_VERSION)
 
 
 if __name__ == "__main__":

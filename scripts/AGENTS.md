@@ -25,13 +25,6 @@ names them.
 - Mutating helpers must preflight targets, write atomically, preserve unrelated
   state, and make repeatable operations idempotent.
 
-## Compatibility code
-
-Most `projectstate_*.py` and `statedd_*.py` files are retained for v5
-compatibility profiles. Changes to them must preserve their existing tests, but
-their requirements do not expand the v6 core. The legacy quality gate is
-secondary compatibility validation in this template repository.
-
 ## Edit loop
 
 Run the narrow test first, then:
