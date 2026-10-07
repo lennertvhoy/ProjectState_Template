@@ -5,7 +5,7 @@
 Plan item S5: make the owner's decision a single command. Before this, no v6
 instance had ever recorded an acceptance. Owner-approved CTO plan (owner words
 "i choose all ur recs", 2026-10-06). The decide command was written by Sonnet
-worker W6 (merged at `ecd9a24`'s successor merge); the coordinator wrote this
+worker W6 (merged in `8838c79`); the coordinator wrote this
 journey and the doctor's rule-adoption fix.
 
 ## Primary journey
