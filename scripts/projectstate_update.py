@@ -993,8 +993,12 @@ def main(argv: list[str] | None = None) -> int:
     template: Template | None = None
     try:
         template = load_template(Path(args.template).resolve())
-        target = preflight(args.target, template, args.allow_dirty)
+        # The clean-tree check guards writes: a plan that changes nothing may run on any tree, so a
+        # second --apply right after the first is a no-op even before the result is committed.
+        target = preflight(args.target, template, allow_dirty=True)
         plan = build_plan(target, template, args)
+        if plan.changed and not args.allow_dirty:
+            check_clean(target)
     except UpdateRefused as exc:
         emit(args, refusal_payload(args.target, template, exc.reasons),
              "\n".join(f"refused: {reason}" for reason in exc.reasons), error=True)

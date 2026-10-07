@@ -700,13 +700,13 @@ def step_doctor_on_copies(j: Journey, workdir: Path, fleet_copy: Path, tpl: Temp
     if not tpl.draft:
         check_current(j, "doctor on the updated copies", rows, names)
         return
-    # A draft records no hashes, and the doctor only recognizes released ones, so it cannot say "current".
-    # Report that precisely and compare the hashes the doctor read with the draft's computed hashes instead.
+    # A draft records no hashes yet: the doctor reports a repository carrying the candidate as "draft".
     for name in names:
         row = (rows or {}).get(name) or {}
         gate, contract = row.get("gate") or {}, row.get("contract") or {}
-        j.info(f"{name}: the doctor reports gate {gate.get('status')}, contract {contract.get('status')} against draft "
-               f"{tpl.release}: a draft records no hashes and the doctor matches released hashes only (unchanged)")
+        j.check(gate.get("status") == "draft" and contract.get("status") == "draft",
+                f"doctor on the updated copies: {name} reads draft {tpl.release}",
+                f"gate {gate.get('status')}, contract {contract.get('status')}")
         j.check(gate.get("sha256") == tpl.gate_sha and contract.get("sha256") == tpl.contract_sha
                 and contract.get("declared") == tpl.release,
                 f"doctor on the updated copies: {name} carries the computed hashes of draft {tpl.release}",

@@ -937,6 +937,25 @@ def test_dirty_agents_md_in_a_git_repository_is_refused(tmp_path: Path, capsys: 
 
 
 @needs_git
+def test_second_apply_on_the_uncommitted_result_is_a_no_op(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    # The clean-tree check guards writes only: right after an apply, before anyone commits, the
+    # files are dirty but already current, so a rerun must succeed without --allow-dirty.
+    template = make_template(tmp_path)
+    target = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY)
+    git(target, "init", "-q")
+    git(target, "add", "-A")
+    git(target, "commit", "-qm", "instance")
+    first = run(capsys, template, target, "--apply")
+    assert first.code == 0, first.err
+    after_first = {name: (target / name).read_bytes() for name in ("AGENTS.md", "scripts/projectstate_gate.py")}
+    second = run(capsys, template, target, "--apply")
+    assert second.code == 0, second.err
+    assert second.payload["applied"] is False
+    assert {name: (target / name).read_bytes() for name in after_first} == after_first
+    assert run(capsys, template, target, "--check").code == 0
+
+
+@needs_git
 def test_dirty_gate_and_untracked_agents_md_are_refused(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     template = make_template(tmp_path)
     target = make_instance(tmp_path, None)

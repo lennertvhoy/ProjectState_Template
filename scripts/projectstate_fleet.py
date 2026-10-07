@@ -61,8 +61,8 @@ NEXT_ACTION_CHARS = 160
 DETAIL_CHARS = 160
 AWAITING_STATUSES = {"validated", "ready_for_human"}
 KINDS = ("v6", "v6-invalid", "v5", "other")
-GATE_STATES = ("current", "behind", "unknown", "missing", "symlink", "unreadable")
-CONTRACT_STATES = ("current", "behind", "edited", "unmanaged", "malformed", "missing", "unreadable")
+GATE_STATES = ("current", "draft", "behind", "unknown", "missing", "symlink", "unreadable")
+CONTRACT_STATES = ("current", "draft", "behind", "edited", "unmanaged", "malformed", "missing", "unreadable")
 VERDICTS = ("validated", "not validated", "invalid")
 
 SLICE_ID = re.compile(r"[a-z0-9][a-z0-9-]*")
@@ -94,6 +94,9 @@ class Context(NamedTuple):
     schema: str
     current: str | None
     today: dt.date
+    # When the index's latest entry is a draft: its release and the hashes of the template's own
+    # gate and managed block, so a repository carrying the candidate reads "draft", not "edited".
+    draft: dict[str, str] | None = None
 
 
 class Doc(NamedTuple):
@@ -404,6 +407,22 @@ def classify(path: Path, schema: str) -> tuple[str, dict[str, Any] | None, str |
     return "other", None, None
 
 
+def draft_candidate(template: Path, index: dict[str, Any]) -> dict[str, str] | None:
+    """The template's own gate and block hashes when the latest index entry is still a draft."""
+    entries = [entry for entry in index.get("releases", []) if isinstance(entry, dict)]
+    latest = entries[-1] if entries else None
+    if latest is None or latest.get("status") != "draft":
+        return None
+    try:
+        return {
+            "release": str(latest["release"]),
+            "gate_sha256": release_mod.sha256_file(template / release_mod.GATE_PATH),
+            "contract_sha256": release_mod.contract_sha256(release_mod.managed_block_text(template)),
+        }
+    except (OSError, UnicodeDecodeError, KeyError):
+        return None
+
+
 def hash_status(sha: str, field: str, ctx: Context, stale: str, unmatched: str) -> tuple[str, str | None]:
     """Compare a hash with the released hashes: current, ``stale`` (name the newest match) or ``unmatched``."""
     matches = release_mod.releases_matching(ctx.index, field, sha)
@@ -411,6 +430,8 @@ def hash_status(sha: str, field: str, ctx: Context, stale: str, unmatched: str) 
         return "current", ctx.current
     if matches:
         return stale, matches[-1]
+    if ctx.draft is not None and ctx.draft.get(field) == sha:
+        return "draft", ctx.draft["release"]
     return unmatched, None
 
 
@@ -915,7 +936,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"fleet: cannot read the release index of {template}: {exc}", file=sys.stderr)
         return 2
     ctx = Context(template, index, str(index.get("state_schema") or gate_mod.VERSION),
-                  str(current["release"]) if current else None, args.today or dt.date.today())
+                  str(current["release"]) if current else None, args.today or dt.date.today(),
+                  draft_candidate(template, index))
     report = build_report(root, ctx, dt.datetime.now().astimezone().isoformat(timespec="seconds"))
     if args.stdout:
         sys.stdout.write(render_json(report) if args.format == "json" else render_markdown(report))

@@ -336,9 +336,20 @@ class GateAndContractTests(FleetTestCase):
         ws.add_v6("instance", gate=GATE_CURRENT + b"# edited\n")
         report = ws.report()
         template = repo_of(report, "ProjectState_Template")
-        self.assertEqual((template["kind"], template["role"], template["gate"]["status"]), ("v6", "template", "unknown"))
+        # The template carries the draft candidate (its latest index entry is a draft): "draft", not drift.
+        self.assertEqual((template["kind"], template["role"], template["gate"]["status"]), ("v6", "template", "draft"))
         self.assertIsNone(repo_of(report, "instance")["role"])
         self.assertEqual(kinds_of(report, "needs_review"), [("instance", "gate-unknown")])
+
+    def test_instance_carrying_the_draft_candidate_reads_draft_and_needs_no_review(self) -> None:
+        ws = Workspace(Path(tempfile.mkdtemp(dir=self._tmp.name)).resolve(), template_in_root=True)
+        draft_gate = GATE_CURRENT + b"# draft\n"
+        write_files(ws.template, {"PROJECT.md": PROJECT_MD, "AGENTS.md": PLAIN_AGENTS,
+                                  **slice_files("release-001"), "scripts/projectstate_gate.py": draft_gate})
+        ws.add_v6("candidate", gate=draft_gate)
+        report = ws.report()
+        self.assertEqual(repo_of(report, "candidate")["gate"]["status"], "draft")
+        self.assertEqual(kinds_of(report, "needs_review"), [])
 
 
 class ContextSizeTests(FleetTestCase):
