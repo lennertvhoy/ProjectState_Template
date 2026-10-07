@@ -627,13 +627,18 @@ class HistoryAndGitTests(FleetTestCase):
         commit(old, "old update", DATE_2)
         git(old, "switch", "-q", "main")
         self.ws.add_v6("none")
+        # A second checkout of "ahead" (shared refs) whose HEAD moved on: the branch is not for it.
+        shared = self.ws.root / "ahead-checkout"
+        git(ahead, "worktree", "add", "-q", "-b", "other", str(shared), "main")
+        commit(shared, "other work", DATE_3)
         report = self.ws.report()
         branches = {item["repository"]: item for item in report["inbox"]["ready_to_merge"]}
-        self.assertEqual(sorted(branches), ["ahead", "diverged"])
+        self.assertEqual(sorted(branches), ["ahead"])  # only branches that can fast-forward are ready
         self.assertEqual(branches["ahead"]["command"], f"git -C {self.ws.root}/ahead merge --ff-only {release}")
         self.assertTrue(branches["ahead"]["fast_forward"])
-        self.assertFalse(branches["diverged"]["fast_forward"])
-        self.assertIn("HEAD has diverged", branches["diverged"]["message"])
+        stale = [item for item in report["inbox"]["needs_review"] if item["kind"] == "update-branch-stale"]
+        self.assertEqual([item["repository"] for item in stale], ["diverged"])  # not the shared checkout
+        self.assertFalse(stale[0]["fast_forward"])
         self.assertIsNone(repo_of(report, "merged")["update_branch"])
         self.assertIsNone(repo_of(report, "old")["update_branch"])  # only the current release's branch counts
 

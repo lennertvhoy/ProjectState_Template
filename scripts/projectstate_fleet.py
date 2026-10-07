@@ -383,7 +383,8 @@ def update_branch(repo: Path, release: str | None) -> dict[str, Any] | None:
     if merged != 1:
         return None  # 0: already merged; anything else: HEAD unreadable
     ahead, _ = run_git(repo, "merge-base", "--is-ancestor", "HEAD", tip)
-    return {"branch": branch, "commit": tip[:7], "fast_forward": ahead == 0}
+    common = git_line(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    return {"branch": branch, "commit": tip[:7], "fast_forward": ahead == 0, "git_common_dir": common}
 
 
 # --- per-repository analysis -----------------------------------------------------------------
@@ -720,13 +721,26 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
             review.append(inbox_item(repo, "risk-acceptance",
                                      f"{name}: risk {risk['id']} temporary acceptance {due_text(risk)}", **risk))
         branch = repo["update_branch"]
-        if branch:
+        if branch and branch["fast_forward"]:
             command = f"git -C {shlex.quote(repo['path'])} merge --ff-only {shlex.quote(branch['branch'])}"
-            note = "" if branch["fast_forward"] else " (HEAD has diverged: --ff-only will refuse)"
             inbox["ready_to_merge"].append(inbox_item(
-                repo, "update-branch", f"{name}: update branch {branch['branch']} is not merged{note}. Run: {command}",
+                repo, "update-branch", f"{name}: update branch {branch['branch']} is ready. Run: {command}",
                 command=command, **branch))
+        elif branch and not fast_forward_elsewhere(branch, repos):
+            review.append(inbox_item(
+                repo, "update-branch-stale",
+                f"{name}: update branch {branch['branch']} cannot fast-forward (HEAD moved since it was made); "
+                "delete it and rerun projectstate_update.py on a fresh branch", **branch))
     return inbox
+
+
+def fast_forward_elsewhere(branch: dict[str, Any], repos: list[dict[str, Any]]) -> bool:
+    """True when another checkout of the same repository (shared refs) can fast-forward this branch."""
+    common = branch.get("git_common_dir")
+    return bool(common) and any(
+        (other.get("update_branch") or {}).get("git_common_dir") == common
+        and (other.get("update_branch") or {}).get("fast_forward")
+        for other in repos)
 
 
 def summarize(repos: list[dict[str, Any]], inbox: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
