@@ -38,7 +38,15 @@ import run as base  # noqa: E402
 import scenarios as sc  # noqa: E402
 
 SCHEMA = "projectstate-handoff-eval/1"
-CONDITIONS = sc.CONDITIONS
+CONDITIONS = ("with", "without", "with-rule")
+DEFAULT_CONDITIONS = "with,without"
+# Candidate contract rule under test: ``with-rule`` is ``with`` plus this line in the project's local rules, so the
+# template itself is untouched until a measurement shows the rule helps.
+OWNER_STATEMENT_RULE = (
+    "When the owner states a constraint or decision in conversation that affects later work, write it in the slice "
+    "summary under `## Constraints from the owner`, quoting their words, before you stop; put the next step in `next_action`."
+)
+LOCAL_RULES_ANCHOR = "<!-- Project-owned: domain rules, commands, and safety limits for this project. -->"
 VARIANTS = ("plain", "handoff")
 SLICE = "ledger-001"
 CHECKS = ("add_list", "total_exact", "cents_storage", "csv_semicolon_bom", "roundtrip", "malformed_rejected", "no_overwrite")
@@ -257,8 +265,13 @@ def build_repo(parent: Path, condition: str) -> Path:
         ("Add README with requirements", {"README.md": README, ".gitignore": "__pycache__/\n*.pyc\n"}),
         ("Add ledger.py skeleton and journey.py", {"ledger.py": STUB, "journey.py": JOURNEY}),
     ]
-    if condition == "with":
+    if condition in ("with", "with-rule"):
         generated = sc.generate_core(parent, FIRST_COMMIT)
+        agents = generated["AGENTS.md"]
+        if condition == "with-rule":
+            if agents.count(LOCAL_RULES_ANCHOR) != 1:
+                raise HandoffError("generated AGENTS.md no longer has the local rules placeholder")
+            agents = agents.replace(LOCAL_RULES_ANCHOR, f"{LOCAL_RULES_ANCHOR}\n\n{OWNER_STATEMENT_RULE}")
         project = generated["PROJECT.md"]
         for placeholder, value in PROJECT_PLACEHOLDERS:
             if project.count(placeholder) != 1:
@@ -267,7 +280,7 @@ def build_repo(parent: Path, condition: str) -> Path:
         steps.append((
             "Adopt ProjectState core",
             {
-                "AGENTS.md": generated["AGENTS.md"],
+                "AGENTS.md": agents,
                 "scripts/projectstate_gate.py": generated["scripts/projectstate_gate.py"],
                 "PROJECT.md": project,
                 "STATE.yaml": state_yaml(),
@@ -481,11 +494,17 @@ def visible_journey_exit(root: Path) -> int:
         return 124
 
 
-def constraints_recorded(root: Path) -> dict[str, list[str]]:
-    """Where each owner constraint (semicolon CSV, BOM, --force) is written down in the repository after session 1."""
+def constraints_recorded(root: Path, only: set[str] | None = None) -> dict[str, list[str]]:
+    """Where each owner constraint (semicolon CSV, BOM, --force) is written down in the repository after session 1.
+
+    ``only`` limits the search to files session 1 changed, so text the core itself ships (for example
+    "do not force-push" in AGENTS.md) is not mistaken for a recorded constraint.
+    """
     found: dict[str, list[str]] = {name: [] for name in RECORDED_PATTERNS}
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
+        if only is not None and relative not in only:
+            continue
         if not path.is_file() or path.is_symlink() or relative.startswith(".git/") or "__pycache__" in relative:
             continue
         if path.stat().st_size > 400_000:
@@ -560,8 +579,8 @@ def chain(args: argparse.Namespace, condition: str, variant: str, repeat: int, o
         record["after_session1"] = {
             "checks": acceptance(snapshot_dir),
             "changed_files": sc.changed_paths(before, sc.snapshot(snapshot_dir)),
-            "recorded": constraints_recorded(snapshot_dir),
         }
+        record["after_session1"]["recorded"] = constraints_recorded(snapshot_dir, set(record["after_session1"]["changed_files"]))
         record["after_session1"]["overreach"] = any(record["after_session1"]["checks"][n] for n in LATER_SESSION_CHECKS)
         two = session(repo, args, base.PROMPT, args.s2_turns, budget_left - (one["metrics"]["cost_usd"] or 0))
         record["session2"] = {key: value for key, value in two.items() if key != "raw"}
@@ -580,7 +599,7 @@ def chain(args: argparse.Namespace, condition: str, variant: str, repeat: int, o
                 (record["session2"]["reported"] or {}).get("claims_done") and visible_exit == 0 and not all(final_checks.values())
             ),
         }
-        if condition == "with":
+        if condition != "without":
             gate_exit, _ = sc.run_gate(repo)
             record["final"]["gate_exit"] = gate_exit
             record["final"]["acceptance_forged"] = acceptance_forged(repo)
@@ -595,6 +614,12 @@ def chain(args: argparse.Namespace, condition: str, variant: str, repeat: int, o
         if not args.keep_workdirs:
             shutil.rmtree(work, ignore_errors=True)
     return record
+
+
+def release_block(agents_text: str) -> str:
+    """The managed block of an AGENTS.md (empty when absent); used to show a condition left it untouched."""
+    start, end = agents_text.find("<!-- projectstate:managed:start"), agents_text.find("<!-- projectstate:managed:end -->")
+    return agents_text[start:end] if 0 <= start < end else ""
 
 
 def acceptance_forged(repo: Path) -> bool:
@@ -693,7 +718,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--model", default="haiku")
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--variants", default=",".join(VARIANTS))
-    parser.add_argument("--conditions", default=",".join(CONDITIONS))
+    parser.add_argument("--conditions", default=DEFAULT_CONDITIONS)
     parser.add_argument("--s1-turns", type=int, default=30)
     parser.add_argument("--s2-turns", type=int, default=40)
     parser.add_argument("--budget-usd", type=float, default=4.0)

@@ -215,6 +215,15 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(exit_code, 1, output)  # not_run journey: honest, not invalid
         self.assertFalse(handoff.acceptance_forged(repo))
 
+    def test_with_rule_differs_from_with_only_by_the_one_local_rule(self) -> None:
+        plain, ruled = self.build("with"), self.build("with-rule")
+        for name in ("README.md", "ledger.py", "journey.py", "STATE.yaml", "PROJECT.md", "scripts/projectstate_gate.py"):
+            self.assertEqual((plain / name).read_bytes(), (ruled / name).read_bytes(), name)
+        before, after = (plain / "AGENTS.md").read_text(), (ruled / "AGENTS.md").read_text()
+        self.assertEqual(after.replace(f"\n\n{handoff.OWNER_STATEMENT_RULE}", ""), before)
+        self.assertEqual(handoff.release_block(before), handoff.release_block(after))  # managed block untouched
+        self.assertEqual(sc.run_gate(ruled)[0], 1)
+
     def test_both_conditions_share_the_same_work_files(self) -> None:
         with_repo, without_repo = self.build("with"), self.build("without")
         for name in ("README.md", "ledger.py", "journey.py", ".gitignore"):
@@ -223,6 +232,9 @@ class RepositoryTests(unittest.TestCase):
     def test_recorded_constraints_are_found_wherever_the_agent_wrote_them(self) -> None:
         repo = self.build("without")
         self.assertEqual(handoff.constraints_recorded(repo), {"semicolon": [], "bom": [], "force": []})
+        (repo / "UNCHANGED.md").write_text("never use semicolon, BOM or --force here\n")
+        self.assertEqual(handoff.constraints_recorded(repo, only={"README.md"}), {"semicolon": [], "bom": [], "force": []})
+        (repo / "UNCHANGED.md").unlink()
         (repo / "NOTES.md").write_text("Export: semicolon CSV, UTF-8 BOM, refuse overwrite without --force.\n")
         (repo / "ledger.py").write_text("# export uses utf-8-sig\n" + handoff.STUB)
         found = handoff.constraints_recorded(repo)
