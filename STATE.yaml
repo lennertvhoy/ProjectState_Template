@@ -6,7 +6,7 @@ project:
 current_slice:
   id: release-channel-001
   objective: "Ship release 6.3.0: release identity with a hash manifest, a managed contract block, a read-only fleet doctor with an owner inbox, a mechanical update command, and owner-decision records in the gate."
-  status: implementing
+  status: validated
   # Owner-approved CTO plan S1-S4 plus the gate part of S5 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
     - "A fresh core reports release 6.3.0, releases/index.json verifies its gate and managed-block hashes, and StatePort's own adapter validation command still accepts a generated core."
@@ -18,16 +18,16 @@ current_slice:
     description: "Generate fresh core and hardened projects and verify release hashes and StatePort's adapter check; run the fleet doctor against the real ~/Projects with a no-write audit; update scratch copies of two real instances and rerun the doctor on them."
     command: "python3 scripts/test_release_channel.py --fleet-root ~/Projects"
     environment: "Local Linux workstation; system Python 3 with PyYAML; real ~/Projects read-only; scratch copies outside ~/Projects"
-    status: not_run
+    status: passed
     evidence: "evidence/release-channel-001/summary.md"
 validation:
-  primary_journey: not_run
-  automated_tests: not_run
-  human_acceptance: pending
+  primary_journey: passed
+  automated_tests: passed
+  human_acceptance: waived
 delivery_boundary:
   name: template_release_channel
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Resume from the Handoff section of evidence/release-channel-001/summary.md: review and merge the W1, W3 and W4 WIP branches, write scripts/test_release_channel.py, run it, then cut 6.3.0."
+next_action: "Start fleet-pilot-001: update example-project-08 and example-project-05 to 6.3.0 on private branches with projectstate_update.py (owner decision D3)."

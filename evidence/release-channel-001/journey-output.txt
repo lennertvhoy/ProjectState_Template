@@ -1,0 +1,101 @@
+journey: template ~/Projects/ProjectState_Template, fleet root ~/Projects, scratch <scratch>
+PASS  release index latest names the gate RELEASE: gate 6.3.0, index latest 6.3.0
+--- generated projects
+PASS  new-core: init_template.py new --profile core exits 0: ...6 declared assets) Fresh Git repository: main (template history was not inherited) Next: 1. Read README.md and AGENTS.md 2. Confirm PROJECT.md and define the primary journey in STATE.yaml 3. Run the real journey and record evidence/bootstrap-001/summary.md 4. Run python3 scripts/projectstate_gate.py
+PASS  new-core: AGENTS.md has exactly one managed block: 1 start and 1 end markers
+PASS  new-core: managed block equals core/AGENTS.managed.md
+PASS  new-core: managed block marker release equals the gate RELEASE: marker 6.3.0, gate 6.3.0
+PASS  new-core: vendored gate is byte-identical to the template gate
+PASS  new-core: gate --version prints the release: projectstate-gate 6.3.0 (state schema projectstate-template-v6)
+PASS  new-core: AGENTS.md + PROJECT.md + STATE.yaml total 6437 characters: limit 10000
+PASS  new-core: project gate exits 1 (an honest unvalidated scaffold), never 2: exit 1: ...olders with the human-owned contract and observed journey - Primary user and product outcome require human confirmation.
+PASS  new-hardened: init_template.py new --profile hardened exits 0: ...7 declared assets) Fresh Git repository: main (template history was not inherited) Next: 1. Read README.md and AGENTS.md 2. Confirm PROJECT.md and define the primary journey in STATE.yaml 3. Run the real journey and record evidence/bootstrap-001/summary.md 4. Run python3 scripts/projectstate_gate.py
+PASS  new-hardened: AGENTS.md has exactly one managed block: 1 start and 1 end markers
+PASS  new-hardened: managed block equals core/AGENTS.managed.md
+PASS  new-hardened: managed block marker release equals the gate RELEASE: marker 6.3.0, gate 6.3.0
+PASS  new-hardened: vendored gate is byte-identical to the template gate
+PASS  new-hardened: gate --version prints the release: projectstate-gate 6.3.0 (state schema projectstate-template-v6)
+PASS  new-hardened: AGENTS.md + PROJECT.md + STATE.yaml total 6626 characters: limit 10000
+PASS  new-hardened: project gate exits 1 (an honest unvalidated scaffold), never 2: exit 1: ...olders with the human-owned contract and observed journey - Primary user and product outcome require human confirmation.
+PASS  adopt-core: temporary git repository with a README
+PASS  adopt-core: init_template.py adopt --profile core exits 0: ...g README preserved Optional asset sets: skipped Next: 1. Read AGENTS.md, PROJECT.md, and STATE.yaml against the real repo 2. Confirm the product outcome and define the smallest primary journey 3. Run the journey and record evidence/bootstrap-001/summary.md 4. Run python3 scripts/projectstate_gate.py
+PASS  adopt-core: AGENTS.md has exactly one managed block: 1 start and 1 end markers
+PASS  adopt-core: managed block equals core/AGENTS.managed.md
+PASS  adopt-core: managed block marker release equals the gate RELEASE: marker 6.3.0, gate 6.3.0
+PASS  adopt-core: vendored gate is byte-identical to the template gate
+PASS  adopt-core: gate --version prints the release: projectstate-gate 6.3.0 (state schema projectstate-template-v6)
+PASS  adopt-core: AGENTS.md + PROJECT.md + STATE.yaml total 6439 characters: limit 10000
+PASS  adopt-core: project gate exits 1 (an honest unvalidated scaffold), never 2: exit 1: ...olders with the human-owned contract and observed journey - Primary user and product outcome require human confirmation.
+PASS  adopt-core: the existing README is preserved
+PASS  release index is consistent (projectstate_release.py check): release index OK: 5 releases, latest 6.3.0 (released)
+PASS  release 6.3.0: index gate_sha256 matches the template gate
+PASS  release 6.3.0: index contract_sha256 matches the managed block
+PASS  new-core: gate and block hashes equal the released 6.3.0 hashes
+PASS  new-hardened: gate and block hashes equal the released 6.3.0 hashes
+PASS  adopt-core: gate and block hashes equal the released 6.3.0 hashes
+--- StatePort contract
+PASS  StatePort adapter validationCommand is unchanged: the one validationCommand line equals the pinned text
+PASS  new-core: StatePort adapter rule holds (yaml.safe_load): all four conditions
+PASS  new-hardened: StatePort adapter rule holds (yaml.safe_load): all four conditions
+PASS  adopt-core: StatePort adapter rule holds (yaml.safe_load): all four conditions
+--- fleet doctor on the real fleet
+PASS  doctor wrote nothing: 38 repositories with .git unchanged: git status, .git/index mtime and sha256 of STATE.yaml, AGENTS.md and the gate
+PASS  doctor: projectstate_fleet.py --stdout --format json exits 0: exit 0 in 2.0s
+PASS  doctor: all 21 v6 repositories have a gate status and a contract status
+PASS  doctor: summary counts agree with the repository rows and the inbox
+PASS  doctor: report declares format projectstate-fleet/1 and read_only
+INFO  doctor gate statuses: current 0, draft 0, behind 18, unknown 2, missing 0, symlink 0, unreadable 0
+INFO  doctor contract statuses: current 0, draft 0, behind 0, edited 0, unmanaged 20, malformed 0, missing 0, unreadable 0
+INFO  doctor inbox items per section: decisions 8, blocked 4, needs_review 20, ready_to_merge 0
+INFO  doctor runtime: 2.0s for 44 repositories
+--- update on copies
+PASS  example-project-08: real instance found under the fleet root: ~/Projects/example-project-08
+PASS  example-project-08: git archive HEAD copied into the scratch fleet
+PASS  example-project-08: scratch copy committed as a clean base
+PASS  example-project-08: update dry run exits 0 and plans without refusing: exit 0; gate replace (6.2.0 -> 6.3.0), contract convert: removed 9 known template sections, 0 refresh sections, 0 notices, 0 modified sections
+INFO  example-project-08: flags needed per the dry run: (none)
+PASS  example-project-08: the dry run wrote nothing
+PASS  example-project-08: update --apply exits 0 and applies: exit 0: gate replace (6.2.0 -> 6.3.0), contract convert: removed 9 known template sections, 0 refresh sections, 0 notices, 0 modified sections
+PASS  example-project-08: the applied report equals the dry-run report
+PASS  example-project-08: only AGENTS.md and the gate changed: changed ['AGENTS.md', 'scripts/projectstate_gate.py']
+PASS  example-project-08: PROJECT.md, STATE.yaml and evidence/ are byte-identical (4 files)
+PASS  example-project-08: AGENTS.md now carries the template block, marker release 6.3.0
+PASS  example-project-08: the vendored gate is now byte-identical to the template gate
+PASS  example-project-08: every original line outside the frontmatter and block is preserved or was reported removed: 0 non-blank local lines preserved verbatim
+PASS  example-project-08: the updated gate prints the release: projectstate-gate 6.3.0 (state schema projectstate-template-v6)
+PASS  example-project-08: template gate verdict is unchanged or better: not validated -> not validated
+PASS  example-project-08: a second --apply changes nothing: exit 0
+PASS  example-project-08: the update never touched the git index
+PASS  example-project-05: real instance found under the fleet root: ~/Projects/example-project-05
+PASS  example-project-05: git archive HEAD copied into the scratch fleet
+PASS  example-project-05: scratch copy committed as a clean base
+PASS  example-project-05: update dry run exits 0 and plans without refusing: exit 0; gate replace (6.2.0 -> 6.3.0), contract convert: removed 9 known template sections, 0 refresh sections, 0 notices, 0 modified sections
+INFO  example-project-05: flags needed per the dry run: (none)
+PASS  example-project-05: the dry run wrote nothing
+PASS  example-project-05: update --apply exits 0 and applies: exit 0: gate replace (6.2.0 -> 6.3.0), contract convert: removed 9 known template sections, 0 refresh sections, 0 notices, 0 modified sections
+PASS  example-project-05: the applied report equals the dry-run report
+PASS  example-project-05: only AGENTS.md and the gate changed: changed ['AGENTS.md', 'scripts/projectstate_gate.py']
+PASS  example-project-05: PROJECT.md, STATE.yaml and evidence/ are byte-identical (45 files)
+PASS  example-project-05: AGENTS.md now carries the template block, marker release 6.3.0
+PASS  example-project-05: the vendored gate is now byte-identical to the template gate
+PASS  example-project-05: every original line outside the frontmatter and block is preserved or was reported removed: 13 non-blank local lines preserved verbatim
+PASS  example-project-05: the updated gate prints the release: projectstate-gate 6.3.0 (state schema projectstate-template-v6)
+PASS  example-project-05: template gate verdict is unchanged or better: validated -> validated
+PASS  example-project-05: a second --apply changes nothing: exit 0
+PASS  example-project-05: the update never touched the git index
+PASS  doctor on the updated copies: example-project-08 gate and contract are current: gate current, contract current
+PASS  doctor on the updated copies: example-project-05 gate and contract are current: gate current, contract current
+PASS  temporary directories removed
+--- summary
+  template 6.3.0 (released): gate sha256 a5c9f5c58574, contract sha256 0b3795520ecf
+  generation: new-core, new-hardened, adopt-core generated and checked
+  StatePort contract: validationCommand pinned; rule holds for 3/3 generated projects
+  fleet doctor on ~/Projects: 44 repositories (v6 21, v6-invalid 0, v5 14, other 9), runtime 2.0s
+    gates: current 0, draft 0, behind 18, unknown 2, missing 0, symlink 0, unreadable 0
+    contracts: current 0, draft 0, behind 0, edited 0, unmanaged 20, malformed 0, missing 0, unreadable 0
+    inbox: decisions 8, blocked 4, needs_review 20, ready_to_merge 0
+    no-write audit: 38 repositories with .git, nothing changed
+  update example-project-08: flags (none); gate replace (6.2.0 -> 6.3.0), contract convert: removed 9 known template sections, 0 refresh sections, 0 notices, 0 modified sections; second --apply no-op yes; verdict not validated -> not validated
+  update example-project-05: flags (none); gate replace (6.2.0 -> 6.3.0), contract convert: removed 9 known template sections, 0 refresh sections, 0 notices, 0 modified sections; second --apply no-op yes; verdict validated -> validated
+  doctor on the updated copies against released 6.3.0: see the checks above
+RESULT: PASSED: 77 checks passed, 0 failed, 4s (exit 0)

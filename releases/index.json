@@ -45,11 +45,11 @@
     },
     {
       "release": "6.3.0",
-      "date": null,
+      "date": "2026-10-07",
       "tag": "v6.3.0",
-      "status": "draft",
-      "gate_sha256": null,
-      "contract_sha256": null,
+      "status": "released",
+      "gate_sha256": "a5c9f5c58574508c4284f39a07bf28bd987c04b76f417411323dcd4fed7f8847",
+      "contract_sha256": "0b3795520ecf73d66b8a33837573da45347bbd66e1e9eac97dfe92b96299b351",
       "instance_action": "mechanical",
       "summary": "Release identity, managed contract block, fleet doctor, mechanical update, and owner-decision records."
     }
