@@ -22,5 +22,5 @@ Why were they rejected?
 
 ## Related
 
-- Backlog item: [BL-XXX]
-- Evidence: docs/evidence/YYYY-MM-DD-<slug>/
+- Slice: <slice-id>
+- Evidence: evidence/<slice-id>/summary.md
