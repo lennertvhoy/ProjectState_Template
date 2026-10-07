@@ -4,30 +4,28 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: release-channel-001
-  objective: "Ship release 6.3.0: release identity with a hash manifest, a managed contract block, a read-only fleet doctor with an owner inbox, a mechanical update command, and owner-decision records in the gate."
+  id: fleet-pilot-001
+  objective: "Prove the 6.3.0 mechanical update in two live instances (example-project-08, example-project-05) before any wider rollout."
   status: validated
-  # Owner-approved CTO plan S1-S4 plus the gate part of S5 (owner words 2026-10-06: "i choose all ur recs").
+  # Owner-approved CTO plan S4 under owner decision D3 (owner words 2026-10-06: "i choose all ur recs").
   acceptance:
-    - "A fresh core reports release 6.3.0, releases/index.json verifies its gate and managed-block hashes, and StatePort's own adapter validation command still accepts a generated core."
-    - "Generated AGENTS.md carries one managed block between markers plus project-owned local sections; opt-in workflows add no text until selected; fresh-core startup reading (AGENTS.md, PROJECT.md, STATE.yaml) is at most 2.5K tokens at four characters per token."
-    - "The fleet doctor runs read-only against the real ~/Projects, reproduces the review's gate-drift and pending-acceptance findings, lists the owner's decisions, and writes nothing inside any repository."
-    - "The update command converts and updates scratch copies of example-project-08 and example-project-05; the doctor then reports both current, bytes outside the managed regions are unchanged, and a second run changes nothing."
-    - "The gate accepts an accepted, rejected, or waived owner decision only with a matching Owner decision section in the slice summary."
+    - "Each pilot is updated on a private branch in a separate worktree, committed there, and fast-forwarded only when AGENTS.md and the gate were clean."
+    - "Afterwards the fleet doctor reports both pilots with gate and contract current at 6.3.0, and the update's --check exits 0 for both."
+    - "Project text outside the managed block, PROJECT.md, STATE.yaml and evidence are unchanged, and each project's gate verdict is unchanged or better."
   primary_journey:
-    description: "Generate fresh core and hardened projects and verify release hashes and StatePort's adapter check; run the fleet doctor against the real ~/Projects with a no-write audit; update scratch copies of two real instances and rerun the doctor on them."
-    command: "python3 scripts/test_release_channel.py --fleet-root ~/Projects"
-    environment: "Local Linux workstation; system Python 3 with PyYAML; real ~/Projects read-only; scratch copies outside ~/Projects"
+    description: "Read-only check that both live pilots match the current release after their update commits."
+    command: "python3 scripts/projectstate_update.py --target ~/Projects/example-project-08 --check && python3 scripts/projectstate_update.py --target ~/Projects/example-project-05 --check"
+    environment: "local Linux workstation; live checkouts ~/Projects/example-project-08 (main) and ~/Projects/example-project-05 (feat/github-drive-career-evidence-20260910)"
     status: passed
-    evidence: "evidence/release-channel-001/summary.md"
+    evidence: "evidence/fleet-pilot-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
   human_acceptance: waived
 delivery_boundary:
-  name: template_release_channel
+  name: fleet_update
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Start fleet-pilot-001: update example-project-08 and example-project-05 to 6.3.0 on private branches with projectstate_update.py (owner decision D3)."
+next_action: "Start acceptance-loop-001: prove projectstate_decide.py end to end on copies of instances awaiting the owner."
