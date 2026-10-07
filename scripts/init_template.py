@@ -521,7 +521,8 @@ def legacy_profile_message(profile: str) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Initialize or adopt the ProjectState workflow")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name, summary in (("new", "Create a new repo from the template"), ("adopt", "Install the workflow into an existing repo")):
+    summaries = {"new": "Create a new repo from the template", "adopt": "Install the workflow into an existing repo"}
+    for name, summary in summaries.items():
         command = commands.add_parser(name, help=summary)
         command.add_argument("--name", required=True, help="Project name to stamp into the workflow files")
         command.add_argument(
