@@ -39,6 +39,9 @@ jobs:
       - name: Exercise generated core and packaged-product journey
         run: python3 scripts/test_outcome_core.py
 
+      - name: Check release identity
+        run: python3 scripts/projectstate_release.py check
+
       - name: Check recorded core evidence
         run: python3 scripts/projectstate_gate.py
 
@@ -90,6 +93,9 @@ jobs:
 
       - name: Exercise generated core and packaged-product journey for merge candidate
         run: python3 scripts/test_outcome_core.py
+
+      - name: Check release identity for merge candidate
+        run: python3 scripts/projectstate_release.py check
 
       - name: Check recorded core evidence for merge candidate
         run: python3 scripts/projectstate_gate.py

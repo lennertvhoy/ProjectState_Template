@@ -1,49 +1,45 @@
 # Scripts
 
-This directory holds lightweight workflow helpers for the ProjectState Template.
+This directory holds the ProjectState Template's tooling.
 
-All setup and usage instructions live in the repository root `README.md`.
+All setup and usage instructions live in the repository root `README.md`. The
+procedure for updating an existing project is in `docs/UPGRADING.md`.
 
-## Canonical Scripts
+## v6 tools
 
-- `init_template.py` - initializes a new repo or adopts the workflow into an existing repo
-- `projectstate_version_check.py` - verifies that ProjectState version-bearing files match `VERSION`
-- `check_state_docs.py` - validates the live-state documentation boundaries
-- `projectstate_handoff.py` - prints a read-only handoff snapshot from local repo state
-- `projectstate_audit.py` - machine-checkable closure audit (ProjectState v2)
-- `projectstate_doctor.py` - fast ProjectState health summary (ProjectState v2)
-- `projectstate_worktree_guard.py` - pre-slice/closure worktree isolation and dirty-file classification guard
-- `projectstate_brittleness_check.py` - advisory anti-brittleness heuristic scan
-- `projectstate_runtime_proof.py` - captures `runtime_identity.json` proof artifacts
-- `projectstate_runtime_truth_check.py` - re-probes an explicit v2 runtime artifact against current Git/runtime truth
-- `projectstate_validate_schema.py` - validates ProjectState state, evidence, runtime, and handoff contracts
-- `test_init_template.py` - runs stdlib-only regression tests for initializer safety
-- `test_worktree_guard.py` - runs stdlib-only worktree guard regression tests
-- `test_brittleness_check.py` - runs stdlib-only brittleness scan and audit marker regression tests
-- `test_runtime_proof.py` - runs stdlib-only runtime proof regression tests
-- `test_runtime_truth_check.py` - runs stdlib-only runtime truth regression tests
-- `test_schema_validation.py` - runs stdlib-only schema validation regression tests
+- `init_template.py` - creates a new project (`new`) or adopts the workflow into an existing repository (`adopt`); the `core` profile is the default
+- `projectstate_gate.py` - the dependency-free outcome gate that every project vendors; it reads recorded state and evidence only, exits 0, 1 or 2, and prints its release with `--version`
+- `projectstate_release.py` - release identity: `check` validates `releases/index.json` against the gate, the managed `AGENTS.md` block and the local tags; `cut --date` records a draft's hashes and marks it released; `hashes` prints the current ones
+- `projectstate_fleet.py` - read-only fleet doctor: release and drift, size and the owner inbox for every repository under a root folder; it writes only `fleet.md` and `fleet.json`, outside that folder
+- `projectstate_update.py` - brings one project to the current release by replacing its vendored gate and its managed `AGENTS.md` block; dry run by default
+- `projectstate_decide.py` - records the owner's accept, reject or waive decision in `STATE.yaml` and the slice summary; never commits
+- `projectstate_improve_check.py` - read-only guard for the opt-in measured improvement rounds; copied into a project by hand, never generated
 
 ## Usage
 
 ```bash
 python3 scripts/init_template.py --help
-python3 scripts/projectstate_version_check.py
-python3 scripts/check_state_docs.py
-python3 scripts/projectstate_handoff.py
-python3 scripts/projectstate_doctor.py
-python3 scripts/projectstate_audit.py
-python3 scripts/projectstate_worktree_guard.py --mode start-slice
-python3 scripts/projectstate_brittleness_check.py
-python3 scripts/projectstate_runtime_proof.py --no-runtime-required --evidence-dir docs/evidence/<slice>
-python3 scripts/projectstate_runtime_truth_check.py --artifact docs/evidence/<slice>/runtime_identity.json
-python3 scripts/projectstate_validate_schema.py
-python3 scripts/test_init_template.py
-python3 scripts/test_worktree_guard.py
-python3 scripts/test_brittleness_check.py
-python3 scripts/test_runtime_proof.py
-python3 scripts/test_runtime_truth_check.py
-python3 scripts/test_schema_validation.py
+python3 scripts/projectstate_gate.py
+python3 scripts/projectstate_release.py check
+python3 scripts/projectstate_fleet.py --stdout
+python3 scripts/projectstate_update.py --target ../your-project
+python3 scripts/projectstate_decide.py --help
+python3 scripts/projectstate_improve_check.py --help
 ```
+
+`projectstate_fleet.py --stdout` and the update command without `--apply` write
+nothing.
+
+## Tests and journeys
+
+- `python3 scripts/test_outcome_core.py` runs the generated-core and packaged-product journey.
+- `python3 -m pytest scripts/ -q` runs every test file, v5 compatibility tests included.
+- `test_release_channel.py` and `test_acceptance_loop.py` are plain scripts that take `--fleet-root DIR`. They copy real projects with `git archive` and only read the originals. The first runs the 6.3.0 release-channel journey (generated projects, the fleet doctor, and the update command on copies); the second proves the decide command on copies of projects that wait for the owner.
+
+## v5 compatibility material
+
+Every other `projectstate_*.py` and `statedd_*.py` script is v5 compatibility
+material, retained until the legacy split. Changes to them must keep their tests
+passing, but their requirements do not extend the v6 core.
 
 Add project-specific scripts only after a real project is attached to this template.

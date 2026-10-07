@@ -32,8 +32,20 @@ Both commands use the `core` profile unless you explicitly choose another one.
 | --- | --- |
 | `PROJECT.md` | Human-owned user, outcome, scope, non-goals, and durable constraints |
 | `STATE.yaml` | One current slice, its acceptance, journey, blockers, risks, and exact next action |
-| `AGENTS.md` | Authority boundaries, workflow, stop-lines, and closure rules |
-| `evidence/<slice-id>/summary.md` | Commands, environment, results, artifacts, and unresolved limitations |
+| `AGENTS.md` | The template's managed contract block, then the project's own local rules and owner directives |
+| `evidence/<slice-id>/summary.md` | Commands, environment, results, artifacts, the owner's decision, and unresolved limitations |
+
+`AGENTS.md` is one managed block followed by the project's own text. The block
+sits between `<!-- projectstate:managed:start release=X.Y.Z -->` and
+`<!-- projectstate:managed:end -->`, and its source is `core/AGENTS.managed.md`.
+It holds what is the same for every project: read order, authority, workflow,
+owner decisions, outcome precedence, simplification and risk, and boundaries.
+Never edit it inside a project; change it in the template and update the
+project (see [Releases, fleet and updates](#releases-fleet-and-updates)).
+Everything after the end marker belongs to the project. A generated file starts
+with `## Local rules` (domain rules, commands, safety limits) and
+`## Owner directives` (standing, dated instructions from the owner, such as
+`- 2026-10-06, until 2026-12-31: no new dependencies.`).
 
 The generated core also contains `scripts/projectstate_gate.py`, a small
 dependency-free checker. It checks recorded contract and evidence consistency,
@@ -55,7 +67,8 @@ journey yourself, record the result, and rerun the gate.
 - `implemented`: the change exists.
 - `validated`: the named primary journey passed in the named environment.
 - remote/CI/deployed: separately proven only when acceptance crosses that boundary.
-- `accepted`: the human accepted the product result.
+- `accepted`: the owner accepted the product result, recorded as an
+  [owner decision](#owner-decisions).
 
 Unit tests, repository validators, hashes, clean Git status, or complete metadata
 cannot turn a failed, blocked, or unrun primary journey green. Secondary checks
@@ -76,6 +89,11 @@ good product, verify that a command actually ran, authenticate a human approval,
 or enforce checks described only in `HARDENED_POLICY.md`. Those require real
 observation and human review; record applicable check failures as blockers.
 
+Soft limits print `WARN:` lines and never change the exit code: an oversized
+`STATE.yaml` or `PROJECT.md`, a long project-owned part of `AGENTS.md`, or an
+`AGENTS.md` with no managed block. Malformed block markers are an error (exit
+`2`). `--version` prints the gate's release.
+
 When installation is in scope, test the distributed artifact in the intended
 clean environment. Source tests and a prepared development machine do not prove
 that package contents, launchers, or installation work. Keep publication and
@@ -92,6 +110,29 @@ change, but cannot approve or apply one simply to make their own work pass.
 This deliberately removes companion control commits, mutable commit-head
 bindings, line budgets, correction counters, and runtime dependence on workflow
 files from the default model.
+
+### Owner decisions
+
+When a slice is validated, the owner accepts, rejects, or waives it; passing
+checks never stand in for that answer. One command records it (run it from the
+template checkout; `--dry-run` prints the planned edits and writes nothing):
+
+```bash
+python3 scripts/projectstate_decide.py ../your-project accept "the owner's words"
+```
+
+Use `reject` or `waive` in place of `accept`. The command appends
+`## Owner decision` (`- Decision:`, `- Date:`, `- Owner words:`, and
+`- Recorded by:`) to the slice's evidence summary and sets
+`validation.human_acceptance`; `accept` also sets `current_slice.status` to
+`accepted`. It then runs the gate on the result, restores both files if the gate
+reports an error, and never commits. The gate requires that record whenever the
+decision is accepted, rejected, or waived, and treats a record beside a
+`pending` decision as a contradiction (exit `2`). `reject` adds a blocker;
+`waive` adds none and leaves the slice status alone. A project whose vendored
+gate predates release 6.3.0 does not know `waived`; the command warns, and the
+project needs the update first. The gate checks records only: the quoted words
+are reviewable in Git, but nothing authenticates who ran the command.
 
 ## Two-strike simplification
 
@@ -153,6 +194,53 @@ ProjectState coordinates work only. Product code must not import, parse, or
 require `PROJECT.md`, `STATE.yaml`, `AGENTS.md`, `evidence/`, or its helper script
 to start or run. Deleting the coordination layer must not break the application.
 
+## Releases, fleet and updates
+
+Template changes reach existing projects through a release index, a read-only
+report, and an update command. None of them edits project-owned text.
+
+**Release identity.** `releases/index.json` lists every release with its date,
+tag, the sha256 of its gate and of its managed block, a one-line summary, and
+the instance action it needs: `none`, `mechanical` (the update command does it),
+or `semantic` (a person merges the change). The block hash is null for releases
+that predate the block. `python3 scripts/projectstate_release.py check` compares
+the index with the gate, the block, and the local release tags, and exits `2` on
+any mismatch; a released entry is frozen. `cut --date YYYY-MM-DD` fills a draft
+entry's hashes and marks it released (it never creates the tag), and `hashes`
+prints the current ones.
+
+**Fleet doctor.** `python3 scripts/projectstate_fleet.py` is a read-only report
+over the repositories directly under a folder (default: the folder that holds
+the template). It never writes inside a repository and never runs a
+repository's own code. For each v6 repository it shows whether the vendored gate
+and managed block match a release (`current`, `behind`, or `draft` for a
+candidate that is not cut yet) or match none (`unknown` gate, `edited` block),
+the size of the startup reading, the gate's verdict, and the slice; other
+repositories are only listed. The report goes to
+`~/.local/state/projectstate/fleet.md` and `fleet.json` (`--out` changes the
+folder, which must lie outside the scanned one); `--stdout` prints one report and
+writes nothing.
+
+The owner inbox at the top of the report lists what needs a person:
+
+- decisions waiting for the owner, each with its exact `projectstate_decide.py`
+  command;
+- blocked slices;
+- items to review: a gate or block that matches no release, expired owner
+  directives, risk acceptances about to expire, and a slice replaced while it
+  awaited the owner with no recorded decision (a replacement made before the
+  repository adopted the managed block is history, counted in
+  `summary.silent_replacements_before_rule` of `fleet.json` and not listed);
+- an unmerged `projectstate/release-<release>` update branch, with the command
+  that merges it.
+
+**Update.** `python3 scripts/projectstate_update.py --target ../your-project` is
+a dry run, and `--apply` writes. It replaces the project's vendored gate and its
+managed `AGENTS.md` block and nothing else: never `PROJECT.md`, `STATE.yaml`,
+`evidence/`, or the project's own `AGENTS.md` text.
+[`docs/UPGRADING.md`](docs/UPGRADING.md) explains the report and the refusal
+flags.
+
 ## Optional material
 
 Add these only when the project needs them:
@@ -167,29 +255,41 @@ Add these only when the project needs them:
 The initializer refuses automatic optional asset-set expansion for the v6
 profiles; add justified project-specific tooling in a separately reviewed change.
 
-For user-selected persistent threads, generated `AGENTS.md` includes compact
-ownership, assignment, recovery, and integration rules. The optional
-[persistent-thread guide and role prompts](prompts/PERSISTENT_THREADS.md) explain
-how to use them. There is no automatic thread routing or model selection, and
-the generated default still contains six files.
+Opt-in workflows live in `prompts/` and add nothing to the generated core: no
+text in `AGENTS.md`, no `STATE.yaml` key, no extra file. Each stays inert until
+the owner selects it, and the prompt itself says what to copy and where.
 
-For an instance that has a measurable outcome, the optional
-[measured improvement rounds guide](prompts/IMPROVEMENT_ROUNDS.md) describes an
-event-triggered, proposal-only workflow with a mechanically enforced stop rule.
-It is copied in by hand (`prompts/IMPROVE_MD_TEMPLATE.md` plus
-`scripts/projectstate_improve_check.py`), adds no generated text or `STATE.yaml`
-key, and stays inert until the owner sets `enabled: true`. An instance with no
-measure should not use it.
+- [Persistent threads](prompts/PERSISTENT_THREADS.md): role prompts and the
+  ownership, assignment, recovery, and integration rules for a coordinator with
+  workers, copied into the project's local sections. There is no automatic
+  thread routing or model selection.
+- [Long-run control](prompts/LONG_RUN_CONTROL.md): the continuation decision and
+  the selected-run record for a long, explicitly authorized run, copied into
+  the project's local sections.
+- [Measured improvement rounds](prompts/IMPROVEMENT_ROUNDS.md): for an instance
+  that has a measurable outcome, an event-triggered, proposal-only workflow with
+  a mechanically enforced stop rule. It is copied in by hand
+  (`prompts/IMPROVE_MD_TEMPLATE.md` plus `scripts/projectstate_improve_check.py`)
+  and stays inert until the owner sets `enabled: true`. An instance with no
+  measure should not use it.
 
 Git history is the default work history. Do not duplicate it into a mandatory
 workflow ledger.
 
 ## Maintainer notes
 
-Start with the core files above, `scripts/init_template.py`,
-`scripts/projectstate_gate.py`, and `scripts/test_outcome_core.py`.
+Start with the core files above, `core/AGENTS.managed.md`, `releases/index.json`,
+`scripts/init_template.py`, `scripts/projectstate_gate.py`, and
+`scripts/test_outcome_core.py`.
 [The worked example](docs/WORKED_EXAMPLE.md) runs a packaged product through
 failure, a handoff read by a new process, recovery, and restart.
+
+Changing the gate or the managed block is a release. Add a draft entry at the
+end of `releases/index.json`, set `latest` and the gate's `RELEASE` to its
+number, and make the change. `python3 scripts/projectstate_release.py check`
+passes on a draft and prints the hashes that `cut --date YYYY-MM-DD` will
+record. After `cut`, commit the index and create the tag yourself. Both
+validation jobs in CI run `check`.
 
 The design decision and migration boundary are recorded in
 `docs/adr/0003-outcome-first-core.md`. The template repository retains the v5
