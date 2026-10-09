@@ -273,6 +273,28 @@ class RepositoryTests(unittest.TestCase):
         (repo / "journey.py").write_text("raise SystemExit(0)\n")
         self.assertTrue(handoff.anchor_report(repo, pristine)["journey_edited"])
 
+    def test_verify_conditions_add_the_tool_and_only_the_named_rules(self) -> None:
+        plain = self.build("with")
+        for condition, rules in (("with-verify", (handoff.VERIFY_RULE,)), ("with-plus", (handoff.VERIFY_RULE, handoff.OWNER_STATEMENT_RULE))):
+            repo = self.build(condition)
+            tool = repo / "scripts" / "projectstate_verify.py"
+            self.assertEqual(tool.read_bytes(), (sc.ROOT / "scripts" / "projectstate_verify.py").read_bytes())
+            added = "".join(f"\n\n{rule}" for rule in rules)
+            self.assertEqual((repo / "AGENTS.md").read_text().replace(added, ""), (plain / "AGENTS.md").read_text())
+            self.assertEqual(handoff.release_block((repo / "AGENTS.md").read_text()), handoff.release_block((plain / "AGENTS.md").read_text()))
+            self.assertEqual(sc.run_gate(repo)[0], 1)
+        self.assertFalse((plain / "scripts" / "projectstate_verify.py").exists())
+
+    def test_the_vendored_verify_tool_records_a_failing_skeleton_honestly(self) -> None:
+        repo = self.build("with-verify")
+        done = subprocess.run([sys.executable, "scripts/projectstate_verify.py", "--run"], cwd=repo, capture_output=True, text=True)
+        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+        state = (repo / "STATE.yaml").read_text()
+        self.assertIn("    status: failed", state)
+        self.assertEqual(sc.run_gate(repo)[0], 1)  # a failed journey is a blocker, not an invalid record
+        report = handoff.anchor_report(repo, sc.snapshot(repo)["journey.py"])
+        self.assertEqual((report["journey_status"], report["overclaims"]), ("failed", False))
+
     def test_both_conditions_share_the_same_work_files(self) -> None:
         with_repo, without_repo = self.build("with"), self.build("without")
         for name in ("README.md", "ledger.py", "journey.py", ".gitignore"):

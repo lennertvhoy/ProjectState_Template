@@ -38,7 +38,8 @@ import run as base  # noqa: E402
 import scenarios as sc  # noqa: E402
 
 SCHEMA = "projectstate-handoff-eval/1"
-CONDITIONS = ("with", "without", "with-rule")
+CONDITIONS = ("with", "without", "with-rule", "with-verify", "with-plus")
+CORE_CONDITIONS = ("with", "with-rule", "with-verify", "with-plus")
 DEFAULT_CONDITIONS = "with,without"
 # Candidate contract rule under test: ``with-rule`` is ``with`` plus this line in the project's local rules, so the
 # template itself is untouched until a measurement shows the rule helps.
@@ -46,6 +47,16 @@ OWNER_STATEMENT_RULE = (
     "When the owner states a constraint or decision in conversation that affects later work, add it, in their words, "
     "to the Durable constraints of PROJECT.md before you stop, and say so in your final message."
 )
+# Candidate: the journey result is recorded by a tool that ran it, never typed by the agent.
+VERIFY_RULE = (
+    "Record the primary journey result by running `python3 scripts/projectstate_verify.py --run`; never type the journey "
+    "status, `Result` or `Exit code` by hand. When you resume, run it first: the recorded status is only a claim until it passes."
+)
+CONDITION_RULES = {
+    "with-rule": (OWNER_STATEMENT_RULE,),
+    "with-verify": (VERIFY_RULE,),
+    "with-plus": (VERIFY_RULE, OWNER_STATEMENT_RULE),
+}
 LOCAL_RULES_ANCHOR = "<!-- Project-owned: domain rules, commands, and safety limits for this project. -->"
 VARIANTS = ("plain", "handoff")
 SLICE = "ledger-001"
@@ -274,28 +285,29 @@ def build_repo(parent: Path, condition: str) -> Path:
         ("Add README with requirements", {"README.md": README, ".gitignore": "__pycache__/\n*.pyc\n"}),
         ("Add ledger.py skeleton and journey.py", {"ledger.py": STUB, "journey.py": JOURNEY}),
     ]
-    if condition in ("with", "with-rule"):
+    if condition in CORE_CONDITIONS:
         generated = sc.generate_core(parent, FIRST_COMMIT)
         agents = generated["AGENTS.md"]
-        if condition == "with-rule":
+        rules = CONDITION_RULES.get(condition, ())
+        if rules:
             if agents.count(LOCAL_RULES_ANCHOR) != 1:
                 raise HandoffError("generated AGENTS.md no longer has the local rules placeholder")
-            agents = agents.replace(LOCAL_RULES_ANCHOR, f"{LOCAL_RULES_ANCHOR}\n\n{OWNER_STATEMENT_RULE}")
+            agents = agents.replace(LOCAL_RULES_ANCHOR, LOCAL_RULES_ANCHOR + "".join(f"\n\n{rule}" for rule in rules))
         project = generated["PROJECT.md"]
         for placeholder, value in PROJECT_PLACEHOLDERS:
             if project.count(placeholder) != 1:
                 raise HandoffError(f"generated PROJECT.md no longer has the placeholder {placeholder!r}")
             project = project.replace(placeholder, value)
-        steps.append((
-            "Adopt ProjectState core",
-            {
-                "AGENTS.md": agents,
-                "scripts/projectstate_gate.py": generated["scripts/projectstate_gate.py"],
-                "PROJECT.md": project,
-                "STATE.yaml": state_yaml(),
-                f"evidence/{SLICE}/summary.md": summary_md(),
-            },
-        ))
+        core = {
+            "AGENTS.md": agents,
+            "scripts/projectstate_gate.py": generated["scripts/projectstate_gate.py"],
+            "PROJECT.md": project,
+            "STATE.yaml": state_yaml(),
+            f"evidence/{SLICE}/summary.md": summary_md(),
+        }
+        if condition in ("with-verify", "with-plus"):
+            core["scripts/projectstate_verify.py"] = (sc.ROOT / "scripts" / "projectstate_verify.py").read_text(encoding="utf-8")
+        steps.append(("Adopt ProjectState core", core))
     sc.git(repo, "init", "-q", "-b", "main")
     for index, (message, files) in enumerate(steps):
         for name, text in files.items():
