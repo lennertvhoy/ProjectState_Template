@@ -25,17 +25,27 @@ words from the log - newest entries first, then older entries that read as stand
 (3) ``stop`` notices, once per session, when this session's words read as standing instructions and are not yet
 written down, and asks the agent to file them before it finishes.
 
-"Reads as a standing instruction" is a deterministic, conservative filter used to pick candidates for the
-brief's older section and for the stop hook; the agent (or owner) still decides. It matches, case-insensitive
-and on word boundaries, the owner's typed words only (paste summaries excluded): always, never, must (not),
-do not / don't / dont, only, from now on, every time, whenever, by default, make sure, prefer(s),
-instead of, rather than, constraint(s), requirement(s), rule(s). Session-scoped limits ("not yet", "later",
-"only X this session") can match and are sorted out by the wording of the stop request, not by magic.
+"Reads as a standing instruction" comes in two sets, both deterministic and conservative, matching
+case-insensitively and on word boundaries over the owner's typed words only (paste summaries excluded).
+The BROAD set - always, never, must (not), do not / don't / dont, only, from now on, every time,
+whenever, by default, make sure, prefer(s), instead of, rather than, constraint(s), requirement(s),
+rule(s) - is used where a false positive costs nothing: the brief's older-words pool and log trimming.
+The STRONG set drops do not / don't / dont and only (measured: mostly one-offs in this owner's prompts)
+and triggers the stop hook. Session-scoped limits ("not yet", "later", "only X this session") can still
+match and are sorted out by the wording of the stop request, not by magic.
 
-``stop`` offers each entry at most once: offered entry stamps are recorded in ``.projectstate/offered.json``,
-and a session is never blocked twice. Everything else stays as in v1: the log is local (``.projectstate/``
-ignores itself in Git because prompts can hold private data), obvious secrets are redacted best-effort, the
-hooks never block or fail a session by accident (any problem goes to stderr and the exit code stays 0), and
+``stop`` runs two checks after every turn. Each log entry is offered at most once (stamps in
+``.projectstate/offered.json``); there is no per-session limit, because a session spans many owner turns
+and words stated in turn 5 must still be offered after turn 1. And when STATE.yaml and the gate script
+exist at the root, it runs ``scripts/projectstate_gate.py`` read-only (no shell, 20 s timeout): exit 0 or
+1 is silent, exit 2 (invalid records) blocks once per distinct gate output, quoting its first 15 lines
+and asking the agent to fix the records it wrote; the output's hash is stored in offered.json. A gate
+that times out or cannot run is silent (a note on stderr).
+
+``install`` merges into ``.claude/settings.json`` without removing anything - while replacing v1's hooks,
+so recording does not duplicate entries - and copies the opencode plugin to ``.opencode/plugins/``
+(plural; 1.18.x also loads the singular ``.opencode/plugin/``, which ``uninstall`` removes as a leftover).
+``uninstall`` removes exactly the hooks and files install added and keeps the log.
 ``install`` merges into ``.claude/settings.json`` without removing anything - while replacing v1's hooks, so
 recording does not duplicate entries. ``uninstall`` removes exactly the hooks and files install added and
 keeps the log.
@@ -45,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -57,7 +68,8 @@ LOG_DIR = ".projectstate"
 LOG_NAME = "owner-log.md"
 STANDING_NAME = "standing.md"
 OFFERED_NAME = "offered.json"
-OPENCODE_PLUGIN_DIR = ".opencode/plugin"
+OPENCODE_PLUGIN_DIR = ".opencode/plugins"
+OPENCODE_PLUGIN_LEGACY_DIR = ".opencode/plugin"
 OPENCODE_PLUGIN_NAME = "projectstate.js"
 OPENCODE_PLUGIN_SOURCE = "projectstate_opencode_plugin.js"
 MAX_ENTRY_CHARS = 8000
@@ -84,6 +96,11 @@ BULLET = re.compile(r"^\s*[-*]\s+(.+?)\s*$")
 STANDING_MARKERS = re.compile(
     r"\b(?:always|never|must\s+not|must|do\s+not|don't|dont|only|from\s+now\s+on|every\s+time|whenever|"
     r"by\s+default|make\s+sure|prefers?|instead\s+of|rather\s+than|constraints?|requirements?|rules?)\b",
+    re.IGNORECASE,
+)
+STRONG_MARKERS = re.compile(
+    r"\b(?:always|never|must\s+not|must|from\s+now\s+on|every\s+time|whenever|by\s+default|make\s+sure|"
+    r"prefers?|instead\s+of|rather\s+than|constraints?|requirements?|rules?)\b",
     re.IGNORECASE,
 )
 REDACTIONS = (
@@ -225,7 +242,10 @@ def append_entry(root: Path, prompt: str, session: str, now: dt.datetime | None 
     text = "# Owner log\n\nThe owner's words, verbatim and oldest first. Recorded by scripts/projectstate_hooks.py.\n\n"
     rendered = [render_entry(*entry) for entry in kept]
     while len(rendered) > 1 and len((text + "".join(rendered)).encode("utf-8")) > MAX_LOG_BYTES:
-        rendered.pop(0)  # keep the newest entries when the log outgrows its cap
+        # trim oldest entries that do not read as standing first; standing words go last
+        drop = next((index for index, entry in enumerate(kept) if not reads_standing(entry[2])), 0)
+        kept.pop(drop)
+        rendered = [render_entry(*entry) for entry in kept]
     directory.mkdir(parents=True, exist_ok=True)
     gitignore = directory / ".gitignore"
     if not gitignore.exists():
@@ -236,6 +256,10 @@ def append_entry(root: Path, prompt: str, session: str, now: dt.datetime | None 
 
 def reads_standing(body: str) -> bool:
     return bool(STANDING_MARKERS.search(body))
+
+
+def reads_strong(body: str) -> bool:
+    return bool(STRONG_MARKERS.search(body))
 
 
 # --- the brief: standing words, slice view, earlier words ----------------------------------------------------------
@@ -450,16 +474,20 @@ def offered_state(root: Path) -> dict:
         parsed = {}
     stamps = parsed.get("offered")
     sessions = parsed.get("sessions")
+    hashes = parsed.get("gate_hashes")
     return {
         "offered": [str(stamp) for stamp in stamps] if isinstance(stamps, list) else [],
         "sessions": {str(key): [str(s) for s in value] for key, value in sessions.items()}
         if isinstance(sessions, dict) else {},
+        "gate_hashes": [str(item) for item in hashes] if isinstance(hashes, list) else [],
     }
 
 
-def save_offered(root: Path, state: dict, session: str, stamps: list[str]) -> None:
+def save_offered(root: Path, state: dict, session: str, stamps: list[str], gate_hash: str | None = None) -> None:
     state["offered"] = sorted(set(state["offered"]) | set(stamps))
     state["sessions"] = {**state["sessions"], session: sorted(set(state["sessions"].get(session, [])) | set(stamps))}
+    if gate_hash:
+        state["gate_hashes"] = sorted(set(state["gate_hashes"]) | {gate_hash})
     directory = root / LOG_DIR
     if directory.is_symlink():
         return
@@ -479,38 +507,73 @@ def durable_bullets_text(project_text: str) -> str:
     return "\n".join(durable_bullets(project_text))
 
 
+GATE_TIMEOUT_S = 20
+GATE_REASON_LINES = 15
+
+
+def gate_block(root: Path, state: dict) -> dict | None:
+    """Run the gate read-only; a dict when it reports invalid records and that output was never blocked."""
+    if not (root / "STATE.yaml").is_file() or not (root / "scripts" / "projectstate_gate.py").is_file():
+        return None
+    try:
+        done = subprocess.run(
+            [sys.executable, "scripts/projectstate_gate.py"], cwd=root,
+            capture_output=True, text=True, timeout=GATE_TIMEOUT_S,
+        )
+    except (subprocess.TimeoutExpired, OSError) as error:
+        print(f"projectstate_hooks: gate skipped: {error}", file=sys.stderr)
+        return None
+    if done.returncode == 2:
+        output = (done.stdout + done.stderr).strip()
+    elif done.returncode in (0, 1):
+        return None  # honest and valid, or honestly not closure-ready: not the agent's problem at stop
+    else:
+        print(f"projectstate_hooks: gate skipped: unexpected exit {done.returncode}", file=sys.stderr)
+        return None
+    digest = hashlib.sha256(output.encode("utf-8")).hexdigest()
+    if digest in state["gate_hashes"]:
+        return None
+    return {"output": output, "hash": digest}
+
+
 def stop_decision(root: Path, payload: dict) -> str | None:
-    """One block decision when this session's words look standing and were never offered; else None."""
+    """One block decision when the gate reports invalid records or this session's words look standing and
+    were never offered; else None. Each entry is offered at most once - there is no per-session limit."""
     if payload.get("stop_hook_active"):
         return None
     session = str(payload.get("session_id") or "")[:8]
     if not session or session == "unknown":
         return None
-    found = entry_of(read_text(log_path(root)))
-    mine = [entry for entry in found if entry[1] == session]
-    if not mine:
-        return None
     state = offered_state(root)
-    if session in state["sessions"]:
-        return None
+    gate = gate_block(root, state)
     target, place = standing_target(root)
+    mine = [entry for entry in entry_of(read_text(log_path(root))) if entry[1] == session]
     candidates = [
         entry for entry in mine
-        if reads_standing(entry[2]) and entry[0] not in state["offered"] and not contained(entry[2], target)
+        if reads_strong(entry[2]) and entry[0] not in state["offered"] and not contained(entry[2], target)
     ]
-    if not candidates:
+    if gate is None and not candidates:
         return None
-    quoted = "\n".join(f'- "{abbreviate(entry[2])}" (owner, {entry[0][:10]})' for entry in candidates)
-    reason = (
-        "The owner said this in the current session. Before you finish: if any of the quoted words below is a "
-        "standing constraint or a decision about HOW this project is built or run, add it to "
-        f"{place}, verbatim and quoted, each followed by \"(owner, YYYY-MM-DD)\". Leave out one-off requests and "
-        "limits on what a past session should do (for example \"not yet\", \"later\", \"only X this session\"). "
-        f"Then finish.\n\n{quoted}"
-    )
+    reasons = []
+    if candidates:
+        quoted = "\n".join(f'- "{abbreviate(entry[2])}" (owner, {entry[0][:10]})' for entry in candidates)
+        reasons.append(
+            "The owner said this in the current session. Before you finish: if any of the quoted words below is a "
+            "standing constraint or a decision about HOW this project is built or run, add it to "
+            f"{place}, verbatim and quoted, each followed by \"(owner, YYYY-MM-DD)\". Leave out one-off requests and "
+            "limits on what a past session should do (for example \"not yet\", \"later\", \"only X this session\"). "
+            f"Then finish.\n\n{quoted}"
+        )
+    if gate is not None:
+        head = "\n".join(gate["output"].splitlines()[:GATE_REASON_LINES])
+        reasons.append(
+            "The ProjectState gate reports invalid records (exit 2). Fix the records you wrote before you "
+            f"finish; the gate stays read-only. It says:\n{head}"
+        )
+    reason = "\n\n".join(reasons)
     if len(reason) > STOP_REASON_CHARS:
         reason = reason[:STOP_REASON_CHARS - len("\n[truncated]")] + "\n[truncated]"
-    save_offered(root, state, session, [entry[0] for entry in candidates])
+    save_offered(root, state, session, [entry[0] for entry in candidates], gate["hash"] if gate else None)
     return json.dumps({"decision": "block", "reason": reason})
 
 
@@ -655,7 +718,6 @@ def uninstall(root: Path, dry_run: bool, host: str) -> int:
     own = Path(__file__).resolve()
     tool = root / "scripts" / HOOK_MARK
     settings = root / ".claude" / "settings.json"
-    plugin_target = root / OPENCODE_PLUGIN_DIR / OPENCODE_PLUGIN_NAME
     removed_any = False
     if host in ("claude", "all"):
         if settings.is_symlink():
@@ -712,14 +774,17 @@ def uninstall(root: Path, dry_run: bool, host: str) -> int:
             if not dry_run:
                 tool.unlink()
     if host in ("opencode", "all"):
-        if plugin_target.is_symlink():
-            print("refused: the opencode plugin path is reached through a symlink", file=sys.stderr)
-            return 2
-        if plugin_target.is_file() and not same_file(plugin_target, own.parent / OPENCODE_PLUGIN_SOURCE):
-            print(f"{'would remove' if dry_run else 'removing'} {plugin_target.relative_to(root)}")
-            removed_any = True
-            if not dry_run:
-                plugin_target.unlink()
+        plugin_source = own.parent / OPENCODE_PLUGIN_SOURCE
+        for directory in (OPENCODE_PLUGIN_DIR, OPENCODE_PLUGIN_LEGACY_DIR):
+            plugin = root / directory / OPENCODE_PLUGIN_NAME
+            if plugin.is_symlink():
+                print(f"refused: {directory}/{OPENCODE_PLUGIN_NAME} is reached through a symlink", file=sys.stderr)
+                return 2
+            if plugin.is_file() and not same_file(plugin, plugin_source):
+                print(f"{'would remove' if dry_run else 'removing'} {plugin.relative_to(root)}")
+                removed_any = True
+                if not dry_run:
+                    plugin.unlink()
     if not removed_any:
         print("nothing to uninstall for host " + host)
     elif not dry_run:

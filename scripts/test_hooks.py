@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Tests for projectstate_hooks.py: the owner's typed words reach every session, pastes do not.
 
-The standing-instruction heuristic is measured on a synthetic labelled set of 51 realistic prompts
-(25 standing, 26 one-off including session limits, questions and pastes): exact counts are asserted
-below and printed as precision/recall - 25 true positives, 7 false positives (all "only", "instead
-of", "must" or "do not" used about one run or one artefact), 0 false negatives, precision 25/32 =
-0.78, recall 25/25 = 1.00. The v1 tool is imported to prove the retention difference on the same log.
+Two standing-instruction heuristics are measured on one synthetic labelled set of 51 realistic prompts
+(25 standing, 26 one-off including session limits, questions and pastes); counts are asserted exactly and
+printed as precision/recall/trigger-rate. BROAD (used for the brief's older pool and log trimming, where
+false positives are free): 25 tp, 7 fp, 0 fn - precision 25/32 = 0.78, recall 1.00, trigger rate 32/51 =
+0.63. STRONG (triggers the stop hook; drops do not / don't / dont and only): 21 tp, 2 fp, 4 fn -
+precision 21/23 = 0.91, recall 21/25 = 0.84, trigger rate 23/51 = 0.45. The v1 tool is imported to prove
+the retention difference on the same log.
 """
 
 from __future__ import annotations
@@ -218,15 +220,32 @@ def test_v1_logs_keep_working_with_v2(tmp_path: Path) -> None:
 # --- the standing-instruction heuristic ------------------------------------------------------------------------------
 
 
-def test_heuristic_precision_and_recall_on_the_labelled_set() -> None:
-    tp = sum(1 for standing, prompt in LABELLED if standing and hooks.reads_standing(hooks.replace_pastes(prompt)))
-    fp = sum(1 for standing, prompt in LABELLED if not standing and hooks.reads_standing(hooks.replace_pastes(prompt)))
-    fn = sum(1 for standing, prompt in LABELLED if standing and not hooks.reads_standing(hooks.replace_pastes(prompt)))
-    precision, recall = tp / (tp + fp), tp / (tp + fn)
-    print(f"\nlabelled set: {len(LABELLED)} prompts, tp={tp} fp={fp} fn={fn} "
-          f"precision={precision:.2f} recall={recall:.2f}")
-    assert (tp, fp, fn) == (25, 7, 0)
-    assert precision >= 0.7 and recall >= 0.9
+def classify(matcher) -> tuple[int, int, int, int]:
+    tp = fp = fn = tn = 0
+    for standing, prompt in LABELLED:
+        body = hooks.replace_pastes(prompt)
+        if standing and matcher(body):
+            tp += 1
+        elif not standing and matcher(body):
+            fp += 1
+        elif standing:
+            fn += 1
+        else:
+            tn += 1
+    return tp, fp, fn, tn
+
+
+def test_heuristic_precision_recall_and_trigger_rate_on_the_labelled_set() -> None:
+    broad = classify(hooks.reads_standing)
+    strong = classify(hooks.reads_strong)
+    for name, (tp, fp, fn, tn) in (("broad", broad), ("strong", strong)):
+        precision, recall, rate = tp / (tp + fp), tp / (tp + fn), (tp + fp) / len(LABELLED)
+        print(f"\n{name}: {len(LABELLED)} prompts, tp={tp} fp={fp} fn={fn} tn={tn} "
+              f"precision={precision:.2f} recall={recall:.2f} trigger_rate={rate:.2f}")
+    assert broad == (25, 7, 0, 19)
+    assert strong == (21, 2, 4, 24)
+    assert broad[0] / (broad[0] + broad[1]) >= 0.7 and broad[2] == 0  # recall 1.00
+    assert strong[0] / (strong[0] + strong[1]) >= 0.9 and strong[3] > broad[3]  # fewer one-off triggers
 
 
 # --- retention: brief keeps what v1's inject forgets -----------------------------------------------------------------
@@ -340,6 +359,26 @@ def test_brief_prefers_words_already_written_down_and_honours_the_caps(tmp_path:
     assert len(hooks.brief_text(tmp_path)) <= hooks.BRIEF_CHARS
 
 
+def test_log_trimming_keeps_standing_words(tmp_path: Path) -> None:
+    hooks.append_entry(tmp_path, "Always keep the ledger append-only. " + "y" * 3000, "s0", at(0))
+    for number in range(30):
+        hooks.append_entry(tmp_path, f"note {number:02d} " + "x" * 4000, f"s{number}", at(number + 1))
+    path = tmp_path / ".projectstate" / "owner-log.md"
+    assert path.stat().st_size <= hooks.MAX_LOG_BYTES
+    stored = path.read_text()
+    assert "Always keep the ledger append-only." in stored  # the oldest entry survives: it reads standing
+    assert "note 00" not in stored and "note 29" in stored  # oldest non-standing entries went first
+
+
+def test_log_trimming_drops_standing_entries_only_when_nothing_else_is_left(tmp_path: Path) -> None:
+    for number in range(25):
+        hooks.append_entry(tmp_path, f"Always note {number:02d}. " + "z" * 3000, f"s{number}", at(number))
+    path = tmp_path / ".projectstate" / "owner-log.md"
+    assert path.stat().st_size <= hooks.MAX_LOG_BYTES
+    stored = path.read_text()
+    assert "Always note 24" in stored and "Always note 00" not in stored
+
+
 def test_the_log_is_capped_and_keeps_the_newest_entries(tmp_path: Path) -> None:
     for number in range(40):
         hooks.append_entry(tmp_path, f"entry {number:02d} " + "x" * 6000, f"s{number}", NOW)
@@ -361,27 +400,45 @@ def test_symlinked_log_directory_is_never_written_through(tmp_path: Path) -> Non
 # --- the stop hook ----------------------------------------------------------------------------------------------------
 
 
-def test_stop_offers_this_sessions_standing_words_once(tmp_path: Path) -> None:
+def at(minutes: int) -> dt.datetime:
+    return NOW + dt.timedelta(minutes=minutes)
+
+
+def test_stop_offers_each_strong_entry_once_and_reblocks_for_new_words(tmp_path: Path) -> None:
     make_repo(tmp_path, project="# Project\n\n## Durable constraints\n\n- Keep the gate green.\n")
-    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", NOW)
-    hooks.append_entry(tmp_path, "proceed", "sess0001", NOW)
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", at(0))
+    hooks.append_entry(tmp_path, "proceed", "sess0001", at(1))
     decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
     assert decision is not None
     parsed = json.loads(decision)
     assert parsed["decision"] == "block" and "Always deploy from the release branch." in parsed["reason"]
     assert "Durable constraints" in parsed["reason"] and "not yet" in parsed["reason"]
     offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
-    assert offered["sessions"]["sess0001"] and len(offered["offered"]) == 1
+    assert offered["sessions"]["sess0001"] == [offered["offered"][0]] and len(offered["offered"]) == 1
+    # nothing new -> no block, even in the same session
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
-    assert hooks.stop_decision(tmp_path, {"session_id": "other0000-abcd", "stop_hook_active": False}) is None
+    # a word stated in a later turn of the same session is still offered (no per-session limit)
+    hooks.append_entry(tmp_path, "Never ship on a Friday afternoon.", "sess0001", at(2))
+    later = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
+    assert later is not None and "Never ship on a Friday afternoon." in json.loads(later)["reason"]
+    offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
+    assert len(offered["offered"]) == 2
+    # words restated in a NEW session are a new entry (new stamp) and get their own single offer
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0002", at(3))
+    restated = hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False})
+    assert restated is not None
+    offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
+    assert len(offered["offered"]) == 3 and offered["sessions"]["sess0002"] == [offered["offered"][2]]
+    assert hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False}) is None
 
 
-def test_stop_never_blocks_twice_in_one_session_even_with_fresh_words(tmp_path: Path) -> None:
-    make_repo(tmp_path)
-    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", NOW)
-    assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is not None
-    hooks.append_entry(tmp_path, "Never ship on a Friday afternoon.", "sess0001", NOW)
-    assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
+def test_stop_uses_the_strong_markers_not_the_broad_ones(tmp_path: Path) -> None:
+    make_repo(tmp_path, project="# Project\n\n## Durable constraints\n\n- Keep the gate green.\n")
+    hooks.append_entry(tmp_path, "Only touch the CSV exporter today, dont wait for me.", "sess0001", at(0))
+    decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
+    assert decision is None  # only/dont are broad-set words; they do not trigger the stop hook
+    hooks.append_entry(tmp_path, "Never touch the ledger directly.", "sess0002", at(1))
+    assert hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False}) is not None
 
 
 def test_stop_does_not_block_when_active_or_already_written(tmp_path: Path) -> None:
@@ -397,9 +454,49 @@ def test_stop_does_not_block_when_active_or_already_written(tmp_path: Path) -> N
     assert decision is not None and "standing.md" in json.loads(decision)["reason"]
 
 
+def gate_repo(tmp_path: Path, state: str) -> Path:
+    make_repo(tmp_path, state=state)
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "projectstate_gate.py").write_text((SCRIPTS / "projectstate_gate.py").read_text())
+    return tmp_path
+
+
+def test_stop_blocks_once_per_distinct_gate_output(tmp_path: Path) -> None:
+    gate_repo(tmp_path, state="a: 1\na: 2\n")
+    decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
+    assert decision is not None
+    parsed = json.loads(decision)
+    assert "invalid records" in parsed["reason"] and "duplicate key" in parsed["reason"]
+    offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
+    assert len(offered["gate_hashes"]) == 1
+    # same broken records -> the same output -> never blocked again
+    assert hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False}) is None
+    # different records -> a new output -> one new block
+    (tmp_path / "STATE.yaml").write_text("a: 1\nb: [2\n")
+    again = hooks.stop_decision(tmp_path, {"session_id": "sess0003-abcd", "stop_hook_active": False})
+    assert again is not None and json.loads((tmp_path / ".projectstate" / "offered.json").read_text())["gate_hashes"].__len__() == 2
+
+
+def test_gate_exit_1_and_a_missing_gate_are_silent(tmp_path: Path) -> None:
+    subprocess.run([sys.executable, str(SCRIPTS / "init_template.py"), "new", "--name", "Gate Silent",
+                    "--target", str(tmp_path), "--no-init-git"], check=True, capture_output=True)
+    assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
+    (tmp_path / "scripts" / "projectstate_gate.py").unlink()
+    assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
+
+
+def test_gate_problem_and_standing_words_share_one_block(tmp_path: Path) -> None:
+    gate_repo(tmp_path, state="a: 1\na: 2\n")
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", at(0))
+    decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
+    assert decision is not None
+    reason = json.loads(decision)["reason"]
+    assert "Always deploy from the release branch." in reason and "invalid records" in reason
+
+
 def test_stop_prints_one_json_object_and_hooks_never_fail_a_session(tmp_path: Path) -> None:
     make_repo(tmp_path)
-    hooks.append_entry(tmp_path, "Always keep money as integer cents.", "sess0001", NOW)
+    hooks.append_entry(tmp_path, "Always keep money as integer cents.", "sess0001", at(0))
     done = hook(tmp_path, "stop", session_id="sess0001-abcd", stop_hook_active=False)
     assert done.returncode == 0
     assert json.loads(done.stdout)["decision"] == "block"
@@ -517,6 +614,22 @@ def test_opencode_host_installs_the_plugin_and_refuses_when_it_is_missing(tmp_pa
                   tool=missing / hooks.HOOK_MARK)
     assert refused.returncode == 2 and "missing" in refused.stderr
     assert installed.read_text() == before
+
+
+def test_uninstall_removes_a_legacy_singular_plugin_copy(tmp_path: Path) -> None:
+    tools = tmp_path / "tools"
+    tools.mkdir()
+    (tools / hooks.OPENCODE_PLUGIN_SOURCE).write_text("// plugin\n")
+    shutil_tool = tools / hooks.HOOK_MARK
+    shutil_tool.write_text(TOOL.read_text())
+    shutil_tool.chmod(0o755)
+    project = tmp_path / "project"
+    project.mkdir()
+    legacy = project / hooks.OPENCODE_PLUGIN_LEGACY_DIR / hooks.OPENCODE_PLUGIN_NAME
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("// old install\n")
+    done = cli(tmp_path, "uninstall", "--root", str(project), "--host", "opencode", tool=shutil_tool)
+    assert done.returncode == 0 and not legacy.exists()
 
 
 def test_uninstall_removes_what_install_added_and_keeps_the_log(tmp_path: Path) -> None:
