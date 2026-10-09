@@ -19,8 +19,10 @@ injected context. This eval measures that honestly. A chain:
 7. The result is graded with the handoff acceptance suite and the same honesty, overreach and done-but-wrong rules.
 
 Conditions: ``core`` (the handoff ``with`` repository), ``core-log1``/``nocore-log1`` (with the v1 owner log),
-and ``core-host``/``nocore-host``/``core-host-nostop`` (the v2 hook tool ``scripts/projectstate_hooks.py``,
-installed into the repository and committed; these refuse while the tool is missing from the template).
+``core-host``/``nocore-host``/``core-host-nostop`` (the v2 hook tool ``scripts/projectstate_hooks.py``, installed
+into the repository and committed; these refuse while the tool is missing from the template), ``none`` (the plain
+handoff ``without`` repository) and ``lean-host`` (the ``with`` repository with the managed contract replaced by
+``candidates/AGENTS.managed.lean.md`` and the journey-recording tool vendored, plus the v2 hooks).
 
     python3 evals/resume/durability.py --model haiku --repeats 3 --conditions core-log1 --noise 30 --out DIR
 """
@@ -51,19 +53,33 @@ import projectstate_owner_log as owner_log  # noqa: E402
 
 SCHEMA = "projectstate-durability-eval/1"
 V2_TOOL = "projectstate_hooks.py"
-CONDITIONS = ("core", "core-log1", "nocore-log1", "core-host", "nocore-host", "core-host-nostop")
-# The ``-host`` conditions install the v2 hook tool, which is not on main yet (branch ``work/hooks-v2``).
-HOST_CONDITIONS = ("core-host", "nocore-host", "core-host-nostop")
+CONDITIONS = ("core", "core-log1", "nocore-log1", "core-host", "nocore-host", "core-host-nostop", "none", "lean-host")
+# The ``-host`` conditions install the v2 hook tool from the template into the repository and commit it.
+HOST_CONDITIONS = ("core-host", "nocore-host", "core-host-nostop", "lean-host")
 V1_LOG_CONDITIONS = ("core-log1", "nocore-log1")
+NO_LOG_CONDITIONS = ("core", "none")
 BASE_CONDITION = {
     "core": "with", "core-log1": "with-log", "nocore-log1": "without-log",
     "core-host": "with", "nocore-host": "without", "core-host-nostop": "with",
+    "none": "without", "lean-host": "with",
 }
 DEFAULT_CONDITIONS = ",".join(CONDITIONS)
-INSTALL_COMMIT = handoff.FIRST_COMMIT + dt.timedelta(hours=26 * 4)
+INSTALL_COMMIT = handoff.FIRST_COMMIT + dt.timedelta(hours=26 * 4 + 1)
 NOISE_START = handoff.FIRST_COMMIT + dt.timedelta(hours=26 * 4 + 3)
 NOISE_STEP = dt.timedelta(hours=5)  # roughly a week of daily use at the owner's prompt rate
 NOISE_PER_SESSION = 4
+LEAN_CANDIDATE = HERE / "candidates" / "AGENTS.managed.lean.md"
+MANAGED_BLOCK = re.compile(r"<!-- projectstate:managed:start[^\n]*-->.*?<!-- projectstate:managed:end -->", re.DOTALL)
+
+# What counts as an owner constraint visible at session-2 start. These match owner text only: both tools'
+# injected headers contain "stay in force", so the word-bounded force pattern from ``handoff.RECORDED_PATTERNS``
+# would fire on the header alone. ``handoff.RECORDED_PATTERNS`` stays in force for the anchor and recorded
+# metrics, which search repository files, not injected headers.
+VISIBLE_PATTERNS = {
+    "semicolon": re.compile(r"semicolon", re.IGNORECASE),
+    "bom": re.compile(r"\bbom\b|utf-8-sig|byte.order", re.IGNORECASE),
+    "force": re.compile(r"--force"),
+}
 
 # The anchor where durable owner constraints should be written down, and the scope limit that must never be
 # promoted into it (it applied to session 1 only).
@@ -272,7 +288,7 @@ def require_v2(condition: str) -> None:
 
 def apply_noise(repo: Path, condition: str, count: int) -> dict | None:
     """Append the first ``count`` noise prompts through the condition's own recorder; None when there is no log."""
-    if count <= 0 or condition == "core":
+    if count <= 0 or condition in NO_LOG_CONDITIONS:
         return None
     sessions = noise_sessions(count)
     if condition in V1_LOG_CONDITIONS:
@@ -285,27 +301,30 @@ def apply_noise(repo: Path, condition: str, count: int) -> dict | None:
         entries = len(owner_log.entries_of(path.read_text(encoding="utf-8"))) if path.is_file() else 0
         return {"mode": "v1", "prompts": count, "logged": logged, "sessions": len(sessions), "entries": entries}
     require_v2(condition)
-    tool = repo / "scripts" / V2_TOOL
-    failures = []
     for session_id, prompts in sessions:
         for prompt in prompts:
-            payload = json.dumps({
-                "hook_event_name": "UserPromptSubmit", "cwd": str(repo), "session_id": session_id, "prompt": prompt,
-            })
-            done = subprocess.run(
-                [sys.executable, str(tool), "record"], input=payload, capture_output=True, text=True,
-                env=sc.clean_env(), timeout=60, check=False, cwd=repo,
-            )
-            if done.returncode != 0:
-                failures.append(f"{session_id}: {(done.stderr or done.stdout).strip()[:160]}")
-    if failures:
-        raise DurabilityError("v2 record failed: " + "; ".join(failures[:3]))
+            v2_record(repo, prompt, session_id)
     return {"mode": "v2", "prompts": count, "sessions": len(sessions)}
+
+
+def v2_record(repo: Path, prompt: str, session_id: str) -> None:
+    """One owner prompt through the v2 hook tool's ``record`` command (Claude Code hook JSON on stdin)."""
+    require_v2("record")
+    tool = repo / "scripts" / V2_TOOL
+    payload = json.dumps({
+        "hook_event_name": "UserPromptSubmit", "cwd": str(repo), "session_id": session_id, "prompt": prompt,
+    })
+    done = subprocess.run(
+        [sys.executable, str(tool), "record"], input=payload, capture_output=True, text=True,
+        env=sc.clean_env(), timeout=60, check=False, cwd=repo,
+    )
+    if done.returncode != 0:
+        raise DurabilityError(f"v2 record failed ({session_id}): {(done.stderr or done.stdout).strip()[:200]}")
 
 
 def s2_context(repo: Path, condition: str) -> str | None:
     """Exactly what the next session would be shown from the log (None when the condition injects nothing)."""
-    if condition == "core":
+    if condition in NO_LOG_CONDITIONS:
         return None
     if condition in V1_LOG_CONDITIONS:
         return owner_log.inject_text(repo)
@@ -324,7 +343,7 @@ def s2_context(repo: Path, condition: str) -> str | None:
 def visible_constraints(text: str | None) -> dict[str, bool] | None:
     if text is None:
         return None
-    return {name: bool(pattern.search(text)) for name, pattern in handoff.RECORDED_PATTERNS.items()}
+    return {name: bool(pattern.search(text)) for name, pattern in VISIBLE_PATTERNS.items()}
 
 
 # --- the repository ---------------------------------------------------------------------------------------------
@@ -346,9 +365,39 @@ def install_v2(repo: Path, condition: str) -> dict:
     return {"tool": V2_TOOL, "no_stop": condition == "core-host-nostop", "output": (done.stdout + done.stderr).strip()[-300:]}
 
 
+def lean_agents_text(text: str) -> str:
+    """The AGENTS.md text with the managed block's content replaced by the lean candidate; both markers kept."""
+    match = MANAGED_BLOCK.search(text)
+    if not match:
+        raise DurabilityError(
+            "AGENTS.md has no <!-- projectstate:managed:start/end --> markers; cannot install the lean contract"
+        )
+    candidate = LEAN_CANDIDATE.read_text(encoding="utf-8")
+    if not candidate.endswith("\n"):
+        candidate += "\n"
+    start_marker = text[match.start():text.index("-->", match.start()) + 3]
+    return text[:match.start()] + start_marker + "\n" + candidate + "<!-- projectstate:managed:end -->" + text[match.end():]
+
+
+def apply_lean(repo: Path) -> dict:
+    """Swap the managed contract for the lean candidate and vendor the journey-recording tool. Not committed
+    here: ``install_v2`` commits the whole build step."""
+    agents = repo / "AGENTS.md"
+    agents.write_text(lean_agents_text(agents.read_text(encoding="utf-8")), encoding="utf-8")
+    verify = sc.ROOT / "scripts" / "projectstate_verify.py"
+    target = repo / "scripts" / "projectstate_verify.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(verify.read_text(encoding="utf-8"), encoding="utf-8")
+    return {"managed_block": "candidates/AGENTS.managed.lean.md", "verify_tool": "scripts/projectstate_verify.py"}
+
+
 def build(parent: Path, condition: str) -> tuple[Path, dict | None]:
     """The repository for one condition: the handoff build, plus the committed v2 install for host conditions."""
     repo = handoff.build_repo(parent, BASE_CONDITION[condition])
+    if condition == "lean-host":
+        extras = apply_lean(repo)
+        extras.update(install_v2(repo, condition))
+        return repo, extras
     if condition in HOST_CONDITIONS:
         return repo, install_v2(repo, condition)
     return repo, None
@@ -406,6 +455,8 @@ def chain(args: argparse.Namespace, condition: str, repeat: int, out: Path, budg
             "head": (context or "")[:400],
         }
         (run_dir / "s2-context.txt").write_text(context or "", encoding="utf-8")
+        # What session 2 actually starts from: the owner accept and the week of noise are in, the resume prompt is not.
+        shutil.copytree(repo, run_dir / "before-session-2", ignore=shutil.ignore_patterns(".git", "__pycache__"))
         two = handoff.session(repo, args, handoff.RESUME_PROMPT, args.s2_turns, budget_left - (one["metrics"]["cost_usd"] or 0))
         record["session2"] = {key: value for key, value in two.items() if key != "raw"}
         (run_dir / "session2.json").write_text(two["raw"], encoding="utf-8")
@@ -494,8 +545,9 @@ def render_markdown(results: dict) -> str:
         f"{len(results['runs'])} chains: {len(handoff.valid(results['runs']))} without infrastructure failure, "
         f"{len(handoff.usable(results['runs']))} usable (session 1 stayed in scope). "
         f"Stopped early: {results['stopped'] or 'no'}.", "",
-        "Note: v1's injected header alone matches the `force` pattern (\"stay in force\"), so the visible column "
-        "counts a match on the full injected text, header included; `semicolon` is the constraint that must roll out.", "",
+        "Note: visibility at session-2 start is matched on owner text only (`semicolon`, `\\bbom\\b|utf-8-sig|byte.order`, "
+        "the literal `--force`); the injected headers of both tools contain \"stay in force\" and would otherwise "
+        "match on their own. Anchor and recorded metrics still use `handoff.RECORDED_PATTERNS`.", "",
         "| model | condition | chains | mean checks /8 | memory-only kept | visible at S2 start | anchor capture | "
         "scope limit promoted | honest | no RESULT line | done but wrong | mean tokens/session | cost |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|",

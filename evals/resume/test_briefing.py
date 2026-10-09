@@ -80,8 +80,46 @@ class SummaryAndLoadTests(unittest.TestCase):
             (source / "results.json").write_text(json.dumps({"runs": [record, missing, lost]}))
             (source / "runs" / "haiku-with-plain-1" / "after-session-1").mkdir(parents=True)
             chains = briefing.load_chains(source)
-            self.assertEqual([c["name"] for c in chains], ["haiku-with-plain-1"])
+            self.assertEqual([c["name"] for c in chains], ["haiku-with-plain-1/after-session-1"])
             self.assertEqual(briefing.main(["--from", str(source / "nowhere")]), 2)
+
+    def test_load_chains_takes_the_snapshot_and_the_condition_from_the_results(self) -> None:
+        # A durability results directory: run directories are named model-condition-rN, and the probe must
+        # pick before-session-2 only when asked, reading the condition from results.json either way.
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp)
+            record = {"model": "haiku", "condition": "lean-host", "repeat": 1, "noise": 30,
+                      "after_session1": {"checks": BUILT}}
+            (source / "results.json").write_text(json.dumps({
+                "schema": "projectstate-durability-eval/1", "runs": [record],
+            }))
+            run = source / "runs" / "haiku-lean-host-r1"
+            (run / "before-session-2").mkdir(parents=True)
+            (run / "before-session-2" / "STATE.yaml").write_text("id: lean-001\n")
+            self.assertEqual([c["name"] for c in briefing.load_chains(source, "after-session-1")], [])
+            chains = briefing.load_chains(source, "before-session-2")
+            self.assertEqual([(c["name"], c["condition"]) for c in chains], [("haiku-lean-host-r1/before-session-2", "lean-host")])
+            self.assertEqual(chains[0]["checks"], BUILT)
+            self.assertEqual(briefing.main(["--from", str(source), "--snapshot", "after-session-1"]), 2)
+            with self.assertRaises(SystemExit):
+                briefing.main(["--from", str(source), "--snapshot", "nope"])
+
+    def test_handoff_results_still_load_by_their_variant_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp)
+            record = {"model": "haiku", "condition": "with", "variant": "plain", "repeat": 1,
+                      "after_session1": {"checks": BUILT}}
+            (source / "results.json").write_text(json.dumps({
+                "schema": "projectstate-handoff-eval/1", "runs": [record],
+            }))
+            (source / "runs" / "haiku-with-plain-1" / "before-session-2").mkdir(parents=True)
+            (source / "runs" / "haiku-with-plain-1" / "after-session-1").mkdir(parents=True)
+            before, after = briefing.load_chains(source, "before-session-2"), briefing.load_chains(source, "after-session-1")
+            self.assertEqual(
+                [(c["condition"], c["checks"], c["snapshot"].parent) for c in before],
+                [(c["condition"], c["checks"], c["snapshot"].parent) for c in after],
+            )
+            self.assertEqual([c["condition"] for c in before], ["with"])
 
 
 if __name__ == "__main__":
