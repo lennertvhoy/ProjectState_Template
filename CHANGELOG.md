@@ -13,6 +13,12 @@ All notable ProjectState template changes are tracked here.
 
 ## Unreleased
 
+- **Host hooks v2** (`scripts/projectstate_hooks.py`, `scripts/projectstate_opencode_plugin.js`, optional; ADR-0005, proposed): one tool for Claude Code and OpenCode. Owner prompts are logged with pasted text marked as not the owner's words; each session starts with a brief built from the files (durable constraints, the slice and whether its journey was recorded by a run, a pending owner decision, the owner's standing words not yet filed, the last three requests); when the owner gives a standing instruction the agent is asked once to file it verbatim in `## Durable constraints`; the read-only gate runs at stop as a safety net. OpenCode subagent prompts are not logged. `install`/`uninstall --host claude|opencode|all`; install refuses to replace a locally edited copy unless `--replace-edited`. In the durability eval (30 realistic owner prompts between the constraints and the work) the hooks kept the chat-only constraints in every chain on haiku and sonnet; see `evidence/handoff-eval-001/summary.md`, "Follow-up 2".
+- **Release channel knows the hooks.** `releases/index.json` entries may carry `hooks_sha256` and `opencode_plugin_sha256` (required from 6.4.0); `projectstate_release.py` checks and cuts them; the fleet doctor reports each instance's hooks and OpenCode plugin and prints the install command when one is behind, edited, v1 or partial.
+- **Evals.** `evals/resume/durability.py` (the owner's word after a realistic week of other prompts; conditions with and without the core, v1 and v2 hooks, and a lean contract candidate in `evals/resume/candidates/`), and `briefing.py --snapshot before-session-2`.
+
+Instance action: none until a release is cut; installing the hooks is opt-in per instance.
+
 - **Owner log** (`scripts/projectstate_owner_log.py`, optional): records each owner prompt verbatim to a local, gitignored log and re-injects recent entries at session start, resume and compaction, via Claude Code hooks; `install` copies the tool and merges the hooks. In the two-session eval 6 of 6 runs kept constraints stated only in chat, against 1 of 23 for every other condition. Also new and optional: `scripts/projectstate_verify.py` (runs the recorded primary journey on `--run` and writes the observed result into the state files; not yet in a release) and the eval harnesses under `evals/resume/` (handoff and briefing).
 
 Instance action: none. The gate, the managed block, and everything a generated

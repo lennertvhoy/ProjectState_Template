@@ -243,31 +243,46 @@ flags.
 
 What an owner says in conversation (a constraint, a decision, "do it this way")
 lives in no file unless an agent writes it down, and measured agents mostly do
-not, even when a rule tells them to. `scripts/projectstate_owner_log.py` captures
-it mechanically with two Claude Code hooks, so nothing depends on the agent's
-diligence:
+not, even when a rule tells them to. `scripts/projectstate_hooks.py` makes the
+host do it, in Claude Code and in OpenCode, with or without the core:
 
 ```bash
-python3 scripts/projectstate_owner_log.py install --root ../your-project   # --dry-run to preview
+python3 scripts/projectstate_hooks.py install --root ../your-project --host all   # --dry-run to preview
 ```
 
-`install` copies the tool into the project's `scripts/` and merges the hooks into
-`.claude/settings.json` without removing anything already there. After a restart,
-every owner prompt is appended verbatim to `.projectstate/owner-log.md` (secrets
-such as keys and `password=...` pairs are redacted on a best-effort basis), and
-the most recent entries are put into context when a session starts, resumes, or
-is compacted. The injected text says that constraints about *how* things are built
-stay in force, while a limit on what a past session should do applied to that
-session only. The log is local: `.projectstate/` ignores itself in Git because
-prompts can hold private data. The hooks never block or fail a session. It works
-with or without the core, and only for hosts that have equivalent hooks.
+`install` copies the tool into the project's `scripts/`, merges three hooks into
+`.claude/settings.json` without removing anything already there, and copies the
+OpenCode plugin to `.opencode/plugins/projectstate.js` (`--host claude` or
+`--host opencode` for one host; `uninstall` removes exactly what it added). After
+a restart:
 
-In a controlled test (two real sessions, a small ledger task, three owner
-constraints stated only in the first prompt, Claude Code with the haiku model, three
-repeats per cell), 6 of 6 runs kept the two constraints that exist nowhere else in
-the repository, against 1 of 23 for every other condition tried: the core alone,
-two rules in the project's instructions, and a prompt asking for a handoff.
-It is one cheap model and one task; the evidence is in `evidence/handoff-eval-001/`.
+- **Every owner prompt is logged** verbatim to `.projectstate/owner-log.md`. A
+  pasted block is logged as one line saying it is pasted text, not the owner's
+  words. Prompts that an orchestrating agent writes to OpenCode subagents are not
+  logged. Obvious secrets are redacted on a best-effort basis.
+- **Every session starts with a brief** of at most 6,000 characters, built from
+  the files and git: the durable constraints in `PROJECT.md`, the current slice
+  and whether its journey result was recorded by a run or typed by hand, a pending
+  owner decision with the command that records it, the owner's logged words that
+  read as standing instructions but are not in the files yet, and the owner's last
+  three requests, marked as possibly done. It is repeated after compaction.
+- **When the owner gave a standing instruction**, the agent is asked once, as it
+  finishes, to copy it verbatim into `## Durable constraints` with the date, and to
+  leave one-off requests out. The same hook runs the read-only gate and asks once
+  for a fix when the records it wrote are invalid.
+
+The log is local: `.projectstate/` ignores itself in Git because prompts can hold
+private data. The hooks never fail a session. The fleet doctor shows each
+instance's hooks (`current`, `behind`, `edited`, `v1`, `partial`, `absent`) and
+the install command when one is needed; not installing them is fine.
+`scripts/projectstate_owner_log.py` is the earlier, measured v1, kept for the evals.
+
+Measured in `evidence/handoff-eval-001/summary.md` ("Follow-up 2"): with 30
+realistic owner prompts between the constraints and the session that needed them,
+the hooks kept the owner's two chat-only constraints in every chain on haiku and
+sonnet, with or without the core, and the first session filed them in the
+project's files; the core alone, no core, and v1 did not (v1 only when an agent
+happened to open the raw log file).
 
 ## Optional material
 
