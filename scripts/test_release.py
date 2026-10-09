@@ -44,6 +44,11 @@ def gate_source(release: str, version: str = SCHEMA) -> str:
 
 
 GATE_600, GATE_620, GATE_630 = (gate_source(release) for release in ("6.0.0", "6.2.0", "6.3.0"))
+GATE_640 = gate_source("6.4.0")
+HOOKS_TEXT = "#!/usr/bin/env python3\n# fake host hooks tool\n"
+PLUGIN_TEXT = "// fake opencode plugin\n"
+EDITED_HOOKS_TEXT = HOOKS_TEXT + "# edited after the release\n"
+EDITED_PLUGIN_TEXT = PLUGIN_TEXT + "// edited after the release\n"
 
 
 def sha(text: str | bytes) -> str:
@@ -51,6 +56,7 @@ def sha(text: str | bytes) -> str:
 
 
 def entry(release: str, *, status: str = "released", gate: str | None = None, contract: str | None = None,
+          hooks: str | None = None, plugin: str | None = None,
           date: str | None = "2026-09-01", action: str = "mechanical") -> dict[str, Any]:
     return {
         "release": release,
@@ -59,6 +65,8 @@ def entry(release: str, *, status: str = "released", gate: str | None = None, co
         "status": status,
         "gate_sha256": gate,
         "contract_sha256": contract,
+        "hooks_sha256": hooks,
+        "opencode_plugin_sha256": plugin,
         "instance_action": action,
         "summary": f"Summary of {release}.",
     }
@@ -75,6 +83,15 @@ def consistent_releases(latest: str = "draft") -> list[dict[str, Any]]:
     else:
         releases.append(entry("6.3.0", gate=sha(GATE_630), contract=sha(BLOCK), date="2026-10-06"))
     return releases
+
+
+def hooks_releases() -> list[dict[str, Any]]:
+    """A 6.4.0 released latest that records the opt-in host hooks asset hashes."""
+    return [
+        entry("6.2.0", gate=sha(GATE_620), date="2026-10-01"),
+        entry("6.4.0", gate=sha(GATE_640), contract=sha(BLOCK), hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT),
+              date="2026-10-08"),
+    ]
 
 
 def index_payload(releases: list[dict[str, Any]], top: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -95,14 +112,19 @@ def write_json(path: Path, payload: Any) -> None:
 
 def make_template(
     root: Path, releases: list[dict[str, Any]] | None = None, *, gate: str = GATE_630, block: str | None = BLOCK,
+    hooks: str | None = HOOKS_TEXT, plugin: str | None = PLUGIN_TEXT,
     raw_index: str | None = None, top: dict[str, Any] | None = None,
 ) -> Path:
-    """A template root with a fake gate, a fake managed block and an index (consistent unless told otherwise)."""
+    """A template root with a fake gate, fake managed block and host hooks assets, and an index."""
     for directory in ("releases", "scripts", "core"):
         (root / directory).mkdir(parents=True, exist_ok=True)
     (root / rel.GATE_PATH).write_text(gate, encoding="utf-8")
     if block is not None:
         (root / rel.MANAGED_PATH).write_text(block, encoding="utf-8")
+    if hooks is not None:
+        (root / rel.HOOKS_PATH).write_text(hooks, encoding="utf-8")
+    if plugin is not None:
+        (root / rel.OPENCODE_PLUGIN_PATH).write_text(plugin, encoding="utf-8")
     if raw_index is not None:
         (root / rel.INDEX_PATH).write_text(raw_index, encoding="utf-8")
     else:
@@ -219,8 +241,12 @@ class RealIndexTests(unittest.TestCase):
             "gate_release": rel.gate_release((ROOT / rel.GATE_PATH).read_text(encoding="utf-8")),
             "gate_sha256": rel.sha256_file(ROOT / rel.GATE_PATH),
             "contract_sha256": rel.contract_sha256(rel.managed_block_text()),
+            "hooks_sha256": rel.sha256_file(ROOT / rel.HOOKS_PATH),
+            "opencode_plugin_sha256": rel.sha256_file(ROOT / rel.OPENCODE_PLUGIN_PATH),
         })
-        self.assertEqual(list(json.loads(done.stdout)), ["gate_release", "gate_sha256", "contract_sha256"])
+        self.assertEqual(list(json.loads(done.stdout)),
+                         ["gate_release", "gate_sha256", "contract_sha256", "hooks_sha256",
+                          "opencode_plugin_sha256"])
 
     def test_real_index_serializes_back_to_the_same_bytes(self) -> None:
         # cut rewrites the index with json.dumps; if that changed untouched lines the diff of a cut would be noisy
@@ -262,6 +288,15 @@ class CheckTests(TemporaryRoot):
         self.assertEqual((result.code, result.err), (0, ""))
         self.assertTrue(result.out.startswith("release index OK: 3 releases, latest 6.3.0 (released)"), result.out)
         self.assertNotIn("records no hashes", result.out)
+
+    def test_hashes_reports_absent_hooks_assets_as_null_not_failure(self) -> None:
+        make_template(self.root)  # a fixture template without hooks assets is unusual but not broken
+        (self.root / rel.HOOKS_PATH).unlink()
+        (self.root / rel.OPENCODE_PLUGIN_PATH).unlink()
+        result = run_tool("hashes", "--template", str(self.root))
+        self.assertEqual(result.code, 0, result.err)
+        self.assertEqual(json.loads(result.out)["hooks_sha256"], None)
+        self.assertEqual(json.loads(result.out)["opencode_plugin_sha256"], None)
 
     def test_a_released_latest_before_the_managed_block_existed_needs_no_contract_hash(self) -> None:
         make_template(self.root, consistent_releases()[:2], gate=GATE_620, block=None)
@@ -352,11 +387,13 @@ class CheckTests(TemporaryRoot):
 
     def test_order_is_numeric_not_textual(self) -> None:
         # "6.10.0" sorts before "6.9.0" as text but follows it as a version
-        make_template(self.root, [entry("6.9.0", gate=sha(GATE_600), contract=sha(BLOCK)),
+        make_template(self.root, [entry("6.9.0", gate=sha(GATE_600), contract=sha(BLOCK),
+                                        hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT)),
                                   entry("6.10.0", status="draft")], gate=gate_source("6.10.0"))
         result = self.check()
         self.assertEqual((result.code, result.err), (0, ""), result.out)
-        make_template(self.root, [entry("6.10.0", gate=sha(GATE_600), contract=sha(BLOCK)),
+        make_template(self.root, [entry("6.10.0", gate=sha(GATE_600), contract=sha(BLOCK),
+                                        hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT)),
                                   entry("6.9.0", status="draft")], gate=gate_source("6.9.0"))
         self.assertRejected(self.check(), "releases must ascend, but 6.9.0 follows 6.10.0")
 
@@ -434,6 +471,70 @@ class CheckTests(TemporaryRoot):
         releases.insert(2, entry("6.2.9", gate=sha(GATE_620)))  # before 6.3.0: no contract hash required
         make_template(self.root, releases)
         self.assertEqual(self.check().code, 0)
+
+    def test_hooks_hashes_are_optional_before_6_4_0_and_required_from_it(self) -> None:
+        # a released 6.3.0 records no hooks hashes: the asset predates the release
+        make_template(self.root, consistent_releases("released"))
+        self.assertEqual(self.check().code, 0)
+        # a draft 6.4.0 may leave both fields null or absent
+        make_template(self.root, [*consistent_releases("released")[:-1], entry("6.4.0", status="draft")],
+                      gate=GATE_640)
+        self.assertEqual(self.check().code, 0)
+        # a released 6.4.0 needs both fields, non-null
+        released = hooks_releases()
+        released[1]["hooks_sha256"] = None
+        make_template(self.root, released, gate=GATE_640)
+        self.assertRejected(self.check(), "hooks_sha256 is null; only a draft or a release before 6.4.0")
+        released = hooks_releases()
+        del released[1]["opencode_plugin_sha256"]
+        make_template(self.root, released, gate=GATE_640)
+        self.assertRejected(self.check(), "opencode_plugin_sha256 is missing; a release from 6.4.0 on records")
+        # and with both recorded it passes
+        make_template(self.root, hooks_releases(), gate=GATE_640)
+        result = self.check()
+        self.assertEqual((result.code, result.err), (0, ""), result.out)
+
+    def test_malformed_hooks_hashes_are_rejected(self) -> None:
+        for field in ("hooks_sha256", "opencode_plugin_sha256"):
+            for value in ("XYZ", sha(HOOKS_TEXT).upper(), "g" * 64, 12345, [sha(HOOKS_TEXT)]):
+                with self.subTest(field=field, value=value):
+                    releases = hooks_releases()
+                    releases[1][field] = value
+                    make_template(self.root, releases, gate=GATE_640)
+                    self.assertRejected(self.check(), f"{field} must be 64 lowercase hex characters or null",
+                                        count=None)
+
+    def test_a_released_hooks_hash_is_checked_against_the_file(self) -> None:
+        releases = hooks_releases()
+        releases[1]["hooks_sha256"] = sha(EDITED_HOOKS_TEXT)
+        make_template(self.root, releases, gate=GATE_640)
+        self.assertRejected(self.check(), "release 6.4.0: hooks_sha256", "does not match scripts/projectstate_hooks.py")
+        releases = hooks_releases()
+        releases[1]["opencode_plugin_sha256"] = sha(EDITED_PLUGIN_TEXT)
+        make_template(self.root, releases, gate=GATE_640)
+        self.assertRejected(self.check(), "release 6.4.0: opencode_plugin_sha256",
+                            "does not match scripts/projectstate_opencode_plugin.js")
+
+    def test_editing_the_hooks_assets_after_a_cut_is_detected(self) -> None:
+        make_template(self.root, hooks_releases(), gate=GATE_640)
+        self.assertEqual(self.check().code, 0)
+        (self.root / rel.HOOKS_PATH).write_text(EDITED_HOOKS_TEXT, encoding="utf-8")
+        self.assertRejected(self.check(), "hooks_sha256")
+        (self.root / rel.HOOKS_PATH).write_text(HOOKS_TEXT, encoding="utf-8")
+        self.assertEqual(self.check().code, 0)
+        (self.root / rel.OPENCODE_PLUGIN_PATH).write_text(EDITED_PLUGIN_TEXT, encoding="utf-8")
+        self.assertRejected(self.check(), "opencode_plugin_sha256")
+
+    def test_a_released_hooks_hash_needs_the_file_present(self) -> None:
+        releases = hooks_releases()
+        make_template(self.root, releases, gate=GATE_640)
+        (self.root / rel.HOOKS_PATH).unlink()
+        self.assertRejected(self.check(), "scripts/projectstate_hooks.py is missing, but the entry records a "
+                                          "hooks_sha256")
+        (self.root / rel.HOOKS_PATH).write_text(HOOKS_TEXT, encoding="utf-8")
+        (self.root / rel.OPENCODE_PLUGIN_PATH).unlink()
+        self.assertRejected(self.check(), "scripts/projectstate_opencode_plugin.js is missing, but the entry records "
+                                          "a opencode_plugin_sha256")
 
     def test_invalid_enumerations_tags_dates_and_summaries_are_rejected(self) -> None:
         cases = (
@@ -570,6 +671,33 @@ class TagTests(TemporaryRoot):
         self.assertEqual((result.code, result.err), (0, ""), result.out)
         self.assertIn("tag v6.2.0: gate and contract hash matches", result.out)
 
+    def tagged_hooks_template(self, *, tag_hooks: str | None = HOOKS_TEXT, tag_plugin: str | None = PLUGIN_TEXT) -> None:
+        releases = hooks_releases()
+        make_template(self.root, releases, gate=GATE_640, hooks=tag_hooks, plugin=tag_plugin)
+        git(self.root, "init", "-q", "-b", "main")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "release 6.4.0")
+        git(self.root, "tag", "v6.4.0")
+
+    def test_matching_hooks_assets_at_the_tag_are_confirmed(self) -> None:
+        self.tagged_hooks_template()
+        result = self.check()
+        self.assertEqual((result.code, result.err), (0, ""), result.out)
+        self.assertIn("tag v6.4.0: gate and contract and hooks and opencode_plugin hash matches", result.out)
+
+    def test_a_tag_whose_hooks_asset_differs_from_the_recorded_hash_is_rejected(self) -> None:
+        self.tagged_hooks_template(tag_hooks=EDITED_HOOKS_TEXT)
+        self.assertRejected(self.check(), "release 6.4.0: hooks_sha256", "at tag v6.4.0", count=None)
+        shutil.rmtree(self.root)
+        self.root.mkdir()
+        self.tagged_hooks_template(tag_plugin=EDITED_PLUGIN_TEXT)
+        self.assertRejected(self.check(), "release 6.4.0: opencode_plugin_sha256", "at tag v6.4.0", count=None)
+
+    def test_a_recorded_hooks_hash_needs_the_file_at_the_tag(self) -> None:
+        self.tagged_hooks_template(tag_hooks=None, tag_plugin=None)
+        self.assertRejected(self.check(), "tag v6.4.0 has no scripts/projectstate_hooks.py", count=None)
+        self.assertRejected(self.check(), "tag v6.4.0 has no scripts/projectstate_opencode_plugin.js", count=None)
+
     def test_annotated_tags_are_followed_to_their_commit(self) -> None:
         self.tagged_template()
         git(self.root, "tag", "-d", "v6.2.0")
@@ -630,7 +758,8 @@ class CutTests(TemporaryRoot):
         after = json.loads(self.index_bytes())
         latest = after["releases"][-1]
         self.assertEqual(latest, {**before["releases"][-1], "date": "2026-10-06", "status": "released",
-                                  "gate_sha256": sha(GATE_630), "contract_sha256": sha(BLOCK)})
+                                  "gate_sha256": sha(GATE_630), "contract_sha256": sha(BLOCK),
+                                  "hooks_sha256": sha(HOOKS_TEXT), "opencode_plugin_sha256": sha(PLUGIN_TEXT)})
         self.assertEqual(list(latest), list(before["releases"][-1]), "key order is unchanged")
         self.assertEqual(after["releases"][:-1], before["releases"][:-1], "released history is untouched")
         self.assertEqual({key: after[key] for key in ("format", "state_schema", "latest")},
@@ -639,6 +768,31 @@ class CutTests(TemporaryRoot):
         self.assertEqual((checked.code, checked.err), (0, ""), checked.out)
         self.assertIn("latest 6.3.0 (released)", checked.out)
         self.assertNotIn("records no hashes", checked.out)
+
+    def test_cut_on_a_6_4_0_draft_records_the_hooks_assets_and_check_then_passes(self) -> None:
+        make_template(self.root, [*consistent_releases("released")[:-1], entry("6.4.0", status="draft")],
+                      gate=GATE_640)
+        result = self.cut("2026-10-09")
+        self.assertEqual((result.code, result.err), (0, ""), result.out)
+        self.assertIn(f"  hooks_sha256: {sha(HOOKS_TEXT)}", result.out)
+        self.assertIn(f"  opencode_plugin_sha256: {sha(PLUGIN_TEXT)}", result.out)
+        checked = self.check()
+        self.assertEqual((checked.code, checked.err), (0, ""), checked.out)
+
+    def test_cut_refuses_when_a_hooks_asset_is_missing(self) -> None:
+        make_template(self.root, [*consistent_releases("released")[:-1], entry("6.4.0", status="draft")],
+                      gate=GATE_640)
+        (self.root / rel.HOOKS_PATH).unlink()
+        before = snapshot(self.root)
+        result = self.cut()
+        self.assertEqual(result.code, 2, result.out)
+        self.assertIn("cannot read scripts/projectstate_hooks.py", result.err)
+        self.assertEqual(snapshot(self.root), before)
+        (self.root / rel.HOOKS_PATH).write_text(HOOKS_TEXT, encoding="utf-8")
+        (self.root / rel.OPENCODE_PLUGIN_PATH).unlink()
+        result = self.cut()
+        self.assertEqual(result.code, 2, result.out)
+        self.assertIn("cannot read scripts/projectstate_opencode_plugin.js", result.err)
 
     def test_cut_writes_two_space_json_with_a_trailing_newline_and_changes_only_the_cut_lines(self) -> None:
         make_template(self.root)
@@ -650,7 +804,7 @@ class CutTests(TemporaryRoot):
         self.assertIn('\n      "date": "2026-10-06",\n', after)
         changed = [(old, new) for old, new in zip(before.splitlines(), after.splitlines()) if old != new]
         self.assertEqual(len(before.splitlines()), len(after.splitlines()))
-        self.assertEqual(len(changed), 4, changed)  # date, status, gate_sha256, contract_sha256
+        self.assertEqual(len(changed), 6, changed)  # date, status, gate, contract, hooks, plugin hashes
 
     def test_cut_preserves_the_file_mode_and_leaves_no_temporary_files(self) -> None:
         make_template(self.root)
@@ -768,12 +922,13 @@ class CutTests(TemporaryRoot):
         self.assertEqual(recorded, sha(BLOCK))
 
     def test_cut_on_a_copy_of_the_real_files_matches_the_real_hashes(self) -> None:
-        # The real gate, block and index are copied; the last entry is forced back to a draft so this test
-        # keeps working after the real 6.3.0 is cut.
-        for relative in (rel.GATE_PATH, rel.MANAGED_PATH, rel.INDEX_PATH):
+        # The real gate, block, hooks assets and index are copied; the last entry is forced back to a
+        # draft so this test keeps working after the real 6.3.0 is cut.
+        for relative in (rel.GATE_PATH, rel.MANAGED_PATH, rel.HOOKS_PATH, rel.OPENCODE_PLUGIN_PATH, rel.INDEX_PATH):
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / relative, self.root / relative)
-        real_before = {relative: (ROOT / relative).read_bytes() for relative in (rel.GATE_PATH, rel.MANAGED_PATH, rel.INDEX_PATH)}
+        watched = (rel.GATE_PATH, rel.MANAGED_PATH, rel.HOOKS_PATH, rel.OPENCODE_PLUGIN_PATH, rel.INDEX_PATH)
+        real_before = {relative: (ROOT / relative).read_bytes() for relative in watched}
         payload = json.loads(self.index_bytes())
         payload["releases"][-1].update(date=None, status="draft", gate_sha256=None, contract_sha256=None)
         write_json(self.root / rel.INDEX_PATH, payload)
@@ -782,9 +937,11 @@ class CutTests(TemporaryRoot):
         cut_entry = json.loads(self.index_bytes())["releases"][-1]
         self.assertEqual(cut_entry["gate_sha256"], rel.sha256_file(ROOT / rel.GATE_PATH))
         self.assertEqual(cut_entry["contract_sha256"], rel.contract_sha256(rel.managed_block_text(ROOT)))
+        self.assertEqual(cut_entry["hooks_sha256"], rel.sha256_file(ROOT / rel.HOOKS_PATH))
+        self.assertEqual(cut_entry["opencode_plugin_sha256"], rel.sha256_file(ROOT / rel.OPENCODE_PLUGIN_PATH))
         checked = self.check()
         self.assertEqual((checked.code, checked.err), (0, ""), checked.out)
-        self.assertEqual({relative: (ROOT / relative).read_bytes() for relative in real_before}, real_before,
+        self.assertEqual({relative: (ROOT / relative).read_bytes() for relative in watched}, real_before,
                          "the real files are only read")
 
 
@@ -797,7 +954,8 @@ class CommandLineTests(TemporaryRoot):
         self.assertEqual(run_tool("check", "--template", str(self.root)).code, 0)
         self.assertEqual(run_tool("check", "--template", str(elsewhere)).code, 2)
         hashes = json.loads(run_tool("hashes", "--template", str(self.root)).out)
-        self.assertEqual(hashes, {"gate_release": "6.3.0", "gate_sha256": sha(GATE_630), "contract_sha256": sha(BLOCK)})
+        self.assertEqual(hashes, {"gate_release": "6.3.0", "gate_sha256": sha(GATE_630), "contract_sha256": sha(BLOCK),
+                                  "hooks_sha256": sha(HOOKS_TEXT), "opencode_plugin_sha256": sha(PLUGIN_TEXT)})
         self.assertEqual(run_tool("cut", "--date", "2026-10-06", "--template", str(self.root)).code, 0)
 
     def test_hashes_reports_missing_files_without_a_traceback(self) -> None:

@@ -13,6 +13,7 @@ the retention difference on the same log.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import subprocess
 import sys
@@ -709,3 +710,143 @@ def test_uninstall_keeps_unrelated_settings_and_hosts_are_independent(tmp_path: 
     assert merged["model"] == "sonnet"
     assert merged["hooks"]["Stop"][0]["hooks"][0]["command"] == "echo done"
     assert "projectstate_hooks" not in json.dumps(merged) and "projectstate_owner_log" not in json.dumps(merged)
+
+
+# --- install upgrade safety -------------------------------------------------------------------------------------------
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+OLD_TOOL = TOOL.read_text() + "\n# older released copy\n"
+NEW_PLUGIN = "// current plugin\n"
+OLD_PLUGIN = "// older released plugin\n"
+
+
+def index_with(**fields: str | None) -> dict:
+    return {
+        "format": "projectstate-release-index/1",
+        "state_schema": "projectstate-template-v6",
+        "latest": "6.4.0",
+        "releases": [
+            {"release": "6.3.0", "status": "released"},
+            {"release": "6.4.0", "status": "released", **fields},
+        ],
+    }
+
+
+def make_tool_template(tmp_path: Path, *, plugin: bool = False, index: dict | None,
+                       tool_text: str | None = None) -> Path:
+    """A template directory: this tool, optionally the plugin source, optionally a release index."""
+    template = tmp_path / "template"
+    (template / "scripts").mkdir(parents=True)
+    tool = template / "scripts" / hooks.HOOK_MARK
+    tool.write_text(tool_text if tool_text is not None else TOOL.read_text())
+    tool.chmod(0o755)
+    if plugin:
+        (template / "scripts" / hooks.OPENCODE_PLUGIN_SOURCE).write_text(NEW_PLUGIN)
+    if index is not None:
+        (template / "releases").mkdir()
+        (template / "releases" / "index.json").write_text(json.dumps(index))
+    return template
+
+
+def test_install_replaces_a_released_older_copy(tmp_path: Path) -> None:
+    template = make_tool_template(tmp_path, index=index_with(hooks_sha256=sha256_text(OLD_TOOL)))
+    project = tmp_path / "project"
+    (project / "scripts").mkdir(parents=True)
+    (project / "scripts" / hooks.HOOK_MARK).write_text(OLD_TOOL)
+    done = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert done.returncode == 0, done.stderr
+    assert "copying the tool" in done.stdout
+    assert (project / "scripts" / hooks.HOOK_MARK).read_text() == TOOL.read_text()
+
+
+def test_install_refuses_an_edited_tool_copy_without_replace_edited(tmp_path: Path) -> None:
+    edited = OLD_TOOL + "# locally edited\n"
+    template = make_tool_template(tmp_path, index=index_with(hooks_sha256=sha256_text(OLD_TOOL)))
+    project = tmp_path / "project"
+    (project / "scripts").mkdir(parents=True)
+    (project / "scripts" / hooks.HOOK_MARK).write_text(edited)
+    done = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert done.returncode == 2
+    assert "edited locally" in done.stderr and "--replace-edited" in done.stderr
+    assert (project / "scripts" / hooks.HOOK_MARK).read_text() == edited
+    assert not (project / ".claude" / "settings.json").exists()  # a refusal means zero writes
+    fixed = cli(tmp_path, "install", "--root", str(project), "--replace-edited",
+                tool=template / "scripts" / hooks.HOOK_MARK)
+    assert fixed.returncode == 0, fixed.stderr
+    assert (project / "scripts" / hooks.HOOK_MARK).read_text() == TOOL.read_text()
+
+
+def test_a_draft_hash_authorizes_nothing(tmp_path: Path) -> None:
+    index = index_with()
+    index["releases"].append({"release": "6.5.0", "status": "draft", "hooks_sha256": sha256_text(OLD_TOOL)})
+    template = make_tool_template(tmp_path, index=index)
+    project = tmp_path / "project"
+    (project / "scripts").mkdir(parents=True)
+    (project / "scripts" / hooks.HOOK_MARK).write_text(OLD_TOOL)
+    done = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert done.returncode == 2 and "edited locally" in done.stderr
+    assert (project / "scripts" / hooks.HOOK_MARK).read_text() == OLD_TOOL
+
+
+def test_install_refuses_when_the_index_is_unusable(tmp_path: Path) -> None:
+    template = make_tool_template(tmp_path, index=index_with())
+    (template / "releases" / "index.json").write_text("{not json")
+    project = tmp_path / "project"
+    (project / "scripts").mkdir(parents=True)
+    (project / "scripts" / hooks.HOOK_MARK).write_text(OLD_TOOL)
+    done = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert done.returncode == 2 and "cannot read" in done.stderr
+    assert (project / "scripts" / hooks.HOOK_MARK).read_text() == OLD_TOOL
+    fresh = tmp_path / "fresh"  # an unusable index only matters when a replacement needs authorizing
+    fresh.mkdir()
+    assert cli(tmp_path, "install", "--root", str(fresh), tool=template / "scripts" / hooks.HOOK_MARK).returncode == 0
+
+
+def test_install_without_an_index_keeps_the_old_behaviour_and_notes(tmp_path: Path) -> None:
+    template = make_tool_template(tmp_path, index=None)
+    project = tmp_path / "project"
+    (project / "scripts").mkdir(parents=True)
+    (project / "scripts" / hooks.HOOK_MARK).write_text(OLD_TOOL + "something unreleased\n")
+    done = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert done.returncode == 0, done.stderr
+    assert "no releases/index.json next to this tool" in done.stderr
+    assert (project / "scripts" / hooks.HOOK_MARK).read_text() == TOOL.read_text()
+
+
+def test_install_upgrade_safety_covers_the_opencode_plugin(tmp_path: Path) -> None:
+    index = index_with(hooks_sha256=sha256_text(TOOL.read_text()), opencode_plugin_sha256=sha256_text(OLD_PLUGIN))
+    template = make_tool_template(tmp_path, plugin=True, index=index)
+    tool = template / "scripts" / hooks.HOOK_MARK
+    project = tmp_path / "project"
+    target = project / hooks.OPENCODE_PLUGIN_DIR / hooks.OPENCODE_PLUGIN_NAME
+    target.parent.mkdir(parents=True)
+    target.write_text(OLD_PLUGIN + "// locally edited\n")
+    done = cli(tmp_path, "install", "--root", str(project), "--host", "opencode", tool=tool)
+    assert done.returncode == 2 and "--replace-edited" in done.stderr
+    assert target.read_text().endswith("locally edited\n")
+    fixed = cli(tmp_path, "install", "--root", str(project), "--host", "opencode", "--replace-edited", tool=tool)
+    assert fixed.returncode == 0, fixed.stderr
+    assert target.read_text() == NEW_PLUGIN
+    other = tmp_path / "other"  # a released older plugin copy is replaced without any flag
+    (other / hooks.OPENCODE_PLUGIN_DIR).mkdir(parents=True)
+    released_copy = other / hooks.OPENCODE_PLUGIN_DIR / hooks.OPENCODE_PLUGIN_NAME
+    released_copy.write_text(OLD_PLUGIN)
+    again = cli(tmp_path, "install", "--root", str(other), "--host", "opencode", tool=tool)
+    assert again.returncode == 0, again.stderr
+    assert released_copy.read_text() == NEW_PLUGIN
+
+
+def test_install_is_still_idempotent_when_an_index_is_present(tmp_path: Path) -> None:
+    template = make_tool_template(tmp_path, index=index_with(hooks_sha256=sha256_text(TOOL.read_text())))
+    project = tmp_path / "project"
+    project.mkdir()
+    first = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert first.returncode == 0, first.stderr
+    settings = project / ".claude" / "settings.json"
+    before = settings.read_text()
+    again = cli(tmp_path, "install", "--root", str(project), tool=template / "scripts" / hooks.HOOK_MARK)
+    assert again.returncode == 0 and "already installed" in again.stdout and settings.read_text() == before
