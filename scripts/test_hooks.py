@@ -206,14 +206,42 @@ def test_short_and_repeated_prompts_are_not_logged_and_the_log_stays_ignored_in_
     assert status.stdout.strip() == ""
 
 
+def test_session_keys_keeps_uuids_short_and_other_hosts_whole() -> None:
+    assert hooks.session_key("c7c45ad3-1111-2222-3333-444455556666") == "c7c45ad3"  # UUID: v1 compatible
+    ses_a, ses_b = "ses_edf3a6802ffe4e1e9a2f", "ses_edf3a3765ffe88aa11bb"
+    assert ses_a[:8] == ses_b[:8]
+    assert hooks.session_key(ses_a) == ses_a and hooks.session_key(ses_b) == ses_b  # not collapsed
+    assert hooks.session_key("x" * 60) == "x" * 40  # capped
+    key = hooks.session_key("trailing )\n and newline")
+    assert ")" not in key and "\n" not in key  # the entry heading still parses
+    assert hooks.session_key("") == "unknown"
+    assert len(hooks.entry_of(f"## 2026-10-09T12:00:00Z (session {ses_a})\n\nbody\n\n")) == 1
+
+
+def test_opencode_style_sessions_stay_distinct_for_dedupe_and_stop(tmp_path: Path) -> None:
+    ses_a, ses_b = "ses_edf3a6802ffe4e1e9a2f", "ses_edf3a3765ffe88aa11bb"
+    assert hooks.append_entry(tmp_path, "Never ship on a Friday.", hooks.session_key(ses_a), at(0))
+    assert hooks.append_entry(tmp_path, "Always deploy from the release branch.", hooks.session_key(ses_b), at(1))
+    # the same words in the other session share the first 8 characters: dedupe must keep both
+    assert hooks.append_entry(tmp_path, "Never ship on a Friday.", hooks.session_key(ses_b), at(2))
+    assert log_body(tmp_path).count("Never ship on a Friday.") == 2
+    first = json.loads(hooks.stop_decision(tmp_path, {"session_id": ses_a, "stop_hook_active": False}))
+    assert "Never ship on a Friday." in first["reason"] and "Always deploy" not in first["reason"]
+    second = json.loads(hooks.stop_decision(tmp_path, {"session_id": ses_b, "stop_hook_active": False}))
+    assert "Always deploy from the release branch." in second["reason"]
+    assert "Never ship on a Friday." in second["reason"]  # session B's own copy, not A's offered one
+    assert hooks.stop_decision(tmp_path, {"session_id": ses_b, "stop_hook_active": False}) is None
+
+
 def test_v1_logs_keep_working_with_v2(tmp_path: Path) -> None:
-    assert owner_log.append_entry(tmp_path, "Keep the ledger append-only, never rewrite it.", "v1sess00", NOW)
-    assert hooks.append_entry(tmp_path, "Never round money with floats.", "v1sess00", NOW)
+    V1_UUID = "c7c45ad3-1111-2222-3333-444455556666"
+    assert owner_log.append_entry(tmp_path, "Keep the ledger append-only, never rewrite it.", V1_UUID[:8], NOW)
+    assert hooks.append_entry(tmp_path, "Never round money with floats.", hooks.session_key(V1_UUID), NOW)
     text = log_body(tmp_path)
     assert len(owner_log.entries_of(text)) == len(hooks.entry_of(text)) == 2
     brief = hooks.brief_text(tmp_path)
     assert "append-only" in brief and "Never round money with floats." in brief
-    decision = hooks.stop_decision(tmp_path, {"session_id": "v1sess000000", "stop_hook_active": False})
+    decision = hooks.stop_decision(tmp_path, {"session_id": V1_UUID, "stop_hook_active": False})
     assert decision is not None and "append-only" in decision
 
 
@@ -406,50 +434,50 @@ def at(minutes: int) -> dt.datetime:
 
 def test_stop_offers_each_strong_entry_once_and_reblocks_for_new_words(tmp_path: Path) -> None:
     make_repo(tmp_path, project="# Project\n\n## Durable constraints\n\n- Keep the gate green.\n")
-    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", at(0))
-    hooks.append_entry(tmp_path, "proceed", "sess0001", at(1))
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001-abcd", at(0))
+    hooks.append_entry(tmp_path, "proceed", "sess0001-abcd", at(1))
     decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
     assert decision is not None
     parsed = json.loads(decision)
     assert parsed["decision"] == "block" and "Always deploy from the release branch." in parsed["reason"]
     assert "Durable constraints" in parsed["reason"] and "not yet" in parsed["reason"]
     offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
-    assert offered["sessions"]["sess0001"] == [offered["offered"][0]] and len(offered["offered"]) == 1
+    assert offered["sessions"]["sess0001-abcd"] == [offered["offered"][0]] and len(offered["offered"]) == 1
     # nothing new -> no block, even in the same session
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
     # a word stated in a later turn of the same session is still offered (no per-session limit)
-    hooks.append_entry(tmp_path, "Never ship on a Friday afternoon.", "sess0001", at(2))
+    hooks.append_entry(tmp_path, "Never ship on a Friday afternoon.", "sess0001-abcd", at(2))
     later = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
     assert later is not None and "Never ship on a Friday afternoon." in json.loads(later)["reason"]
     offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
     assert len(offered["offered"]) == 2
     # words restated in a NEW session are a new entry (new stamp) and get their own single offer
-    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0002", at(3))
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0002-abcd", at(3))
     restated = hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False})
     assert restated is not None
     offered = json.loads((tmp_path / ".projectstate" / "offered.json").read_text())
-    assert len(offered["offered"]) == 3 and offered["sessions"]["sess0002"] == [offered["offered"][2]]
+    assert len(offered["offered"]) == 3 and offered["sessions"]["sess0002-abcd"] == [offered["offered"][2]]
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False}) is None
 
 
 def test_stop_uses_the_strong_markers_not_the_broad_ones(tmp_path: Path) -> None:
     make_repo(tmp_path, project="# Project\n\n## Durable constraints\n\n- Keep the gate green.\n")
-    hooks.append_entry(tmp_path, "Only touch the CSV exporter today, dont wait for me.", "sess0001", at(0))
+    hooks.append_entry(tmp_path, "Only touch the CSV exporter today, dont wait for me.", "sess0001-abcd", at(0))
     decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
     assert decision is None  # only/dont are broad-set words; they do not trigger the stop hook
-    hooks.append_entry(tmp_path, "Never touch the ledger directly.", "sess0002", at(1))
+    hooks.append_entry(tmp_path, "Never touch the ledger directly.", "sess0002-abcd", at(1))
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False}) is not None
 
 
 def test_stop_does_not_block_when_active_or_already_written(tmp_path: Path) -> None:
     make_repo(tmp_path, project="# Project\n\n## Durable constraints\n\n- Always deploy from the release branch.\n")
-    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", NOW)
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001-abcd", NOW)
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": True}) is None
     assert not (tmp_path / ".projectstate" / "offered.json").exists()
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
     plain = tmp_path / "plain"
     plain.mkdir()
-    hooks.append_entry(plain, "Always deploy from the release branch.", "sess0001", NOW)
+    hooks.append_entry(plain, "Always deploy from the release branch.", "sess0001-abcd", NOW)
     decision = hooks.stop_decision(plain, {"session_id": "sess0001-abcd", "stop_hook_active": False})
     assert decision is not None and "standing.md" in json.loads(decision)["reason"]
 
@@ -487,7 +515,7 @@ def test_gate_exit_1_and_a_missing_gate_are_silent(tmp_path: Path) -> None:
 
 def test_gate_problem_and_standing_words_share_one_block(tmp_path: Path) -> None:
     gate_repo(tmp_path, state="a: 1\na: 2\n")
-    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001", at(0))
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001-abcd", at(0))
     decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
     assert decision is not None
     reason = json.loads(decision)["reason"]
@@ -496,7 +524,7 @@ def test_gate_problem_and_standing_words_share_one_block(tmp_path: Path) -> None
 
 def test_stop_prints_one_json_object_and_hooks_never_fail_a_session(tmp_path: Path) -> None:
     make_repo(tmp_path)
-    hooks.append_entry(tmp_path, "Always keep money as integer cents.", "sess0001", at(0))
+    hooks.append_entry(tmp_path, "Always keep money as integer cents.", "sess0001-abcd", at(0))
     done = hook(tmp_path, "stop", session_id="sess0001-abcd", stop_hook_active=False)
     assert done.returncode == 0
     assert json.loads(done.stdout)["decision"] == "block"
