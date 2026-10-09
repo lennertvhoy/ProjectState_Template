@@ -519,6 +519,7 @@ def gate_block(root: Path, state: dict) -> dict | None:
         done = subprocess.run(
             [sys.executable, "scripts/projectstate_gate.py"], cwd=root,
             capture_output=True, text=True, timeout=GATE_TIMEOUT_S,
+            env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"),
         )
     except (subprocess.TimeoutExpired, OSError) as error:
         print(f"projectstate_hooks: gate skipped: {error}", file=sys.stderr)
