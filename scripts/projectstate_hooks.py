@@ -45,10 +45,12 @@ that times out or cannot run is silent (a note on stderr).
 ``install`` merges into ``.claude/settings.json`` without removing anything - while replacing v1's hooks,
 so recording does not duplicate entries - and copies the opencode plugin to ``.opencode/plugins/``
 (plural; 1.18.x also loads the singular ``.opencode/plugin/``, which ``uninstall`` removes as a leftover).
+When the instance already carries a copy that differs from this tool's, it is replaced only when its
+sha256 matches a released ``hooks_sha256`` (tool) or ``opencode_plugin_sha256`` (plugin) in the release
+index beside this tool (``<tool dir>/../releases/index.json``, so a copy running inside an instance
+finds none); anything else is a local edit and is refused with exit 2 unless ``--replace-edited`` is
+given. Without an index the old behaviour stands and a note is printed.
 ``uninstall`` removes exactly the hooks and files install added and keeps the log.
-``install`` merges into ``.claude/settings.json`` without removing anything - while replacing v1's hooks, so
-recording does not duplicate entries. ``uninstall`` removes exactly the hooks and files install added and
-keeps the log.
 """
 
 from __future__ import annotations
@@ -68,6 +70,9 @@ LOG_DIR = ".projectstate"
 LOG_NAME = "owner-log.md"
 STANDING_NAME = "standing.md"
 OFFERED_NAME = "offered.json"
+RELEASE_INDEX = Path("releases") / "index.json"
+HOOKS_SHA_FIELD = "hooks_sha256"
+PLUGIN_SHA_FIELD = "opencode_plugin_sha256"
 OPENCODE_PLUGIN_DIR = ".opencode/plugins"
 OPENCODE_PLUGIN_LEGACY_DIR = ".opencode/plugin"
 OPENCODE_PLUGIN_NAME = "projectstate.js"
@@ -655,7 +660,45 @@ def same_file(left: Path, right: Path) -> bool:
         return False
 
 
-def install(root: Path, dry_run: bool, include_stop: bool, host: str) -> int:
+def released_asset_hashes(template_root: Path) -> dict[str, list[str]] | None:
+    """Released asset hashes by index field from ``<template root>/releases/index.json``.
+
+    ``template_root`` is the directory above the running tool's own directory, so a copy running
+    inside an instance finds no index there: the caller then replaces without a released-version
+    check (with a note). An index that exists but cannot be parsed raises ValueError, so the caller
+    refuses instead of overwriting on top of an unreadable record. Draft entries authorize nothing.
+    """
+    path = template_root / RELEASE_INDEX
+    if path.is_symlink() or not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        entries = payload.get("releases") if isinstance(payload, dict) else None
+        if not isinstance(entries, list):
+            raise ValueError("releases is not a list")
+    except (OSError, ValueError) as error:
+        raise ValueError(f"cannot read {path}: {error}") from error
+    hashes: dict[str, list[str]] = {HOOKS_SHA_FIELD: [], PLUGIN_SHA_FIELD: []}
+    for entry in entries:
+        if not isinstance(entry, dict) or entry.get("status") != "released":
+            continue
+        for field in hashes:
+            value = entry.get(field)
+            if isinstance(value, str) and value not in hashes[field]:
+                hashes[field].append(value)
+    return hashes
+
+
+def edited_copy_refusal(path: Path, label: str, released: list[str], root: Path) -> str | None:
+    """A refusal line when ``path`` matches no released version; None when replacing it is allowed."""
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest in released:
+        return None
+    return (f"refused: {label} in {root} was edited locally (sha256 {digest[:12]} matches no released version); "
+            "review it, then pass --replace-edited to replace it")
+
+
+def install(root: Path, dry_run: bool, include_stop: bool, host: str, replace_edited: bool = False) -> int:
     own = Path(__file__).resolve()
     tool = root / "scripts" / HOOK_MARK
     settings = root / ".claude" / "settings.json"
@@ -689,6 +732,34 @@ def install(root: Path, dry_run: bool, include_stop: bool, host: str) -> int:
             return 2
     copy_tool = want_claude and (not tool.is_file() or (tool.read_bytes() != own.read_bytes() and not same_file(tool, own)))
     copy_plugin = want_opencode and (not plugin_target.is_file() or plugin_target.read_bytes() != plugin_source.read_bytes())
+    # Upgrade safety: an existing copy that differs from this tool's may only be a released older
+    # version; anything else is a local edit and needs --replace-edited. No index beside this tool
+    # (a copy running outside the template) keeps the old replace behaviour, with a note.
+    replacing = (copy_tool and tool.is_file()) or (copy_plugin and plugin_target.is_file())
+    try:
+        released = released_asset_hashes(own.parent.parent) if replacing else None
+    except ValueError as error:
+        print(f"refused: {error}", file=sys.stderr)
+        return 2
+    checked: list[tuple[Path, str, list[str]]] = []
+    if copy_tool and tool.is_file():
+        checked.append((tool, f"scripts/{HOOK_MARK}", (released or {}).get(HOOKS_SHA_FIELD, [])))
+    if copy_plugin and plugin_target.is_file():
+        checked.append((plugin_target, f"{OPENCODE_PLUGIN_DIR}/{OPENCODE_PLUGIN_NAME}",
+                        (released or {}).get(PLUGIN_SHA_FIELD, [])))
+    if checked and released is None:
+        print(f"projectstate_hooks: no {RELEASE_INDEX.as_posix()} next to this tool; differing copies are "
+              "replaced without a released-version check", file=sys.stderr)
+    refusals: list[str] = []
+    if not replace_edited and released is not None:
+        for path, label, allowed in checked:
+            refusal = edited_copy_refusal(path, label, allowed, root)
+            if refusal:
+                refusals.append(refusal)
+    if refusals:
+        for refusal in refusals:
+            print(refusal, file=sys.stderr)
+        return 2
     if not ((merged is not None and (added or replaced)) or copy_tool or copy_plugin):
         print("already installed: hooks and files are in place for host " + host)
         return 0
@@ -801,10 +872,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-stop", action="store_true", help="install: add only the SessionStart and UserPromptSubmit hooks")
     parser.add_argument("--host", choices=("claude", "opencode", "all"), default="claude",
                         help="Which host to install or uninstall for (default: claude)")
+    parser.add_argument("--replace-edited", action="store_true",
+                        help="install: replace an existing tool or plugin copy even when it matches no released version")
     args = parser.parse_args(argv)
     try:
         if args.command == "install":
-            return install(Path(args.root).resolve(), args.dry_run, not args.no_stop, args.host)
+            return install(Path(args.root).resolve(), args.dry_run, not args.no_stop, args.host, args.replace_edited)
         if args.command == "uninstall":
             return uninstall(Path(args.root).resolve(), args.dry_run, args.host)
         if args.command == "show":

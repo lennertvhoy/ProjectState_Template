@@ -2,8 +2,10 @@
 """Read-only fleet doctor: one report over every ProjectState repository under a root folder.
 
 For each repository below ``--root`` it shows which template release the repository runs, whether its
-vendored gate and managed ``AGENTS.md`` block match ``releases/index.json``, how large its startup
-context is, what the template gate says about its recorded state, and which decisions wait for the owner.
+vendored gate and managed ``AGENTS.md`` block match ``releases/index.json``, whether the opt-in host
+hooks (the vendored ``scripts/projectstate_hooks.py`` with its Claude Code hook entries, and the
+optional ``.opencode`` plugin) are current, how large its startup context is, what the template gate
+says about its recorded state, and which decisions wait for the owner.
 
 The doctor never writes inside a repository and never runs instance code. It reads files without
 following symlinks, runs a small set of read-only ``git`` commands (no network), and uses only this
@@ -64,6 +66,17 @@ KINDS = ("v6", "v6-invalid", "v5", "other")
 GATE_STATES = ("current", "draft", "behind", "unknown", "missing", "symlink", "unreadable")
 CONTRACT_STATES = ("current", "draft", "behind", "edited", "unmanaged", "malformed", "missing", "unreadable")
 VERDICTS = ("validated", "not validated", "invalid")
+# The opt-in host hooks: a v6 instance without them is fine (absent), drift on them is reported.
+HOOKS_TOOL = Path("scripts") / "projectstate_hooks.py"
+CLAUDE_SETTINGS = Path(".claude") / "settings.json"
+OPENCODE_PLUGIN = Path(".opencode") / "plugins" / "projectstate.js"
+OPENCODE_PLUGIN_LEGACY = Path(".opencode") / "plugin" / "projectstate.js"
+HOOKS_MARK = "projectstate_hooks.py"
+OWNER_LOG_V1_MARK = "projectstate_owner_log.py"
+HOOK_EVENTS = ("SessionStart", "UserPromptSubmit", "Stop")
+HOOK_STATES = ("current", "current (no stop)", "behind", "edited", "draft", "v1", "partial", "absent", "unreadable")
+OPENCODE_STATES = ("current", "behind", "edited", "draft", "absent", "unreadable")
+HOOKS_REVIEW_STATES = ("behind", "edited", "v1", "partial")
 
 SLICE_ID = re.compile(r"[a-z0-9][a-z0-9-]*")
 DATE_TEXT = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -409,17 +422,21 @@ def classify(path: Path, schema: str) -> tuple[str, dict[str, Any] | None, str |
 
 
 def draft_candidate(template: Path, index: dict[str, Any]) -> dict[str, str] | None:
-    """The template's own gate and block hashes when the latest index entry is still a draft."""
+    """The template's own gate, block and hooks-asset hashes when the latest index entry is still a draft."""
     entries = [entry for entry in index.get("releases", []) if isinstance(entry, dict)]
     latest = entries[-1] if entries else None
     if latest is None or latest.get("status") != "draft":
         return None
     try:
-        return {
+        candidate = {
             "release": str(latest["release"]),
             "gate_sha256": release_mod.sha256_file(template / release_mod.GATE_PATH),
             "contract_sha256": release_mod.contract_sha256(release_mod.managed_block_text(template)),
         }
+        for field, path in release_mod.HOOKS_ASSET_FILES:
+            with contextlib.suppress(OSError):
+                candidate[field] = release_mod.sha256_file(template / path)
+        return candidate
     except (OSError, UnicodeDecodeError, KeyError):
         return None
 
@@ -464,6 +481,92 @@ def contract_status(agents: Doc, ctx: Context) -> tuple[dict[str, Any], bool]:
     result["status"], result["release"] = hash_status(sha, "contract_sha256", ctx, "behind", "edited")
     result["sha256"], result["declared"] = sha, block.release
     return result, True
+
+
+def claude_hook_events(settings: Doc) -> tuple[set[str], bool]:
+    """(events with a projectstate_hooks.py command, v1 owner-log hooks present) from .claude/settings.json.
+
+    Anything unreadable or unexpected counts as absent: the host hooks are opt-in and must never turn
+    into a scan failure.
+    """
+    if settings.data is None:
+        return set(), False
+    try:
+        payload = json.loads(settings.text)
+    except ValueError:
+        return set(), False
+    hooks = payload.get("hooks") if isinstance(payload, dict) else None
+    if not isinstance(hooks, dict):
+        return set(), False
+    events: set[str] = set()
+    v1 = False
+    for event, groups in hooks.items():
+        if not isinstance(groups, list):
+            continue
+        for group in groups:
+            inner = group.get("hooks") if isinstance(group, dict) else None
+            for hook in inner if isinstance(inner, list) else []:
+                command = str(hook.get("command", "")) if isinstance(hook, dict) else ""
+                if event in HOOK_EVENTS and HOOKS_MARK in command:
+                    events.add(str(event))
+                v1 = v1 or OWNER_LOG_V1_MARK in command
+    return events, v1
+
+
+def hooks_status(path: Path, ctx: Context) -> dict[str, Any]:
+    """Status of the host hooks: the vendored tool's hash plus the Claude Code hook entries.
+
+    ``current`` needs the tool to match the latest released ``hooks_sha256`` and all three hook
+    events; without the Stop hook the status reads ``current (no stop)``. A tool that matches an
+    older release is ``behind``, one matching no release is ``edited``, a tool without hook entries
+    or hook entries without the tool is ``partial``, only v1 owner-log hooks is ``v1``, and neither
+    is ``absent`` (the asset is opt-in, so that is not a problem).
+    """
+    result: dict[str, Any] = {"status": "absent", "sha256": None, "release": None, "stop": None}
+    tool = load_doc(path, HOOKS_TOOL.as_posix())
+    events, v1 = claude_hook_events(load_doc(path, CLAUDE_SETTINGS.as_posix()))
+    if tool.data is None:
+        if tool.problem != "missing":
+            result["status"] = "unreadable"
+            return result
+        if events:  # hook entries configured, but the tool they call is gone
+            result["status"] = "partial"
+            result["stop"] = "Stop" in events
+        else:
+            result["status"] = "v1" if v1 else "absent"
+        return result
+    result["sha256"] = release_mod.sha256_bytes(tool.data)
+    if not events:
+        result["status"] = "partial"  # the tool is vendored but no hook entry calls it
+        return result
+    result["stop"] = "Stop" in events
+    state, name = hash_status(result["sha256"], "hooks_sha256", ctx, "behind", "edited")
+    if state == "current" and not result["stop"]:
+        state = "current (no stop)"
+    result["status"], result["release"] = state, name
+    return result
+
+
+def opencode_status(path: Path, ctx: Context) -> dict[str, Any]:
+    """Status of the optional opencode plugin copy (a copy in the singular legacy directory counts too)."""
+    result: dict[str, Any] = {"status": "absent", "sha256": None, "release": None, "legacy": False}
+    doc = load_doc(path, OPENCODE_PLUGIN.as_posix())
+    if doc.problem == "missing":
+        legacy = load_doc(path, OPENCODE_PLUGIN_LEGACY.as_posix())
+        if legacy.problem != "missing":
+            doc, result["legacy"] = legacy, True
+    if doc.data is None:
+        result["status"] = "absent" if doc.problem == "missing" else "unreadable"
+        return result
+    result["sha256"] = release_mod.sha256_bytes(doc.data)
+    state, name = hash_status(result["sha256"], "opencode_plugin_sha256", ctx, "behind", "edited")
+    result["status"], result["release"] = state, name
+    return result
+
+
+def hooks_install_command(template: Path, repo: Path, host_all: bool) -> str:
+    script = shlex.quote(str(template / "scripts" / "projectstate_hooks.py"))
+    return f"python3 {script} install --root {shlex.quote(str(repo))}" + (" --host all" if host_all else "")
 
 
 def local_line_count(text: str) -> int:
@@ -600,6 +703,8 @@ def scan_repository(path: Path, payload: dict[str, Any] | None, kind: str, probl
     contract, managed = contract_status(agents, ctx)
     repo["gate"] = gate_status(path, ctx)
     repo["contract"] = contract
+    repo["hooks"] = hooks_status(path, ctx)
+    repo["opencode"] = opencode_status(path, ctx)
     repo["sizes"] = size_report(agents, project, state, managed)
     repo["notices"] = notice_report(agents)
     repo["directives"] = directive_report({"AGENTS.md": agents, "PROJECT.md": project}, ctx.today)
@@ -706,6 +811,12 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
             if repo["contract"]["status"] == "malformed":
                 review.append(inbox_item(repo, "contract-malformed",
                                          f"{name}: AGENTS.md has malformed managed block markers"))
+            hooks = repo["hooks"]["status"]
+            if hooks in HOOKS_REVIEW_STATES:
+                command = hooks_install_command(ctx.template, path, repo["opencode"]["status"] != "absent")
+                review.append(inbox_item(
+                    repo, f"hooks-{hooks}", f"{name}: host hooks {hooks}; adopt or update them with: {command}",
+                    command=command))
         for found in repo["silent_replacements"]:
             if not counts_against_rule(found, repo.get("rule_since")):
                 continue  # replaced before this repository adopted the owner-decision rule: history only
@@ -756,6 +867,9 @@ def summarize(repos: list[dict[str, Any]], inbox: dict[str, list[dict[str, Any]]
         "gates": {state: sum(repo["gate"]["status"] == state for repo in instances) for state in GATE_STATES},
         "contracts": {state: sum(repo["contract"]["status"] == state for repo in instances)
                       for state in CONTRACT_STATES},
+        "hooks": {state: sum(repo["hooks"]["status"] == state for repo in instances) for state in HOOK_STATES},
+        "opencode": {state: sum(repo["opencode"]["status"] == state for repo in instances)
+                     for state in OPENCODE_STATES},
         "verdicts": {state: sum(repo["verdict"]["verdict"] == state for repo in v6) for state in VERDICTS},
         "size_flagged": sum(bool(repo["sizes"]["flags"]) for repo in v6),
         "notices": sum(repo["notices"]["total"] for repo in v6),
@@ -770,11 +884,15 @@ def template_facts(ctx: Context) -> dict[str, Any]:
     latest = ctx.index.get("latest")
     latest_entry = next((entry for entry in ctx.index["releases"]
                          if isinstance(entry, dict) and entry.get("release") == latest), {})
-    gate_sha = block_sha = None
+    gate_sha = block_sha = hooks_sha = plugin_sha = None
     with contextlib.suppress(OSError):
         gate_sha = release_mod.sha256_file(ctx.template / release_mod.GATE_PATH)
     with contextlib.suppress(OSError):
         block_sha = release_mod.contract_sha256(release_mod.managed_block_text(ctx.template))
+    with contextlib.suppress(OSError):
+        hooks_sha = release_mod.sha256_file(ctx.template / release_mod.HOOKS_PATH)
+    with contextlib.suppress(OSError):
+        plugin_sha = release_mod.sha256_file(ctx.template / release_mod.OPENCODE_PLUGIN_PATH)
     return {
         "path": str(ctx.template),
         "state_schema": ctx.schema,
@@ -783,6 +901,8 @@ def template_facts(ctx: Context) -> dict[str, Any]:
         "draft_release": latest if latest_entry.get("status") == "draft" else None,
         "gate_sha256": gate_sha,
         "contract_sha256": block_sha,
+        "hooks_sha256": hooks_sha,
+        "opencode_plugin_sha256": plugin_sha,
     }
 
 
@@ -858,17 +978,19 @@ def render_markdown(report: dict[str, Any]) -> str:
                  if history["state_commits"] is not None and history["all_commits"] is not None else "?")
         rows.append([
             repo["name"] + (" (template)" if repo["role"] == "template" else ""),
-            status_label(repo["gate"]), status_label(repo["contract"]), current["id"], current["status"],
+            status_label(repo["gate"]), status_label(repo["contract"]), status_label(repo["hooks"]),
+            current["id"], current["status"],
             current["journey"], current["human_acceptance"],
             "?" if history["age_days"] is None else history["age_days"], churn,
             f"{sizes['startup_tokens']}{'!' if sizes['flags'] else ''}", repo["notices"]["total"],
             dirty_label(repo["git"]),
         ])
     lines += ["", f"## ProjectState v6 repositories ({len(v6)})", ""]
-    lines += table(["repository", "gate", "contract", "slice", "status", "journey", "owner", "age days",
+    lines += table(["repository", "gate", "contract", "hooks", "slice", "status", "journey", "owner", "age days",
                     "STATE churn", "startup tokens", "notices", "dirty"], rows) if rows else ["None."]
     lines += ["", "Dirty: +staged ~unstaged ?untracked. STATE churn: STATE.yaml commits / all commits since the slice "
-              "began. A trailing ! on startup tokens marks a size flag (see Summary)."]
+              "began. A trailing ! on startup tokens marks a size flag (see Summary). hooks: the opt-in host "
+              "hooks asset (vendored tool plus Claude Code hook entries; absent is fine)."]
     others = [repo for repo in report["repositories"] if repo["kind"] != "v6"]
     lines += ["", f"## v5 and other repositories ({len(others)})", ""]
     lines += table(["repository", "kind", "last commit", "dirty"], [
@@ -882,6 +1004,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         + ".",
         "- v6 contracts (template excluded): "
         + ", ".join(f"{state} {summary['contracts'][state]}" for state in CONTRACT_STATES) + ".",
+        "- v6 host hooks (template excluded): "
+        + ", ".join(f"{state} {summary['hooks'][state]}" for state in HOOK_STATES) + ".",
+        "- v6 opencode plugins (template excluded): "
+        + ", ".join(f"{state} {summary['opencode'][state]}" for state in OPENCODE_STATES) + ".",
         "- v6 gate verdicts: " + ", ".join(f"{state} {summary['verdicts'][state]}" for state in VERDICTS) + ".",
         "- Inbox: " + ", ".join(f"{len(report['inbox'][key])} {label}" for key, label in (
             ("decisions", "decisions"), ("blocked", "blocked"), ("needs_review", "to review"),

@@ -37,6 +37,10 @@ GATE_CURRENT = b"# vendored gate, release 1.1.0\n"
 BLOCK_OLD = "# Managed contract\n\nOld rules.\n"
 BLOCK_CURRENT = "# Managed contract\n\nCurrent rules.\n"
 PLAIN_AGENTS = "# Local rules\n\nBe careful.\n"
+HOOKS_OLD = b"#!/usr/bin/env python3\n# host hooks tool of 1.0.0\n"
+HOOKS_CURRENT = b"#!/usr/bin/env python3\n# host hooks tool of 1.1.0\n"
+PLUGIN_OLD = b"// opencode plugin of 1.0.0\n"
+PLUGIN_CURRENT = b"// opencode plugin of 1.1.0\n"
 
 PROJECT_MD = """# Demo
 
@@ -190,9 +194,11 @@ def write_template(path: Path) -> None:
         "latest": "1.2.0",
         "releases": [
             {"release": "1.0.0", "status": "released", "gate_sha256": sha256(GATE_OLD),
-             "contract_sha256": contract(BLOCK_OLD)},
+             "contract_sha256": contract(BLOCK_OLD), "hooks_sha256": sha256(HOOKS_OLD),
+             "opencode_plugin_sha256": sha256(PLUGIN_OLD)},
             {"release": "1.1.0", "status": "released", "gate_sha256": sha256(GATE_CURRENT),
-             "contract_sha256": contract(BLOCK_CURRENT)},
+             "contract_sha256": contract(BLOCK_CURRENT), "hooks_sha256": sha256(HOOKS_CURRENT),
+             "opencode_plugin_sha256": sha256(PLUGIN_CURRENT)},
             {"release": "1.2.0", "status": "draft", "gate_sha256": None, "contract_sha256": None},
         ],
     }
@@ -349,6 +355,129 @@ class GateAndContractTests(FleetTestCase):
         report = ws.report()
         self.assertEqual(repo_of(report, "candidate")["gate"]["status"], "draft")
         self.assertEqual(kinds_of(report, "needs_review"), [])
+
+
+def settings_text(*events: str, v1: bool = False) -> str:
+    """A .claude/settings.json body with projectstate_hooks.py entries (or a v1 owner-log entry)."""
+    commands = {"SessionStart": "brief", "UserPromptSubmit": "record", "Stop": "stop"}
+    hooks_block: dict[str, list] = {}
+    for event in events:
+        hooks_block[event] = [{"hooks": [{"type": "command",
+                                          "command": f'python3 "$CLAUDE_PROJECT_DIR"/scripts/'
+                                                     f'projectstate_hooks.py {commands[event]}'}]}]
+    if v1:
+        hooks_block["SessionStart"] = [{"hooks": [{"type": "command",
+                                                   "command": 'python3 "$CLAUDE_PROJECT_DIR"/scripts/'
+                                                              'projectstate_owner_log.py inject'}]}]
+    return json.dumps({"hooks": hooks_block})
+
+
+class HostHooksTests(FleetTestCase):
+    """The opt-in host hooks: the vendored tool plus Claude hook entries, and the opencode plugin."""
+
+    def repo(self, name: str, *, tool: bytes | None = None, settings: str | None = None,
+             plugin: bytes | None = None, legacy_plugin: bytes | None = None, **options: object) -> Path:
+        extra: dict[str, str | bytes] = {}
+        if tool is not None:
+            extra["scripts/projectstate_hooks.py"] = tool
+        if settings is not None:
+            extra[".claude/settings.json"] = settings
+        if plugin is not None:
+            extra[".opencode/plugins/projectstate.js"] = plugin
+        if legacy_plugin is not None:
+            extra[".opencode/plugin/projectstate.js"] = legacy_plugin
+        return self.ws.add_v6(name, extra=extra, **options)
+
+    def hooks_of(self, report: dict, name: str) -> dict:
+        return repo_of(report, name)["hooks"]
+
+    def test_every_hooks_status(self) -> None:
+        full = settings_text("SessionStart", "UserPromptSubmit", "Stop")
+        nostop = settings_text("SessionStart", "UserPromptSubmit")
+        self.repo("current", tool=HOOKS_CURRENT, settings=full)
+        self.repo("no-stop", tool=HOOKS_CURRENT, settings=nostop)
+        self.repo("behind", tool=HOOKS_OLD, settings=full)
+        self.repo("edited", tool=HOOKS_CURRENT + b"# local edit\n", settings=full)
+        self.repo("tool-only", tool=HOOKS_CURRENT)
+        self.repo("hooks-only", settings=full)
+        self.repo("bad-settings", tool=HOOKS_CURRENT, settings="{not json")
+        self.repo("v1", settings=settings_text(v1=True))
+        self.repo("absent")
+        report = self.ws.report()
+        status = {name: self.hooks_of(report, name) for name in
+                  ("current", "no-stop", "behind", "edited", "tool-only", "hooks-only", "bad-settings", "v1",
+                   "absent")}
+        self.assertEqual({name: item["status"] for name, item in status.items()}, {
+            "current": "current", "no-stop": "current (no stop)", "behind": "behind", "edited": "edited",
+            "tool-only": "partial", "hooks-only": "partial", "bad-settings": "partial", "v1": "v1",
+            "absent": "absent"})
+        self.assertEqual(status["current"]["release"], "1.1.0")
+        self.assertTrue(status["current"]["stop"])
+        self.assertFalse(status["no-stop"]["stop"])
+        self.assertEqual(status["no-stop"]["release"], "1.1.0")
+        self.assertEqual((status["behind"]["release"], status["behind"]["sha256"]), ("1.0.0", sha256(HOOKS_OLD)))
+        self.assertIsNone(status["edited"]["release"])
+        self.assertIsNone(status["absent"]["sha256"])
+        self.assertEqual(sorted(kinds_of(report, "needs_review")), [
+            ("bad-settings", "hooks-partial"), ("behind", "hooks-behind"), ("edited", "hooks-edited"),
+            ("hooks-only", "hooks-partial"), ("tool-only", "hooks-partial"), ("v1", "hooks-v1")])
+        self.assertEqual(report["summary"]["inbox"]["needs_review"], 6)
+        self.assertEqual(report["summary"]["hooks"], {
+            "current": 1, "current (no stop)": 1, "behind": 1, "edited": 1, "draft": 0,
+            "v1": 1, "partial": 3, "absent": 1, "unreadable": 0})
+
+    def test_the_review_command_names_the_template_tool_and_the_instance(self) -> None:
+        self.repo("plain-behind", tool=HOOKS_OLD, settings=settings_text(
+            "SessionStart", "UserPromptSubmit", "Stop"))
+        self.repo("with-plugin", tool=HOOKS_OLD, settings=settings_text(
+            "SessionStart", "UserPromptSubmit", "Stop"), plugin=PLUGIN_CURRENT)
+        self.repo("current-with-plugin", tool=HOOKS_CURRENT, settings=settings_text(
+            "SessionStart", "UserPromptSubmit", "Stop"), plugin=PLUGIN_OLD)  # plugin drift alone is silent
+        report = self.ws.report()
+        items = {item["repository"]: item for item in report["inbox"]["needs_review"]}
+        self.assertEqual(sorted(items), ["plain-behind", "with-plugin"])
+        base = f"python3 {self.ws.template}/scripts/projectstate_hooks.py install --root"
+        self.assertEqual(items["plain-behind"]["command"], f"{base} {self.ws.root}/plain-behind")
+        self.assertEqual(items["with-plugin"]["command"], f"{base} {self.ws.root}/with-plugin --host all")
+        self.assertTrue(items["with-plugin"]["message"].endswith(f"{base} {self.ws.root}/with-plugin --host all"))
+
+    def test_opencode_plugin_statuses(self) -> None:
+        self.repo("current", plugin=PLUGIN_CURRENT)
+        self.repo("behind", plugin=PLUGIN_OLD)
+        self.repo("edited", plugin=PLUGIN_CURRENT + b"// local edit\n")
+        self.repo("legacy", legacy_plugin=PLUGIN_CURRENT)
+        self.repo("absent")
+        report = self.ws.report()
+        opencode = {name: repo_of(report, name)["opencode"] for name in
+                    ("current", "behind", "edited", "legacy", "absent")}
+        self.assertEqual({name: item["status"] for name, item in opencode.items()}, {
+            "current": "current", "behind": "behind", "edited": "edited", "legacy": "current", "absent": "absent"})
+        self.assertTrue(opencode["legacy"]["legacy"])
+        self.assertFalse(opencode["current"]["legacy"])
+        self.assertEqual(opencode["behind"]["release"], "1.0.0")
+        self.assertEqual(opencode["current"]["sha256"], sha256(PLUGIN_CURRENT))
+        self.assertEqual(report["inbox"]["needs_review"], [])  # the plugin is opt-in: drift alone is not reviewed
+        self.assertEqual(report["summary"]["opencode"],
+                         {"current": 2, "behind": 1, "edited": 1, "draft": 0, "absent": 1, "unreadable": 0})
+
+    def test_an_instance_carrying_the_draft_hooks_candidate_reads_draft(self) -> None:
+        candidate = HOOKS_CURRENT + b"# not released yet\n"
+        write_files(self.ws.template, {"scripts/projectstate_hooks.py": candidate})
+        self.repo("candidate", tool=candidate, settings=settings_text(
+            "SessionStart", "UserPromptSubmit", "Stop"))
+        report = self.ws.report()
+        self.assertEqual(self.hooks_of(report, "candidate")["status"], "draft")
+        self.assertEqual(self.hooks_of(report, "candidate")["release"], "1.2.0")
+        self.assertEqual(report["inbox"]["needs_review"], [])
+
+    def test_a_symlinked_hooks_tool_is_reported_unreadable_and_never_read(self) -> None:
+        repo = self.repo("linked", settings=settings_text("SessionStart", "UserPromptSubmit", "Stop"))
+        (self.ws.base / "outside.py").write_bytes(HOOKS_CURRENT)
+        os.symlink(self.ws.base / "outside.py", repo / "scripts" / "projectstate_hooks.py")
+        report = self.ws.report()
+        linked = self.hooks_of(report, "linked")
+        self.assertEqual((linked["status"], linked["sha256"]), ("unreadable", None))
+        self.assertEqual(report["summary"]["hooks"]["unreadable"], 1)
 
 
 class ContextSizeTests(FleetTestCase):
@@ -585,7 +714,7 @@ class HistoryAndGitTests(FleetTestCase):
         plain = repo_of(report, "plain")["git"]
         self.assertEqual((plain["upstream"], plain["staged"], plain["unstaged"], plain["untracked"]), (None, 0, 0, 0))
         table = run_cli(*self.ws.args("--stdout"))[1]
-        self.assertIn("| facts | current | unmanaged | demo-001 | implementing | not_run | pending | 26 | 1/2 | ", table)
+        self.assertIn("| facts | current | unmanaged | absent | demo-001 | implementing | not_run | pending | 26 | 1/2 | ", table)
         self.assertIn("+1 ~1 ?2 |", table)
 
     def test_status_counts_cover_staged_unstaged_untracked_conflicts_and_ignored(self) -> None:
@@ -837,11 +966,12 @@ class CommandLineTests(FleetTestCase):
         self.assertEqual([line for line in lines if line.startswith("## ")], [
             "## Your decisions (1)", "## Blocked (1)", "## Needs review (0)", "## Ready to merge (0)",
             "## ProjectState v6 repositories (3)", "## v5 and other repositories (2)", "## Summary"])
-        header = ("| repository | gate | contract | slice | status | journey | owner | age days | STATE churn | "
-                  "startup tokens | notices | dirty |")
+        header = ("| repository | gate | contract | hooks | slice | status | journey | owner | age days | "
+                  "STATE churn | startup tokens | notices | dirty |")
         self.assertIn(header, lines)
         self.assertIn("| repository | kind | last commit | dirty |", lines)
-        self.assertIn("| beta | behind (1.0.0) | unmanaged | demo-001 | implementing | not_run | pending | 35 | 1/1 |", text)
+        self.assertIn("| beta | behind (1.0.0) | unmanaged | absent | demo-001 | implementing | not_run | pending | "
+                      "35 | 1/1 |", text)
         self.assertIn("| v5 | v5 | 2026-09-01 | clean |", lines)
         self.assertIn("| loose | other | - | no git |", lines)
         self.assertIn("Needs | a pipe", text)  # inbox lines are plain text; table cells escape the pipe
@@ -865,6 +995,8 @@ class CommandLineTests(FleetTestCase):
         copied_gate = (self.ws.template / "scripts" / "projectstate_gate.py").read_bytes()
         self.assertEqual(report["template"]["gate_sha256"], sha256(copied_gate))
         self.assertEqual(report["template"]["contract_sha256"], fleet.release_mod.contract_sha256(BLOCK_CURRENT))
+        self.assertIsNone(report["template"]["hooks_sha256"])  # the fixture template vendors no hooks tool
+        self.assertIsNone(report["template"]["opencode_plugin_sha256"])
         self.assertEqual(list(report["inbox"]), ["decisions", "blocked", "needs_review", "ready_to_merge"])
 
     def test_bad_arguments_and_missing_index_exit_2(self) -> None:
