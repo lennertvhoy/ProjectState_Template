@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import io
+import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -158,13 +160,28 @@ class InjectTests(unittest.TestCase):
 
 @unittest.skipUnless(du.v2_available(), f"scripts/{du.V2_TOOL} is not in the template yet (branch work/hooks-v2)")
 class HostToolTests(unittest.TestCase):
+    def build_host_repo(self) -> Path:
+        """The host repository with session 1's prompt recorded through the v2 hook, as a real run would."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        repo, _installed = du.build(Path(tmp.name), "core-host")
+        tool = repo / "scripts" / du.V2_TOOL
+        payload = json.dumps({
+            "hook_event_name": "UserPromptSubmit", "cwd": str(repo), "session_id": "session1",
+            "prompt": handoff.PROMPTS["plain"],
+        })
+        done = subprocess.run([sys.executable, str(tool), "record"], input=payload, capture_output=True,
+                              text=True, env=sc.clean_env(), timeout=60, check=False, cwd=repo)
+        if done.returncode != 0:
+            raise du.DurabilityError(f"v2 record failed: {(done.stderr or done.stdout).strip()[:200]}")
+        return repo
+
     def test_brief_still_shows_the_constraints_after_thirty_noise_prompts(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            repo, _installed = du.build(Path(tmp), "core-host")
-            info = du.apply_noise(repo, "core-host", len(du.NOISE))
-            self.assertEqual(info["prompts"], 30)
-            text = du.s2_context(repo, "core-host")
-            self.assertIsNotNone(handoff.RECORDED_PATTERNS["semicolon"].search(text))
+        repo = self.build_host_repo()
+        info = du.apply_noise(repo, "core-host", len(du.NOISE))
+        self.assertEqual(info["prompts"], 30)
+        text = du.s2_context(repo, "core-host")
+        self.assertIsNotNone(handoff.RECORDED_PATTERNS["semicolon"].search(text))
 
 
 class RenderingTests(unittest.TestCase):

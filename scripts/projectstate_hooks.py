@@ -10,7 +10,8 @@
 
 This is the v2 of ``scripts/projectstate_owner_log.py`` in one self-contained file that gets copied into
 instances. It keeps v1's log location and entry format (``.projectstate/owner-log.md`` with
-``## <UTC stamp> (session <id8>)`` headings), so logs written by v1 keep working.
+``## <UTC stamp> (session <key>)`` headings; a Claude Code UUID id keeps v1's 8-character key, any other
+host's id is kept whole up to 40 characters, see ``session_key``), so logs written by v1 keep working.
 
 What v2 changes. (1) ``record`` replaces each pasted block (Claude Code 2.1.x wraps pastes as
 ``<pasted_content id="..">..</pasted_content id="..">``, the closing tag repeating the id) with one line
@@ -172,6 +173,24 @@ def read_text(path: Path) -> str:
 
 def normalize(text: str) -> str:
     return " ".join(text.split()).lower()
+
+
+SESSION_UUID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+
+
+def session_key(session_id: str) -> str:
+    """The log's session key, shared by record and stop.
+
+    A Claude Code session id is a UUID: keep its first 8 characters, exactly as v1 did, so v1 logs stay
+    compatible. Any other host's id is not safe to shorten - OpenCode ids are time-ordered
+    (``ses_edf3a6802ffe..``, ``ses_edf3a3765ffe..``) and 8 characters collide across sessions started close
+    together - so it is kept whole, capped at 40 characters, with ')' and newlines removed so the entry
+    heading still parses. Empty ids become "unknown".
+    """
+    key = str(session_id or "").replace(")", "").replace("\r", "").replace("\n", "").strip()
+    if SESSION_UUID.fullmatch(key):
+        return key[:8]
+    return key[:40] or "unknown"
 
 
 def contained(body: str, blob: str) -> bool:
@@ -542,7 +561,7 @@ def stop_decision(root: Path, payload: dict) -> str | None:
     were never offered; else None. Each entry is offered at most once - there is no per-session limit."""
     if payload.get("stop_hook_active"):
         return None
-    session = str(payload.get("session_id") or "")[:8]
+    session = session_key(str(payload.get("session_id") or ""))
     if not session or session == "unknown":
         return None
     state = offered_state(root)
@@ -815,7 +834,7 @@ def main(argv: list[str] | None = None) -> int:
         payload = hook_input()
         root = hook_root(payload)
         if args.command == "record":
-            append_entry(root, str(payload.get("prompt") or ""), str(payload.get("session_id") or "unknown")[:8])
+            append_entry(root, str(payload.get("prompt") or ""), session_key(str(payload.get("session_id") or "")))
         elif args.command == "brief":
             sys.stdout.write(brief_text(root))
         else:
