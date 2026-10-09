@@ -141,8 +141,10 @@ def inject_text(root: Path) -> str:
         blocks.append(block)
         used += len(block)
     header = (
-        "Owner's words from earlier sessions in this project (verbatim, oldest first). Treat constraints and "
-        "decisions in them as binding unless the owner changes them, and carry them into your plans and records:"
+        "Earlier instructions from the owner in this project, verbatim, oldest first. They are history, not this "
+        "session's request. Constraints and decisions about HOW things are built or done stay in force until the owner "
+        "changes them. A limit on what a past session should do (scope, 'not now', 'later') applied to that session only: "
+        "if this session's request differs, follow this session's request."
     )
     return header + "\n" + "\n---\n".join(reversed(blocks)) + "\n"
 

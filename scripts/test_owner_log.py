@@ -33,7 +33,8 @@ def test_prompts_are_recorded_verbatim_oldest_first_and_injected(tmp_path: Path)
     text = owner_log.inject_text(tmp_path)
     assert "semicolons and a UTF-8 BOM" in text and "--force" in text
     assert text.index("semicolons") < text.index("--force")
-    assert text.startswith("Owner's words from earlier sessions")
+    assert text.startswith("Earlier instructions from the owner")
+    assert "HOW things are built" in text and "this session's request" in text  # stale scope must not bind the new session
 
 
 def test_the_log_ignores_itself_in_git_and_stays_out_of_status(tmp_path: Path) -> None:
