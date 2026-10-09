@@ -38,8 +38,8 @@ import run as base  # noqa: E402
 import scenarios as sc  # noqa: E402
 
 SCHEMA = "projectstate-handoff-eval/1"
-CONDITIONS = ("with", "without", "with-rule", "with-verify", "with-plus")
-CORE_CONDITIONS = ("with", "with-rule", "with-verify", "with-plus")
+CONDITIONS = ("with", "without", "with-rule", "with-verify", "with-plus", "with-next")
+CORE_CONDITIONS = ("with", "with-rule", "with-verify", "with-plus", "with-next")
 DEFAULT_CONDITIONS = "with,without"
 # Candidate contract rule under test: ``with-rule`` is ``with`` plus this line in the project's local rules, so the
 # template itself is untouched until a measurement shows the rule helps.
@@ -52,7 +52,10 @@ VERIFY_RULE = (
     "Record the primary journey result by running `python3 scripts/projectstate_verify.py --run`; never type the journey "
     "status, `Result` or `Exit code` by hand. When you resume, run it first: the recorded status is only a claim until it passes."
 )
+# Candidate: attach the constraint to the field agents already write when they stop.
+NEXT_RULE = "In `next_action`, state the next step and every owner constraint that applies to it, in the owner's words."
 CONDITION_RULES = {
+    "with-next": (NEXT_RULE,),
     "with-rule": (OWNER_STATEMENT_RULE,),
     "with-verify": (VERIFY_RULE,),
     "with-plus": (VERIFY_RULE, OWNER_STATEMENT_RULE),
