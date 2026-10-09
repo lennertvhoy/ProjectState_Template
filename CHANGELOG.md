@@ -13,6 +13,8 @@ All notable ProjectState template changes are tracked here.
 
 ## Unreleased
 
+- **Owner log** (`scripts/projectstate_owner_log.py`, optional): records each owner prompt verbatim to a local, gitignored log and re-injects recent entries at session start, resume and compaction, via Claude Code hooks; `install` copies the tool and merges the hooks. In the two-session eval 6 of 6 runs kept constraints stated only in chat, against 1 of 23 for every other condition. Also new and optional: `scripts/projectstate_verify.py` (runs the recorded primary journey on `--run` and writes the observed result into the state files; not yet in a release) and the eval harnesses under `evals/resume/` (handoff and briefing).
+
 Instance action: none. The gate, the managed block, and everything a generated
 project receives are unchanged, so no release is cut for this.
 

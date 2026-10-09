@@ -28,4 +28,4 @@ delivery_boundary:
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Owner: read evidence/handoff-eval-001/summary.md and decide whether to fund a design-fixed rerun (owner-accept step between sessions, a PROJECT.md constraints rule, and a resume-first-run-the-journey rule) before any contract change; domain-packs-001 stays held until then."
+next_action: "Owner: read evidence/handoff-eval-001/summary.md (corrections and the owner-log follow-up) and decide. If the owner log earns its place, ship it in release 6.4.0 as a managed asset (update command, release index, fleet doctor); domain-packs-001 stays held."

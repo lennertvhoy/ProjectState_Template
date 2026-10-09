@@ -102,3 +102,71 @@ says nothing about the rule. It is not added to the template.
 - Constraints belong in `PROJECT.md` (durable constraints), which the core makes
   owner-owned. The candidate rule used the slice summary, which a later slice's
   read order does not include. A better rule has not been tested.
+
+## Corrections (2026-10-09)
+
+Later runs showed three statements above to be wrong or unfair. The text above is
+kept as written; these corrections take precedence.
+
+1. **Constraints kept.** The grader's `csv_semicolon_bom` check also failed
+   implementations that honored the constraint but did not quote a note holding
+   `;`. It is now two checks (`csv_format` for the constraint, `csv_quoting` for
+   quality), and every earlier run was graded again from its saved diff. Across the
+   23 chains of the first five experiments, exactly one kept the memory-only
+   constraints: the no-core chain that was asked for a handoff and wrote them as
+   code comments. So "0 of 11" should read "1 of 23".
+2. **False records.** The "gate green while the journey failed" finding (3 of 5
+   core chains) came from a slice scoped wider than the session: the slice covered
+   all five requirements while session 1 was told to build three. With a coherent
+   slice (journey `--through 3`) there were 0 false records in 9 core chains.
+3. **Stalls.** Core chains stopped at the owner-decision step because the harness
+   had no owner. With the harness recording an accept between sessions through the
+   real decide command, every core chain moved on and reached the same 5 of 7 as
+   the no-core chains.
+
+## Follow-up: capturing the owner's words mechanically (2026-10-09)
+
+Five attempts to make agents write the constraints down all failed (a rule in the
+local rules, a rule aimed at `PROJECT.md`, a rule aimed at `next_action`, the core
+alone, and a prompt asking for a handoff: 1 of 23 in total). The cause is agent
+behavior, not file layout, so the owner's words are now captured by the host.
+`scripts/projectstate_owner_log.py` is a pair of Claude Code hooks: one records
+each owner prompt verbatim to a local log, the other puts the recent entries into
+context at session start, resume and compaction.
+
+All haiku, same task, scoped slice, harness acting as owner between sessions:
+
+| Cell | Chains | Kept both memory-only constraints | Reached 7 of 8 | Cost per chain |
+| --- | --- | --- | --- | --- |
+| Core, no log | 3 | 0 | 0 (5 of 8) | $0.25 |
+| No core, no log | 3 | 0 | 0 (5 of 8) | $0.15 |
+| Core plus log, first header | 3 | 2 | 2 | $0.29 |
+| No core plus log, first header | 3 | 2 | 2 | $0.15 |
+| Core plus log, fixed header | 3 | 3 | 3 | $0.34 |
+| No core plus log, fixed header | 3 | 3 | 3 | $0.19 |
+
+- **The first header failed in one chain per cell.** It said the replayed words
+  were binding, so session 2 obeyed "do not implement export yet" from session 1's
+  prompt and did nothing. The header now says that constraints about how things are
+  built stay in force, while a limit on what a past session should do applied to
+  that session only. With it, 6 of 6 chains kept the constraints.
+- **The log works without the core**, with identical results, so it is useful in
+  any repository. The core added about 1.8 times the cost and no measured benefit
+  on this task (the eight-check score was equal).
+- All twelve hook chains failed only `csv_quoting`, an implementation-quality check
+  that the owner's constraints do not cover.
+- **A briefing probe** (a fresh agent briefs the owner from the saved state; three
+  per cell) found the core's files made "what is done" accurate 6 of 6 times against
+  2 of 3 without, and made the pending owner decision visible 6 of 6 against 2 of 3.
+  They hurt on "what is next" (4 of 6 against 3 of 3), because session 1's
+  `next_action` pointed at the owner decision. Small numbers; no constraint was
+  surfaced by any briefing.
+- `scripts/projectstate_verify.py` (the journey result recorded from a run, not
+  typed) was built and tested but is not shipped: with a coherent slice no chain
+  made a false record, so there was nothing for it to fix.
+
+Limits: one cheap model, one task, three repeats per cell, one host (Claude Code).
+Hooks exist for other hosts under other names and were not tested. The log is
+plain text: it holds whatever the owner types, so it is local and gitignored, with
+best-effort redaction of obvious secrets. A stronger model might follow the rules
+that haiku ignored, and was not tested.

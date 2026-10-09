@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Keep the owner's own words across sessions, without relying on the agent to write them down.
 
-    python3 scripts/projectstate_owner_log.py install [--root DIR] [--dry-run]
+    python3 <template>/scripts/projectstate_owner_log.py install --root DIR [--dry-run]
     python3 scripts/projectstate_owner_log.py show [--root DIR]
     python3 scripts/projectstate_owner_log.py record      # Claude Code UserPromptSubmit hook (reads JSON on stdin)
     python3 scripts/projectstate_owner_log.py inject      # Claude Code SessionStart hook (prints context)
@@ -194,14 +194,28 @@ def install(root: Path, dry_run: bool) -> int:
     except (ValueError, OSError) as error:
         print(f"refused: cannot merge into {settings}: {error}", file=sys.stderr)
         return 2
-    if not tool.is_file():
-        print(f"warning: {tool} does not exist, so the hooks would fail; copy this script to scripts/ first", file=sys.stderr)
-    if not added:
-        print("already installed: both hooks are present in .claude/settings.json")
+    own = Path(__file__).resolve()
+    scripts_link = root / "scripts"
+    if scripts_link.is_symlink() or tool.is_symlink():
+        print("refused: scripts/ or the tool path is a symlink", file=sys.stderr)
+        return 2
+    copy_needed = not tool.is_file()
+    drifted = tool.is_file() and tool.read_bytes() != own.read_bytes() and tool.resolve() != own
+    if not added and not copy_needed:
+        print("already installed: both hooks are present in .claude/settings.json" + (
+            "; note: scripts/projectstate_owner_log.py differs from the template's copy" if drifted else ""))
         return 0
-    print(f"{'would add' if dry_run else 'adding'} hooks for: {', '.join(added)} in {settings}")
+    if copy_needed:
+        print(f"{'would copy' if dry_run else 'copying'} the tool to {tool.relative_to(root)}")
+    if added:
+        print(f"{'would add' if dry_run else 'adding'} hooks for: {', '.join(added)} in {settings}")
     if not dry_run:
-        write_atomic(settings, json.dumps(merged, indent=2) + "\n")
+        if copy_needed:
+            tool.parent.mkdir(parents=True, exist_ok=True)
+            write_atomic(tool, own.read_text(encoding="utf-8"))
+            tool.chmod(0o755)
+        if added:
+            write_atomic(settings, json.dumps(merged, indent=2) + "\n")
         print("done. Restart Claude Code in this project; owner prompts are now recorded to .projectstate/owner-log.md")
     return 0
 

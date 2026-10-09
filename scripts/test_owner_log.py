@@ -127,6 +127,33 @@ def test_install_merges_idempotently_and_keeps_existing_settings(tmp_path: Path)
     assert again.returncode == 0 and "already installed" in again.stdout and settings.read_text() == before
 
 
+def test_install_copies_the_tool_so_one_command_adopts_a_project(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    done = cli(tmp_path, "install", "--root", str(project))  # run from the template's copy, not the project's
+    assert done.returncode == 0 and "copying the tool" in done.stdout
+    copied = project / "scripts" / "projectstate_owner_log.py"
+    assert copied.read_bytes() == TOOL.read_bytes()
+    # The installed hook runs the project's own copy end to end.
+    hooked = subprocess.run([sys.executable, str(copied), "record"], cwd=project, input=json.dumps(
+        {"cwd": str(project), "session_id": "abcd1234", "prompt": "Keep exports semicolon-delimited."}), capture_output=True, text=True)
+    assert hooked.returncode == 0
+    assert "semicolon-delimited" in (project / ".projectstate" / "owner-log.md").read_text()
+    assert "already installed" in cli(tmp_path, "install", "--root", str(project)).stdout
+
+
+def test_install_dry_run_writes_nothing_and_never_follows_a_scripts_symlink(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    assert cli(tmp_path, "install", "--root", str(project), "--dry-run").returncode == 0
+    assert list(project.iterdir()) == []
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    (project / "scripts").symlink_to(elsewhere)
+    assert cli(tmp_path, "install", "--root", str(project)).returncode == 2
+    assert list(elsewhere.iterdir()) == []
+
+
 def test_install_refuses_unreadable_or_symlinked_settings(tmp_path: Path) -> None:
     settings = tmp_path / ".claude" / "settings.json"
     settings.parent.mkdir()

@@ -239,6 +239,36 @@ managed `AGENTS.md` block and nothing else: never `PROJECT.md`, `STATE.yaml`,
 [`docs/UPGRADING.md`](docs/UPGRADING.md) explains the report and the refusal
 flags.
 
+## Keeping the owner's words
+
+What an owner says in conversation (a constraint, a decision, "do it this way")
+lives in no file unless an agent writes it down, and measured agents mostly do
+not, even when a rule tells them to. `scripts/projectstate_owner_log.py` captures
+it mechanically with two Claude Code hooks, so nothing depends on the agent's
+diligence:
+
+```bash
+python3 scripts/projectstate_owner_log.py install --root ../your-project   # --dry-run to preview
+```
+
+`install` copies the tool into the project's `scripts/` and merges the hooks into
+`.claude/settings.json` without removing anything already there. After a restart,
+every owner prompt is appended verbatim to `.projectstate/owner-log.md` (secrets
+such as keys and `password=...` pairs are redacted on a best-effort basis), and
+the most recent entries are put into context when a session starts, resumes, or
+is compacted. The injected text says that constraints about *how* things are built
+stay in force, while a limit on what a past session should do applied to that
+session only. The log is local: `.projectstate/` ignores itself in Git because
+prompts can hold private data. The hooks never block or fail a session. It works
+with or without the core, and only for hosts that have equivalent hooks.
+
+In a controlled test (two real sessions, a small ledger task, three owner
+constraints stated only in the first prompt, Claude Code with the haiku model, three
+repeats per cell), 6 of 6 runs kept the two constraints that exist nowhere else in
+the repository, against 1 of 23 for every other condition tried: the core alone,
+two rules in the project's instructions, and a prompt asking for a handoff.
+It is one cheap model and one task; the evidence is in `evidence/handoff-eval-001/`.
+
 ## Optional material
 
 Add these only when the project needs them:

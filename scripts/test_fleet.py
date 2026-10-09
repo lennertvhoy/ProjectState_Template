@@ -9,7 +9,6 @@ test managed block. Nothing outside the temporary directory is touched.
 from __future__ import annotations
 
 import contextlib
-import datetime as dt
 import hashlib
 import io
 import json
