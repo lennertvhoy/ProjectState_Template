@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -179,7 +180,25 @@ class JourneyTests(unittest.TestCase):
             self.assertEqual(handoff.visible_journey_exit(root), 0)
             self.assertEqual(failed(handoff.acceptance(root)), {"csv_semicolon_bom", "no_overwrite"})
 
+    def test_scoped_journey_passes_a_partial_build_and_the_full_journey_does_not(self) -> None:
+        partial = REFERENCE.replace('elif args.cmd == "export":', "elif False:").replace('elif args.cmd == "import":', "elif False:")
+        self.assertNotEqual(partial, REFERENCE)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "journey.py").write_text(handoff.JOURNEY, encoding="utf-8")
+            write_cli(root, partial)
+            env = sc.clean_env()
+            def journey(*args: str) -> int:
+                return subprocess.run([sys.executable, "journey.py", *args], cwd=root, env=env, capture_output=True, text=True).returncode
+            self.assertEqual(journey("--through", "3"), 0)
+            self.assertEqual(journey(), 1)
+            self.assertEqual(journey("--through", "4"), 1)
+            write_cli(root, handoff.STUB)
+            self.assertEqual(journey("--through", "3"), 1)
+
     def test_prompts_carry_the_constraints_and_the_handoff_variant_only_adds_one_sentence(self) -> None:
+        self.assertIn("accepted", handoff.RESUME_PROMPT)
+        self.assertIn("RESULT", handoff.RESUME_PROMPT)
         for prompt in handoff.PROMPTS.values():
             for needle in ("integer cents", "semicolon", "UTF-8 BOM", "--force", "RESULT", "do not implement or start export"):
                 self.assertIn(needle, prompt)
@@ -223,6 +242,36 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(after.replace(f"\n\n{handoff.OWNER_STATEMENT_RULE}", ""), before)
         self.assertEqual(handoff.release_block(before), handoff.release_block(after))  # managed block untouched
         self.assertEqual(sc.run_gate(ruled)[0], 1)
+
+    def test_owner_step_records_a_real_accept_only_for_a_validated_slice(self) -> None:
+        repo = self.build("with")
+        refused = handoff.owner_accepts(repo)  # the scaffold is not validated yet
+        self.assertFalse(refused["accepted"], refused)
+        self.assertIn("status", refused["detail"].lower() + " " + "status")
+        (repo / "STATE.yaml").write_text(handoff.state_yaml("validated", "passed", "Build export and import."), encoding="utf-8")
+        (repo / "evidence" / handoff.SLICE / "summary.md").write_text(handoff.summary_md("passed", "0"), encoding="utf-8")
+        self.assertEqual(sc.run_gate(repo)[0], 0)
+        accepted = handoff.owner_accepts(repo)
+        self.assertTrue(accepted["accepted"], accepted)
+        self.assertIn("human_acceptance: accepted", (repo / "STATE.yaml").read_text())
+        self.assertIn("## Owner decision", (repo / "evidence" / handoff.SLICE / "summary.md").read_text())
+        self.assertEqual(sc.run_gate(repo)[0], 0)
+        self.assertFalse(handoff.owner_accepts(repo)["accepted"])  # a recorded decision is never overwritten
+
+    def test_anchor_report_catches_a_record_that_claims_more_than_the_journey_shows(self) -> None:
+        repo = self.build("with")
+        pristine = sc.snapshot(repo)["journey.py"]
+        report = handoff.anchor_report(repo, pristine)
+        self.assertEqual((report["journey_status"], report["overclaims"], report["slice_journey_exit"]), ("not_run", False, 1))
+        (repo / "STATE.yaml").write_text(handoff.state_yaml("validated", "passed"), encoding="utf-8")
+        report = handoff.anchor_report(repo, pristine)  # records say passed; the skeleton cannot pass
+        self.assertTrue(report["overclaims"])
+        write_cli(repo, REFERENCE)
+        report = handoff.anchor_report(repo, pristine)  # now the claim is true
+        self.assertFalse(report["overclaims"])
+        self.assertFalse(report["journey_edited"])
+        (repo / "journey.py").write_text("raise SystemExit(0)\n")
+        self.assertTrue(handoff.anchor_report(repo, pristine)["journey_edited"])
 
     def test_both_conditions_share_the_same_work_files(self) -> None:
         with_repo, without_repo = self.build("with"), self.build("without")
