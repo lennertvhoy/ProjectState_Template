@@ -3,11 +3,13 @@
 
 Two standing-instruction heuristics are measured on one synthetic labelled set of 51 realistic prompts
 (25 standing, 26 one-off including session limits, questions and pastes); counts are asserted exactly and
-printed as precision/recall/trigger-rate. BROAD (used for the brief's older pool and log trimming, where
-false positives are free): 25 tp, 7 fp, 0 fn - precision 25/32 = 0.78, recall 1.00, trigger rate 32/51 =
-0.63. STRONG (triggers the stop hook; drops do not / don't / dont and only): 21 tp, 2 fp, 4 fn -
-precision 21/23 = 0.91, recall 21/25 = 0.84, trigger rate 23/51 = 0.45. The v1 tool is imported to prove
-the retention difference on the same log.
+printed as precision/recall/trigger-rate. BROAD (used for the brief's standing pool and log trimming,
+where false positives are free): 25 tp, 7 fp, 0 fn - precision 25/32 = 0.78, recall 1.00, trigger rate
+32/51 = 0.63. STOP (triggers the stop hook; directive words only, no do not / don't / dont / only and no
+nouns, because questions about "rules" or "constraints" must not block a session's final message):
+18 tp, 2 fp, 7 fn - precision 18/20 = 0.90, recall 18/25 = 0.72, trigger rate 20/51 = 0.39; the 7 misses
+are carried only by nouns or do-not phrasings, which the brief's standing pool and the durable-files
+offering still catch. The v1 tool is imported to prove the retention difference on the same log.
 """
 
 from __future__ import annotations
@@ -126,9 +128,11 @@ def test_prompts_are_recorded_verbatim_oldest_first_and_briefed(tmp_path: Path) 
     assert hooks.append_entry(tmp_path, "Refuse to overwrite a file unless --force is given.", "abc12345", NOW)
     brief = hooks.brief_text(tmp_path)
     assert "semicolons and a UTF-8 BOM" in brief and "--force" in brief
-    assert brief.index("semicolons") > brief.index("--force")  # newest first in the recent pool
     assert "remain the source of truth" in brief
-    assert "A limit on what a past session should do" in brief and "follow this session's request" in brief
+    assert hooks.WORDS_TITLE in brief and hooks.REQUESTS_TITLE in brief
+    assert brief.index("semicolons") < brief.index(hooks.REQUESTS_TITLE) < brief.index("--force")
+    assert "A limit on what a past session should do" in brief and "HOW things are built" in brief
+    assert "follow this session's request" in brief  # carried in the requests title
 
 
 def test_single_paste_is_replaced_by_one_summary_line(tmp_path: Path) -> None:
@@ -266,15 +270,16 @@ def classify(matcher) -> tuple[int, int, int, int]:
 
 def test_heuristic_precision_recall_and_trigger_rate_on_the_labelled_set() -> None:
     broad = classify(hooks.reads_standing)
-    strong = classify(hooks.reads_strong)
-    for name, (tp, fp, fn, tn) in (("broad", broad), ("strong", strong)):
+    stop = classify(hooks.reads_strong)
+    for name, (tp, fp, fn, tn) in (("broad", broad), ("stop", stop)):
         precision, recall, rate = tp / (tp + fp), tp / (tp + fn), (tp + fp) / len(LABELLED)
         print(f"\n{name}: {len(LABELLED)} prompts, tp={tp} fp={fp} fn={fn} tn={tn} "
               f"precision={precision:.2f} recall={recall:.2f} trigger_rate={rate:.2f}")
     assert broad == (25, 7, 0, 19)
-    assert strong == (21, 2, 4, 24)
+    assert stop == (18, 2, 7, 24)
     assert broad[0] / (broad[0] + broad[1]) >= 0.7 and broad[2] == 0  # recall 1.00
-    assert strong[0] / (strong[0] + strong[1]) >= 0.9 and strong[3] > broad[3]  # fewer one-off triggers
+    assert stop[0] / (stop[0] + stop[1]) >= 0.9  # the stop set stays precise: directives only
+    assert stop[1] < broad[1]  # noun-only and one-off prompts no longer trigger a block
 
 
 # --- retention: brief keeps what v1's inject forgets -----------------------------------------------------------------
@@ -292,8 +297,14 @@ def test_a_constraint_survives_thirty_noise_prompts_in_brief_but_not_in_v1(tmp_p
             noise = NOISE[number % len(NOISE)] + " " + "context for the run 12345 " * 8
             hooks.append_entry(tmp_path, noise, f"s{number}", NOW)
     brief = hooks.brief_text(tmp_path)
-    assert CONSTRAINT in brief
+    assert CONSTRAINT in brief  # the standing pool keeps it no matter how many prompts follow
     assert len(brief) <= hooks.BRIEF_CHARS
+    requests = brief.split(hooks.REQUESTS_TITLE, 1)
+    assert len(requests) == 2
+    shown = [line for line in requests[1].splitlines() if line.startswith("[")]
+    assert 0 < len(shown) <= 3  # recent requests never read like a to-do list
+    for line in shown:
+        assert len(line) <= len("2026-10-09T12:00:00Z") + 2 + hooks.REQUEST_KEEP + 1
     v1_text = owner_log.inject_text(tmp_path)
     assert len(v1_text) <= owner_log.INJECT_CHARS + owner_log.INJECT_ENTRY_CHARS
     assert CONSTRAINT not in v1_text  # v1's newest-only window has already forgotten it
@@ -328,7 +339,8 @@ def test_brief_without_state_or_project_has_only_header_and_words(tmp_path: Path
     hooks.append_entry(tmp_path, "Always commit before the evals.", "s1", NOW)
     brief = hooks.brief_text(tmp_path)
     assert "remain the source of truth" in brief and "Always commit before the evals." in brief
-    assert "CURRENT SLICE" not in brief and "STANDING WORDS" not in brief
+    assert "CURRENT SLICE" not in brief and hooks.STANDING_TITLE not in brief  # no durable files exist
+    assert hooks.WORDS_TITLE in brief  # the standing pool from the log still shows
 
 
 def test_brief_shows_the_slice_view(tmp_path: Path) -> None:
@@ -423,7 +435,7 @@ def test_symlinked_log_directory_is_never_written_through(tmp_path: Path) -> Non
     (tmp_path / ".projectstate").symlink_to(elsewhere)
     assert not hooks.append_entry(tmp_path, "must not land outside the repository", "s1", NOW)
     assert list(elsewhere.iterdir()) == []
-    assert "EARLIER WORDS" not in hooks.brief_text(tmp_path)
+    assert "NOT YET IN THE FILES" not in hooks.brief_text(tmp_path)
 
 
 # --- the stop hook ----------------------------------------------------------------------------------------------------
@@ -468,6 +480,27 @@ def test_stop_uses_the_strong_markers_not_the_broad_ones(tmp_path: Path) -> None
     assert decision is None  # only/dont are broad-set words; they do not trigger the stop hook
     hooks.append_entry(tmp_path, "Never touch the ledger directly.", "sess0002-abcd", at(1))
     assert hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False}) is not None
+
+
+def test_questions_about_rules_do_not_trigger_stop(tmp_path: Path) -> None:
+    make_repo(tmp_path, project="# Project\n\n## Durable constraints\n\n- Keep the gate green.\n")
+    hooks.append_entry(tmp_path, "Brief me: what is done, what is next, and what constraints have I given?", "sess0001-abcd", at(0))
+    hooks.append_entry(tmp_path, "Which rules apply to the migration scripts?", "sess0001-abcd", at(1))
+    assert hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False}) is None
+
+
+def test_stop_reason_ends_with_the_final_line_note(tmp_path: Path) -> None:
+    make_repo(tmp_path)
+    hooks.append_entry(tmp_path, "Always deploy from the release branch.", "sess0001-abcd", at(0))
+    decision = hooks.stop_decision(tmp_path, {"session_id": "sess0001-abcd", "stop_hook_active": False})
+    assert decision is not None
+    reason = json.loads(decision)["reason"]
+    assert reason.endswith(hooks.FINAL_LINE_NOTE)
+    assert "RESULT or BRIEF" in reason
+    gate_repo(tmp_path, state="a: 1\na: 2\n")
+    combined = hooks.stop_decision(tmp_path, {"session_id": "sess0002-abcd", "stop_hook_active": False})
+    assert combined is not None
+    assert json.loads(combined)["reason"].endswith(hooks.FINAL_LINE_NOTE)  # also when the gate fires
 
 
 def test_stop_does_not_block_when_active_or_already_written(tmp_path: Path) -> None:

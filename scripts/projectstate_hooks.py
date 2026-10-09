@@ -30,18 +30,22 @@ written down, and asks the agent to file them before it finishes.
 case-insensitively and on word boundaries over the owner's typed words only (paste summaries excluded).
 The BROAD set - always, never, must (not), do not / don't / dont, only, from now on, every time,
 whenever, by default, make sure, prefer(s), instead of, rather than, constraint(s), requirement(s),
-rule(s) - is used where a false positive costs nothing: the brief's older-words pool and log trimming.
-The STRONG set drops do not / don't / dont and only (measured: mostly one-offs in this owner's prompts)
-and triggers the stop hook. Session-scoped limits ("not yet", "later", "only X this session") can still
-match and are sorted out by the wording of the stop request, not by magic.
+rule(s) - is used where a false positive costs nothing: the brief's standing pool and log trimming.
+The STOP set keeps only directive words - always, never, must (not), from now on, every time, whenever,
+by default, make sure, prefer(s), instead of, rather than: nouns like "constraints" also appear in
+questions ABOUT rules, and a stop block there derails the session's final message. Session-scoped
+limits ("not yet", "later", "only X this session") can still match and are sorted out by the wording
+of the stop request, not by magic.
 
 ``stop`` runs two checks after every turn. Each log entry is offered at most once (stamps in
 ``.projectstate/offered.json``); there is no per-session limit, because a session spans many owner turns
-and words stated in turn 5 must still be offered after turn 1. And when STATE.yaml and the gate script
-exist at the root, it runs ``scripts/projectstate_gate.py`` read-only (no shell, 20 s timeout): exit 0 or
-1 is silent, exit 2 (invalid records) blocks once per distinct gate output, quoting its first 15 lines
-and asking the agent to fix the records it wrote; the output's hash is stored in offered.json. A gate
-that times out or cannot run is silent (a note on stderr).
+and words stated in turn 5 must still be offered after turn 1. The block reason ends with a note to
+repeat a final line a caller requires (a line starting RESULT or BRIEF), so a blocked turn does not
+break a calling harness. And when STATE.yaml and the gate script exist at the root, it runs
+``scripts/projectstate_gate.py`` read-only (no shell, 20 s timeout): exit 0 or 1 is silent, exit 2
+(invalid records) blocks once per distinct gate output, quoting its first 15 lines and asking the agent
+to fix the records it wrote; the output's hash is stored in offered.json. A gate that times out or
+cannot run is silent (a note on stderr).
 
 ``install`` merges into ``.claude/settings.json`` without removing anything - while replacing v1's hooks,
 so recording does not duplicate entries - and copies the opencode plugin to ``.opencode/plugins/``
@@ -84,8 +88,10 @@ MIN_PROMPT_CHARS = 3
 BRIEF_CHARS = 6000
 STANDING_CHARS = 1200
 SLICE_CHARS = 1400
-RECENT_WORDS_CHARS = 2000
-OLDER_WORDS_CHARS = 1800
+POOL_CHARS = 2400
+REQUESTS_CHARS = 900
+REQUESTS_COUNT = 3
+REQUEST_KEEP = 240
 ABBRIDGED_KEEP = 280
 LINE_KEEP = 300
 STOP_REASON_CHARS = 4000
@@ -106,7 +112,7 @@ STANDING_MARKERS = re.compile(
 )
 STRONG_MARKERS = re.compile(
     r"\b(?:always|never|must\s+not|must|from\s+now\s+on|every\s+time|whenever|by\s+default|make\s+sure|"
-    r"prefers?|instead\s+of|rather\s+than|constraints?|requirements?|rules?)\b",
+    r"prefers?|instead\s+of|rather\s+than)\b",
     re.IGNORECASE,
 )
 REDACTIONS = (
@@ -120,16 +126,17 @@ HOOKS = {
     "Stop": f'python3 "$CLAUDE_PROJECT_DIR"/scripts/{HOOK_MARK} stop',
 }
 DECIDE_USAGE = 'python3 scripts/projectstate_decide.py . accept|reject|waive "<owner words>"'
+FINAL_LINE_NOTE = ("If your previous final message ended with a line a caller requires (for example a line starting "
+                   "RESULT or BRIEF), end this reply with that same line again, unchanged.")
 BRIEF_HEADER = ("ProjectState session brief: the owner's standing words, the current slice, and the owner's recent "
                 "words from the local log. PROJECT.md, STATE.yaml and evidence/ remain the source of truth.")
 STANDING_TITLE = "THE OWNER'S STANDING WORDS (from PROJECT.md ## Durable constraints and .projectstate/standing.md):"
 SLICE_TITLE = "CURRENT SLICE (from STATE.yaml):"
-WORDS_TITLE = "THE OWNER'S EARLIER WORDS (from the local log, newest first):"
-WORDS_SCOPE = ("Earlier instructions from the owner in this project, verbatim, newest first. They are history, not this "
-               "session's request. Constraints and decisions about HOW things are built or done stay in force until the owner "
-               "changes them. A limit on what a past session should do (scope, 'not now', 'later') applied to that session only: "
-               "if this session's request differs, follow this session's request.")
-OLDER_TITLE = "OLDER WORDS THAT READ AS STANDING INSTRUCTIONS (oldest first):"
+WORDS_TITLE = "THE OWNER'S STANDING WORDS NOT YET IN THE FILES (from the local log, newest first):"
+WORDS_SCOPE = ("Constraints and decisions about HOW things are built stay in force until the owner changes them. "
+               "A limit on what a past session should do (scope, 'not now', 'later') applied to that session only.")
+REQUESTS_TITLE = ("THE OWNER'S MOST RECENT REQUESTS (earlier sessions may already have done them; check git log "
+                  "and STATE.yaml before acting, and follow this session's request):")
 
 
 # --- shared plumbing --------------------------------------------------------------------------------------------
@@ -414,55 +421,57 @@ def slice_section(root: Path) -> str:
     return f"{SLICE_TITLE}\n" + "\n".join(body) + "\n"
 
 
-def words_sections(root: Path, standing_blob: str, recent_budget: int, older_budget: int) -> tuple[str, str]:
-    """The owner's earlier words: newest entries first, then older standing ones, oldest first."""
+def shorten(text: str, keep: int) -> str:
+    if len(text) <= keep:
+        return text
+    return text[:keep - len(" [...]")] + " [...]"
+
+
+def words_sections(root: Path, standing_blob: str) -> tuple[str, str]:
+    """The owner's words from the log: standing ones not yet in the files, then the most recent requests.
+
+    The newest-verbatim window is gone: a wall of recent prompts reads like a to-do list and fresh agents
+    name an old request as the next action. Standing entries (broad set, not already contained in the
+    durable files) come first, newest first; then at most three recent non-standing entries, each cut to
+    REQUEST_KEEP characters, explicitly marked as possibly already done.
+    """
     found = entry_of(read_text(log_path(root)))
     if not found:
         return "", ""
-    overhead = len(WORDS_TITLE) + len(WORDS_SCOPE) + len(OLDER_TITLE) + 6
-    used = overhead
-    recent: list[str] = []
-    consumed: set[int] = set()
+    pool: list[str] = []
+    used = len(WORDS_TITLE) + len(WORDS_SCOPE) + 3
     for index in range(len(found) - 1, -1, -1):
         stamp, _session, body = found[index]
-        if standing_blob and contained(body, standing_blob):
-            consumed.add(index)  # already shown among the standing words
+        if not reads_standing(body) or contained(body, standing_blob):
             continue
         block = f"[{stamp}] {body}"
-        if used + len(block) + 1 <= recent_budget:
-            recent.append(block)
+        if used + len(block) + 1 <= POOL_CHARS:
+            pool.append(block)
             used += len(block) + 1
-            consumed.add(index)
             continue
         short = f"[{stamp}] {abbreviate(body)}"
-        if used + len(short) + 1 <= recent_budget:
-            recent.append(short)
-            consumed.add(index)
+        if used + len(short) + 1 <= POOL_CHARS:
+            pool.append(short)
             continue
         break
-    older: list[str] = []
-    used = len(OLDER_TITLE) + 2
+    requests: list[str] = []
+    used = len(REQUESTS_TITLE) + 2
+    taken = 0
     for index in range(len(found) - 1, -1, -1):
-        if index in consumed:
-            continue
+        if taken >= REQUESTS_COUNT:
+            break
         stamp, _session, body = found[index]
-        if not reads_standing(body) or (standing_blob and contained(body, standing_blob)):
+        if reads_standing(body):
             continue
-        block = f"[{stamp}] {body}"
-        if used + len(block) + 1 <= older_budget:
-            older.append(block)
-            used += len(block) + 1
-            continue
-        short = f"[{stamp}] {abbreviate(body)}"
-        if used + len(short) + 1 <= older_budget:
-            older.append(short)
-    recent_text = ""
-    if recent:
-        recent_text = f"{WORDS_TITLE}\n{WORDS_SCOPE}\n" + "\n---\n".join(recent) + "\n"
-    older_text = ""
-    if older:
-        older_text = f"{OLDER_TITLE}\n" + "\n---\n".join(reversed(older)) + "\n"
-    return recent_text, older_text
+        block = f"[{stamp}] {shorten(body, REQUEST_KEEP)}"
+        if used + len(block) + 1 > REQUESTS_CHARS:
+            break
+        requests.append(block)
+        used += len(block) + 1
+        taken += 1
+    pool_text = f"{WORDS_TITLE}\n{WORDS_SCOPE}\n" + "\n---\n".join(pool) + "\n" if pool else ""
+    requests_text = f"{REQUESTS_TITLE}\n" + "\n---\n".join(requests) + "\n" if requests else ""
+    return pool_text, requests_text
 
 
 def brief_text(root: Path) -> str:
@@ -474,11 +483,14 @@ def brief_text(root: Path) -> str:
     if slice_block:
         parts.append(slice_block)
     used = sum(len(part) + 1 for part in parts)
-    recent_budget = min(RECENT_WORDS_CHARS, max(BRIEF_CHARS - used, 0))
-    recent_text, older_text = words_sections(root, standing_blob, recent_budget, OLDER_WORDS_CHARS)
-    for part in (recent_text, older_text):
-        if part and used + len(part) <= BRIEF_CHARS:
-            parts.append(part)
+    remaining = BRIEF_CHARS - used
+    pool_text, requests_text = words_sections(root, standing_blob)
+    pool_room = max(remaining - (len(requests_text) + 1 if requests_text else 0), 0)
+    if pool_text and len(pool_text) <= pool_room:
+        parts.append(pool_text)
+        remaining -= len(pool_text) + 1
+    if requests_text and len(requests_text) <= remaining:
+        parts.append(requests_text)
     text = "\n".join(parts)
     if len(text) > BRIEF_CHARS:
         text = text[:BRIEF_CHARS - len("\n[truncated]\n")] + "\n[truncated]\n"
@@ -596,8 +608,10 @@ def stop_decision(root: Path, payload: dict) -> str | None:
             f"finish; the gate stays read-only. It says:\n{head}"
         )
     reason = "\n\n".join(reasons)
-    if len(reason) > STOP_REASON_CHARS:
-        reason = reason[:STOP_REASON_CHARS - len("\n[truncated]")] + "\n[truncated]"
+    room = STOP_REASON_CHARS - len(FINAL_LINE_NOTE) - 2
+    if len(reason) > room:
+        reason = reason[:room - len("\n[truncated]")] + "\n[truncated]"
+    reason += "\n\n" + FINAL_LINE_NOTE
     save_offered(root, state, session, [entry[0] for entry in candidates], gate["hash"] if gate else None)
     return json.dumps({"decision": "block", "reason": reason})
 
