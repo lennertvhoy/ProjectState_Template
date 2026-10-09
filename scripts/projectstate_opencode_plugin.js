@@ -11,7 +11,9 @@
 //   1. record — on every owner (user-role) message, pass the typed text to the
 //      tool's `record` command. Synthetic parts (injected context, compaction
 //      continuations) and the adapter's own follow-up messages (marked with
-//      FOLLOWUP_MARKER) are never recorded.
+//      FOLLOWUP_MARKER) are never recorded. The host cannot tell who typed a
+//      message, so anything a human or an agent types into a session is
+//      recorded as the owner's words — except in child sessions (see below).
 //   2. brief — the tool's `brief` output is put in front of the model via the
 //      experimental.chat.system.transform hook. The subprocess runs once per
 //      session (source "startup") and the text is cached; the cached text is
@@ -29,6 +31,15 @@
 //      against `opencode serve` via `run --attach`) the follow-up is delivered;
 //      a plain non-interactive `opencode run` disposes its in-process instance
 //      within milliseconds of the turn, before the delivery can land.
+//
+// Child sessions (subagents): when the owner works through an orchestrating
+// session, delegated `task` subagents run in sessions with a parentID, and the
+// messages "typed" there are the orchestrating agent's words, not the owner's.
+// record and stop are skipped for any session whose SDK lookup
+// (client.session.get) shows a parentID; the answer is cached per session id
+// and a failed lookup counts as a child (fail closed: never record agent words
+// as the owner's, never inject a follow-up into a worker). brief is kept for
+// child sessions on purpose: workers should see the owner's standing words.
 //
 // Every hook catches everything and subprocess calls are killed after 5
 // seconds; a failing tool must never break or delay a session. Problems are
@@ -120,8 +131,34 @@ export const ProjectStatePlugin = async ({ client, directory }) => {
   // sessionID -> brief text, one subprocess call per session ("startup",
   // refreshed with "compact" after compaction). Insertion-ordered, capped.
   const briefs = new Map()
+  // sessionID -> true (child/subagent) or false (primary), resolved once via
+  // client.session.get and cached; a failed lookup caches "child" (fail closed).
+  const childCache = new Map()
   // Sessions whose current stop chain already received one follow-up.
   const followupSent = new Set()
+
+  function rememberChild(sessionID, child) {
+    childCache.set(sessionID, child)
+    if (childCache.size > MAX_SESSION_CACHE) {
+      const oldest = childCache.keys().next().value
+      if (oldest !== undefined) childCache.delete(oldest)
+    }
+  }
+
+  async function isChildSession(sessionID) {
+    const cached = childCache.get(sessionID)
+    if (cached !== undefined) return cached
+    try {
+      const response = await client.session.get({ path: { id: sessionID } })
+      const info = (response && response.data) || null
+      const parentID = info && info.parentID
+      rememberChild(sessionID, typeof parentID === "string" && parentID.length > 0)
+    } catch (error) {
+      log(`session lookup failed for ${sessionID}; treating it as a child`)
+      rememberChild(sessionID, true)
+    }
+    return childCache.get(sessionID)
+  }
 
   async function getBrief(sessionID, source) {
     const cached = briefs.get(sessionID)
@@ -153,6 +190,8 @@ export const ProjectStatePlugin = async ({ client, directory }) => {
         const text = parts.map((part) => part.text).join("\n")
         if (!text.trim()) return
         if (text.includes(FOLLOWUP_MARKER)) return
+        // Child sessions carry an orchestrating agent's words, not the owner's.
+        if (await isChildSession(input.sessionID)) return
         // A fresh owner turn starts a new stop chain.
         followupSent.delete(input.sessionID)
         await runTool(tool, "record", {
@@ -192,6 +231,9 @@ export const ProjectStatePlugin = async ({ client, directory }) => {
           return
         }
         if (type !== "session.idle") return
+        // Never gate a worker's turn on the owner's stop chain: subagents are
+        // driven by their orchestrator, not by ProjectState.
+        if (await isChildSession(sessionID)) return
 
         const alreadyChained = followupSent.has(sessionID)
         const result = await runTool(tool, "stop", {

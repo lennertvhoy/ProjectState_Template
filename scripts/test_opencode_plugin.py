@@ -40,6 +40,13 @@ def payload_block(source: str, command: str) -> str:
     return calls[0]
 
 
+def hook_body(source: str, name: str) -> str:
+    """Return the body of one hook, up to its closing brace line."""
+    start = source.index(name)
+    end = source.index("\n    },", start)
+    return source[start:end]
+
+
 @pytest.mark.parametrize("command", sorted(TOOL_INTERFACE))
 def test_exactly_one_call_per_command(source: str, command: str) -> None:
     assert source.count(f'"{command}"') >= 1
@@ -69,12 +76,52 @@ def test_payload_event_names(source: str, command: str, event: str) -> None:
 
 
 def test_record_skips_synthetic_and_own_followup(source: str) -> None:
-    chat = re.search(r'"chat\.message":\s*async.*?\n    \},', source, re.DOTALL)
-    assert chat, "chat.message hook missing"
-    body = chat.group(0)
-    assert "synthetic" in body and "ignored" in body, "synthetic/ignored parts not skipped"
-    assert "FOLLOWUP_MARKER" in body, "own follow-up messages not skipped"
-    assert "prompt: text" in body, "record does not pass the message text"
+    chat = hook_body(source, '"chat.message"')
+    assert "synthetic" in chat and "ignored" in chat, "synthetic/ignored parts not skipped"
+    assert "FOLLOWUP_MARKER" in chat, "own follow-up messages not skipped"
+    assert "prompt: text" in chat, "record does not pass the message text"
+
+
+def test_child_sessions_skip_record(source: str) -> None:
+    chat = hook_body(source, '"chat.message"')
+    assert "isChildSession(input.sessionID)" in chat, "child sessions must not record"
+    assert chat.index("isChildSession(input.sessionID)") < chat.index('runTool(tool, "record"'), (
+        "the child check must gate the record call"
+    )
+
+
+def test_child_sessions_skip_stop(source: str) -> None:
+    event = hook_body(source, "event:")
+    assert "session.idle" in event
+    assert event.index('type !== "session.idle"') < event.index("isChildSession(sessionID)"), (
+        "the idle branch must check for child sessions"
+    )
+    assert event.index("isChildSession(sessionID)") < event.index('runTool(tool, "stop"'), (
+        "child sessions must never reach the stop command"
+    )
+
+
+def test_child_lookup_uses_sdk_and_fails_closed(source: str) -> None:
+    assert "client.session.get" in source, "child status must come from the SDK session lookup"
+    finder = re.search(
+        r"async function isChildSession\(sessionID\) \{.*?\n  \}", source, re.DOTALL
+    )
+    assert finder, "isChildSession helper missing"
+    body = finder.group(0)
+    assert "path: { id: sessionID }" in body, "lookup must pass the session id"
+    assert "childCache.set(" in body or "rememberChild(" in body, "answer must be cached per session"
+    assert "parentID" in body, "child means the session has a parentID"
+    assert 'rememberChild(sessionID, true)' in body, "lookup failure must fail closed (child)"
+
+
+def test_brief_applies_to_child_sessions(source: str) -> None:
+    system = hook_body(source, '"experimental.chat.system.transform"')
+    assert "getBrief" in system
+    assert "isChildSession" not in system, "brief must not be gated on child sessions"
+    event = hook_body(source, "event:")
+    compacted = event.index("session.compacted")
+    child_check = event.index("isChildSession(sessionID)")
+    assert compacted < child_check, "compaction re-injection must stay before the child gate"
 
 
 def test_brief_once_per_session_and_after_compaction(source: str) -> None:
