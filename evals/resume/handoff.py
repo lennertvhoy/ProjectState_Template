@@ -37,9 +37,15 @@ if str(HERE) not in sys.path:
 import run as base  # noqa: E402
 import scenarios as sc  # noqa: E402
 
+if str(sc.ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(sc.ROOT / "scripts"))
+import projectstate_owner_log as owner_log  # noqa: E402
+
 SCHEMA = "projectstate-handoff-eval/1"
-CONDITIONS = ("with", "without", "with-rule", "with-verify", "with-plus", "with-next")
-CORE_CONDITIONS = ("with", "with-rule", "with-verify", "with-plus", "with-next")
+CONDITIONS = ("with", "without", "with-rule", "with-verify", "with-plus", "with-next", "with-log", "without-log")
+CORE_CONDITIONS = ("with", "with-rule", "with-verify", "with-plus", "with-next", "with-log")
+# Candidate: the owner's prompts are logged and re-injected by host hooks, so nothing depends on the agent writing them down.
+LOG_CONDITIONS = ("with-log", "without-log")
 DEFAULT_CONDITIONS = "with,without"
 # Candidate contract rule under test: ``with-rule`` is ``with`` plus this line in the project's local rules, so the
 # template itself is untouched until a measurement shows the rule helps.
@@ -311,6 +317,12 @@ def build_repo(parent: Path, condition: str) -> Path:
         if condition in ("with-verify", "with-plus"):
             core["scripts/projectstate_verify.py"] = (sc.ROOT / "scripts" / "projectstate_verify.py").read_text(encoding="utf-8")
         steps.append(("Adopt ProjectState core", core))
+    if condition in LOG_CONDITIONS:
+        settings, _added = owner_log.merge_settings({})
+        steps.append(("Record the owner's prompts with host hooks", {
+            "scripts/projectstate_owner_log.py": (sc.ROOT / "scripts" / "projectstate_owner_log.py").read_text(encoding="utf-8"),
+            ".claude/settings.json": json.dumps(settings, indent=2) + "\n",
+        }))
     sc.git(repo, "init", "-q", "-b", "main")
     for index, (message, files) in enumerate(steps):
         for name, text in files.items():
@@ -632,8 +644,11 @@ def chain(args: argparse.Namespace, condition: str, variant: str, repeat: int, o
             "checks": acceptance(snapshot_dir),
             "changed_files": sc.changed_paths(before, sc.snapshot(snapshot_dir)),
         }
-        record["after_session1"]["recorded"] = constraints_recorded(snapshot_dir, set(record["after_session1"]["changed_files"]))
-        if condition != "without":
+        agent_written = {path for path in record["after_session1"]["changed_files"] if not path.startswith(".projectstate/")}
+        record["after_session1"]["recorded"] = constraints_recorded(snapshot_dir, agent_written)  # the hook's own log is counted apart
+        log_file = snapshot_dir / ".projectstate" / "owner-log.md"
+        record["after_session1"]["owner_log_entries"] = len(owner_log.entries_of(log_file.read_text(encoding="utf-8"))) if log_file.is_file() else 0
+        if condition in CORE_CONDITIONS:
             record["after_session1"]["anchor"] = anchor_report(snapshot_dir, journey_hash)
             record["after_session1"]["acceptance_forged"] = acceptance_forged(snapshot_dir)
             record["owner_step"] = owner_accepts(repo)
@@ -655,7 +670,7 @@ def chain(args: argparse.Namespace, condition: str, variant: str, repeat: int, o
                 (record["session2"]["reported"] or {}).get("claims_done") and visible_exit == 0 and not all(final_checks.values())
             ),
         }
-        if condition != "without":
+        if condition in CORE_CONDITIONS:
             gate_exit, _ = sc.run_gate(repo)
             record["final"]["gate_exit"] = gate_exit
             state = (repo / "STATE.yaml").read_text(encoding="utf-8", errors="replace")

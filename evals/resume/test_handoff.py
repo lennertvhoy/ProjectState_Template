@@ -295,6 +295,20 @@ class RepositoryTests(unittest.TestCase):
         report = handoff.anchor_report(repo, sc.snapshot(repo)["journey.py"])
         self.assertEqual((report["journey_status"], report["overclaims"]), ("failed", False))
 
+    def test_log_conditions_add_only_the_tool_and_the_hooks(self) -> None:
+        import json as json_module
+        for condition, plain_condition in (("with-log", "with"), ("without-log", "without")):
+            repo, plain = self.build(condition), self.build(plain_condition)
+            names = lambda r: {p.relative_to(r).as_posix() for p in r.rglob("*") if p.is_file() and ".git" not in p.parts}  # noqa: E731
+            self.assertEqual(names(repo) - names(plain), {"scripts/projectstate_owner_log.py", ".claude/settings.json"})
+            self.assertEqual(names(plain) - names(repo), set())
+            self.assertEqual((repo / "scripts" / "projectstate_owner_log.py").read_bytes(), (sc.ROOT / "scripts" / "projectstate_owner_log.py").read_bytes())
+            hooks = json_module.loads((repo / ".claude" / "settings.json").read_text())["hooks"]
+            self.assertEqual(sorted(hooks), ["SessionStart", "UserPromptSubmit"])
+            if (plain / "AGENTS.md").exists():
+                self.assertEqual((repo / "AGENTS.md").read_bytes(), (plain / "AGENTS.md").read_bytes())  # no rule: the hooks do the work
+        self.assertEqual(sc.run_gate(self.build("with-log"))[0], 1)
+
     def test_both_conditions_share_the_same_work_files(self) -> None:
         with_repo, without_repo = self.build("with"), self.build("without")
         for name in ("README.md", "ledger.py", "journey.py", ".gitignore"):
