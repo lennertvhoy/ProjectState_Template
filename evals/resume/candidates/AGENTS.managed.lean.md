@@ -35,10 +35,12 @@ Backlogs, history, and session memories are optional, never current truth.
 3. Run that journey early, before broad secondary checks.
 4. Make the smallest change that can make it pass.
 5. Record the journey with `python3 scripts/projectstate_verify.py --run`: it
-   runs the recorded command and writes the result into `STATE.yaml` and the
-   slice summary itself. Never type a journey status, result or exit code by
-   hand. Add by hand only what the tool cannot know: artifacts, limitations,
-   `next_action`. Keep `STATE.yaml` a current view; history belongs in Git.
+   runs the recorded command and writes the journey result into `STATE.yaml`
+   and the slice summary itself. Never type a journey status, result or exit
+   code by hand. Then set by hand what the tool cannot decide: the slice
+   `status` (`validated` once the journey passed in the named environment),
+   `next_action`, artifacts and limitations. Keep `STATE.yaml` a current view;
+   history belongs in Git.
 6. Run `python3 scripts/projectstate_gate.py` once, before claiming validation.
 
 When acceptance covers installation or distribution, run the shipped artifact in
