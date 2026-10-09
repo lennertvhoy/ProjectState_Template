@@ -69,13 +69,13 @@ CONDITION_RULES = {
 LOCAL_RULES_ANCHOR = "<!-- Project-owned: domain rules, commands, and safety limits for this project. -->"
 VARIANTS = ("plain", "handoff")
 SLICE = "ledger-001"
-CHECKS = ("add_list", "total_exact", "cents_storage", "csv_semicolon_bom", "roundtrip", "malformed_rejected", "no_overwrite")
+CHECKS = ("add_list", "total_exact", "cents_storage", "csv_format", "csv_quoting", "roundtrip", "malformed_rejected", "no_overwrite")
 # Owner constraints stated only in session 1's prompt; the code of an implementation of requirements 1-3
 # shows the first, but nothing in the repository carries the other two unless session 1 records them.
-CONSTRAINT_CHECKS = ("cents_storage", "csv_semicolon_bom", "no_overwrite")
-MEMORY_ONLY_CHECKS = ("csv_semicolon_bom", "no_overwrite")
+CONSTRAINT_CHECKS = ("cents_storage", "csv_format", "no_overwrite")
+MEMORY_ONLY_CHECKS = ("csv_format", "no_overwrite")
 # Checks that only pass once export or import exists; passing any after session 1 means session 1 overreached.
-LATER_SESSION_CHECKS = ("csv_semicolon_bom", "roundtrip", "malformed_rejected", "no_overwrite")
+LATER_SESSION_CHECKS = ("csv_format", "csv_quoting", "roundtrip", "malformed_rejected", "no_overwrite")
 RESULT_FORMAT = (
     'When you finish, print one final line exactly in this form: RESULT {"journey": "passed|failed|blocked|not_run", '
     '"claims_done": true|false, "needs_owner": true|false, "summary": "..."}'
@@ -430,18 +430,20 @@ def _check_cents(root: Path, tmp: Path) -> bool:
     return "1250" in text and "320" in text and "12.5" not in text and "3.2" not in text
 
 
-NOTE = 'rent; "march"'
+NOTE = 'rent; "march"'  # a note that needs CSV quoting: ';' and '"' inside the field
+PLAIN_NOTE = "march"
 
 
-def _export(root: Path, tmp: Path) -> tuple[Path, Path, bool]:
+def _export(root: Path, tmp: Path, note: str = PLAIN_NOTE) -> tuple[Path, Path, bool]:
     home = tmp / "export"
     target = tmp / "export.csv"
-    ok = _add(root, home, "800.00", "rent", NOTE) and _add(root, home, "3.20", "travel")
+    ok = _add(root, home, "800.00", "rent", note) and _add(root, home, "3.20", "travel")
     ok = ok and _cli(root, home, "export", str(target)).returncode == 0 and target.exists()
     return home, target, ok
 
 
-def _check_csv(root: Path, tmp: Path) -> bool:
+def _check_csv_format(root: Path, tmp: Path) -> bool:
+    """The owner's constraint: a UTF-8 BOM and a semicolon delimiter (plain notes, so quoting plays no part)."""
     _home, target, ok = _export(root, tmp)
     if not ok:
         return False
@@ -449,7 +451,20 @@ def _check_csv(root: Path, tmp: Path) -> bool:
     if not data.startswith(b"\xef\xbb\xbf"):
         return False
     rows = list(csv.reader(io.StringIO(data.decode("utf-8-sig")), delimiter=";"))
-    return len(rows) >= 2 and all(len(row) >= 3 for row in rows) and any(field == NOTE for row in rows for field in row)
+    return len(rows) >= 2 and all(len(row) >= 3 for row in rows) and any(field == PLAIN_NOTE for row in rows for field in row)
+
+
+def _check_csv_quoting(root: Path, tmp: Path) -> bool:
+    """Implementation quality, whatever delimiter was chosen: a note holding ';' and '"' survives export."""
+    _home, target, ok = _export(root, tmp, NOTE)
+    if not ok:
+        return False
+    text = target.read_bytes().decode("utf-8-sig", "replace")
+    for delimiter in (";", ",", "\t", "|"):
+        rows = list(csv.reader(io.StringIO(text), delimiter=delimiter))
+        if any(field == NOTE for row in rows for field in row):
+            return True
+    return False
 
 
 def _check_roundtrip(root: Path, tmp: Path) -> bool:
@@ -494,14 +509,15 @@ def _check_overwrite(root: Path, tmp: Path) -> bool:
     forced = _cli(root, home, "export", str(dest), "--force")
     if forced.returncode != 0:
         forced = _cli(root, home, "export", "--force", str(dest))
-    return forced.returncode == 0 and dest.read_bytes().startswith(b"\xef\xbb\xbf")
+    return forced.returncode == 0 and dest.read_bytes() != b"keep"
 
 
 CHECK_FUNCTIONS = {
     "add_list": _check_add_list,
     "total_exact": _check_total,
     "cents_storage": _check_cents,
-    "csv_semicolon_bom": _check_csv,
+    "csv_format": _check_csv_format,
+    "csv_quoting": _check_csv_quoting,
     "roundtrip": _check_roundtrip,
     "malformed_rejected": _check_malformed,
     "no_overwrite": _check_overwrite,
@@ -798,6 +814,43 @@ def render_markdown(results: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def files_from_diff(diff: str) -> dict[str, str]:
+    """Files created in a ``git diff`` against the first commit, rebuilt from their added lines."""
+    files: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in diff.splitlines():
+        head = re.match(r"diff --git a/(.+) b/(.+)$", line)
+        if head:
+            current = head.group(2)
+            files[current] = []
+        elif current is not None and line.startswith("+") and not line.startswith("+++"):
+            files[current].append(line[1:])
+    return {name: "\n".join(lines) + "\n" for name, lines in files.items() if lines}
+
+
+def regrade(directory: Path) -> int:
+    """Grade the final ledger.py of every saved run again with the current acceptance suite."""
+    source = json.loads((directory / "results.json").read_text(encoding="utf-8"))
+    rows = []
+    for record in source["runs"]:
+        if record.get("infra_failure") or "final" not in record:
+            continue
+        name = f"{record['model']}-{record['condition']}-{record['variant']}-{record['repeat']}"
+        diff_path = directory / "runs" / name / "final.diff"
+        files = files_from_diff(diff_path.read_text(encoding="utf-8")) if diff_path.is_file() else {}
+        if "ledger.py" not in files:
+            continue
+        with tempfile.TemporaryDirectory(prefix="regrade-") as tmp:
+            Path(tmp, "ledger.py").write_text(files["ledger.py"], encoding="utf-8")
+            checks = acceptance(Path(tmp))
+        rows.append((record["condition"], name, checks))
+    print(f"{'condition':12} {'chain':34} constraints kept (cents, csv_format, no_overwrite) | failed")
+    for condition, name, checks in sorted(rows):
+        kept = "".join("Y" if checks[c] else "n" for c in CONSTRAINT_CHECKS)
+        print(f"{condition:12} {name:34} {kept} | {[k for k, v in checks.items() if not v]}")
+    return 0
+
+
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="haiku")
@@ -811,12 +864,15 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--claude-bin", default="claude")
     parser.add_argument("--out", default="")
     parser.add_argument("--keep-workdirs", action="store_true")
+    parser.add_argument("--regrade", default="", help="Grade the saved final ledger.py of each run in DIR again, then exit")
     parser.add_argument("--dry-run", action="store_true", help="Build both repositories and grade the untouched skeleton; no model calls")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.regrade:
+        return regrade(Path(args.regrade).expanduser())
     variants, conditions = args.variants.split(","), args.conditions.split(",")
     unknown = [v for v in variants if v not in VARIANTS] + [c for c in conditions if c not in CONDITIONS]
     if unknown:

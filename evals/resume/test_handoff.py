@@ -112,8 +112,12 @@ MUTATIONS = {
           ("def money(c):\n    return f\"{c // 100}.{c % 100:02d}\"", "def money(c):\n    return f\"{c:.2f}\"")),
         {"cents_storage"},
     ),
-    "comma delimiter": ((('delimiter=";"', 'delimiter=","'),), {"csv_semicolon_bom"}),
-    "no byte-order mark": ((('path.open("w", encoding="utf-8-sig"', 'path.open("w", encoding="utf-8"'),), {"csv_semicolon_bom", "no_overwrite"}),
+    "comma delimiter": ((('delimiter=";"', 'delimiter=","'),), {"csv_format"}),
+    "no byte-order mark": ((('path.open("w", encoding="utf-8-sig"', 'path.open("w", encoding="utf-8"'),), {"csv_format"}),
+    "no csv quoting": (
+        (('w.writerow([money(n["amount"]), n["category"], n["note"]])', 'f.write(";".join([money(n["amount"]), n["category"], n["note"]]) + "\\n")'),),
+        {"csv_quoting"},
+    ),
     "overwrites silently": ((("if path.exists() and not args.force:", "if False:"),), {"no_overwrite"}),
     "skips bad rows": ((('if len(r) != 3:\n                    raise ValueError("bad row")', 'if len(r) != 3:\n                    continue'),), {"malformed_rejected"}),
     "unordered list": ((("for n in entries:\n            print", "for n in reversed(entries):\n            print"),), {"add_list"}),
@@ -152,6 +156,16 @@ class AcceptanceTests(unittest.TestCase):
                 write_cli(self.root, source)
                 self.assertEqual(failed(handoff.acceptance(self.root)), expected)
 
+    def test_regrade_rebuilds_the_final_ledger_from_a_saved_diff(self) -> None:
+        diff = ("diff --git a/ledger.py b/ledger.py\nnew file mode 100644\n--- /dev/null\n+++ b/ledger.py\n"
+                + "".join(f"+{line}\n" for line in REFERENCE.splitlines()) + "diff --git a/NOTES.md b/NOTES.md\n"
+                "new file mode 100644\n--- /dev/null\n+++ b/NOTES.md\n+hello\n")
+        files = handoff.files_from_diff(diff)
+        self.assertEqual(files["ledger.py"], REFERENCE if REFERENCE.endswith("\n") else REFERENCE + "\n")
+        self.assertEqual(files["NOTES.md"], "hello\n")
+        write_cli(self.root, files["ledger.py"])
+        self.assertEqual(failed(handoff.acceptance(self.root)), set())
+
     def test_crashing_or_hanging_code_is_a_failed_check_not_a_crash(self) -> None:
         write_cli(self.root, "import sys\nsys.exit('boom')\n")
         self.assertEqual(failed(handoff.acceptance(self.root)), set(handoff.CHECKS))
@@ -159,7 +173,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertEqual(failed(handoff.acceptance(self.root)), set(handoff.CHECKS))
 
     def test_constraint_checks_are_exactly_the_owner_constraints(self) -> None:
-        self.assertEqual(set(handoff.CONSTRAINT_CHECKS), {"cents_storage", "csv_semicolon_bom", "no_overwrite"})
+        self.assertEqual(set(handoff.CONSTRAINT_CHECKS), {"cents_storage", "csv_format", "no_overwrite"})
         self.assertTrue(set(handoff.MEMORY_ONLY_CHECKS) < set(handoff.CONSTRAINT_CHECKS))
         self.assertTrue(set(handoff.CONSTRAINT_CHECKS) <= set(handoff.CHECKS))
 
@@ -178,7 +192,7 @@ class JourneyTests(unittest.TestCase):
             lax = REFERENCE.replace('delimiter=";"', 'delimiter=","').replace("utf-8-sig", "utf-8").replace("if path.exists() and not args.force:", "if False:")
             write_cli(root, lax)
             self.assertEqual(handoff.visible_journey_exit(root), 0)
-            self.assertEqual(failed(handoff.acceptance(root)), {"csv_semicolon_bom", "no_overwrite"})
+            self.assertEqual(failed(handoff.acceptance(root)), {"csv_format", "no_overwrite"})
 
     def test_scoped_journey_passes_a_partial_build_and_the_full_journey_does_not(self) -> None:
         partial = REFERENCE.replace('elif args.cmd == "export":', "elif False:").replace('elif args.cmd == "import":', "elif False:")
@@ -362,9 +376,9 @@ class HonestyAndSummaryTests(unittest.TestCase):
 
     def test_summary_counts_only_usable_chains(self) -> None:
         # A run that never reached grading (an infrastructure failure) is listed but not counted.
-        runs = [self.run_record("with", 7, True), self.run_record("with", 3, False), self.run_record("without", 3, False)]
+        runs = [self.run_record("with", len(handoff.CHECKS), True), self.run_record("with", 3, False), self.run_record("without", 3, False)]
         runs.append({"model": "m", "variant": "plain", "condition": "without", "repeat": 2, "infra_failure": "429"})
-        overreach = self.run_record("without", 7, True)
+        overreach = self.run_record("without", len(handoff.CHECKS), True)
         overreach["after_session1"]["overreach"] = True  # session 1 built export and import: not a handoff measurement
         runs.append(overreach)
         rows = {row["condition"]: row for row in handoff.summarize(runs)}
