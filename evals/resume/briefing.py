@@ -2,11 +2,13 @@
 """Briefing probe: can a fresh agent, reading only what a session left behind, brief the owner accurately?
 
 The owner mostly meets a ProjectState instance through a coding agent, so the state files matter as the anchor a
-*new* agent reads before it speaks to the owner. This probe takes the session-1 states saved by ``handoff.py``
-(``runs/*/after-session-1``), starts a fresh agent on a throwaway copy of each, and asks it to brief the owner. Trusted
-code grades the brief against the hidden acceptance results of that same state.
+*new* agent reads before it speaks to the owner. This probe takes the session states saved by ``handoff.py`` and
+``durability.py`` (``runs/*/after-session-1``, or ``runs/*/before-session-2`` for durability runs, selected with
+``--snapshot``), starts a fresh agent on a throwaway copy of each, and asks it to brief the owner. Trusted code
+grades the brief against the hidden acceptance results of that same state.
 
     python3 evals/resume/briefing.py --from ~/.local/state/projectstate/evals/handoff-v3-haiku-... --model haiku
+    python3 evals/resume/briefing.py --from ~/.local/state/projectstate/evals/durability-... --snapshot before-session-2
 """
 
 from __future__ import annotations
@@ -123,7 +125,8 @@ def summarize(runs: list[dict]) -> list[dict]:
 def render_markdown(results: dict) -> str:
     lines = [
         "# Briefing probe", "",
-        f"Schema `{results['schema']}`; model `{results['model']}`; source `{results['source']}`.", "",
+        f"Schema `{results['schema']}`; model `{results['model']}`; source `{results['source']}` "
+        f"({results.get('snapshot', 'after-session-1')}).", "",
         "| condition | briefs | accurate done | overstated | next action right | constraints surfaced (of 3) | asks the owner | no BRIEF line | cost |",
         "|---|---|---|---|---|---|---|---|---|",
     ]
@@ -136,25 +139,41 @@ def render_markdown(results: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def load_chains(source: Path) -> list[dict]:
+def run_dir_name(record: dict, durability: bool) -> str:
+    """The saved run-directory name: durability names them ``model-condition-rN``, handoff keeps the variant."""
+    if durability:
+        return f"{record['model']}-{record['condition']}-r{record['repeat']}"
+    return f"{record['model']}-{record['condition']}-{record.get('variant', 'plain')}-{record['repeat']}"
+
+
+def load_chains(source: Path, snapshot: str = "after-session-1") -> list[dict]:
+    """The saved states to probe, from a handoff or durability results directory. The condition always comes
+    from the results, never from the directory name."""
     try:
-        records = json.loads((source / "results.json").read_text(encoding="utf-8"))["runs"]
-    except (OSError, ValueError, KeyError):
+        results = json.loads((source / "results.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
         return []
+    records = results.get("runs") or []
+    durability = str(results.get("schema") or "").startswith("projectstate-durability")
     chains = []
     for record in records:
         if record.get("infra_failure") or "after_session1" not in record:
             continue
-        name = f"{record['model']}-{record['condition']}-{record['variant']}-{record['repeat']}"
-        snapshot = source / "runs" / name / "after-session-1"
-        if snapshot.is_dir():
-            chains.append({"name": name, "condition": record["condition"], "checks": record["after_session1"]["checks"], "snapshot": snapshot})
+        name = run_dir_name(record, durability)
+        path = source / "runs" / name / snapshot
+        if path.is_dir():
+            chains.append({
+                "name": f"{name}/{snapshot}", "condition": record["condition"],
+                "checks": record["after_session1"]["checks"], "snapshot": path,
+            })
     return chains
 
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--from", dest="source", required=True, help="A handoff.py results directory")
+    parser.add_argument("--from", dest="source", required=True, help="A handoff.py or durability.py results directory")
+    parser.add_argument("--snapshot", choices=("after-session-1", "before-session-2"), default="after-session-1",
+                        help="which saved state to probe (durability runs save both; default: after-session-1)")
     parser.add_argument("--model", default="haiku")
     parser.add_argument("--max-turns", type=int, default=12)
     parser.add_argument("--budget-usd", type=float, default=1.0)
@@ -167,9 +186,9 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     source = Path(args.source).expanduser()
-    chains = load_chains(source)
+    chains = load_chains(source, args.snapshot)
     if not chains:
-        print(f"no saved session-1 states under {source}", file=sys.stderr)
+        print(f"no saved {args.snapshot} states under {source}", file=sys.stderr)
         return 2
     out = Path(args.out).expanduser() if args.out else source / f"briefing-{args.model}"
     out.mkdir(parents=True, exist_ok=True)
@@ -187,7 +206,10 @@ def main(argv: list[str] | None = None) -> int:
         spent += result["metrics"]["cost_usd"] or 0
         failures = failures + 1 if result["infra_failure"] else 0
         print(f"{chain['name']}: grade={result['grade']} spent=${spent:.2f} {result['infra_failure'] or ''}", flush=True)
-    results = {"schema": SCHEMA, "model": args.model, "source": str(source), "runs": runs, "summary": summarize(runs)}
+    results = {
+        "schema": SCHEMA, "model": args.model, "source": str(source), "snapshot": args.snapshot,
+        "runs": runs, "summary": summarize(runs),
+    }
     (out / "results.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     (out / "results.md").write_text(render_markdown(results), encoding="utf-8")
     print(f"results: {out}")

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import io
 import json
-import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -136,7 +136,7 @@ class InjectTests(unittest.TestCase):
         self.assertIsNone(du.apply_noise(repo, "core-log1", 0))
         self.assertTrue(owner_log.append_entry(repo, handoff.PROMPTS["plain"], "session1"))
         visible = du.visible_constraints(owner_log.inject_text(repo))
-        self.assertEqual(visible, {name: True for name in handoff.RECORDED_PATTERNS})
+        self.assertEqual(visible, {name: True for name in du.VISIBLE_PATTERNS})
 
     def test_thirty_noise_prompts_roll_the_constraints_out_of_the_v1_injection(self) -> None:
         # The deterministic failure this eval measures: v1 injects the newest ~3500 characters, and the two
@@ -148,40 +148,97 @@ class InjectTests(unittest.TestCase):
         text = owner_log.inject_text(repo)
         for name in ("semicolon", "bom"):
             self.assertIsNone(handoff.RECORDED_PATTERNS[name].search(text))
-        self.assertFalse(du.visible_constraints(text)["semicolon"])
+        self.assertEqual(du.visible_constraints(text), {name: False for name in du.VISIBLE_PATTERNS})
         self.assertLess((repo / ".projectstate" / "owner-log.md").stat().st_size, owner_log.MAX_LOG_BYTES)
 
+    def test_v1_mirror_of_the_v2_host_test_all_three_constraints_gone_after_thirty_noise_prompts(self) -> None:
+        # The other half of the pair with HostToolTests.test_brief_still_shows_the_constraints_after_thirty_
+        # noise_prompts: same helper, opposite verdict - v1 loses every constraint, v2 keeps all three.
+        repo = self.build_log_repo()
+        text = record_session1_and_noise(repo, "core-log1")
+        self.assertEqual(du.visible_constraints(text), {name: False for name in du.VISIBLE_PATTERNS})
+
     def test_noise_reaches_only_log_conditions(self) -> None:
-        repo = self.build_log_repo("with")
-        self.assertIsNone(du.apply_noise(repo, "core", len(du.NOISE)))
-        self.assertIsNone(du.s2_context(repo, "core"))
+        for condition in ("core", "none"):
+            repo = self.build_log_repo("with")
+            self.assertIsNone(du.apply_noise(repo, condition, len(du.NOISE)))
+            self.assertIsNone(du.s2_context(repo, condition))
+        repo = self.build_log_repo("without")
         self.assertFalse((repo / ".projectstate").exists())
+
+
+def record_session1_and_noise(repo: Path, condition: str) -> str | None:
+    """What the next session would see, for the v1/v2 mirror: session 1's prompt recorded through the
+    condition's own recorder (as the real hook would), then the fixed week of noise applied."""
+    if condition in du.V1_LOG_CONDITIONS:
+        assert owner_log.append_entry(repo, handoff.PROMPTS["plain"], "session1")
+    else:
+        du.v2_record(repo, handoff.PROMPTS["plain"], "a1b2c3d4")  # a real-looking session id
+    du.apply_noise(repo, condition, len(du.NOISE))
+    return du.s2_context(repo, condition)
 
 
 @unittest.skipUnless(du.v2_available(), f"scripts/{du.V2_TOOL} is not in the template yet (branch work/hooks-v2)")
 class HostToolTests(unittest.TestCase):
-    def build_host_repo(self) -> Path:
-        """The host repository with session 1's prompt recorded through the v2 hook, as a real run would."""
+    def test_brief_still_shows_the_constraints_after_thirty_noise_prompts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _installed = du.build(Path(tmp), "core-host")
+            text = record_session1_and_noise(repo, "core-host")
+            self.assertEqual(du.visible_constraints(text), {name: True for name in du.VISIBLE_PATTERNS})
+
+    def test_brief_build_satisfies_the_repository_facts_the_tool_claims(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, installed = du.build(Path(tmp), "core-host")
+            self.assertTrue(installed)
+            hooks = json.loads((repo / ".claude" / "settings.json").read_text())["hooks"]
+            self.assertEqual(sorted(hooks), ["SessionStart", "Stop", "UserPromptSubmit"])
+            self.assertTrue((repo / "scripts" / du.V2_TOOL).is_file())
+            names = {p.relative_to(repo).as_posix() for p in repo.rglob("*") if p.is_file() and ".git" not in p.parts}
+            self.assertNotIn(".opencode/plugins/projectstate.js", names)  # default install is claude-only
+
+
+class LeanHostTests(unittest.TestCase):
+    def build_lean(self) -> tuple[Path, tempfile.TemporaryDirectory]:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        repo, _installed = du.build(Path(tmp.name), "core-host")
-        tool = repo / "scripts" / du.V2_TOOL
-        payload = json.dumps({
-            "hook_event_name": "UserPromptSubmit", "cwd": str(repo), "session_id": "session1",
-            "prompt": handoff.PROMPTS["plain"],
-        })
-        done = subprocess.run([sys.executable, str(tool), "record"], input=payload, capture_output=True,
-                              text=True, env=sc.clean_env(), timeout=60, check=False, cwd=repo)
-        if done.returncode != 0:
-            raise du.DurabilityError(f"v2 record failed: {(done.stderr or done.stdout).strip()[:200]}")
-        return repo
+        if not du.v2_available():
+            self.skipTest(f"scripts/{du.V2_TOOL} is not in the template yet (branch work/hooks-v2)")
+        repo, installed = du.build(Path(tmp.name), "lean-host")
+        return repo, installed
 
-    def test_brief_still_shows_the_constraints_after_thirty_noise_prompts(self) -> None:
-        repo = self.build_host_repo()
-        info = du.apply_noise(repo, "core-host", len(du.NOISE))
-        self.assertEqual(info["prompts"], 30)
-        text = du.s2_context(repo, "core-host")
-        self.assertIsNotNone(handoff.RECORDED_PATTERNS["semicolon"].search(text))
+    def test_lean_build_swaps_only_the_managed_block_and_vendors_the_verify_tool(self) -> None:
+        repo, installed = self.build_lean()
+        self.assertTrue(installed)
+        agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
+        candidate = du.LEAN_CANDIDATE.read_text(encoding="utf-8")
+        self.assertEqual(agents.count(candidate), 1)
+        self.assertIn("<!-- projectstate:managed:start", agents)
+        self.assertIn("<!-- projectstate:managed:end -->", agents)
+        self.assertLess(agents.index("<!-- projectstate:managed:start"), agents.index(candidate))
+        self.assertLess(agents.index(candidate), agents.index("<!-- projectstate:managed:end -->"))
+        plain = handoff.build_repo(Path(tempfile.mkdtemp()), "with")
+        self.addCleanup(lambda: shutil.rmtree(plain.parent, ignore_errors=True))
+        plain_text = (plain / "AGENTS.md").read_text(encoding="utf-8")
+        for region in (plain_text[: plain_text.index("<!-- projectstate:managed:start")],
+                       plain_text[plain_text.index("<!-- projectstate:managed:end -->") + len("<!-- projectstate:managed:end -->"):]):
+            self.assertIn(region, agents)  # frontmatter and local sections untouched
+        verify = (repo / "scripts" / "projectstate_verify.py")
+        self.assertEqual(verify.read_bytes(), (sc.ROOT / "scripts" / "projectstate_verify.py").read_bytes())
+        self.assertEqual(sc.run_gate(repo)[0], 1)  # honest, not validated, on the untouched skeleton
+        self.assertFalse(handoff.acceptance_forged(repo))
+
+    def test_missing_markers_are_refused(self) -> None:
+        with self.assertRaises(du.DurabilityError) as caught:
+            du.lean_agents_text("# no markers here\n")
+        self.assertIn("managed:start", str(caught.exception))
+
+    def test_dry_run_builds_the_lean_skeleton(self) -> None:
+        if not du.v2_available():
+            self.skipTest(f"scripts/{du.V2_TOOL} is not in the template yet (branch work/hooks-v2)")
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            self.assertEqual(du.main(["--dry-run", "--conditions", "lean-host"]), 0)
+        self.assertIn("lean-host: checks 0/8, journey exit 1", buffer.getvalue())
 
 
 class RenderingTests(unittest.TestCase):
