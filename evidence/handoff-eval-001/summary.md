@@ -170,3 +170,119 @@ Hooks exist for other hosts under other names and were not tested. The log is
 plain text: it holds whatever the owner types, so it is local and gitignored, with
 best-effort redaction of obvious secrets. A stronger model might follow the rules
 that haiku ignored, and was not tested.
+
+## Follow-up 2 (2026-10-09/10): host hooks v2" — for evidence/handoff-eval-001/summary.md
+
+<!-- Drafted by the ps-durability lane from the compiled table and raw run files; the coordinator edits and
+copies this into the evidence summary. Numbers come from
+~/.local/state/projectstate/evals/durability-* (results.json), the compiled table
+/tmp/opencode/ps-reports/durability-compiled.md, the lane reports in /tmp/opencode/ps-reports/, and
+transcripts under ~/.claude/projects/. No model was called for this draft. -->
+
+## Follow-up 2 (2026-10-09/10): host hooks v2
+
+The durability eval showed v1's injection window (newest ~3500 characters) loses a constraint stated on
+day one once a realistic week of owner prompts has passed. Four lanes built and measured v2:
+
+- `scripts/projectstate_hooks.py` (v2, then v2.1): `record` replaces each pasted block with one
+  summary line (pastes are usually not the owner's words), `brief` puts a capped 6000-character block in
+  front of every session (the standing words already in the files, the current slice with whether the
+  journey result was recorded by a run or typed, and the owner's earlier words), and `stop` asks once,
+  at the end of a session, for standing words to be filed into `PROJECT.md` (or `standing.md`).
+  Install/uninstall merge into host settings without removing anything and refuse to overwrite an
+  edited copy unless `--replace-edited` is given.
+- `scripts/projectstate_opencode_plugin.js`: the same three hooks for OpenCode, including a re-brief
+  after compaction and at most one follow-up message per stop block.
+- Release and fleet support: the hook tool and plugin are released assets with recorded sha256 hashes;
+  the fleet doctor reports per-instance `hooks` and `opencode` status.
+- `evals/resume/durability.py`: the harness for the table below. Two sessions, plus a fixed week of 30
+  later owner prompts (terse, with two long pastes) replayed through the hooks between them. "At S2
+  start" is whether the injected context still shows each constraint (matched on owner text only);
+  "filed" is whether the constraints reached `PROJECT.md`'s durable constraints.
+
+All chains: haiku or sonnet, 3 repeats, same task, the harness acting as owner between sessions.
+
+| model | condition | version | chains | mean checks /8 | memory-only kept | at S2 start | filed in repo | scope filed | honest | done but wrong | $/chain |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| haiku | none | - | 3 | 6.00 | 0/3 | n/a | 0/3 | 0/3 | 3/3 | 3/3 | $0.022 |
+| haiku | core | - | 3 | 6.00 | 0/3 | n/a | 0/3 | 0/3 | 3/3 | 3/3 | $0.039 |
+| haiku | core-log1 (v1) | - | 3 | 6.33 | 1/3 | 0/3 | 0/3 | 0/3 | 3/3 | 3/3 | $0.043 |
+| haiku | nocore-log1 (v1) | - | 3 | 8.00 | 3/3 | 0/3 | 0/3 | 0/3 | 3/3 | 0/3 | $0.027 |
+| haiku | core-host-nostop | v2.0 | 3 | 8.00 | 3/3 | 3/3 | 0/3 | 0/3 | 3/3 | 0/3 | $0.043 |
+| haiku | core-host | v2.0 | 3 | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.047 |
+| haiku | nocore-host | v2.0 | 3 | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.033 |
+| haiku | lean-host | wording 1 | 3 | 6.33 | 2/3 | 3/3 | 3/3 | 0/3 | 2/3 | 0/3 | $0.041 |
+| haiku | lean-host | wording 2 | 2 | 8.00 | 2/2 | 2/2 | 2/2 | 0/2 | 2/2 | 0/2 | $0.047 |
+| sonnet | none | - | 3 | 6.00 | 0/3 | n/a | 0/3 | 0/3 | 3/3 | 3/3 | $0.159 |
+| sonnet | core | - | 3 | 6.33 | 0/3 | n/a | 0/3 | 0/3 | 3/3 | 0/3 | $0.382 |
+| sonnet | core-host | v2.0 | 3 | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.490 |
+| sonnet | core-host | v2.1 | 3 | 7.33 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 1/3 | $0.471 |
+| sonnet | nocore-host | v2.0 | 3 | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.272 |
+| sonnet | lean-host | wording 1 | 3 | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.367 |
+| sonnet | lean-host | wording 2 | 2 | 8.00 | 2/2 | 2/2 | 2/2 | 0/2 | 2/2 | 0/2 | $0.420 |
+
+Excluded from the table: two lean wording-2 chains (one haiku, one sonnet) lost to API 429 errors; the
+incomplete v2.1 haiku run (3 of 6 chains finished, no results.json — not measured); "done but wrong"
+means the session claimed done while a hidden check failed.
+
+Findings:
+
+1. **The hooks keep the owner's words.** The two constraints that exist nowhere in the repository
+   unless session 1 writes them down (semicolon CSV with a UTF-8 BOM, refuse to overwrite without
+   `--force`) were kept in every host condition, both models (3/3; 2/3 in the one defective lean
+   wording-1 cell) — against 0/3 without hooks (plain core, plain none), the same result as every
+   prompt-only attempt before. v1's one 8/8 cell (nocore-log1) is not a counter-example to v1's
+   measured window failure: in all three of those chains session 2 found and read the raw log file
+   itself (`cat .projectstate/*`), while the injected context no longer showed the constraints (0/3).
+2. **The stop question files the constraints.** With the stop hook, session 1 filed all three owner
+   constraints into `PROJECT.md` verbatim and quoted, 3/3 in both models; without it (`--no-stop`),
+   0/3 — the constraints still reached session 2 through the brief. The scope limit ("do not implement
+   export or import yet") was never filed as standing (0/3 everywhere): the header's sentence that a
+   past session's scope limit applies to that session only held in all 46 graded chains.
+3. **Cost.** On sonnet, the hooks without the core cost 1.7x the plain repository ($0.272 vs $0.159 per
+   chain); the core alone costs 2.4x ($0.382). The earlier cost attribution stands: 94-99% of the
+   core's overhead is coordination bookkeeping (record edits, gate runs, the read order), not product
+   work. The hooks add the briefing injection and the filing edits on top.
+4. **The lean contract's first wording had a defect.** It said never to type a journey status by hand,
+   and 5 of 6 lean chains left the slice `implementing` after `projectstate_verify.py` had recorded a
+   passing journey, so the harness's owner accept was refused (sonnet 0/3 accepted: "accept needs
+   current_slice.status validated or ready_for_human, not 'implementing'"). Wording 2 adds that the
+   agent still sets by hand what the tool cannot decide: the slice `status` (`validated` once the
+   journey passed). After the fix the owner accept went through 2/2 on both models.
+5. **Briefing probe, round 2** (a fresh haiku agent briefs the owner from the saved pre-session-2
+   state): with the hooks, constraints surfaced more often (core-host 1.0 of 3, lean-host 2.0 of 3,
+   against 0.33 for the core's files alone) but the briefs got less reliable: 2 of 3 core-host
+   briefings had no parseable BRIEF line, and no briefing named a correct next action (0/3). The v2.1
+   probe was not measured: one chain was graded in a log before the spending pause, no results files
+   exist.
+6. **v2.1 kept the words and cost one product check.** Stop now fires on directive words only, and the
+   brief separates standing words from recent requests. Memory-only constraints stayed 3/3, but mean
+   checks fell to 7.33 (v2.0: 8.00) and one of three sonnet chains is done-but-wrong: session 2
+   reimplemented `list` so the note always prints on its own indented line (`12.50 food` on one line,
+   `lunch` on the next), which fails the acceptance suite's order-and-content check, and claimed done
+   because the visible journey does not test notes. All three v2.1 chains acted on the noise week's
+   wrap-the-notes requests; in v2.0 the same three requests sat in the context under "history, not
+   this session's request" and no sonnet chain acted (one of eighteen v2.0 chains with saved diffs
+   wrapped at all, and still scored 8/8). The requests section itself held only the two pastes, and
+   no chain redid or undid work because of it. The plausible cause is the new framing — those requests
+   now sit under "THE OWNER'S STANDING WORDS NOT YET IN THE FILES" — which reads as pending work; the
+   third chain avoided the defect under the same context, so the framing is a plausible cause of the
+   behavior change, not a proven cause of the defect. n=3.
+
+7. **v2.2 answers finding 6, unmeasured.** Requests that carry a one-off cue (please, pls, just, for
+   now, whichever, this session, this run, again) leave the standing pool unless they also carry an
+   unambiguous directive (always, never, must, from now on, every time, by default); they still show
+   among the three recent requests, labelled as possibly done. The section is now titled "THE OWNER'S
+   EARLIER WORDS THAT MAY SET STANDING RULES ... not a request for this session" and says not to implement
+   old requests that are not in `STATE.yaml`'s `next_action`. On the eval's noise week the pool went
+   from 8 of 30 prompts to 5, and all three wrap requests left it; the memory-only constraints still
+   appear after 30 noise prompts (tests). Whether this stops session-2 agents acting on old requests
+   needs a real durability run (about $2 of Claude usage for haiku and sonnet core-host, three each), which
+   was not run.
+
+Limits: one task; n=3 per cell (2 for lean wording 2; two more chains lost to 429s); haiku and sonnet
+only; Claude Code headless only in the evals — the OpenCode plugin was verified live on OpenCode
+1.18.32 but not evaluated end-to-end; the v2.1 haiku run is incomplete and unmeasured. Nothing further
+was measured because the owner paused Claude spending. The stop heuristic is a word list (precision
+0.90, recall 0.72 on a 51-prompt labelled set for the stop set); it can miss constraints phrased as
+nouns or "do not", which the brief's standing pool still catches.

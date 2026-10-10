@@ -28,4 +28,4 @@ delivery_boundary:
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Owner: read evidence/handoff-eval-001/summary.md (corrections and the owner-log follow-up) and decide. If the owner log earns its place, ship it in release 6.4.0 as a managed asset (update command, release index, fleet doctor); domain-packs-001 stays held."
+next_action: "Owner: read evidence/handoff-eval-001/summary.md (corrections, the owner-log follow-up, and Follow-up 2 on host hooks v2) and decide the slice; then decide whether to cut 6.4.0 with the hooks as an opt-in asset (needs the gate RELEASE bump), whether to adopt the lean contract (semantic release), and whether to pay about $2 of Claude usage to measure hooks v2.2. domain-packs-001 stays held."
