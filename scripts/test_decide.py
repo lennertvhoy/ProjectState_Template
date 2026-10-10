@@ -147,6 +147,16 @@ def snapshot(root: Path, *, mtimes: bool = True) -> dict[str, tuple[Any, ...]]:
     return state
 
 
+def project_tree(root: Path) -> dict[str, tuple[Any, ...]]:
+    """``snapshot`` without git's own ``.git`` directories, at any depth, mtimes included.
+
+    ``.git`` is skipped because git may refresh its own index cache during the tool's read-only
+    ``git status`` (racily clean entries, mtime granularity): a git-side cache write, not a tool
+    write. The no-write assertions are about everything the tool could touch.
+    """
+    return {path: info for path, info in snapshot(root).items() if ".git" not in Path(path).parts}
+
+
 def changed_paths(before: dict[str, tuple[Any, ...]], after: dict[str, tuple[Any, ...]]) -> set[str]:
     return {path for path in set(before) | set(after) if before.get(path) != after.get(path)}
 
@@ -246,13 +256,18 @@ class DecideCase(unittest.TestCase):
         return completed
 
     def assertRefused(self, *args: str, reason: str, root: Path | None = None) -> str:
-        """The command exits 2 with ``reason`` on stderr, prints nothing else, and writes nothing at all."""
-        before = snapshot(self.tmp)
+        """The command exits 2 with ``reason`` on stderr, prints nothing else, and writes nothing at all.
+
+        The no-write check skips every ``.git`` directory (see ``project_tree``): git may refresh its
+        own index cache during the tool's read-only ``git status``, and such a refresh is a git-side
+        write, not a tool write. Everything else must stay byte-identical, mtimes included.
+        """
+        before = project_tree(self.tmp)
         code, out, err = self.decide(*args, root=root)
         self.assertEqual((code, out), (2, ""), err)
         self.assertIn(reason, err)
         self.assertTrue(all(line.startswith(("refused: ", "warning: ")) for line in err.splitlines()), err)
-        self.assertEqual(snapshot(self.tmp), before, "a refusal must not write anything")
+        self.assertEqual(project_tree(self.tmp), before, "a refusal must not write anything")
         return err
 
     def mark_decided(self, decision: str, root: Path | None = None) -> None:
@@ -730,12 +745,12 @@ class OwnerWordsTests(DecideCase):
 class DryRunTests(DecideCase):
     def test_a_dry_run_prints_the_plan_and_writes_nothing(self) -> None:
         init_repo(self.root)
-        before = snapshot(self.tmp)  # every file, .git included, with its sha256 and mtime
+        before = project_tree(self.tmp)  # every file the tool could touch, .git excluded (see project_tree)
         lines = self.read("STATE.yaml").splitlines()
         status_at, human_at = lines.index("  status: validated") + 1, lines.index("  human_acceptance: pending") + 1
         code, out, err = self.decide("accept", 'He said "yes"', "--dry-run")
         self.assertEqual((code, err), (0, ""))
-        self.assertEqual(snapshot(self.tmp), before)
+        self.assertEqual(project_tree(self.tmp), before)
         self.assertTrue(out.startswith("dry run: nothing was written\n"), out)
         for planned in (f"STATE.yaml line {status_at}:", "-  status: validated", "+  status: accepted",
                         f"STATE.yaml line {human_at}:", "-  human_acceptance: pending", "+  human_acceptance: accepted",
@@ -744,10 +759,10 @@ class DryRunTests(DecideCase):
         self.assertNotIn("recorded:", out)
 
     def test_a_dry_run_for_waive_plans_one_line(self) -> None:
-        before = snapshot(self.tmp)
+        before = project_tree(self.tmp)
         code, out, _ = self.decide("waive", "Skip.", "--dry-run", "--date", "2026-01-15")
         self.assertEqual(code, 0)
-        self.assertEqual(snapshot(self.tmp), before)
+        self.assertEqual(project_tree(self.tmp), before)
         self.assertEqual(out.count("STATE.yaml line"), 1)
         self.assertIn("+  human_acceptance: waived", out)
         self.assertNotIn("status: accepted", out)
