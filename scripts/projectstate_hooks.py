@@ -120,7 +120,11 @@ STRONG_MARKERS = re.compile(
     re.IGNORECASE,
 )
 ONEOFF_CUES = re.compile(
-    r"\b(?:please|just|for now|whichever|this session|this run|again)\b",
+    r"\b(?:please|pls|just|for now|whichever|this session|this run|again)\b",
+    re.IGNORECASE,
+)
+DIRECTIVE_MARKERS = re.compile(
+    r"\b(?:always|never|must\s+not|must|from\s+now\s+on|every\s+time|by\s+default)\b",
     re.IGNORECASE,
 )
 REDACTIONS = (
@@ -311,9 +315,10 @@ def reads_oneoff(body: str) -> bool:
     or "if that happens again just wrap the line" carry standing markers (instead of, dont) but are
     one-off asks; the cues please / just / for now / whichever / this session / this run / again catch
     them without touching the directive-shaped rules ("always keep the readme short",
-    "dont touch journey.py").
+    "dont touch journey.py"). An unambiguous directive outweighs the cues: "pls always use semicolons"
+    is a standing rule however politely it is asked.
     """
-    return bool(ONEOFF_CUES.search(body))
+    return bool(ONEOFF_CUES.search(body)) and not DIRECTIVE_MARKERS.search(body)
 
 
 def reads_pool(body: str) -> bool:

@@ -311,6 +311,14 @@ def test_the_evals_noise_week_is_classified_and_printed() -> None:
     assert hooks.reads_pool(hooks.replace_pastes(handoff.PROMPTS["plain"]))  # the memory-only constraints
 
 
+def test_a_polite_standing_rule_is_not_vetoed_as_one_off() -> None:
+    for body in ("pls always use semicolons in the csv", "please never commit the data folder",
+                 "from now on just use utc timestamps"):
+        assert hooks.reads_pool(body), body
+    for body in ("wrap it instead of truncating please", "if that happens again just wrap the line"):
+        assert not hooks.reads_pool(body), body
+
+
 def test_wrap_requests_show_only_as_recent_requests_not_as_standing(tmp_path: Path) -> None:
     hooks.append_entry(tmp_path, CONSTRAINT, "s0", at(0))
     hooks.append_entry(tmp_path, "the note field gets cut off on narrow terminals, wrap it instead of truncating please",
