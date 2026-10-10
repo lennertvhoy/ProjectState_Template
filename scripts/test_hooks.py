@@ -131,7 +131,9 @@ def test_prompts_are_recorded_verbatim_oldest_first_and_briefed(tmp_path: Path) 
     assert "remain the source of truth" in brief
     assert hooks.WORDS_TITLE in brief and hooks.REQUESTS_TITLE in brief
     assert brief.index("semicolons") < brief.index(hooks.REQUESTS_TITLE) < brief.index("--force")
-    assert "A limit on what a past session should do" in brief and "HOW things are built" in brief
+    assert "a limit on what a past session should do" in brief and "HOW things are built" in brief
+    assert "not a task list" in brief and "not a request for this session" in brief  # context framing
+    assert "not in STATE.yaml's next_action" in brief
     assert "follow this session's request" in brief  # carried in the requests title
 
 
@@ -271,15 +273,66 @@ def classify(matcher) -> tuple[int, int, int, int]:
 def test_heuristic_precision_recall_and_trigger_rate_on_the_labelled_set() -> None:
     broad = classify(hooks.reads_standing)
     stop = classify(hooks.reads_strong)
-    for name, (tp, fp, fn, tn) in (("broad", broad), ("stop", stop)):
+    pool = classify(hooks.reads_pool)
+    for name, (tp, fp, fn, tn) in (("broad markers", broad), ("stop", stop), ("pool (markers minus one-off cues)", pool)):
         precision, recall, rate = tp / (tp + fp), tp / (tp + fn), (tp + fp) / len(LABELLED)
         print(f"\n{name}: {len(LABELLED)} prompts, tp={tp} fp={fp} fn={fn} tn={tn} "
               f"precision={precision:.2f} recall={recall:.2f} trigger_rate={rate:.2f}")
     assert broad == (25, 7, 0, 19)
     assert stop == (18, 2, 7, 24)
+    assert pool == (25, 4, 0, 22)
     assert broad[0] / (broad[0] + broad[1]) >= 0.7 and broad[2] == 0  # recall 1.00
     assert stop[0] / (stop[0] + stop[1]) >= 0.9  # the stop set stays precise: directives only
-    assert stop[1] < broad[1]  # noun-only and one-off prompts no longer trigger a block
+    assert stop[1] < broad[1] and pool[1] < broad[1]  # one-off cues remove triggers and pool noise
+
+
+def test_the_evals_noise_week_is_classified_and_printed() -> None:
+    """Ground truth from evals/resume/durability.py: the noise week must not land in the standing pool."""
+    evals = SCRIPTS.parent / "evals" / "resume"
+    sys.path.insert(0, str(evals))
+    try:
+        import durability as du
+        import handoff
+    finally:
+        sys.path.remove(str(evals))
+    print("\nnoise prompt (first 78 chars)                                              before  after")
+    before = after = 0
+    for index, prompt in enumerate(du.NOISE):
+        body = hooks.replace_pastes(prompt)
+        was, now = hooks.reads_standing(body), hooks.reads_pool(body)
+        before += was
+        after += now
+        print(f"{index:02d}  {body[:78].replace(chr(10), ' '):<78}  {str(was):5s}  {str(now)}")
+    print(f"classified standing: {before} of {len(du.NOISE)} before, {after} of {len(du.NOISE)} after")
+    for directive in du.STANDING_DIRECTIVES:
+        assert hooks.reads_pool(hooks.replace_pastes(directive)), directive
+    for index in (21, 24, 27):  # the measured wrap/fix requests
+        assert not hooks.reads_pool(hooks.replace_pastes(du.NOISE[index])), du.NOISE[index][:60]
+    assert hooks.reads_pool(hooks.replace_pastes(handoff.PROMPTS["plain"]))  # the memory-only constraints
+
+
+def test_a_polite_standing_rule_is_not_vetoed_as_one_off() -> None:
+    for body in ("pls always use semicolons in the csv", "please never commit the data folder",
+                 "from now on just use utc timestamps"):
+        assert hooks.reads_pool(body), body
+    for body in ("wrap it instead of truncating please", "if that happens again just wrap the line"):
+        assert not hooks.reads_pool(body), body
+
+
+def test_wrap_requests_show_only_as_recent_requests_not_as_standing(tmp_path: Path) -> None:
+    hooks.append_entry(tmp_path, CONSTRAINT, "s0", at(0))
+    hooks.append_entry(tmp_path, "the note field gets cut off on narrow terminals, wrap it instead of truncating please",
+                       "s1", at(1))
+    hooks.append_entry(tmp_path, "about the note column: some notes are long and the list becomes unreadable. wrap them "
+                       "at the terminal width, or put them on their own indented line under the expense, whichever is "
+                       "less work. dont change the ledger file for this, it is only how list prints", "s2", at(2))
+    brief = hooks.brief_text(tmp_path)
+    pool = brief.split(hooks.WORDS_TITLE, 1)[1].split(hooks.REQUESTS_TITLE, 1)[0]
+    assert "wrap it instead of truncating" not in pool
+    assert "wrap them at the terminal width" not in pool
+    assert CONSTRAINT in pool and "not a task list" in pool
+    requests = brief.split(hooks.REQUESTS_TITLE, 1)[1]
+    assert "wrap them at the terminal width" in requests  # still visible, framed as possibly already done
 
 
 # --- retention: brief keeps what v1's inject forgets -----------------------------------------------------------------
