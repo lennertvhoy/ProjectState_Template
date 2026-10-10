@@ -21,21 +21,25 @@ path. An unclosed paste marker runs to the end of the prompt. The owner's typed 
 secret redaction, size caps and duplicate suppression. (2) ``brief`` replaces v1's small newest-only window
 with a compact block, hard-capped at 6000 characters: the standing words the owner already wrote down
 (``## Durable constraints`` in PROJECT.md, then ``.projectstate/standing.md``), the current slice from
-STATE.yaml including whether a journey result was recorded by a run or typed by hand, and the owner's earlier
-words from the log - newest entries first, then older entries that read as standing instructions, oldest first.
-(3) ``stop`` notices, once per session, when this session's words read as standing instructions and are not yet
+STATE.yaml including whether a journey result was recorded by a run or typed by hand, the owner's earlier
+words that may set standing rules (framed as context, not a task list), and the owner's most recent requests,
+each marked as possibly already done.
+(3) ``stop`` notices, once per entry, when this session's words read as standing instructions and are not yet
 written down, and asks the agent to file them before it finishes.
 
 "Reads as a standing instruction" comes in two sets, both deterministic and conservative, matching
 case-insensitively and on word boundaries over the owner's typed words only (paste summaries excluded).
 The BROAD set - always, never, must (not), do not / don't / dont, only, from now on, every time,
 whenever, by default, make sure, prefer(s), instead of, rather than, constraint(s), requirement(s),
-rule(s) - is used where a false positive costs nothing: the brief's standing pool and log trimming.
-The STOP set keeps only directive words - always, never, must (not), from now on, every time, whenever,
-by default, make sure, prefer(s), instead of, rather than: nouns like "constraints" also appear in
-questions ABOUT rules, and a stop block there derails the session's final message. Session-scoped
-limits ("not yet", "later", "only X this session") can still match and are sorted out by the wording
-of the stop request, not by magic.
+rule(s) - selects candidates. The brief's standing pool and log trimming then drop the one-off fix and
+change requests the broad set admits: an entry carrying a one-off cue (please, just, for now, whichever,
+this session, this run, again) is treated as a one-off however rule-shaped its markers look - measured on
+a week of realistic prompts, "wrap it instead of truncating please" and "if that happens again just wrap
+the line" landed in the standing pool this way and agents implemented them. The STOP set keeps only
+directive words - always, never, must (not), from now on, every time, whenever, by default, make sure,
+prefer(s), instead of, rather than: nouns like "constraints" also appear in questions ABOUT rules, and a
+stop block there derails the session's final message. Session-scoped limits ("not yet", "later",
+"only X this session") can still match and are sorted out by the wording of the stop request, not by magic.
 
 ``stop`` runs two checks after every turn. Each log entry is offered at most once (stamps in
 ``.projectstate/offered.json``); there is no per-session limit, because a session spans many owner turns
@@ -115,6 +119,10 @@ STRONG_MARKERS = re.compile(
     r"prefers?|instead\s+of|rather\s+than)\b",
     re.IGNORECASE,
 )
+ONEOFF_CUES = re.compile(
+    r"\b(?:please|just|for now|whichever|this session|this run|again)\b",
+    re.IGNORECASE,
+)
 REDACTIONS = (
     (re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.DOTALL), "[redacted private key]"),
     (re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,})\b"), "[redacted token]"),
@@ -132,9 +140,12 @@ BRIEF_HEADER = ("ProjectState session brief: the owner's standing words, the cur
                 "words from the local log. PROJECT.md, STATE.yaml and evidence/ remain the source of truth.")
 STANDING_TITLE = "THE OWNER'S STANDING WORDS (from PROJECT.md ## Durable constraints and .projectstate/standing.md):"
 SLICE_TITLE = "CURRENT SLICE (from STATE.yaml):"
-WORDS_TITLE = "THE OWNER'S STANDING WORDS NOT YET IN THE FILES (from the local log, newest first):"
-WORDS_SCOPE = ("Constraints and decisions about HOW things are built stay in force until the owner changes them. "
-               "A limit on what a past session should do (scope, 'not now', 'later') applied to that session only.")
+WORDS_TITLE = ("THE OWNER'S EARLIER WORDS THAT MAY SET STANDING RULES (from the local log, newest first; "
+               "not a request for this session):")
+WORDS_SCOPE = ("Context, not a task list: act on a word below only when this session's work touches it, and do not "
+               "implement old requests that are not in STATE.yaml's next_action. Constraints and decisions about HOW "
+               "things are built stay in force until the owner changes them; a limit on what a past session should do "
+               "(scope, 'not now', 'later') applied to that session only.")
 REQUESTS_TITLE = ("THE OWNER'S MOST RECENT REQUESTS (earlier sessions may already have done them; check git log "
                   "and STATE.yaml before acting, and follow this session's request):")
 
@@ -274,7 +285,7 @@ def append_entry(root: Path, prompt: str, session: str, now: dt.datetime | None 
     rendered = [render_entry(*entry) for entry in kept]
     while len(rendered) > 1 and len((text + "".join(rendered)).encode("utf-8")) > MAX_LOG_BYTES:
         # trim oldest entries that do not read as standing first; standing words go last
-        drop = next((index for index, entry in enumerate(kept) if not reads_standing(entry[2])), 0)
+        drop = next((index for index, entry in enumerate(kept) if not reads_pool(entry[2])), 0)
         kept.pop(drop)
         rendered = [render_entry(*entry) for entry in kept]
     directory.mkdir(parents=True, exist_ok=True)
@@ -291,6 +302,23 @@ def reads_standing(body: str) -> bool:
 
 def reads_strong(body: str) -> bool:
     return bool(STRONG_MARKERS.search(body))
+
+
+def reads_oneoff(body: str) -> bool:
+    """A one-off fix or change request: veto cues outweigh standing markers.
+
+    Measured on the durability eval's noise week: requests like "wrap it instead of truncating please"
+    or "if that happens again just wrap the line" carry standing markers (instead of, dont) but are
+    one-off asks; the cues please / just / for now / whichever / this session / this run / again catch
+    them without touching the directive-shaped rules ("always keep the readme short",
+    "dont touch journey.py").
+    """
+    return bool(ONEOFF_CUES.search(body))
+
+
+def reads_pool(body: str) -> bool:
+    """What belongs in the brief's standing pool (and what trimming keeps): standing and not one-off."""
+    return reads_standing(body) and not reads_oneoff(body)
 
 
 # --- the brief: standing words, slice view, earlier words ----------------------------------------------------------
@@ -442,7 +470,7 @@ def words_sections(root: Path, standing_blob: str) -> tuple[str, str]:
     used = len(WORDS_TITLE) + len(WORDS_SCOPE) + 3
     for index in range(len(found) - 1, -1, -1):
         stamp, _session, body = found[index]
-        if not reads_standing(body) or contained(body, standing_blob):
+        if not reads_pool(body) or contained(body, standing_blob):
             continue
         block = f"[{stamp}] {body}"
         if used + len(block) + 1 <= POOL_CHARS:
@@ -461,8 +489,8 @@ def words_sections(root: Path, standing_blob: str) -> tuple[str, str]:
         if taken >= REQUESTS_COUNT:
             break
         stamp, _session, body = found[index]
-        if reads_standing(body):
-            continue
+        if reads_pool(body):
+            continue  # standing entries live in the pool; one-off-vetoed ones belong here
         block = f"[{stamp}] {shorten(body, REQUEST_KEEP)}"
         if used + len(block) + 1 > REQUESTS_CHARS:
             break
