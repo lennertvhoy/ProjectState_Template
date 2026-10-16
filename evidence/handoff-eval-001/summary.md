@@ -301,11 +301,16 @@ acceptance is recorded and `validation.human_acceptance` stays `pending`.
   commands or store prompts, and a "no network calls" claim that ignored the eval harnesses; the README draft
   understated the core's effect on sonnet's claimed-done-but-wrong rate and did not say which hooks version
   the numbers describe.
-- **Checks.** CI parity, run on `main` before the release commits (2e8a7c6): clean `--no-hardlinks` clone,
+- **Checks.** CI parity, run on `main` before the release commits (20d6efe): clean `--no-hardlinks` clone,
   `pytest==9.0.3` only and no PyYAML, `test_outcome_core.py` (41 tests), `projectstate_release.py check`,
   436 tests passed with 612 subtests, the gate, a clean tree; `init_template.py new` and `adopt`, and a hooks
   dry run, all behaved as documented.
 - **Backup.** A git bundle of every ref, outside the repository, was made and verified before any remote
   change.
+- **History.** Before publication the unpublished commits were rewritten with `git filter-branch`: the names of
+  private projects became neutral aliases (`example-project-NN`) and personal paths became `~`, in file
+  contents and commit messages. The commit hashes cited in the evidence were remapped to the rewritten
+  commits. Commits already on GitHub were not touched, so no force-push is needed. The original refs are in
+  the backup bundle.
 - **Limits.** The hooks shipped are v2.2, which was not measured. CI uses Python 3.13; this workstation has
   only 3.14.7. Remote delivery and CI are separate claims and are recorded below once they happened.

@@ -1,6 +1,6 @@
 # Assignment W1-gate-and-release-tool (stopped 2026-10-06; resume from its worktree)
 
-You are a worker on the ProjectState template repository (Python, standard library only). You run in your own git worktree created from branch feat/release-channel-6.3 at commit 189f31b; confirm with `git log -1 --oneline` and work only inside your worktree. A coordinator integrates your branch, owns STATE.yaml, PROJECT.md, evidence/, CHANGELOG.md and docs/, and reviews your diff. Other workers change other files in parallel.
+You are a worker on the ProjectState template repository (Python, standard library only). You run in your own git worktree created from branch feat/release-channel-6.3 at commit dc48af5; confirm with `git log -1 --oneline` and work only inside your worktree. A coordinator integrates your branch, owns STATE.yaml, PROJECT.md, evidence/, CHANGELOG.md and docs/, and reviews your diff. Other workers change other files in parallel.
 
 Before coding, read: AGENTS.md (root), scripts/AGENTS.md, core/AGENTS.managed.md, releases/index.json, scripts/projectstate_release.py (shared helpers), scripts/projectstate_gate.py.
 

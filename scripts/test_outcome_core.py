@@ -75,7 +75,7 @@ LEGACY_TRUTH_FILES = {
 LEGACY_PROFILES = ("minimal", "solo", "team", "regulated")
 V5_POINTER = "git worktree add ../projectstate-v5 v5-final"
 GOLDEN_EPOCH = "1791244800"  # 2026-10-06T00:00:00Z: pins the generated dates
-# sha256 of what the release 6.3.0 generator (commit 0f34205) wrote for the name "Golden Demo", recorded before the
+# sha256 of what the release 6.3.0 generator (commit 126dfa7) wrote for the name "Golden Demo", recorded before the
 # legacy split. The managed block and the template-owned copies (the gate and the hardened policy) are compared with
 # the template's own files instead, so a release that changes them leaves these alone. A change here changes what
 # every new project receives: that is a release, not a test fix.
