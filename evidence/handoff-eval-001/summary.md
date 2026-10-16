@@ -314,3 +314,22 @@ acceptance is recorded and `validation.human_acceptance` stays `pending`.
   the backup bundle.
 - **Limits.** The hooks shipped are v2.2, which was not measured. CI uses Python 3.13; this workstation has
   only 3.14.7. Remote delivery and CI are separate claims and are recorded below once they happened.
+
+### Remote delivery (2026-10-16)
+
+Separate claims from the local checks above.
+
+- `main` was pushed as a fast-forward (7e4cb7c..94079b0, no force), and the tags `v5-final` and `v6.0.0` to
+  `v6.4.0` were pushed in one command. GitHub Actions run 38866746052 on 94079b0 succeeded (Python 3.13, only
+  `pytest==9.0.3` installed). The GitHub release `v6.4.0` was created.
+- Private vulnerability reporting was enabled on the repository, because SECURITY.md and the code of conduct send
+  reporters there. 26 stale remote branches were deleted after each tip was found in the verified backup bundle;
+  `main` is the only remote branch.
+- An independent review by a separate model found two blockers (the reporting channel was off, and private
+  project names were in the unpublished history) and several wording and tooling defects. All were fixed before
+  the push; the reviewer did not re-run afterwards, so the fixes were re-checked mechanically by the coordinator
+  (secret scan of the pushed range, name and path greps over the rewritten history and every unpublished tag, the
+  full CI sequence on the rewritten clone, the release check against every tag).
+- Limits: the 95 pushed commits carry the owner's configured git author identity. The three files on GitHub
+  before this release that named private projects were already public; the rewrite does not change them.
+
