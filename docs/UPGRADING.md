@@ -32,14 +32,14 @@ down, and the template repository itself is refused.
 2. Run the dry run. It writes nothing (adjust the path to your template checkout):
 
    ```bash
-   python3 ~/Projects/ProjectState_Template/scripts/projectstate_update.py --target .
+   python3 /path/to/ProjectState_Template/scripts/projectstate_update.py --target .
    ```
 
 3. Read the report, as described below, and resolve anything it refuses.
 4. Apply the update:
 
    ```bash
-   python3 ~/Projects/ProjectState_Template/scripts/projectstate_update.py --target . --apply
+   python3 /path/to/ProjectState_Template/scripts/projectstate_update.py --target . --apply
    ```
 
 5. Rerun the project's primary journey and `python3 scripts/projectstate_gate.py`,

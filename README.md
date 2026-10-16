@@ -9,6 +9,23 @@ The default is deliberately narrow: one human-owned project definition, one
 current slice, one primary user journey, and one bounded evidence summary. A
 failed user journey always outranks passing secondary checks.
 
+## Status and license
+
+ProjectState Template is released under the [ProjectState Free Use License -
+Teaching Rights Reserved](LICENSE). It is free of charge for personal and
+commercial use, and permits use, copying, modification, redistribution,
+sublicensing and sale, provided the copyright and license notices stay. Teaching,
+training, coaching, courses, workshops and tutorials built on the software or the
+ProjectState workflow need prior written permission from the copyright holder, so
+the project is source-available, not OSI-approved open source. The plain-language
+[license FAQ](LICENSE_FAQ.md) explains the intent; the license text is
+authoritative.
+
+## Community
+
+Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md),
+[SECURITY.md](SECURITY.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
 ## Start
 
 Create a new project. `--target` is an absolute path (the generator refuses a
@@ -283,6 +300,29 @@ the hooks kept the owner's two chat-only constraints in every chain on haiku and
 sonnet, with or without the core, and the first session filed them in the
 project's files; the core alone, no core, and v1 did not (v1 only when an agent
 happened to open the raw log file).
+
+## What the evidence shows
+
+The measurements are in [`evidence/handoff-eval-001/summary.md`](evidence/handoff-eval-001/summary.md),
+"Follow-up 2". Every chain used haiku or sonnet, three repeats per cell, one task.
+
+- **The core alone did not keep the owner's chat-only constraints.** It kept
+  neither of the two (0/3 on both models), and on sonnet its mean check score was
+  6.33 against 6.00 without it. On sonnet it did stop agents from claiming done
+  while a hidden check failed (0 of 3 chains, against 3 of 3 without it); on
+  haiku it did not (3 of 3 both ways). It cost more: 2.4x the plain repository on
+  sonnet, $0.382 against $0.159 per chain (finding 3).
+- **The host hooks kept the constraints.** With the hooks, the core and no-core
+  conditions kept both chat-only constraints in 3/3 chains on both models (2/3 in
+  one defective lean wording-1 cell) against 0/3 without hooks (finding 1). The
+  stop hook filed all three owner constraints 3/3 in both models; without it, 0/3
+  (finding 2). Those are the v2.0 hooks. v2.1 regressed on sonnet (1 of 3 chains
+  claimed done while a hidden check failed, finding 6); the v2.2 hooks in this
+  release answer that and were not measured.
+- **Limits.** One task; n=3 per cell (2 for lean wording 2, with two more chains
+  lost to 429 errors); haiku and sonnet only; Claude Code headless only; the v2.1
+  haiku run incomplete. v2.2 is described but was not measured (findings 6-7,
+  Limits).
 
 ## Optional material
 
