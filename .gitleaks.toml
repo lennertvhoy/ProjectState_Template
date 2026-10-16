@@ -1,0 +1,7 @@
+# Test files contain deliberately fake credentials to prove that the owner log and the hooks redact them.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fake credentials used as redaction-test fixtures"
+paths = ['''scripts/test_.*\.py''']
