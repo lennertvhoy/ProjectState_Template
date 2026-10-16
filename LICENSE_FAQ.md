@@ -3,6 +3,13 @@
 This is a plain-language guide to the repository license. The license text in
 `LICENSE` is authoritative.
 
+## Is this open source?
+
+The source is public and free to use, modify, and redistribute, including
+commercially. Because the license reserves teaching rights, it does not meet the
+Open Source Definition, so describe the project as source-available, not as
+open source. Changing the license is the copyright holder's decision.
+
 ## Can I use this for personal projects?
 
 Yes. You may use, copy, modify, and distribute the Software for personal
