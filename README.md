@@ -270,8 +270,8 @@ python3 scripts/projectstate_hooks.py install --root ../your-project --host all 
 `install` copies the tool into the project's `scripts/`, merges three hooks into
 `.claude/settings.json` without removing anything already there, and copies the
 OpenCode plugin to `.opencode/plugins/projectstate.js` (`--host claude` or
-`--host opencode` for one host; `uninstall` removes exactly what it added). After
-a restart:
+`--host opencode` for one host; `uninstall` removes the hooks it merged and the files it copied, and can leave an
+empty `.claude/settings.json` or `.opencode/plugins/` behind). After a restart:
 
 - **Every owner prompt is logged** verbatim to `.projectstate/owner-log.md`. A
   pasted block is logged as one line saying it is pasted text, not the owner's
@@ -296,9 +296,10 @@ the install command when one is needed; not installing them is fine.
 
 Measured in `evidence/handoff-eval-001/summary.md` ("Follow-up 2"): with 30
 realistic owner prompts between the constraints and the session that needed them,
-the hooks kept the owner's two chat-only constraints in every chain on haiku and
-sonnet, with or without the core, and the first session filed them in the
-project's files; the core alone, no core, and v1 did not (v1 only when an agent
+the v2.0 hooks kept the owner's two chat-only constraints in every chain on haiku
+and sonnet, with or without the core, and the first session filed them in the
+project's files (the shipped v2.2 changes the briefing's framing and was not
+measured); the core alone, no core, and v1 did not (v1 only when an agent
 happened to open the raw log file).
 
 ## What the evidence shows

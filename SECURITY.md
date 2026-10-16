@@ -26,6 +26,7 @@ The repository is a small set of local tools. In scope are the scripts under
   identity and the read-only fleet doctor)
 - `scripts/projectstate_verify.py` (runs the journey command recorded in
   `STATE.yaml` through `bash -c`; running it is as trusted as typing that command)
+- `scripts/projectstate_improve_check.py` (read-only guard for the optional improvement rounds)
 - `scripts/projectstate_hooks.py`, `scripts/projectstate_owner_log.py`,
   `scripts/projectstate_opencode_plugin.js` (host hooks that store the owner's
   prompts in a local, gitignored log; secret redaction is best-effort, not a

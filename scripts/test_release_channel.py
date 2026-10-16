@@ -57,7 +57,8 @@ STATEPORT_SCHEMA = "projectstate-template-v6"
 STARTUP_FILES = ("AGENTS.md", "PROJECT.md", "STATE.yaml")
 STARTUP_BUDGET_CHARS = 10000
 AUDITED_FILES = ("STATE.yaml", "AGENTS.md", "scripts/projectstate_gate.py")
-UPDATE_COPIES = ("example-project-08", "example-project-05")
+# Instances to copy and update: set by --update-copies, else the first two v6 instances under the fleet root.
+UPDATE_COPIES: tuple[str, ...] = ()
 GENERATED = (("new-core", "new", "core"), ("new-hardened", "new", "hardened"), ("adopt-core", "adopt", "core"))
 README_TEXT = "# Existing product\n\nRun it with `make start`.\n"
 GIT_LOCATION_VARIABLES = (
@@ -738,11 +739,23 @@ def step_doctor_on_copies(j: Journey, workdir: Path, fleet_copy: Path, tpl: Temp
                       doctor_rows(fleet_copy, "--template", scratch), names)
 
 
+def discover_update_copies(fleet_root: Path) -> tuple[str, ...]:
+    found: list[str] = []
+    for child in sorted(fleet_root.iterdir()):
+        state = child / "STATE.yaml"
+        try:
+            if state.is_file() and STATEPORT_SCHEMA in state.read_text(encoding="utf-8", errors="replace"):
+                found.append(child.name)
+        except OSError:
+            continue
+    return tuple(found[:2])
+
+
 def step_update(j: Journey, fleet_root: Path, workdir: Path, tpl: Template) -> None:
     fleet_copy = workdir / "fleet"
     fleet_copy.mkdir()
     results: list[dict[str, Any]] = []
-    for name in UPDATE_COPIES:
+    for name in UPDATE_COPIES or discover_update_copies(fleet_root):
         source = fleet_root / name
         if not j.check(source.is_dir(), f"{name}: real instance found under the fleet root", str(source)):
             continue
@@ -782,8 +795,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the release channel primary journey for real.")
     parser.add_argument("--fleet-root", required=True, type=Path,
                         help="Folder whose children are the real repositories (read only), e.g. ~/Projects")
+    parser.add_argument("--update-copies", nargs="+", metavar="NAME", default=(),
+                        help="Instances under the fleet root to copy and update (default: the first two v6 instances)")
     parser.add_argument("--keep-temp", action="store_true", help="Keep the temporary directory and print its path")
     args = parser.parse_args(argv)
+    global UPDATE_COPIES
+    UPDATE_COPIES = tuple(args.update_copies)
     fleet_root = args.fleet_root.expanduser().resolve()
     j = Journey()
     if not fleet_root.is_dir():

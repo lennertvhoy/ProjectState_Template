@@ -1,6 +1,6 @@
 # ADR-0002: Confirm Delivery Policy Once and Keep Post-Merge Identities External
 
-**Status:** accepted
+**Status:** superseded by ADR-0004 (the delivery-closure tools left main with the legacy split)
 **Date:** 2026-07-12
 **Author:** human / integration coding agent
 

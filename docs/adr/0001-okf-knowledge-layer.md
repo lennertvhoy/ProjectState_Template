@@ -1,6 +1,6 @@
 # ADR-0001: Use OKF as an Optional Interoperable Knowledge Layer
 
-**Status:** accepted
+**Status:** superseded by ADR-0004 (the knowledge layer left main with the legacy split)
 **Date:** 2026-07-11
 **Author:** CTO / coding-agent
 

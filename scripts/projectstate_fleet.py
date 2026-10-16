@@ -814,8 +814,10 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
             hooks = repo["hooks"]["status"]
             if hooks in HOOKS_REVIEW_STATES:
                 command = hooks_install_command(ctx.template, path, repo["opencode"]["status"] != "absent")
+                note = ("; the copy was edited locally, so install refuses it: review the edit, then add --replace-edited"
+                        if hooks == "edited" else "")
                 review.append(inbox_item(
-                    repo, f"hooks-{hooks}", f"{name}: host hooks {hooks}; adopt or update them with: {command}",
+                    repo, f"hooks-{hooks}", f"{name}: host hooks {hooks}; adopt or update them with: {command}{note}",
                     command=command))
         for found in repo["silent_replacements"]:
             if not counts_against_rule(found, repo.get("rule_since")):
