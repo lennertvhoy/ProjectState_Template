@@ -59,7 +59,8 @@ sha256 matches a released ``hooks_sha256`` (tool) or ``opencode_plugin_sha256`` 
 index beside this tool (``<tool dir>/../releases/index.json``, so a copy running inside an instance
 finds none); anything else is a local edit and is refused with exit 2 unless ``--replace-edited`` is
 given. Without an index the old behaviour stands and a note is printed.
-``uninstall`` removes exactly the hooks and files install added and keeps the log.
+``uninstall`` removes the hooks and files install added (it can leave an empty settings file or
+plugins directory behind) and keeps the log.
 """
 
 from __future__ import annotations

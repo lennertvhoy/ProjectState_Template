@@ -62,7 +62,7 @@
       "contract_sha256": "0b3795520ecf73d66b8a33837573da45347bbd66e1e9eac97dfe92b96299b351",
       "instance_action": "mechanical",
       "summary": "Opt-in host hooks for Claude Code and OpenCode keep the owner's words; the gate and managed block are otherwise unchanged.",
-      "hooks_sha256": "afa0ca3bdda73adad2ea847c935ca45b69575f22918e4d5708dd665f1e0f1b5c",
+      "hooks_sha256": "7c26779d745e948d894078575e31d75ef7a30094362e14bb404ebe7b76e00ac5",
       "opencode_plugin_sha256": "27ea94ab3e1b788afad9f6ca840b3fc54a5bb788b7aa109596176c4b203df10f"
     }
   ]
