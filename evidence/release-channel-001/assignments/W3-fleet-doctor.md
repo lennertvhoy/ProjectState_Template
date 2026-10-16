@@ -1,6 +1,6 @@
 # Assignment W3-fleet-doctor (stopped 2026-10-06; resume from its worktree)
 
-You are a worker on the ProjectState template repository (Python, standard library only). You run in your own git worktree created from branch feat/release-channel-6.3 at commit dc48af5; confirm with `git log -1 --oneline` and work only inside your worktree. A coordinator integrates your branch, owns STATE.yaml, PROJECT.md, evidence/, CHANGELOG.md and docs/, and reviews your diff. Other workers change other files in parallel (one is changing the gate's warnings and owner-decision rules; import the gate module, do not copy its logic).
+You are a worker on the ProjectState template repository (Python, standard library only). You run in your own git worktree created from branch feat/release-channel-6.3 at commit b89ebd2; confirm with `git log -1 --oneline` and work only inside your worktree. A coordinator integrates your branch, owns STATE.yaml, PROJECT.md, evidence/, CHANGELOG.md and docs/, and reviews your diff. Other workers change other files in parallel (one is changing the gate's warnings and owner-decision rules; import the gate module, do not copy its logic).
 
 Before coding, read: AGENTS.md (root), scripts/AGENTS.md, core/AGENTS.managed.md, releases/index.json, scripts/projectstate_release.py (shared helpers: use them, do not duplicate them), scripts/projectstate_gate.py.
 

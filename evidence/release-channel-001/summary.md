@@ -7,7 +7,7 @@ Owner words: "i choose all ur recs" (D1-D6) and "implement each change yourself
 ... with cheaper sonnet subagents". This slice covers plan items S1-S4 plus the
 gate part of S5 and ships release 6.3.0. Claude (Opus) coordinated, wrote the
 interface and this record; Sonnet workers W1-W5 implemented in separate worktrees.
-The session stopped once for quota (handoff recorded at `46f5c0e`) and resumed.
+The session stopped once for quota (handoff recorded at `11079a4`) and resumed.
 
 ## Primary journey
 
@@ -51,7 +51,7 @@ checks against the draft, where the copies read "draft".
   journey recorded and is rerun below.
 - `python3 scripts/projectstate_release.py check`: consistent; the v6.1.0 and
   v6.2.0 tag gates match their hashes.
-- Integration fixes found by the journey (`98f532b`):
+- Integration fixes found by the journey (`80a034c`):
   - the update's clean-tree check now guards writes only;
   - the doctor gained a "draft" status.
   Both have regression tests.

@@ -4,7 +4,7 @@
 
 Plan item S8 under owner decision D4: main becomes v6 only, and the v5
 compatibility profiles, scripts, schemas, fixtures, commands, skills and
-historical evidence stay available at tag `v5-final` (126dfa7). Implemented by
+historical evidence stay available at tag `v5-final` (5874c0d). Implemented by
 Sonnet worker W10; integrated and verified by the coordinator. The doctor shows
 14 v5-only repositories. The one active among them (example-project-04)
 vendors its own scripts and does not run this template's v5 tooling.
@@ -24,7 +24,7 @@ In the fresh clone, the core journey exited 0 and pytest exited 0
 - Size: tracked files went from 546 to 86. Python went from 47,020 to about
   12,300 lines. `scripts/init_template.py` went from 2,254 to 643 lines.
 - Generator equivalence: W10 compared 80 scenarios against a pristine extract
-  of 126dfa7 (new and adopt, core and hardened, dry runs, conflicts, forced
+  of 5874c0d (new and adopt, core and hardened, dry runs, conflicts, forced
   overwrite, symlinks, hard links, template-root and nested targets, the
   no-subcommand form). Exit codes, output and every resulting file's bytes and
   mode matched. Two intended differences: the "Mode: bootstrap" and "Optional

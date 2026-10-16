@@ -301,7 +301,7 @@ acceptance is recorded and `validation.human_acceptance` stays `pending`.
   commands or store prompts, and a "no network calls" claim that ignored the eval harnesses; the README draft
   understated the core's effect on sonnet's claimed-done-but-wrong rate and did not say which hooks version
   the numbers describe.
-- **Checks.** CI parity, run on `main` before the release commits (20d6efe): clean `--no-hardlinks` clone,
+- **Checks.** CI parity, run on `main` before the release commits (8e627a9): clean `--no-hardlinks` clone,
   `pytest==9.0.3` only and no PyYAML, `test_outcome_core.py` (41 tests), `projectstate_release.py check`,
   436 tests passed with 612 subtests, the gate, a clean tree; `init_template.py new` and `adopt`, and a hooks
   dry run, all behaved as documented.
@@ -319,17 +319,21 @@ acceptance is recorded and `validation.human_acceptance` stays `pending`.
 
 Separate claims from the local checks above.
 
-- `main` was pushed as a fast-forward (7e4cb7c..94079b0, no force), and the tags `v5-final` and `v6.0.0` to
-  `v6.4.0` were pushed in one command. GitHub Actions run 38866746052 on 94079b0 succeeded (Python 3.13, only
-  `pytest==9.0.3` installed). The GitHub release `v6.4.0` was created.
+- `main` was first pushed as a fast-forward from 7e4cb7c, together with the tags `v5-final` and `v6.0.0` to
+  `v6.4.0`. GitHub Actions passed on that push (Python 3.13, only `pytest==9.0.3` installed) and the GitHub
+  release `v6.4.0` was created. A follow-up check then found a few private project names and the owner's git
+  email still in the pushed history. With the owner's explicit approval ("Rewrite + force-push"), the 96 commits
+  after 7e4cb7c were rewritten a second time, their author and committer email was changed to the GitHub noreply
+  address, and `main` and all seven tags were force-pushed with a lease. 7e4cb7c, the earlier public tip, did not
+  change, so only commits pushed that day were replaced. The hashes cited in this file are the rewritten commits
+  (`v6.4.0` is 237f1d0); the CI result for the final head is on GitHub Actions for that commit.
 - Private vulnerability reporting was enabled on the repository, because SECURITY.md and the code of conduct send
   reporters there. 26 stale remote branches were deleted after each tip was found in the verified backup bundle;
   `main` is the only remote branch.
 - An independent review by a separate model found two blockers (the reporting channel was off, and private
-  project names were in the unpublished history) and several wording and tooling defects. All were fixed before
-  the push; the reviewer did not re-run afterwards, so the fixes were re-checked mechanically by the coordinator
-  (secret scan of the pushed range, name and path greps over the rewritten history and every unpublished tag, the
-  full CI sequence on the rewritten clone, the release check against every tag).
-- Limits: the 95 pushed commits carry the owner's configured git author identity. The three files on GitHub
-  before this release that named private projects were already public; the rewrite does not change them.
-
+  project names were in the unpublished history) and several wording and tooling defects, which were fixed before
+  the first push. Its follow-up check found the remaining names and the email, which the second rewrite removed.
+- Limits: GitHub keeps a read-only ref for every pull request (28 here) and those still carry the original,
+  unredacted commits from before this release; only GitHub Support can remove them. Anyone who cloned between the
+  first push and the second may hold the first-pass history; the repository had no forks at that time.
+  The three evidence files on GitHub before this release that named private projects were already public.
