@@ -1,7 +1,7 @@
 {
   "format": "projectstate-release-index/1",
   "state_schema": "projectstate-template-v6",
-  "latest": "6.3.0",
+  "latest": "6.4.0",
   "releases": [
     {
       "release": "6.0.0",
@@ -52,6 +52,18 @@
       "contract_sha256": "0b3795520ecf73d66b8a33837573da45347bbd66e1e9eac97dfe92b96299b351",
       "instance_action": "mechanical",
       "summary": "Release identity, managed contract block, fleet doctor, mechanical update, and owner-decision records."
+    },
+    {
+      "release": "6.4.0",
+      "date": "2026-10-16",
+      "tag": "v6.4.0",
+      "status": "released",
+      "gate_sha256": "d0db4d913ff282c942b23fd796264422107418d7338911b324e4d0676f200861",
+      "contract_sha256": "0b3795520ecf73d66b8a33837573da45347bbd66e1e9eac97dfe92b96299b351",
+      "instance_action": "mechanical",
+      "summary": "Opt-in host hooks for Claude Code and OpenCode keep the owner's words; the gate and managed block are otherwise unchanged.",
+      "hooks_sha256": "afa0ca3bdda73adad2ea847c935ca45b69575f22918e4d5708dd665f1e0f1b5c",
+      "opencode_plugin_sha256": "27ea94ab3e1b788afad9f6ca840b3fc54a5bb788b7aa109596176c4b203df10f"
     }
   ]
 }

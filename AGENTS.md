@@ -7,7 +7,7 @@ last_updated: 2026-10-06
 project: ProjectState_Template
 ---
 
-<!-- projectstate:managed:start release=6.3.0 -->
+<!-- projectstate:managed:start release=6.4.0 -->
 # ProjectState contract
 
 ProjectState helps deliver the outcome in `PROJECT.md`; it is not the outcome.

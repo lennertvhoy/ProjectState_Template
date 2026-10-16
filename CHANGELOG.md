@@ -8,22 +8,20 @@ All notable ProjectState template changes are tracked here.
 > enums, legacy `STATEDD_*` env-var and filename fallbacks) are kept for one
 > migration cycle. Canonical identifiers are now `projectstate-template-v6`,
 > `PROJECTSTATE_ASSETS.json`, and `scripts/projectstate_*.py`. The aliases and
-> `PROJECTSTATE_ASSETS.json` left main with the legacy split (see Unreleased) and
+> `PROJECTSTATE_ASSETS.json` left main with the legacy split (see 6.4.0) and
 > are at tag `v5-final`.
 
-## Unreleased
+## 6.4.0 - 2026-10-16
+
+Instance action: mechanical. The gate's release string and the managed block's release marker change, so
+`projectstate_update.py` brings an instance to 6.4.0 (a dry run by default). The managed block's text is
+unchanged (same `contract_sha256` as 6.3.0). The host hooks below are opt-in assets: an instance gets them only
+when its owner runs `projectstate_hooks.py install`.
 
 - **Host hooks v2** (`scripts/projectstate_hooks.py`, `scripts/projectstate_opencode_plugin.js`, optional; ADR-0005, proposed): one tool for Claude Code and OpenCode. Owner prompts are logged with pasted text marked as not the owner's words; each session starts with a brief built from the files (durable constraints, the slice and whether its journey was recorded by a run, a pending owner decision, the owner's earlier words that may set standing rules, framed as context and not a task list, with one-off fix requests kept out (v2.2), the last three requests); when the owner gives a standing instruction the agent is asked once to file it verbatim in `## Durable constraints`; the read-only gate runs at stop as a safety net. OpenCode subagent prompts are not logged. `install`/`uninstall --host claude|opencode|all`; install refuses to replace a locally edited copy unless `--replace-edited`. In the durability eval (30 realistic owner prompts between the constraints and the work) the hooks kept the chat-only constraints in every chain on haiku and sonnet; see `evidence/handoff-eval-001/summary.md`, "Follow-up 2".
 - **Release channel knows the hooks.** `releases/index.json` entries may carry `hooks_sha256` and `opencode_plugin_sha256` (required from 6.4.0); `projectstate_release.py` checks and cuts them; the fleet doctor reports each instance's hooks and OpenCode plugin and prints the install command when one is behind, edited, v1 or partial.
 - **Evals.** `evals/resume/durability.py` (the owner's word after a realistic week of other prompts; conditions with and without the core, v1 and v2 hooks, and a lean contract candidate in `evals/resume/candidates/`), and `briefing.py --snapshot before-session-2`.
-
-Instance action: none until a release is cut; installing the hooks is opt-in per instance.
-
-- **Owner log** (`scripts/projectstate_owner_log.py`, optional): records each owner prompt verbatim to a local, gitignored log and re-injects recent entries at session start, resume and compaction, via Claude Code hooks; `install` copies the tool and merges the hooks. In the two-session eval 6 of 6 runs kept constraints stated only in chat, against 1 of 23 for every other condition. Also new and optional: `scripts/projectstate_verify.py` (runs the recorded primary journey on `--run` and writes the observed result into the state files; not yet in a release) and the eval harnesses under `evals/resume/` (handoff and briefing).
-
-Instance action: none. The gate, the managed block, and everything a generated
-project receives are unchanged, so no release is cut for this.
-
+- **Owner log** (`scripts/projectstate_owner_log.py`, optional): records each owner prompt verbatim to a local, gitignored log and re-injects recent entries at session start, resume and compaction, via Claude Code hooks; `install` copies the tool and merges the hooks. In the two-session eval 6 of 6 runs kept constraints stated only in chat, against 1 of 23 for every other condition. Also new and optional: `scripts/projectstate_verify.py` (runs the recorded primary journey on `--run` and writes the observed result into the state files; not part of the release index or the update command) and the eval harnesses under `evals/resume/` (handoff and briefing).
 - **Legacy split: main is v6 only** (owner decision D4, plan item S8). Removed:
   the v5 profiles `minimal`, `solo`, `team`, and `regulated`; 95 scripts and tests
   (the `statedd_*` shims, the v5 `projectstate_*` tools, `check_state_docs.py`, the
