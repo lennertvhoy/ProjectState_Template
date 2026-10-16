@@ -171,14 +171,6 @@ plain text: it holds whatever the owner types, so it is local and gitignored, wi
 best-effort redaction of obvious secrets. A stronger model might follow the rules
 that haiku ignored, and was not tested.
 
-## Follow-up 2 (2026-10-09/10): host hooks v2" — for evidence/handoff-eval-001/summary.md
-
-<!-- Drafted by the ps-durability lane from the compiled table and raw run files; the coordinator edits and
-copies this into the evidence summary. Numbers come from
-~/.local/state/projectstate/evals/durability-* (results.json), the compiled table
-/tmp/opencode/ps-reports/durability-compiled.md, the lane reports in /tmp/opencode/ps-reports/, and
-transcripts under ~/.claude/projects/. No model was called for this draft. -->
-
 ## Follow-up 2 (2026-10-09/10): host hooks v2
 
 The durability eval showed v1's injection window (newest ~3500 characters) loses a constraint stated on
