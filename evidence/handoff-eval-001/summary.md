@@ -278,3 +278,34 @@ only; Claude Code headless only in the evals — the OpenCode plugin was verifie
 was measured because the owner paused Claude spending. The stop heuristic is a word list (precision
 0.90, recall 0.72 on a 51-prompt labelled set for the stop set); it can miss constraints phrased as
 nouns or "do not", which the brief's standing pool still catches.
+
+## Release 6.4.0 (2026-10-16)
+
+Owner words, 2026-10-16: "make it finished then, use subagents" and "commit push when done". The
+coordinator read these as authority to cut release 6.4.0 with the hooks as an opt-in asset, add the
+community files, tidy the public repository and publish it. They are not a decision on this slice: no
+acceptance is recorded and `validation.human_acceptance` stays `pending`.
+
+- **Release.** The gate's `RELEASE` and the managed block's marker moved to 6.4.0; the index entry was
+  filled by `projectstate_release.py cut --date 2026-10-16` and records the gate, contract, hooks and
+  OpenCode plugin hashes. The contract hash equals 6.3.0's: the block text did not change. The instance
+  action is `mechanical`. The hooks stay opt-in per instance.
+- **Publication hygiene.** License holder filled in and a FAQ answer that the project is source-available,
+  not OSI open source; CONTRIBUTING, SECURITY, CODE_OF_CONDUCT and issue templates; README sections "Status
+  and license" and "What the evidence shows"; a 6.4.0 section in `docs/UPGRADING.md`; personal paths and the
+  workstation label replaced in STATE.yaml, the evidence and one test docstring; a stray draft heading removed
+  from this file.
+- **Workers.** Three OpenCode workers on a free model (no Claude quota) wrote the community files, audited and
+  drafted the docs, and ran CI parity from a clean clone. The coordinator corrected their output before
+  merging: the community files had a stale version number, a scope list that omitted the tools that execute
+  commands or store prompts, and a "no network calls" claim that ignored the eval harnesses; the README draft
+  understated the core's effect on sonnet's claimed-done-but-wrong rate and did not say which hooks version
+  the numbers describe.
+- **Checks.** CI parity, run on `main` before the release commits (2e8a7c6): clean `--no-hardlinks` clone,
+  `pytest==9.0.3` only and no PyYAML, `test_outcome_core.py` (41 tests), `projectstate_release.py check`,
+  436 tests passed with 612 subtests, the gate, a clean tree; `init_template.py new` and `adopt`, and a hooks
+  dry run, all behaved as documented.
+- **Backup.** A git bundle of every ref, outside the repository, was made and verified before any remote
+  change.
+- **Limits.** The hooks shipped are v2.2, which was not measured. CI uses Python 3.13; this workstation has
+  only 3.14.7. Remote delivery and CI are separate claims and are recorded below once they happened.

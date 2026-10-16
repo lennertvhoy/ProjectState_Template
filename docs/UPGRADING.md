@@ -2,6 +2,29 @@
 
 Current template version: `projectstate-template-v6`
 
+## Release 6.4.0: opt-in host hooks
+
+Release 6.4.0 is `mechanical` in `releases/index.json`: the vendored gate carries
+the new release string and the managed block's marker moves to `release=6.4.0`.
+The block's text is unchanged. Update an instance with the steps under
+"Update an instance" below, using the branch name `projectstate/release-6.4.0`.
+
+The host hooks for Claude Code and OpenCode ship in this release as separate,
+opt-in assets. The update command does not install them, and not installing them
+is fine. The fleet doctor reports each instance's hooks as `current`, `behind`,
+`edited`, `v1`, `partial`, or `absent`. To add them to one instance, preview
+first, then install from the template checkout:
+
+```bash
+python3 /path/to/ProjectState_Template/scripts/projectstate_hooks.py install --root /path/to/your-project --host all --dry-run
+python3 /path/to/ProjectState_Template/scripts/projectstate_hooks.py install --root /path/to/your-project --host all
+```
+
+The hooks record each owner prompt to a local, gitignored log and re-inject the
+owner's earlier words at session start. The measurements are in
+`evidence/handoff-eval-001/summary.md` ("Follow-up 2") and the README section
+"What the evidence shows". The v2.2 hooks in this release were not measured.
+
 ## Release 6.3.0: managed contract and mechanical updates
 
 Release 6.3.0 splits an instance's `AGENTS.md` into a template-owned part and a
