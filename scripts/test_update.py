@@ -321,11 +321,20 @@ def untouched(root: Path) -> dict[str, bytes]:
     return files
 
 
+# `git commit` triggers automatic maintenance in the background (maintenance.auto defaults to true),
+# so it spawns a detached `git maintenance run --auto`, whose transient
+# `.git/objects/maintenance.lock` can exist while a test snapshots `.git` and make a byte comparison
+# flaky. Fixture repositories never start background work, so their `.git` is quiet unless a command
+# writes to it.
+NO_BACKGROUND_MAINTENANCE = ("-c", "maintenance.auto=false", "-c", "gc.auto=0")
+
+
 def git(repo: Path, *args: str) -> str:
     env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull,
            "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
            "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid"}
-    done = subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=False, env=env)
+    done = subprocess.run(["git", *NO_BACKGROUND_MAINTENANCE, *args], cwd=repo, capture_output=True,
+                          text=True, check=False, env=env)
     assert done.returncode == 0, done.stderr
     return done.stdout
 
