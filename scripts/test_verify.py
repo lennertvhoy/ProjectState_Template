@@ -5,6 +5,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -219,3 +222,132 @@ def test_unreadable_summary_structure_is_refused_before_anything_is_written(tmp_
     before = digest(root)
     assert run(root, "--run") == 2
     assert digest(root) == before
+
+
+# --- --receipt: an independent run that writes nothing in the repository ------------------------------------------
+
+
+def receipt_run(root: Path, receipts: Path, *extra: str) -> int:
+    return verify.main(["--root", str(root), "--receipt", "--receipts", str(receipts), *extra])
+
+
+def read_receipt(receipts: Path, root: Path) -> dict:
+    return json.loads((receipts / root.name / "demo-001.json").read_text())
+
+
+def git(root: Path, *args: str) -> str:
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull,
+           "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid"}
+    done = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False, env=env)
+    assert done.returncode == 0, done.stderr
+    return done.stdout
+
+
+def committed(root: Path) -> str:
+    """Commit everything in ``root``; background maintenance is off so .git is still when it is compared."""
+    git(root, "init", "-q")
+    for setting in ("gc.auto=0", "maintenance.auto=false"):
+        git(root, "config", *setting.split("="))
+    git(root, "add", "-A")
+    git(root, "commit", "-qm", "fixture")
+    return git(root, "rev-parse", "HEAD").strip()
+
+
+needs_git = pytest.mark.skipif(shutil.which("git") is None, reason="git is required")
+
+
+def test_receipt_dry_run_executes_and_writes_nothing(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root, receipts = make(tmp_path / "repo", command="touch ran-anyway"), tmp_path / "receipts"
+    before = digest(root)
+    assert receipt_run(root, receipts) == 0
+    assert digest(root) == before and not receipts.exists()
+    assert "touch ran-anyway" in capsys.readouterr().out
+
+
+def test_receipt_records_a_pass_outside_the_repository_and_leaves_it_untouched(tmp_path: Path) -> None:
+    command = "echo observed > created-by-journey && cat created-by-journey"
+    root, receipts = make(tmp_path / "repo", command=command, status="implementing", journey="not_run"), tmp_path / "receipts"
+    before = digest(root)
+    assert receipt_run(root, receipts, "--run", "--by", "a reviewer") == 0
+    assert digest(root) == before, "neither the tool nor the journey may change the repository"
+    found = read_receipt(receipts, root)
+    assert found["format"] == verify.RECEIPT_FORMAT
+    assert (found["repository"], found["path"], found["slice"]) == (root.name, str(root.resolve()), "demo-001")
+    assert (found["result"], found["exit_code"], found["timed_out"]) == ("passed", 0, False)
+    assert (found["ran_in"], found["head"], found["uncommitted_paths"]) == ("copy", None, None)
+    assert found["command"] == command and found["command_sha256"] == hashlib.sha256(command.encode()).hexdigest()
+    assert (found["recorded_journey"], found["slice_status"], found["by"]) == ("not_run", "implementing", "a reviewer")
+    assert "observed" in (receipts / root.name / "demo-001.log").read_text()
+    assert parsed(root)["current_slice"]["primary_journey"]["status"] == "not_run", "a receipt never edits the record"
+
+
+def test_a_failing_receipt_run_changes_no_record_and_says_the_record_disagrees(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    root, receipts = make(tmp_path / "repo", command="echo broken; exit 3", status="validated", journey="passed"), tmp_path / "receipts"
+    before = digest(root)
+    assert receipt_run(root, receipts, "--run") == 1
+    assert digest(root) == before, "an independent run never downgrades the slice; that is the writer's job"
+    found = read_receipt(receipts, root)
+    assert (found["result"], found["exit_code"], found["recorded_journey"], found["slice_status"]) == ("failed", 3, "passed", "validated")
+    out = capsys.readouterr().out
+    assert "records this journey as passed" in out and "broken" in out
+
+
+def test_receipt_records_a_timeout_as_failed(tmp_path: Path) -> None:
+    root, receipts = make(tmp_path / "repo", command="sleep 30"), tmp_path / "receipts"
+    assert receipt_run(root, receipts, "--run", "--timeout", "0.3") == 1
+    found = read_receipt(receipts, root)
+    assert (found["result"], found["timed_out"], found["exit_code"]) == ("failed", True, 124)
+
+
+@needs_git
+def test_receipt_runs_the_committed_head_and_in_place_runs_the_working_tree(tmp_path: Path) -> None:
+    root, receipts = make(tmp_path / "repo", command="grep -q committed marker.txt"), tmp_path / "receipts"
+    (root / "marker.txt").write_text("committed\n")
+    head = committed(root)
+    (root / "marker.txt").write_text("changed later\n")
+    before = digest(root)
+
+    assert receipt_run(root, receipts, "--run") == 0, "the clone holds the committed file, so the journey passes"
+    found = read_receipt(receipts, root)
+    assert (found["ran_in"], found["head"], found["uncommitted_paths"], found["result"]) == ("clone-of-head", head, 1, "passed")
+    assert digest(root) == before, "cloning and reading status must not write in the work tree or in .git"
+
+    assert receipt_run(root, receipts, "--run", "--in-place") == 1, "the working tree holds the edit, so the journey fails"
+    found = read_receipt(receipts, root)
+    assert (found["ran_in"], found["head"], found["result"]) == ("working-tree", head, "failed")
+    assert digest(root) == before
+
+
+@needs_git
+def test_receipt_treats_a_subdirectory_of_another_repository_as_unversioned(tmp_path: Path) -> None:
+    outer = tmp_path / "outer"
+    root, receipts = make(outer / "repo", command="exit 0"), tmp_path / "receipts"
+    committed(outer)
+    assert receipt_run(root, receipts, "--run") == 0
+    found = read_receipt(receipts, root)
+    assert (found["ran_in"], found["head"]) == ("copy", None), "HEAD of an enclosing repository is not this repository's HEAD"
+
+
+def test_receipt_refuses_a_receipts_directory_inside_the_repository(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make(tmp_path / "repo", command="touch ran-anyway")
+    before = digest(root)
+    assert receipt_run(root, root / "receipts", "--run") == 2
+    assert digest(root) == before
+    assert "inside the repository" in capsys.readouterr().err
+
+
+def test_receipt_refuses_names_that_cannot_be_file_names(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root, receipts = make(tmp_path / "re po", command="touch ran-anyway"), tmp_path / "receipts"
+    assert receipt_run(root, receipts, "--run") == 2
+    assert not receipts.exists() and not (root / "ran-anyway").exists()
+    assert "cannot be used as a receipt file name" in capsys.readouterr().err
+
+
+def test_in_place_without_receipt_is_a_usage_error(tmp_path: Path) -> None:
+    root = make(tmp_path / "repo")
+    with pytest.raises(SystemExit) as error:
+        run(root, "--run", "--in-place")
+    assert error.value.code == 2

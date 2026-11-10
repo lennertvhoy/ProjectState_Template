@@ -17,6 +17,17 @@ the owner). If the gate reports any new error after the edit, every file is rest
 
 Exit codes: 0 journey passed and recorded; 1 journey failed and recorded; 2 refused, or rolled back, nothing recorded.
 This is not the gate: the gate stays read-only and never executes anything.
+
+    python3 scripts/projectstate_verify.py --root DIR --receipt [--run] [--in-place] [--receipts DIR] [--by WHO]
+
+``--receipt`` is the same run for someone who is not the repository's writer: a reviewer, the owner, or a fleet check.
+It writes nothing in the repository. The journey runs in a temporary copy (a clone of the committed HEAD, or a file
+copy when the directory has no git), so uncommitted work is not part of the run and the working tree is not touched;
+``--in-place`` runs it in the working tree instead, for a journey that needs local files that are not committed. The
+result goes to a receipt outside the repository, ``<receipts>/<repository>/<slice>.json`` (default
+``~/.local/state/projectstate/journeys``), with the output tail beside it as ``<slice>.log``. The receipt names the
+command and its sha256, the HEAD it ran against, where it ran, the exit code and the time, so the fleet doctor can tell
+a slice whose journey someone else has run from one whose only proof is its own records. The exit codes are the same.
 """
 
 from __future__ import annotations
@@ -24,6 +35,8 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
+import hashlib
+import json
 import os
 import re
 import shutil
@@ -53,6 +66,15 @@ VALUE_LINE = re.compile(
     r"(?P<tail>[ \t]*|[ \t]+#.*)$"
 )
 SECTION = re.compile(r"^##\s+(.+?)\s*$")
+RECEIPT_FORMAT = "projectstate-journey-receipt/1"
+DEFAULT_RECEIPTS = "~/.local/state/projectstate/journeys"
+RECEIPT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+GIT_TIMEOUT = 600
+# Variables that would point git at a different repository than the one being verified.
+GIT_REDIRECT_VARS = frozenset({
+    "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_PREFIX", "GIT_QUARANTINE_PATH",
+})
 
 
 class Refused(Exception):
@@ -334,13 +356,148 @@ def record(root: Path, args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+# --- an independent run: a receipt outside the repository ---------------------------------------------------------
+
+
+def git_read(root: Path, *args: str) -> str | None:
+    """Output of one read-only git command against ``root`` itself; None when git or the command fails."""
+    env = {key: value for key, value in os.environ.items() if key not in GIT_REDIRECT_VARS}
+    # No optional locks: a status must not refresh the index. The ceiling keeps git from climbing into a parent repository.
+    env.update(GIT_OPTIONAL_LOCKS="0", GIT_TERMINAL_PROMPT="0", GIT_CEILING_DIRECTORIES=str(root.parent))
+    try:
+        done = subprocess.run(
+            ["git", "--no-pager", "-C", str(root), "-c", "core.fsmonitor=false", *args],
+            capture_output=True, stdin=subprocess.DEVNULL, text=True, errors="replace", env=env, timeout=GIT_TIMEOUT, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
+def git_state(root: Path) -> tuple[str | None, int | None]:
+    """(HEAD, number of uncommitted paths) when ``root`` is the top of a git work tree with a commit, else (None, None)."""
+    top = git_read(root, "rev-parse", "--show-toplevel")
+    if top is None or Path(top.strip()).resolve() != root:
+        return None, None
+    head = (git_read(root, "rev-parse", "--verify", "HEAD") or "").strip()
+    if not head:
+        return None, None
+    status = git_read(root, "status", "--porcelain", "--untracked-files=normal")
+    return head, (None if status is None else len(status.splitlines()))
+
+
+def snapshot(root: Path, head: str | None, parent: Path) -> tuple[Path, str]:
+    """A temporary copy to run in: the committed HEAD when there is one, otherwise the files as they are."""
+    copy_root = parent / root.name
+    if head is None:
+        try:
+            shutil.copytree(root, copy_root, symlinks=True)
+        except (OSError, shutil.Error) as error:
+            raise Refused([f"cannot copy {root} to a temporary directory ({error})"]) from error
+        return copy_root, "copy"
+    # A local clone only reads the source. --no-hardlinks: nothing in the copy shares a file with the repository.
+    if git_read(root, "clone", "--quiet", "--no-hardlinks", str(root), str(copy_root)) is None:
+        raise Refused([f"cannot clone {root} to a temporary directory; use --in-place to run in the working tree"])
+    if git_read(root, "-C", str(copy_root), "checkout", "--quiet", "--detach", head) is None:
+        raise Refused([f"the temporary clone cannot check out {head}"])
+    return copy_root, "clone-of-head"
+
+
+def receipt_paths(root: Path, slice_id: str, receipts: Path) -> tuple[Path, Path]:
+    if is_inside(receipts, root):
+        raise Refused([f"the receipts directory {receipts} is inside the repository; a receipt must live outside it"])
+    for label, value in (("repository directory name", root.name), ("slice id", slice_id)):
+        if not RECEIPT_NAME.fullmatch(value):
+            raise Refused([f"the {label} {value!r} cannot be used as a receipt file name"])
+    folder = receipts / root.name
+    return folder / f"{slice_id}.json", folder / f"{slice_id}.log"
+
+
+def is_inside(path: Path, parent: Path) -> bool:
+    return path == parent or parent in path.parents
+
+
+def receipt(root: Path, args: argparse.Namespace) -> int:
+    state_path = regular(root, "STATE.yaml")
+    try:
+        payload = gatelib.parse_state(state_path.read_bytes().decode("utf-8"))
+    except (gatelib.StateSyntaxError, UnicodeDecodeError) as error:
+        raise Refused([f"STATE.yaml does not parse: {error}"]) from error
+    slice_id, status, command, environment = journey_of(payload)
+    recorded = str(payload["current_slice"]["primary_journey"].get("status"))
+    receipt_path, log_path = receipt_paths(root, slice_id, Path(args.receipts).expanduser().resolve())
+    head, dirty = git_state(root)
+    where = "the working tree" if args.in_place else ("a temporary clone of HEAD" if head else "a temporary copy of the files")
+    print(f"slice {slice_id} ({status}), journey recorded as {recorded}\n  command:     {command}\n"
+          f"  environment: {environment}\n  run in:      {where}\n  receipt:     {receipt_path}")
+    if not args.run:
+        print("dry run: nothing executed. Re-run with --run to execute the command and write the receipt.")
+        return 0
+    started = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if args.in_place:
+        ran_in, outcome = "working-tree", run_journey(command, root, args.timeout)
+    else:
+        with tempfile.TemporaryDirectory(prefix="projectstate-journey-") as holder:
+            copy_root, ran_in = snapshot(root, head, Path(holder))
+            outcome = run_journey(command, copy_root, args.timeout)
+    passed = outcome.code == 0
+    document = {
+        "format": RECEIPT_FORMAT,
+        "repository": root.name,
+        "path": str(root),
+        "slice": slice_id,
+        "slice_status": status,
+        "recorded_journey": recorded,
+        "command": command,
+        "command_sha256": hashlib.sha256(command.encode("utf-8")).hexdigest(),
+        "environment_recorded": environment,
+        "ran_in": ran_in,
+        "head": head,
+        "uncommitted_paths": dirty,
+        "started": started,
+        "seconds": round(outcome.seconds, 1),
+        "exit_code": outcome.code,
+        "timed_out": outcome.timed_out,
+        "result": "passed" if passed else "failed",
+        "output_tail_sha256": hashlib.sha256(outcome.tail.encode("utf-8")).hexdigest(),
+        "by": args.by,
+        "tool": RECORDED_BY,
+        "tool_release": getattr(gatelib, "RELEASE", None),
+    }
+    try:
+        receipt_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        write_atomic(log_path, artifact_text(command, outcome, started).encode("utf-8"), 0o600)
+        write_atomic(receipt_path, (json.dumps(document, indent=2) + "\n").encode("utf-8"), 0o600)
+    except OSError as error:
+        raise Refused([f"cannot write the receipt ({error})"]) from error
+    verdict = "PASSED" if passed else ("TIMED OUT" if outcome.timed_out else f"FAILED (exit {outcome.code})")
+    print(f"journey {verdict} in {outcome.seconds:.1f}s in {where}; receipt written, nothing recorded in the repository")
+    if ran_in == "clone-of-head" and dirty:
+        print(f"note: {dirty} uncommitted path(s) in the working tree were not part of this run")
+    if passed != (recorded == "passed"):
+        print(f"note: the repository records this journey as {recorded}; this run {'passed' if passed else 'did not pass'}")
+    if not passed:
+        print("--- output tail ---\n" + "\n".join(outcome.tail.splitlines()[-15:]))
+    return 0 if passed else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the primary journey and record the observed result")
     parser.add_argument("--root", default=".", help="Repository root (default: current directory)")
     parser.add_argument("--run", action="store_true", help="Execute the recorded command (without it, only print the plan)")
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="Seconds before the journey is killed")
+    parser.add_argument("--receipt", action="store_true",
+                        help="Independent run: write nothing in the repository and record the result as a receipt outside it")
+    parser.add_argument("--in-place", action="store_true",
+                        help="With --receipt: run in the working tree instead of a temporary copy")
+    parser.add_argument("--receipts", default=DEFAULT_RECEIPTS, help=f"With --receipt: where receipts are kept (default: {DEFAULT_RECEIPTS})")
+    parser.add_argument("--by", default="", help="With --receipt: who or what ran the journey, recorded in the receipt")
     args = parser.parse_args(argv)
+    if args.in_place and not args.receipt:
+        parser.error("--in-place only applies to --receipt")
     try:
+        if args.receipt:
+            return receipt(Path(args.root).resolve(), args)
         return record(Path(args.root).resolve(), args)
     except Refused as error:
         for reason in error.reasons:
