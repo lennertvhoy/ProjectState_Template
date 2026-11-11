@@ -237,6 +237,7 @@ class OutcomeCoreTests(unittest.TestCase):
                     "STATE.yaml",
                     "evidence/bootstrap-001/summary.md",
                     "scripts/projectstate_gate.py",
+                    "scripts/projectstate_verify.py",
                 },
             )
             self.assertFalse(files & LEGACY_TRUTH_FILES)

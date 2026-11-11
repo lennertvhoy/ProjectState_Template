@@ -17,11 +17,14 @@ from contextlib import contextmanager, suppress
 from pathlib import Path, PureWindowsPath
 
 try:
-    from projectstate_release import GATE_PATH, MANAGED_PATH, gate_release, managed_block_text, render_managed_block
+    from projectstate_release import (
+        GATE_PATH, MANAGED_PATH, VERIFY_PATH, gate_release, managed_block_text, render_managed_block,
+    )
 except ModuleNotFoundError:  # pragma: no cover - pytest package import path
     from scripts.projectstate_release import (
         GATE_PATH,
         MANAGED_PATH,
+        VERIFY_PATH,
         gate_release,
         managed_block_text,
         render_managed_block,
@@ -35,7 +38,7 @@ PROFILES = ("core", "hardened")
 LEGACY_PROFILES = ("minimal", "solo", "team", "regulated")
 V5_TAG = "v5-final"
 # Template files copied into a generated project, in copy order.
-PROFILE_ASSETS = {"core": (GATE_PATH,), "hardened": (Path("HARDENED_POLICY.md"), GATE_PATH)}
+PROFILE_ASSETS = {"core": (GATE_PATH, VERIFY_PATH), "hardened": (Path("HARDENED_POLICY.md"), GATE_PATH, VERIFY_PATH)}
 
 
 class UnsafePathError(ValueError):

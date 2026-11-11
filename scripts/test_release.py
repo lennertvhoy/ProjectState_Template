@@ -48,6 +48,7 @@ GATE_640 = gate_source("6.4.0")
 HOOKS_TEXT = "#!/usr/bin/env python3\n# fake host hooks tool\n"
 PLUGIN_TEXT = "// fake opencode plugin\n"
 EDITED_HOOKS_TEXT = HOOKS_TEXT + "# edited after the release\n"
+VERIFY_TEXT = "#!/usr/bin/env python3\n# fake journey-recording tool\n"
 EDITED_PLUGIN_TEXT = PLUGIN_TEXT + "// edited after the release\n"
 
 
@@ -56,9 +57,11 @@ def sha(text: str | bytes) -> str:
 
 
 def entry(release: str, *, status: str = "released", gate: str | None = None, contract: str | None = None,
-          hooks: str | None = None, plugin: str | None = None,
+          hooks: str | None = None, plugin: str | None = None, verify: str | None = None,
           date: str | None = "2026-09-01", action: str = "mechanical") -> dict[str, Any]:
+    """One index entry; ``verify_sha256`` is present only when given, as in entries from before 6.5.0."""
     return {
+        **({"verify_sha256": verify} if verify is not None else {}),
         "release": release,
         "date": None if status == "draft" else date,
         "tag": f"v{release}",
@@ -113,7 +116,7 @@ def write_json(path: Path, payload: Any) -> None:
 def make_template(
     root: Path, releases: list[dict[str, Any]] | None = None, *, gate: str = GATE_630, block: str | None = BLOCK,
     hooks: str | None = HOOKS_TEXT, plugin: str | None = PLUGIN_TEXT,
-    raw_index: str | None = None, top: dict[str, Any] | None = None,
+    raw_index: str | None = None, top: dict[str, Any] | None = None, verify: str | None = VERIFY_TEXT,
 ) -> Path:
     """A template root with a fake gate, fake managed block and host hooks assets, and an index."""
     for directory in ("releases", "scripts", "core"):
@@ -125,6 +128,8 @@ def make_template(
         (root / rel.HOOKS_PATH).write_text(hooks, encoding="utf-8")
     if plugin is not None:
         (root / rel.OPENCODE_PLUGIN_PATH).write_text(plugin, encoding="utf-8")
+    if verify is not None:
+        (root / rel.VERIFY_PATH).write_text(verify, encoding="utf-8")
     if raw_index is not None:
         (root / rel.INDEX_PATH).write_text(raw_index, encoding="utf-8")
     else:
@@ -243,10 +248,11 @@ class RealIndexTests(unittest.TestCase):
             "contract_sha256": rel.contract_sha256(rel.managed_block_text()),
             "hooks_sha256": rel.sha256_file(ROOT / rel.HOOKS_PATH),
             "opencode_plugin_sha256": rel.sha256_file(ROOT / rel.OPENCODE_PLUGIN_PATH),
+            "verify_sha256": rel.sha256_file(ROOT / rel.VERIFY_PATH),
         })
         self.assertEqual(list(json.loads(done.stdout)),
                          ["gate_release", "gate_sha256", "contract_sha256", "hooks_sha256",
-                          "opencode_plugin_sha256"])
+                          "opencode_plugin_sha256", "verify_sha256"])
 
     def test_real_index_serializes_back_to_the_same_bytes(self) -> None:
         # cut rewrites the index with json.dumps; if that changed untouched lines the diff of a cut would be noisy
@@ -388,12 +394,12 @@ class CheckTests(TemporaryRoot):
     def test_order_is_numeric_not_textual(self) -> None:
         # "6.10.0" sorts before "6.9.0" as text but follows it as a version
         make_template(self.root, [entry("6.9.0", gate=sha(GATE_600), contract=sha(BLOCK),
-                                        hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT)),
+                                        hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT), verify=sha(VERIFY_TEXT)),
                                   entry("6.10.0", status="draft")], gate=gate_source("6.10.0"))
         result = self.check()
         self.assertEqual((result.code, result.err), (0, ""), result.out)
         make_template(self.root, [entry("6.10.0", gate=sha(GATE_600), contract=sha(BLOCK),
-                                        hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT)),
+                                        hooks=sha(HOOKS_TEXT), plugin=sha(PLUGIN_TEXT), verify=sha(VERIFY_TEXT)),
                                   entry("6.9.0", status="draft")], gate=gate_source("6.9.0"))
         self.assertRejected(self.check(), "releases must ascend, but 6.9.0 follows 6.10.0")
 
@@ -757,6 +763,7 @@ class CutTests(TemporaryRoot):
         self.assertIn("never creates tags", result.out)
         after = json.loads(self.index_bytes())
         latest = after["releases"][-1]
+        # 6.3.0 predates the vendored journey tool, so no verify_sha256 is recorded for it
         self.assertEqual(latest, {**before["releases"][-1], "date": "2026-10-06", "status": "released",
                                   "gate_sha256": sha(GATE_630), "contract_sha256": sha(BLOCK),
                                   "hooks_sha256": sha(HOOKS_TEXT), "opencode_plugin_sha256": sha(PLUGIN_TEXT)})
@@ -768,6 +775,29 @@ class CutTests(TemporaryRoot):
         self.assertEqual((checked.code, checked.err), (0, ""), checked.out)
         self.assertIn("latest 6.3.0 (released)", checked.out)
         self.assertNotIn("records no hashes", checked.out)
+
+    def test_from_650_the_journey_tool_hash_is_cut_checked_and_required(self) -> None:
+        released = entry("6.4.0", gate=sha(GATE_600), contract=sha(BLOCK), hooks=sha(HOOKS_TEXT),
+                         plugin=sha(PLUGIN_TEXT))
+        make_template(self.root, [released, entry("6.5.0", status="draft")], gate=gate_source("6.5.0"))
+        self.assertEqual(self.cut().code, 0)
+        latest = json.loads(self.index_bytes())["releases"][-1]
+        self.assertEqual(latest["verify_sha256"], sha(VERIFY_TEXT))
+        self.assertEqual(self.check().code, 0)
+        # the released entry is frozen: an edit to the tool, or its removal, is a mismatch
+        (self.root / rel.VERIFY_PATH).write_text(VERIFY_TEXT + "# edited after the release\n", encoding="utf-8")
+        self.assertRejected(self.check(), "verify_sha256")
+        (self.root / rel.VERIFY_PATH).unlink()
+        self.assertRejected(self.check(), "scripts/projectstate_verify.py is missing")
+        # a released 6.5.0 entry without the field is refused, and so is cutting without the file
+        make_template(self.root, [released, {key: value for key, value in latest.items() if key != "verify_sha256"}],
+                      gate=gate_source("6.5.0"))
+        self.assertRejected(self.check(), "verify_sha256 is missing; a release from 6.5.0 on")
+        make_template(self.root, [released, entry("6.5.0", status="draft")], gate=gate_source("6.5.0"))
+        (self.root / rel.VERIFY_PATH).unlink()
+        refused = self.cut()
+        self.assertEqual(refused.code, 2)
+        self.assertIn("journey-recording tool", refused.err)
 
     def test_cut_on_a_6_4_0_draft_records_the_hooks_assets_and_check_then_passes(self) -> None:
         make_template(self.root, [*consistent_releases("released")[:-1], entry("6.4.0", status="draft")],
@@ -924,10 +954,11 @@ class CutTests(TemporaryRoot):
     def test_cut_on_a_copy_of_the_real_files_matches_the_real_hashes(self) -> None:
         # The real gate, block, hooks assets and index are copied; the last entry is forced back to a
         # draft so this test keeps working after the real 6.3.0 is cut.
-        for relative in (rel.GATE_PATH, rel.MANAGED_PATH, rel.HOOKS_PATH, rel.OPENCODE_PLUGIN_PATH, rel.INDEX_PATH):
+        watched = (rel.GATE_PATH, rel.MANAGED_PATH, rel.HOOKS_PATH, rel.OPENCODE_PLUGIN_PATH, rel.VERIFY_PATH,
+                   rel.INDEX_PATH)
+        for relative in watched:
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / relative, self.root / relative)
-        watched = (rel.GATE_PATH, rel.MANAGED_PATH, rel.HOOKS_PATH, rel.OPENCODE_PLUGIN_PATH, rel.INDEX_PATH)
         real_before = {relative: (ROOT / relative).read_bytes() for relative in watched}
         payload = json.loads(self.index_bytes())
         payload["releases"][-1].update(date=None, status="draft", gate_sha256=None, contract_sha256=None)
@@ -939,6 +970,7 @@ class CutTests(TemporaryRoot):
         self.assertEqual(cut_entry["contract_sha256"], rel.contract_sha256(rel.managed_block_text(ROOT)))
         self.assertEqual(cut_entry["hooks_sha256"], rel.sha256_file(ROOT / rel.HOOKS_PATH))
         self.assertEqual(cut_entry["opencode_plugin_sha256"], rel.sha256_file(ROOT / rel.OPENCODE_PLUGIN_PATH))
+        self.assertEqual(cut_entry["verify_sha256"], rel.sha256_file(ROOT / rel.VERIFY_PATH))
         checked = self.check()
         self.assertEqual((checked.code, checked.err), (0, ""), checked.out)
         self.assertEqual({relative: (ROOT / relative).read_bytes() for relative in watched}, real_before,
@@ -955,7 +987,8 @@ class CommandLineTests(TemporaryRoot):
         self.assertEqual(run_tool("check", "--template", str(elsewhere)).code, 2)
         hashes = json.loads(run_tool("hashes", "--template", str(self.root)).out)
         self.assertEqual(hashes, {"gate_release": "6.3.0", "gate_sha256": sha(GATE_630), "contract_sha256": sha(BLOCK),
-                                  "hooks_sha256": sha(HOOKS_TEXT), "opencode_plugin_sha256": sha(PLUGIN_TEXT)})
+                                  "hooks_sha256": sha(HOOKS_TEXT), "opencode_plugin_sha256": sha(PLUGIN_TEXT),
+                                  "verify_sha256": sha(VERIFY_TEXT)})
         self.assertEqual(run_tool("cut", "--date", "2026-10-06", "--template", str(self.root)).code, 0)
 
     def test_hashes_reports_missing_files_without_a_traceback(self) -> None:

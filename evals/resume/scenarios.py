@@ -45,6 +45,7 @@ CORE_FILES = (
     "STATE.yaml",
     "evidence/",
     "scripts/projectstate_gate.py",
+    "scripts/projectstate_verify.py",
 )
 
 
@@ -764,13 +765,15 @@ def core_files(generated: dict[str, str], scenario: Scenario, observation: Obser
         "STATE.yaml",
         f"evidence/{SLICE_ID}/summary.md",
         "scripts/projectstate_gate.py",
+        "scripts/projectstate_verify.py",
     )
     missing = [name for name in needed if name not in generated]
     if missing:
         raise ScenarioError(f"init_template.py new no longer generates {missing}")
     files = {
         "AGENTS.md": generated["AGENTS.md"],
-        "scripts/projectstate_gate.py": generated["scripts/projectstate_gate.py"],
+        # every tool a generated project carries: the gate and, from 6.5.0, the journey tool the contract names
+        **{name: text for name, text in generated.items() if name.startswith("scripts/")},
         "PROJECT.md": render_project(generated["PROJECT.md"], scenario.records.outcome),
         "STATE.yaml": render_state(generated["STATE.yaml"], scenario),
         f"evidence/{SLICE_ID}/summary.md": render_summary(scenario, observation),

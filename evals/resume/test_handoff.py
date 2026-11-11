@@ -242,7 +242,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(
             names,
             {"README.md", ".gitignore", "ledger.py", "journey.py", "AGENTS.md", "PROJECT.md", "STATE.yaml",
-             f"evidence/{handoff.SLICE}/summary.md", "scripts/projectstate_gate.py"},
+             f"evidence/{handoff.SLICE}/summary.md", "scripts/projectstate_gate.py",
+             "scripts/projectstate_verify.py"},
         )
         exit_code, output = sc.run_gate(repo)
         self.assertEqual(exit_code, 1, output)  # not_run journey: honest, not invalid
@@ -297,7 +298,9 @@ class RepositoryTests(unittest.TestCase):
             self.assertEqual((repo / "AGENTS.md").read_text().replace(added, ""), (plain / "AGENTS.md").read_text())
             self.assertEqual(handoff.release_block((repo / "AGENTS.md").read_text()), handoff.release_block((plain / "AGENTS.md").read_text()))
             self.assertEqual(sc.run_gate(repo)[0], 1)
-        self.assertFalse((plain / "scripts" / "projectstate_verify.py").exists())
+        # from 6.5.0 every generated project carries the journey tool, so the plain core repository has it too
+        self.assertEqual((plain / "scripts" / "projectstate_verify.py").read_bytes(),
+                         (sc.ROOT / "scripts" / "projectstate_verify.py").read_bytes())
 
     def test_the_vendored_verify_tool_records_a_failing_skeleton_honestly(self) -> None:
         repo = self.build("with-verify")

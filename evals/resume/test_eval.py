@@ -40,6 +40,7 @@ CORE_PATHS = {
     "PROJECT.md",
     "STATE.yaml",
     "scripts/projectstate_gate.py",
+    "scripts/projectstate_verify.py",
     "evidence/bootstrap-001/summary.md",
 }
 
@@ -172,6 +173,7 @@ class ScenarioTests(TempRoot):
                 "STATE.yaml",
                 "evidence/bootstrap-001/summary.md",
                 "scripts/projectstate_gate.py",
+                "scripts/projectstate_verify.py",
             },
         )
         self.assertEqual(agents.split("---", 2)[2], generated["AGENTS.md"].split("---", 2)[2])

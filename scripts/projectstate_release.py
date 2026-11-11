@@ -24,7 +24,9 @@ Besides ``gate_sha256`` and ``contract_sha256``, an entry may record ``hooks_sha
 (the sha256 of ``scripts/projectstate_hooks.py``) and ``opencode_plugin_sha256`` (the
 sha256 of ``scripts/projectstate_opencode_plugin.js``). The host hooks are an opt-in
 asset, so both fields are optional keys: null or absent is fine for a draft and for
-releases before 6.4.0, and required (with the files present) from 6.4.0 on.
+releases before 6.4.0, and required (with the files present) from 6.4.0 on. From 6.5.0 on
+an entry also records ``verify_sha256``, the sha256 of ``scripts/projectstate_verify.py``:
+the managed contract names that tool, so an instance carries it beside the gate.
 """
 
 from __future__ import annotations
@@ -50,6 +52,7 @@ MANAGED_PATH = Path("core") / "AGENTS.managed.md"
 GATE_PATH = Path("scripts") / "projectstate_gate.py"
 HOOKS_PATH = Path("scripts") / "projectstate_hooks.py"
 OPENCODE_PLUGIN_PATH = Path("scripts") / "projectstate_opencode_plugin.js"
+VERIFY_PATH = Path("scripts") / "projectstate_verify.py"
 START_MARKER = re.compile(r"^<!-- projectstate:managed:start release=(\d+\.\d+\.\d+) -->$", re.MULTILINE)
 END_MARKER = re.compile(r"^<!-- projectstate:managed:end -->$", re.MULTILINE)
 END_LINE = "<!-- projectstate:managed:end -->"
@@ -69,16 +72,25 @@ SHA256_HEX = re.compile(r"[0-9a-f]{64}")
 ISO_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 FIRST_CONTRACT_RELEASE = (6, 3, 0)  # releases before this one predate the managed block and record no contract hash
 FIRST_HOOKS_RELEASE = (6, 4, 0)  # releases before this one predate the opt-in host hooks and record no hashes
+FIRST_VERIFY_RELEASE = (6, 5, 0)  # releases before this one do not vendor the journey-recording tool
 # (index field, file, needs the managed-block normalization) for every hash an entry can record.
 HASHED_FILES: tuple[tuple[str, Path, bool], ...] = (
     ("gate_sha256", GATE_PATH, False),
     ("contract_sha256", MANAGED_PATH, True),
     ("hooks_sha256", HOOKS_PATH, False),
     ("opencode_plugin_sha256", OPENCODE_PLUGIN_PATH, False),
+    ("verify_sha256", VERIFY_PATH, False),
 )
 # The opt-in host hooks assets: optional index keys, recorded from 6.4.0 on.
 HOOKS_ASSET_FILES: tuple[tuple[str, Path], ...] = (("hooks_sha256", HOOKS_PATH),
                                                    ("opencode_plugin_sha256", OPENCODE_PLUGIN_PATH))
+# Hashes that exist only from some release on: (index field, file, first release, what the file is). They are
+# optional keys of an entry: absent or null for a draft and for older releases, required from that release on.
+DATED_FILES: tuple[tuple[str, Path, tuple[int, int, int], str], ...] = (
+    ("hooks_sha256", HOOKS_PATH, FIRST_HOOKS_RELEASE, "opt-in host hooks asset"),
+    ("opencode_plugin_sha256", OPENCODE_PLUGIN_PATH, FIRST_HOOKS_RELEASE, "opt-in host hooks asset"),
+    ("verify_sha256", VERIFY_PATH, FIRST_VERIFY_RELEASE, "journey-recording tool"),
+)
 COMMANDS = ("check", "cut", "hashes")
 GIT_TIMEOUT_SECONDS = 30
 GIT_LOCATION_VARIABLES = (
@@ -245,8 +257,8 @@ def entry_problems(entry: Any, position: int, is_last: bool) -> list[str]:
         return [f"{label} must be an object"]
     problems: list[str] = []
     missing = [key for key in INDEX_KEYS if key not in entry]
-    hook_fields = {field for field, _path in HOOKS_ASSET_FILES}
-    unknown = sorted(str(key) for key in entry if key not in INDEX_KEYS and key not in hook_fields)
+    dated_fields = {field for field, _path, _first, _what in DATED_FILES}
+    unknown = sorted(str(key) for key in entry if key not in INDEX_KEYS and key not in dated_fields)
     if missing:
         problems.append(f"{label} is missing keys {missing}")
     if unknown:
@@ -278,7 +290,6 @@ def entry_problems(entry: Any, position: int, is_last: bool) -> list[str]:
             problems.append(f"{label}: date must be YYYY-MM-DD or null")
     draft = status == "draft"
     predates_contract = release_key is not None and release_key < FIRST_CONTRACT_RELEASE
-    needs_hooks = status == "released" and release_key is not None and release_key >= FIRST_HOOKS_RELEASE
     for field, may_be_null, allowed in (
         ("gate_sha256", draft, "only a draft may leave it null"),
         ("contract_sha256", draft or predates_contract, "only a draft or a release before 6.3.0 may leave it null"),
@@ -291,16 +302,18 @@ def entry_problems(entry: Any, position: int, is_last: bool) -> list[str]:
                 problems.append(f"{label}: {field} is null; {allowed}")
         elif not isinstance(value, str) or not SHA256_HEX.fullmatch(value):
             problems.append(f"{label}: {field} must be 64 lowercase hex characters or null")
-    for field, _path in HOOKS_ASSET_FILES:
+    for field, _path, first, what in DATED_FILES:
+        needed = status == "released" and release_key is not None and release_key >= first
+        since = ".".join(str(part) for part in first)
         if field not in entry:
-            if needs_hooks:
-                problems.append(f"{label}: {field} is missing; a release from 6.4.0 on records the hash of the "
-                                "opt-in host hooks asset")
+            if needed:
+                problems.append(f"{label}: {field} is missing; a release from {since} on records the hash of the "
+                                f"{what}")
             continue
         value = entry[field]
         if value is None:
-            if needs_hooks:
-                problems.append(f"{label}: {field} is null; only a draft or a release before 6.4.0 may leave it null")
+            if needed:
+                problems.append(f"{label}: {field} is null; only a draft or a release before {since} may leave it null")
         elif not isinstance(value, str) or not SHA256_HEX.fullmatch(value):
             problems.append(f"{label}: {field} must be 64 lowercase hex characters or null")
     if "instance_action" in entry and entry["instance_action"] not in INSTANCE_ACTIONS:
@@ -464,6 +477,9 @@ def check_template(root: Path) -> tuple[list[str], list[str]]:
                                  and any(isinstance(latest.get(field), str) for field, _path in HOOKS_ASSET_FILES)):
             for field, path in HOOKS_ASSET_FILES:
                 computed[field] = asset_sha256(root, path)
+        # The journey-recording tool, the same way: for a draft, and for a release that records its hash.
+        if status == "draft" or (status == "released" and isinstance(latest.get("verify_sha256"), str)):
+            computed["verify_sha256"] = asset_sha256(root, VERIFY_PATH)
         if status == "released":
             problems.extend(hash_mismatches(latest, computed))
         elif status == "draft":
@@ -551,6 +567,13 @@ def run_cut(root: Path, date_text: str) -> int:
             return refuse("cut", [f"cannot read {path.as_posix()}: a release from 6.4.0 on records the hash of the "
                                   "opt-in host hooks asset, so both asset files must be present"])
         computed[field] = value
+    release_key = semver_key(entry["release"])
+    if release_key >= FIRST_VERIFY_RELEASE:
+        value = asset_sha256(root, VERIFY_PATH)
+        if value is None:
+            return refuse("cut", [f"cannot read {VERIFY_PATH.as_posix()}: a release from 6.5.0 on records the hash of "
+                                  "the journey-recording tool, so the file must be present"])
+        computed["verify_sha256"] = value
     entry.update(date=date_text, status="released", **computed)
     try:
         write_atomic(index_path, index_text(payload))
@@ -558,7 +581,8 @@ def run_cut(root: Path, date_text: str) -> int:
         return refuse("cut", [f"cannot rewrite {INDEX_PATH.as_posix()}: {exc}"])
     print(f"cut release {entry['release']} on {date_text}")
     for field, _path, _normalized in HASHED_FILES:
-        print(f"  {field}: {computed[field]}")
+        if field in computed:
+            print(f"  {field}: {computed[field]}")
     print(f"rewrote {INDEX_PATH.as_posix()}; commit it, then create the tag {entry['tag']} yourself "
           "(this command never creates tags)")
     return 0
@@ -576,6 +600,7 @@ def run_hashes(root: Path) -> int:
         "gate_sha256": sha256_bytes(gate_bytes),
         "contract_sha256": contract_sha,
         **{field: asset_sha256(root, path) for field, path in HOOKS_ASSET_FILES},
+        "verify_sha256": asset_sha256(root, VERIFY_PATH),
     }, indent=2))
     return 0
 

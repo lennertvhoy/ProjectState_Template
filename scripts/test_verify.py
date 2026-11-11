@@ -351,3 +351,138 @@ def test_in_place_without_receipt_is_a_usage_error(tmp_path: Path) -> None:
     with pytest.raises(SystemExit) as error:
         run(root, "--run", "--in-place")
     assert error.value.code == 2
+
+
+# --- 6.5.0: a passed journey is what `validated` means, and the gate says how the record was made ----------------
+
+
+def test_a_passing_journey_marks_an_open_slice_validated_and_prints_the_gate_verdict(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    for status in ("planned", "implementing", "implemented"):
+        root = make(tmp_path / status, command="echo ok", status=status)
+        capsys.readouterr()
+        assert run(root, "--run") == 0
+        assert parsed(root)["current_slice"]["status"] == "validated"
+        out = capsys.readouterr().out
+        assert f"slice status set from {status} to validated" in out
+        gate_part = out.split("--- gate ---\n", 1)[1]
+        assert "RECORDED OUTCOME VALIDATED" in gate_part
+        assert "- primary journey: recorded as passed by a run (scripts/projectstate_verify.py, 20" in gate_part
+        assert "the next slice may start meanwhile" in gate_part
+        stamp = gate.journey_run(root)
+        assert stamp is not None and f"- Verified: {stamp} by scripts/projectstate_verify.py" in summary(root)
+        assert (gate.validate(root)[0], gate.validate(root)[1]) == ([], [])
+
+
+def test_a_passing_journey_leaves_a_blocked_or_closed_status_alone(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    for status in ("blocked", "validated", "ready_for_human"):
+        root = make(tmp_path / status, command="echo ok", status=status)
+        assert run(root, "--run") == 0
+        assert parsed(root)["current_slice"]["status"] == status
+        assert "slice status set" not in capsys.readouterr().out
+
+
+def test_an_open_blocker_keeps_the_status_and_the_passing_journey_is_still_recorded(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make(tmp_path, command="echo ok", status="implementing")
+    state = root / "STATE.yaml"
+    state.write_text(state.read_text().replace("blockers: []\n", 'blockers:\n  - "The licence question is open."\n'))
+    assert run(root, "--run") == 0
+    after = parsed(root)
+    assert after["current_slice"]["primary_journey"]["status"] == "passed"
+    assert after["current_slice"]["status"] == "implementing"  # validated would claim more than the gate allows
+    out = capsys.readouterr().out
+    assert "slice status stays implementing: The licence question is open." in out
+    assert "OUTCOME NOT VALIDATED" in out.split("--- gate ---\n", 1)[1]
+
+
+def test_a_failing_journey_never_upgrades_and_the_gate_verdict_is_printed(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make(tmp_path, command="exit 4", status="implementing")
+    assert run(root, "--run") == 1
+    assert parsed(root)["current_slice"]["status"] == "implementing"
+    out = capsys.readouterr().out
+    assert "primary journey is failed" in out.split("--- gate ---\n", 1)[1]
+    assert gate.journey_run(root) is None  # a run is on record, but not of a passed journey
+
+
+def test_the_gate_names_a_hand_typed_record_and_such_a_slice_waits_for_the_owner(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = make(tmp_path, command="echo ok", status="validated", journey="passed")
+    assert gate.main(["--root", str(root)]) == 0
+    out = capsys.readouterr().out
+    assert "- primary journey: recorded as passed, typed by hand (no run by scripts/projectstate_verify.py is on record)" in out
+    assert "The journey was typed by hand, so this slice waits for the answer" in out
+    assert gate.journey_run(root) is None
+    path = root / "evidence" / "demo-001" / "summary.md"
+    for line in ("- Verified: yesterday, by me", "- Verified: 2026-11-11 by scripts/projectstate_verify.py",
+                 "- Verified: 2026-11-11T10:00:00Z by scripts/projectstate_verify.pyx"):
+        path.write_text(summary_text("echo ok", "passed", "0", extra=line + "\n"))
+        assert gate.journey_run(root) is None, line
+    # the tool's own line, but under another heading, is not the journey's record
+    path.write_text(summary_text("echo ok", "passed", "0").replace(
+        "## Limitations\n", "## Limitations\n\n- Verified: 2026-11-11T10:00:00Z by scripts/projectstate_verify.py in 1.0s\n"))
+    assert gate.journey_run(root) is None
+    path.write_text(summary_text("echo ok", "passed", "0",
+                                 extra="- Verified: 2026-11-11T10:00:00Z by scripts/projectstate_verify.py in 1.0s\n"))
+    assert gate.journey_run(root) == "2026-11-11T10:00:00Z"
+
+
+def test_a_new_line_joins_the_labelled_lines_and_not_the_prose_after_them(tmp_path: Path) -> None:
+    prose = "\nThe journey drives the real command line.\nIt has two paragraphs.\n\nSecond paragraph.\n"
+    root = make(tmp_path / "prose", command="echo ok", summary=summary_text("echo ok", extra=prose))
+    assert run(root, "--run") == 0
+    lines = summary(root).splitlines()
+    verified = next(i for i, line in enumerate(lines) if line.startswith("- Verified: "))
+    assert lines[verified - 1] == "- Exit code: 0" and lines[verified + 1] == ""
+    assert lines[verified + 2] == "The journey drives the real command line."
+    assert gate.journey_run(root) is not None
+    # a section that has no labelled line at all still gets its lines, after the last text
+    bare = ("# Evidence: demo-001\n\n## Primary journey\n\nNothing recorded yet.\n\n## Secondary checks\n\n- None.\n\n"
+            "## Artifacts\n\n- None recorded.\n\n## Limitations\n\n- None.\n")
+    root = make(tmp_path / "bare", command="echo ok", summary=bare)
+    assert run(root, "--run") == 0
+    text = summary(root)
+    assert text.index("Nothing recorded yet.") < text.index("- Environment: ") < text.index("- Verified: ")
+    assert text.index("- Verified: ") < text.index("## Secondary checks")
+    assert gate.validate(root)[0] == []
+
+
+# --- found by an independent review on 2026-11-11: the recorder is vendored now, so its paths are checked first ---
+
+
+def test_a_slice_id_that_is_not_an_id_is_refused_before_anything_runs(tmp_path: Path) -> None:
+    """The id names the evidence folder. An id such as ../../outside pointed the summary, the artifact and the
+    recorded status outside the repository."""
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "summary.md").write_text(summary_text("touch ran.marker"))
+    for bad in ("../../outside", "../outside", "a/b", "Demo-001", "demo_001", ".", ""):
+        root = make(tmp_path / "repo" / f"case-{abs(hash(bad))}", command="touch ran.marker")
+        state = root / "STATE.yaml"
+        state.write_text(state.read_text().replace("  id: demo-001\n", f"  id: {json.dumps(bad)}\n"))
+        before, outside_before = digest(root), digest(outside)
+        assert run(root, "--run") == 2, bad
+        assert digest(root) == before and digest(outside) == outside_before, bad
+        assert not (root / "ran.marker").exists(), bad  # the journey command itself never ran
+
+
+def test_a_relative_path_that_leaves_the_repository_is_never_a_regular_file_of_it(tmp_path: Path) -> None:
+    (tmp_path / "repo").mkdir()
+    (tmp_path / "secret.txt").write_text("outside")
+    for relative in ("../secret.txt", "evidence/../../secret.txt", str(tmp_path / "secret.txt")):
+        with pytest.raises(verify.Refused):
+            verify.regular(tmp_path / "repo", relative)
+
+
+def test_a_symlinked_artifact_is_refused_and_left_exactly_as_it_was(tmp_path: Path) -> None:
+    elsewhere = tmp_path / "elsewhere.txt"
+    elsewhere.write_text("not the repository's file")
+    for name, target in (("live", elsewhere), ("dangling", tmp_path / "does-not-exist")):
+        root = make(tmp_path / name, command="touch ran.marker")
+        link = root / "evidence" / "demo-001" / verify.ARTIFACT
+        link.symlink_to(target)
+        before = digest(root)
+        assert run(root, "--run") == 2
+        assert link.is_symlink() and os.readlink(link) == str(target)  # a rollback used to delete a dangling link
+        assert digest(root) == before and not (root / "ran.marker").exists()
+    assert elsewhere.read_text() == "not the repository's file"

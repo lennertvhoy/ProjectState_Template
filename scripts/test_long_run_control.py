@@ -119,6 +119,7 @@ class LongRunControlTests(unittest.TestCase):
             self.assertEqual(files, {
                 "AGENTS.md", "PROJECT.md", "README.md", "STATE.yaml",
                 "evidence/bootstrap-001/summary.md", "scripts/projectstate_gate.py",
+                "scripts/projectstate_verify.py",
             })
             self.assertTrue(PROMPT.is_file())
             text = squash(PROMPT.read_text(encoding="utf-8"))

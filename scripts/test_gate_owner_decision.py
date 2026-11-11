@@ -23,10 +23,12 @@ GATE = ROOT / "scripts" / "projectstate_gate.py"
 RELEASE_TOOL = ROOT / "scripts" / "projectstate_release.py"
 START = "<!-- projectstate:managed:start release=6.3.0 -->"
 END = "<!-- projectstate:managed:end -->"
-PENDING_LINE = "- owner decision: pending; ask the owner to accept, reject, or waive"
+# The baseline fixture types its journey record by hand, so the gate says so and the slice waits for the owner.
+PENDING_LINE = ("- owner decision: pending; ask the owner to accept, reject, or waive. "
+                "The journey was typed by hand, so this slice waits for the answer")
 VALIDATED_LINES = [
     "RECORDED OUTCOME VALIDATED",
-    "- primary journey: recorded as passed",
+    "- primary journey: recorded as passed, typed by hand (no run by scripts/projectstate_verify.py is on record)",
     "- secondary checks: do not override the primary journey",
     "- this gate does not execute journeys or authenticate human approval",
 ]

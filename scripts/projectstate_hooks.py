@@ -106,7 +106,14 @@ CLOSED_FOR_HUMAN = ("validated", "ready_for_human")
 CLAIMED_JOURNEY = ("passed", "failed", "blocked")
 ENTRY_HEAD = re.compile(r"^## (\d{4}-\d{2}-\d{2}T[\d:]+Z) \(session ([^)]*)\)\s*$", re.MULTILINE)
 PASTE_OPENER = re.compile(r'<pasted_content\s+id="([^"]+)">')
-VERIFIED_LINE = re.compile(r"^-\s+Verified:\s*(\d{4}-\d{2}-\d{2}T[\d:]+Z)\b", re.MULTILINE)
+# Blocks the host itself puts into the prompt stream (a finished background task, a reminder, the output of a
+# local command). The owner did not type them, so they are never logged as the owner's words.
+HOST_TAGS = ("task-notification", "system-reminder", "local-command-stdout", "local-command-stderr", "bash-stdout",
+             "bash-stderr")
+HOST_OPENER = re.compile(r"<(" + "|".join(HOST_TAGS) + r")(?:\s[^<>]*)?>")
+VERIFIED_LINE = re.compile(r"^-\s+Verified:\s*(\d{4}-\d{2}-\d{2}T[\d:]+Z) by scripts/projectstate_verify\.py\b",
+                           re.MULTILINE)
+PRIMARY_HEAD = re.compile(r"^##\s+primary journey\s*$", re.IGNORECASE | re.MULTILINE)
 SECTION_HEAD = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 DURABLE_HEAD = re.compile(r"^##\s+durable constraints\s*$", re.IGNORECASE | re.MULTILINE)
 BULLET = re.compile(r"^\s*[-*]\s+(.+?)\s*$")
@@ -269,9 +276,36 @@ def replace_pastes(text: str) -> str:
     return "".join(out)
 
 
+def drop_host_blocks(text: str) -> str:
+    """``text`` without the blocks the host generated: an opening tag of HOST_TAGS up to its closing tag.
+
+    Only a closed block is dropped. A tag that is never closed, a self-closing tag, or a tag name inside a sentence
+    is text the owner may have typed, and stays. One pass: once a tag has no closing tag ahead, it is not searched
+    for again, so a long prompt full of unclosed tags costs no more than its length."""
+    out: list[str] = []
+    position = 0
+    no_closer: set[str] = set()
+    for opener in HOST_OPENER.finditer(text):
+        tag = opener.group(1)
+        if opener.start() < position or tag in no_closer or opener.group(0).endswith("/>"):
+            continue
+        closer = f"</{tag}>"
+        end = text.find(closer, opener.end())
+        if end < 0:
+            no_closer.add(tag)
+            continue
+        out.append(text[position:opener.start()])
+        position = end + len(closer)
+    out.append(text[position:])
+    return "".join(out)
+
+
 def append_entry(root: Path, prompt: str, session: str, now: dt.datetime | None = None) -> bool:
-    """Append one owner prompt; return False when it is too short, repeated or the log cannot be written safely."""
-    body = redact(replace_pastes(prompt.strip()))
+    """Append one owner prompt; return False when it is too short, repeated or the log cannot be written safely.
+
+    Text the host generated (see drop_host_blocks) is dropped first, so a prompt that is nothing else is not
+    recorded."""
+    body = redact(replace_pastes(drop_host_blocks(prompt).strip()))
     if len(body) < MIN_PROMPT_CHARS:
         return False
     if len(body) > MAX_ENTRY_CHARS:
@@ -331,14 +365,25 @@ def reads_pool(body: str) -> bool:
 
 
 def durable_bullets(project_text: str) -> list[str]:
-    """The bullet lines under PROJECT.md's ## Durable constraints, verbatim."""
+    """The bullets under PROJECT.md's ## Durable constraints, verbatim; a wrapped bullet is joined into one line."""
     head = DURABLE_HEAD.search(project_text)
     if not head:
         return []
     rest = project_text[head.end():]
     stop = SECTION_HEAD.search(rest)
     section = rest[:stop.start()] if stop else rest
-    return [match.group(1) for line in section.splitlines() if (match := BULLET.match(line))]
+    bullets: list[str] = []
+    open_bullet = False
+    for line in section.splitlines():
+        match = BULLET.match(line)
+        if match:
+            bullets.append(match.group(1))
+            open_bullet = True
+        elif open_bullet and line[:1] in (" ", "\t") and line.strip():
+            bullets[-1] += " " + line.strip()  # the continuation of a wrapped bullet
+        else:
+            open_bullet = False
+    return bullets
 
 
 def standing_words(root: Path) -> tuple[list[str], str]:
@@ -392,10 +437,29 @@ def journey_freshness(root: Path, slice_id: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", slice_id) or ".." in slice_id:
         return "journey status was typed by hand, not recorded by a run"
     summary = read_text(root / "evidence" / slice_id / "summary.md")
-    match = VERIFIED_LINE.search(summary)
+    head = PRIMARY_HEAD.search(summary)
+    rest = summary[head.end():] if head else ""
+    stop = SECTION_HEAD.search(rest)
+    match = VERIFIED_LINE.search(rest[:stop.start()] if stop else rest)  # the journey's own record, nothing else
     if not match:
         return "journey status was typed by hand, not recorded by a run"
     return f"journey run recorded {match.group(1)}; {commits_since(root, match.group(1))}"
+
+
+def pending_moves_on(root: Path, gate) -> bool | None:
+    """Whether a pending slice may be followed by the next one: the gate's own reading of the record.
+
+    None when the question does not apply here: the instance's contract predates the rule (its managed block does
+    not name the journey tool), or its gate is older and cannot say how the journey was recorded."""
+    journey_run = getattr(gate, "journey_run", None)
+    agents = read_text(root / "AGENTS.md")
+    start, end = agents.find("<!-- projectstate:managed:start"), agents.find("<!-- projectstate:managed:end -->")
+    if journey_run is None or start < 0 or end < start or "scripts/projectstate_verify.py" not in agents[start:end]:
+        return None
+    try:
+        return journey_run(root) is not None
+    except Exception:
+        return None
 
 
 def slice_section(root: Path) -> str:
@@ -442,6 +506,11 @@ def slice_section(root: Path) -> str:
                and isinstance(validation, dict) and str(validation.get("human_acceptance") or "") == "pending")
     if pending:
         pending_line = "- An owner decision is pending for this slice (accept, reject or waive)."
+        moves_on = pending_moves_on(root, gate)
+        if moves_on is True:
+            pending_line += " A run recorded its journey, so the next slice may start meanwhile."
+        elif moves_on is False:
+            pending_line += " Its journey was typed by hand, so the slice waits for the owner."
         if (root / "scripts" / "projectstate_decide.py").is_file():
             pending_line += f" Record it with: {DECIDE_USAGE}"
         lines.append(pending_line)

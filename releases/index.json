@@ -1,7 +1,7 @@
 {
   "format": "projectstate-release-index/1",
   "state_schema": "projectstate-template-v6",
-  "latest": "6.4.0",
+  "latest": "6.5.0",
   "releases": [
     {
       "release": "6.0.0",
@@ -64,6 +64,19 @@
       "summary": "Opt-in host hooks for Claude Code and OpenCode keep the owner's words; the gate and managed block are otherwise unchanged.",
       "hooks_sha256": "7c26779d745e948d894078575e31d75ef7a30094362e14bb404ebe7b76e00ac5",
       "opencode_plugin_sha256": "27ea94ab3e1b788afad9f6ca840b3fc54a5bb788b7aa109596176c4b203df10f"
+    },
+    {
+      "release": "6.5.0",
+      "date": null,
+      "tag": "v6.5.0",
+      "status": "draft",
+      "gate_sha256": null,
+      "contract_sha256": null,
+      "instance_action": "semantic",
+      "summary": "A journey recorded by a run moves on, one typed by hand waits for the owner; the journey-recording tool is vendored beside the gate.",
+      "hooks_sha256": null,
+      "opencode_plugin_sha256": null,
+      "verify_sha256": null
     }
   ]
 }

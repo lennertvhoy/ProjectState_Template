@@ -4,28 +4,30 @@ profile: core
 project:
   outcome_ref: "PROJECT.md#outcome"
 current_slice:
-  id: handoff-eval-001
-  objective: "Measure whether a session that follows the ProjectState core leaves a better handoff than one that does not, using two real sessions and a hidden acceptance suite."
-  status: accepted
-  # Owner request 2026-10-07: "proceed" on building a harder eval before adding anything new.
+  id: proof-by-run-001
+  objective: "Release 6.5.0: a slice proven by a tool's run moves on, and one proven only by word waits for the owner; the journey-recording tool is vendored beside the gate."
+  status: validated
+  # Owner request 2026-11-11: "proceed optimally" on the proposal to improve the contract and the gate.
   acceptance:
-    - "A two-session harness gives session 1 owner constraints in its prompt only, runs a fresh session 2 on the repository, and grades the result with trusted hidden checks."
-    - "The grader is proven with a reference implementation, the skeleton and single-fault mutations before any model run."
-    - "Results are recorded as measured, including findings that do not favor the core, with limits stated."
+    - "In a new project, the project's own projectstate_verify.py --run records a passing journey and marks the slice validated, and the gate names the run; a journey typed by hand is named as such and waits for the owner."
+    - "The fleet doctor keeps listing a run-proven slice whose decision is open, also after the next slice follows it, and a decision can be recorded on it."
+    - "projectstate_update.py brings a 6.4.0 instance to 6.5.0 (gate, journey tool, contract block), and the gate's exit code is unchanged for every v6 repository under ~/Projects."
+    - "The 6.5.0 contract with hooks is measured on the durability eval with haiku and sonnet before the release, and the result is recorded as measured."
+    - "The host hooks no longer record a host notification as the owner's words."
   primary_journey:
-    description: "Run three plain-prompt two-session chains with the core and three without on headless Claude Code (haiku) and grade each."
-    command: "python3 evals/resume/handoff.py --model haiku --repeats 3 --variants plain --budget-usd 3 --out ~/.local/state/projectstate/evals/handoff-haiku-plain-20261007T145814Z"
-    environment: "local Linux workstation; Claude Code 2.1.291 headless, model haiku, isolated settings; repositories built under /tmp outside every repository"
+    description: "In scratch projects made by init_template.py: record a journey with the vendored tool, follow the slice with the next one, decide the earlier slice, type a result by hand, and update a 6.4.0 instance."
+    command: "python3 -B scripts/test_proof_by_run.py"
+    environment: "local Linux workstation, Python 3.14; scratch projects in a temporary directory; reads this repository's v6.4.0 tag"
     status: passed
-    evidence: "evidence/handoff-eval-001/summary.md"
+    evidence: "evidence/proof-by-run-001/summary.md"
 validation:
   primary_journey: passed
   automated_tests: passed
-  human_acceptance: accepted
+  human_acceptance: pending
 delivery_boundary:
-  name: template_measurement
+  name: template_release
   failed_attempts: []
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Owner: name the next slice for the template; the held candidates are listed at the end of evidence/handoff-eval-001/summary.md."
+next_action: "Cut and publish release 6.5.0 from branch next/6.5.0: suite on Python 3.13, projectstate_release.py cut --date, tag v6.5.0, merge into main, push; then update the instances."

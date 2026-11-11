@@ -115,7 +115,8 @@ class ImprovementRoundsTests(unittest.TestCase):
             files = {p.relative_to(target).as_posix() for p in target.rglob("*") if p.is_file()}
             self.assertEqual(files, {
                 "AGENTS.md", "PROJECT.md", "README.md", "STATE.yaml",
-                "evidence/bootstrap-001/summary.md", "scripts/projectstate_gate.py"})
+                "evidence/bootstrap-001/summary.md", "scripts/projectstate_gate.py",
+                "scripts/projectstate_verify.py"})
             agents = (target / "AGENTS.md").read_text(encoding="utf-8").lower()
             self.assertNotIn("improve.md", agents)
             self.assertNotIn("improvement round", agents)

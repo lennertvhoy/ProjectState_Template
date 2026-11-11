@@ -317,9 +317,9 @@ class AcceptTests(DecideCase):
                 self.assertRefused(decision, "Changed my mind.",
                                    reason="validation.human_acceptance is 'accepted', not pending")
 
-    def test_slice_option_must_name_the_current_slice(self) -> None:
+    def test_slice_option_names_the_current_slice_or_an_earlier_one_with_a_summary(self) -> None:
         self.assertRefused("accept", "Yes.", "--slice", "other-001",
-                           reason="--slice 'other-001' is not the current slice 'bootstrap-001'")
+                           reason="--slice 'other-001' is neither the current slice nor an earlier one with a summary")
         self.assertEqual(self.decide("accept", "Yes.", "--slice", SLICE)[0], 0)
 
     def test_the_target_may_be_a_symlink_or_end_in_a_slash(self) -> None:
@@ -772,7 +772,7 @@ class DryRunTests(DecideCase):
         for args, reason in (
             (["accept", "", "--dry-run"], "owner words are empty"),
             (["accept", "Yes.", "--dry-run", "--date", TOMORROW], "is in the future"),
-            (["accept", "Yes.", "--dry-run", "--slice", "nope-001"], "is not the current slice"),
+            (["accept", "Yes.", "--dry-run", "--slice", "nope-001"], "is neither the current slice nor an earlier one"),
         ):
             with self.subTest(args=args):
                 self.assertRefused(*args, reason=reason)
@@ -1076,6 +1076,123 @@ class LoopTests(DecideCase):
         for option in ("--date", "--slice", "--dry-run", "--allow-dirty", "OWNER_WORDS"):
             self.assertIn(option, helped.stdout)
         self.assertEqual(list(self.root.rglob("__pycache__")), [])
+
+
+RUN_LINE = "- Verified: 2026-11-11T10:00:00Z by scripts/projectstate_verify.py in 1.0s\n"
+
+
+class DelegatedDecisionTests(DecideCase):
+    """6.5.0: the owner may hand the choice to an agent; the record says so, and a delegate accepts only a run."""
+
+    def mark_run(self, root: Path | None = None) -> None:
+        """Add the line the journey tool writes when it ran the command itself."""
+        self.edit(SUMMARY, "- Exit code: 0\n", "- Exit code: 0\n" + RUN_LINE, root)
+
+    def test_a_delegated_accept_needs_a_journey_recorded_by_a_run(self) -> None:
+        self.assertRefused("accept", "u make the choices", "--delegated", reason="a delegate accepts only what a run")
+        self.assertRefused("accept", "u make the choices", "--delegated", "--dry-run",
+                           reason="a delegate accepts only what a run")
+        self.mark_run()
+        code, _, err = self.decide("accept", "u make the choices", "--delegated")
+        self.assertEqual(code, 0, err)
+        record = self.read(SUMMARY).split("## Owner decision", 1)[1]
+        self.assertIn('- Owner words: "u make the choices"\n- Decided by: delegate (', record)
+        self.assertTrue(record.endswith("- Recorded by: scripts/projectstate_decide.py\n"))
+        self.assertEqual(self.state()["current_slice"]["status"], "accepted")
+        self.assertGate(0)
+
+    def test_a_delegate_may_waive_or_reject_what_was_typed_by_hand(self) -> None:
+        for decision, exit_code in (("waive", 0), ("reject", 1)):
+            with self.subTest(decision=decision):
+                root = self.copy(decision)
+                code, _, err = self.decide(decision, "you decide", "--delegated", root=root)
+                self.assertEqual(code, 0, err)
+                self.assertIn("- Decided by: delegate (", self.read(SUMMARY, root))
+                self.assertGate(exit_code, root)
+
+    def test_the_owners_own_decision_carries_no_delegate_line_and_needs_no_run(self) -> None:
+        self.assertEqual(self.decide("accept", "Yes.")[0], 0)
+        self.assertTrue(self.read(SUMMARY).endswith(owner_record("accepted", TODAY, "Yes.")))
+        self.assertNotIn("Decided by", self.read(SUMMARY))
+
+
+class EarlierSliceTests(DecideCase):
+    """6.5.0: a slice proven by a run may be followed by the next one; its open decision is recorded later."""
+
+    OLD = "evidence/old-001/summary.md"
+
+    def earlier(self, *, by_run: bool = True, result: str = "passed", root: Path | None = None) -> None:
+        target = (root or self.root) / "evidence" / "old-001"
+        target.mkdir()
+        (target / "summary.md").write_text(
+            "# Evidence: old-001\n\n## Primary journey\n\n- Environment: local\n- Command: `true`\n"
+            f"- Result: {result}\n- Exit code: {0 if result == 'passed' else 1}\n" + (RUN_LINE if by_run else "")
+            + "\n## Secondary checks\n\n- None.\n\n## Artifacts\n\n- None.\n\n## Limitations\n\n- None.\n",
+            encoding="utf-8")
+
+    def test_a_decision_on_an_earlier_slice_writes_only_its_summary(self) -> None:
+        self.earlier()
+        before = project_tree(self.root)
+        code, out, err = self.decide("accept", "Fine.", "--slice", "old-001")
+        self.assertEqual(code, 0, err)
+        # the summary, and its directory's mtime from the atomic replace; STATE.yaml and the current summary are not
+        self.assertEqual(changed_paths(before, project_tree(self.root)), {"evidence/old-001", self.OLD})
+        self.assertTrue(self.read(self.OLD).endswith(owner_record("accepted", TODAY, "Fine.")))
+        self.assertIn("recorded: accepted for the earlier slice old-001", out)
+        self.assertEqual(self.state()["validation"]["human_acceptance"], "pending")  # the current slice is untouched
+        self.assertGate(0)
+        self.assertRefused("waive", "Again.", "--slice", "old-001", reason="already has an ## Owner decision")
+
+    def test_the_dry_run_of_an_earlier_slice_writes_nothing_and_says_state_is_unchanged(self) -> None:
+        self.earlier()
+        before = project_tree(self.tmp)
+        code, out, err = self.decide("waive", "Skip it.", "--slice", "old-001", "--dry-run")
+        self.assertEqual((code, err), (0, ""))
+        self.assertIn("STATE.yaml: unchanged (old-001 is an earlier slice", out)
+        self.assertEqual(project_tree(self.tmp), before)
+
+    def test_accepting_an_earlier_slice_needs_a_passed_record_and_a_delegate_needs_a_run(self) -> None:
+        self.earlier(by_run=False, result="failed")
+        self.assertRefused("accept", "Fine.", "--slice", "old-001",
+                           reason="record the primary journey as 'Result: passed'")
+        self.assertEqual(self.decide("reject", "No.", "--slice", "old-001")[0], 0)
+        # a record that says passed beside a failing exit code is not a passed journey, run line or not
+        mixed = self.copy("mixed")
+        self.earlier(root=mixed)
+        self.edit(self.OLD, "- Exit code: 0\n", "- Exit code: 1\n", mixed)
+        for flags in ((), ("--delegated",)):
+            self.assertRefused("accept", "Fine.", "--slice", "old-001", *flags, reason="with 'Exit code: 0'", root=mixed)
+        typed = self.copy("typed")
+        self.earlier(by_run=False, root=typed)
+        self.assertRefused("accept", "you choose", "--slice", "old-001", "--delegated",
+                           reason="a delegate accepts only what a run", root=typed)
+        self.assertEqual(self.decide("accept", "Yes, I looked.", "--slice", "old-001", root=typed)[0], 0)
+        ran = self.copy("ran")
+        self.earlier(root=ran)
+        self.assertEqual(self.decide("accept", "you choose", "--slice", "old-001", "--delegated", root=ran)[0], 0)
+        self.assertIn("- Decided by: delegate (", (ran / self.OLD).read_text(encoding="utf-8"))
+
+    def test_a_folder_swapped_for_a_symlink_after_planning_is_refused_at_write_time(self) -> None:
+        """The path is checked again right before the write; the file outside the instance stays as it was."""
+        self.earlier()
+        args = decide.build_parser().parse_args([str(self.root), "waive", "Skip.", "--slice", "old-001"])
+        plan = decide.build_plan(args)
+        outside = self.tmp / "outside"
+        shutil.move(str(self.root / "evidence" / "old-001"), str(outside))
+        (self.root / "evidence" / "old-001").symlink_to(outside)
+        before = (outside / "summary.md").read_bytes()
+        with self.assertRaises(decide.Refused):
+            decide.write_decision(plan)
+        self.assertEqual((outside / "summary.md").read_bytes(), before)
+
+    def test_an_earlier_slice_reached_through_a_symlink_or_with_a_bad_id_is_refused(self) -> None:
+        self.earlier()
+        elsewhere = self.tmp / "elsewhere"
+        elsewhere.mkdir()
+        shutil.move(str(self.root / "evidence" / "old-001"), str(elsewhere / "old-001"))
+        (self.root / "evidence" / "old-001").symlink_to(elsewhere / "old-001")
+        self.assertRefused("waive", "Skip.", "--slice", "old-001", reason="neither the current slice nor an earlier one")
+        self.assertRefused("waive", "Skip.", "--slice", "../x", reason="--slice must be lowercase letters")
 
 
 if __name__ == "__main__":

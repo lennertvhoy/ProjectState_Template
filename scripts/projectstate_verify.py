@@ -11,9 +11,12 @@ failed), and ``Command``, ``Environment``, ``Result``, ``Exit code`` and ``Verif
 
 Without ``--run`` it only prints what it would execute. The command is run through ``bash -c`` from the repository
 root with the caller's environment: running it is exactly as trusted as typing it yourself, so use ``--run`` only in a
-repository whose recorded command you would run. A failed journey downgrades a ``validated`` or ``ready_for_human``
-slice to ``implementing``. An ``accepted`` slice is never altered (the command reports the failure and exits 2: tell
-the owner). If the gate reports any new error after the edit, every file is restored byte for byte.
+repository whose recorded command you would run. A passed journey marks a ``planned``, ``implementing`` or
+``implemented`` slice ``validated`` (that is what the word means) unless the gate still lists a blocker, and then the
+status stays and the blockers are printed. A failed journey downgrades a ``validated`` or ``ready_for_human`` slice to
+``implementing``. An ``accepted`` slice is never altered (the command reports the failure and exits 2: tell the
+owner). If the gate reports any new error after the edit, every file is restored byte for byte. The last thing printed
+is the gate's own verdict on the records as they now stand.
 
 Exit codes: 0 journey passed and recorded; 1 journey failed and recorded; 2 refused, or rolled back, nothing recorded.
 This is not the gate: the gate stays read-only and never executes anything.
@@ -60,6 +63,8 @@ DEFAULT_TIMEOUT = 900
 TAIL_LINES = 60
 TAIL_BYTES = 6000
 CLOSED_BEFORE_PASS = ("validated", "ready_for_human")
+# A passed journey is what `validated` means, so the tool sets it; `blocked` and the closed statuses are left alone.
+OPEN_BEFORE_PASS = ("planned", "implementing", "implemented")
 PLACEHOLDER = re.compile(r"not yet defined|^\s*(todo|tbd)\b", re.IGNORECASE)
 KEY_LINE = re.compile(r"^(?P<key>[A-Za-z0-9_.-]+):(?P<rest>.*)$")
 VALUE_LINE = re.compile(
@@ -68,6 +73,8 @@ VALUE_LINE = re.compile(
     r"(?P<tail>[ \t]*|[ \t]+#.*)$"
 )
 SECTION = re.compile(r"^##\s+(.+?)\s*$")
+SLICE_ID = re.compile(r"[a-z0-9][a-z0-9-]*")
+LABEL_LINE = re.compile(r"^-\s+[A-Za-z][A-Za-z ]*:")
 RECEIPT_FORMAT = "projectstate-journey-receipt/1"
 DEFAULT_RECEIPTS = "~/.local/state/projectstate/journeys"
 RECEIPT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
@@ -104,6 +111,8 @@ class Outcome(NamedTuple):
 def regular(root: Path, relative: str) -> Path:
     """A file inside ``root`` reached without a symlink; refuse anything else."""
     current = root
+    if Path(relative).is_absolute() or ".." in Path(relative).parts:
+        raise Refused([f"{relative} does not stay inside the repository; refusing to read or write it"])
     for part in Path(relative).parts:
         current = current / part
         if current.is_symlink():
@@ -121,6 +130,9 @@ def journey_of(payload: dict[str, Any]) -> tuple[str, str, str, str]:
         command, environment = str(journey["command"]).strip(), str(journey["environment"]).strip()
     except (KeyError, TypeError) as error:
         raise Refused([f"STATE.yaml has no usable current_slice.primary_journey ({error})"]) from error
+    if not SLICE_ID.fullmatch(slice_id):
+        # The id names the evidence folder: anything else (a path separator, "..") could point outside the repository.
+        raise Refused(["current_slice.id must use lowercase letters, digits, and hyphens; nothing was run"])
     if not command or PLACEHOLDER.search(command):
         raise Refused(["the primary journey command is empty or still a placeholder; record the real command first"])
     return slice_id, status, command, environment
@@ -201,7 +213,7 @@ def retarget(body: str, new: str, label: str) -> str:
     return f"{match['head']}{quote}{new}{quote}{match['tail']}"
 
 
-def edit_state(text: str, payload: dict[str, Any], status: str, downgrade: bool) -> str:
+def edit_state(text: str, payload: dict[str, Any], status: str, slice_status: str | None) -> str:
     lines = text.splitlines(keepends=True)
     entries = entries_of(lines)
     changes: list[tuple[tuple[str, ...], str]] = [
@@ -211,9 +223,9 @@ def edit_state(text: str, payload: dict[str, Any], status: str, downgrade: bool)
     expected = copy.deepcopy(payload)
     expected["current_slice"]["primary_journey"]["status"] = status
     expected["validation"]["primary_journey"] = status
-    if downgrade:
-        changes.append((("current_slice", "status"), "implementing"))
-        expected["current_slice"]["status"] = "implementing"
+    if slice_status is not None:
+        changes.append((("current_slice", "status"), slice_status))
+        expected["current_slice"]["status"] = slice_status
     for path, new in changes:
         entry = locate(entries, path)
         body = lines[entry.index].splitlines()[0]
@@ -258,7 +270,11 @@ def edit_summary(text: str, command: str, environment: str, result: str, outcome
             for extra in reversed(hits[1:]):
                 del section[extra]
         else:
-            insert_at = max((i for i, line in enumerate(section) if line.strip()), default=-1) + 1
+            # Beside the other "- Label: value" lines, not after prose that follows them; a section without any
+            # such line gets the new one after its last text.
+            labelled = [i for i, line in enumerate(section) if LABEL_LINE.match(line)]
+            insert_at = (labelled[-1] if labelled
+                         else max((i for i, line in enumerate(section) if line.strip()), default=-1)) + 1
             section.insert(insert_at, replacement)
     lines[start + 1:end] = section
     lines = add_artifact_line(lines)
@@ -312,6 +328,9 @@ def record(root: Path, args: argparse.Namespace) -> int:
     if not args.run:
         print("dry run: nothing executed. Re-run with --run to execute the command and record the result.")
         return 0
+    artifact_path = summary_path.parent / ARTIFACT
+    if artifact_path.is_symlink() or (artifact_path.exists() and not artifact_path.is_file()):
+        raise Refused([f"evidence/{slice_id}/{ARTIFACT} is a symlink or not a regular file; refusing to replace it"])
     before_errors, _blockers, _warn = gatelib.validate(root)
     outcome = run_journey(command, root, args.timeout)
     passed = outcome.code == 0
@@ -319,10 +338,14 @@ def record(root: Path, args: argparse.Namespace) -> int:
         print(f"the journey FAILED (exit {outcome.code}) but the slice is accepted; nothing recorded. Tell the owner.", file=sys.stderr)
         return 2
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    new_state = edit_state(state_text, payload, "passed" if passed else "failed", downgrade=(not passed and status in CLOSED_BEFORE_PASS))
+    result = "passed" if passed else "failed"
+    if passed:
+        slice_status = "validated" if status in OPEN_BEFORE_PASS else None
+    else:
+        slice_status = "implementing" if status in CLOSED_BEFORE_PASS else None
+    new_state = edit_state(state_text, payload, result, slice_status)
     summary_old = summary_path.read_bytes()
-    new_summary = edit_summary(summary_old.decode("utf-8"), command, environment, "passed" if passed else "failed", outcome, now)
-    artifact_path = summary_path.parent / ARTIFACT
+    new_summary = edit_summary(summary_old.decode("utf-8"), command, environment, result, outcome, now)
     artifact_old = artifact_path.read_bytes() if artifact_path.is_file() else None
     originals = [(state_path, state_text.encode("utf-8"), state_path.stat().st_mode & 0o777),
                  (summary_path, summary_old, summary_path.stat().st_mode & 0o777)]
@@ -339,8 +362,16 @@ def record(root: Path, args: argparse.Namespace) -> int:
         write_atomic(state_path, new_state.encode("utf-8"), originals[0][2])
         write_atomic(summary_path, new_summary.encode("utf-8"), originals[1][2])
         write_atomic(artifact_path, artifact_text(command, outcome, now).encode("utf-8"), 0o644)
-        after_errors, _blockers, _warn = gatelib.validate(root)
+        after_errors, blockers, _warn = gatelib.validate(root)
         added = [error for error in after_errors if error not in before_errors]
+        held_back: list[str] = []
+        if not added and passed and slice_status == "validated" and blockers:
+            # The journey passed but something else still blocks the outcome: keep the result, not the new status.
+            held_back = blockers
+            slice_status = None
+            write_atomic(state_path, edit_state(state_text, payload, result, None).encode("utf-8"), originals[0][2])
+            after_errors, _blockers, _warn = gatelib.validate(root)
+            added = [error for error in after_errors if error not in before_errors]
         if added:
             raise Refused([f"the gate reports new errors after recording: {'; '.join(added)}"])
     except Refused:
@@ -351,10 +382,16 @@ def record(root: Path, args: argparse.Namespace) -> int:
         raise Refused([f"write failed ({error}); everything was restored"]) from error
     verdict = "PASSED" if passed else ("TIMED OUT" if outcome.timed_out else f"FAILED (exit {outcome.code})")
     print(f"journey {verdict} in {outcome.seconds:.1f}s; recorded in STATE.yaml and evidence/{slice_id}/summary.md")
-    if not passed and status in CLOSED_BEFORE_PASS:
+    if slice_status == "validated":
+        print(f"slice status set from {status} to validated")
+    elif slice_status == "implementing":
         print(f"slice status downgraded from {status} to implementing")
+    elif held_back:
+        print(f"slice status stays {status}: " + "; ".join(held_back[:3]))
     if not passed:
         print("--- output tail ---\n" + "\n".join(outcome.tail.splitlines()[-15:]))
+    print("--- gate ---")
+    gatelib.main(["--root", str(root)])
     return 0 if passed else 1
 
 

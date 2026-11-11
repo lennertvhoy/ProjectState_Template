@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Bring one ProjectState instance to the template's current release, mechanically.
 
-The command replaces exactly two template-owned things in the target: the vendored
-``scripts/projectstate_gate.py`` and the managed block in ``AGENTS.md``. It never
+The command replaces exactly three template-owned things in the target: the vendored
+``scripts/projectstate_gate.py``, ``scripts/projectstate_verify.py`` (the journey-recording tool the
+contract names, vendored from 6.5.0 on) and the managed block in ``AGENTS.md``. It never
 writes PROJECT.md, STATE.yaml, evidence/ or project-owned AGENTS.md text (STATE.yaml
 is only read, for its version), and the only git it runs against a target is
 read-only (``git status`` with optional locks off). Default mode is a dry run;
@@ -27,6 +28,7 @@ runs git commands that write (temporary worktrees outside every repository).
 from __future__ import annotations
 
 import argparse
+from contextlib import suppress
 import difflib
 import json
 import os
@@ -114,6 +116,9 @@ class Template(NamedTuple):
     gate_sha: str
     gate_mode: int
     block: str
+    verify_bytes: bytes
+    verify_sha: str
+    verify_mode: int
 
 
 class Block(NamedTuple):
@@ -164,14 +169,15 @@ class Plan:
     template: Template
     gate: GatePlan
     contract: ContractPlan
+    verify: GatePlan
 
     @property
     def refusals(self) -> list[str]:
-        return [*self.gate.refusals, *self.contract.refusals]
+        return [*self.gate.refusals, *self.verify.refusals, *self.contract.refusals]
 
     @property
     def changed(self) -> bool:
-        return self.gate.data is not None or self.contract.text is not None
+        return self.gate.data is not None or self.verify.data is not None or self.contract.text is not None
 
 
 # --- Markdown block splitting -------------------------------------------------------------
@@ -411,11 +417,14 @@ def unified(old: str, new: str, old_label: str, new_label: str) -> list[str]:
 
 def load_template(root: Path) -> Template:
     gate_path = root / rel.GATE_PATH
+    verify_path = root / rel.VERIFY_PATH
     try:
         index = rel.load_index(root)
         gate_bytes = gate_path.read_bytes()
         gate_mode = stat.S_IMODE(gate_path.stat().st_mode)
         block = rel.managed_block_text(root)
+        verify_bytes = verify_path.read_bytes()
+        verify_mode = stat.S_IMODE(verify_path.stat().st_mode)
     except (OSError, ValueError) as exc:
         raise UpdateRefused([f"template {root} is unusable: {exc}"]) from exc
     release = rel.gate_release(gate_bytes.decode("utf-8", errors="replace"))
@@ -431,7 +440,8 @@ def load_template(root: Path) -> Template:
         rel.render_managed_block(release, block)
     except ValueError as exc:
         raise UpdateRefused([f"template managed block is unusable: {exc}"]) from exc
-    return Template(root, release, index, gate_bytes, rel.sha256_bytes(gate_bytes), gate_mode, block)
+    return Template(root, release, index, gate_bytes, rel.sha256_bytes(gate_bytes), gate_mode, block,
+                    verify_bytes, rel.sha256_bytes(verify_bytes), verify_mode)
 
 
 def check_state(target: Path, schema: str) -> None:
@@ -448,9 +458,9 @@ def check_state(target: Path, schema: str) -> None:
 
 
 def check_paths(target: Path) -> None:
-    """Refuse symlinks on the two files this command writes and on the directory between them and the target."""
+    """Refuse symlinks on the files this command writes and on the directory between them and the target."""
     scripts = target / "scripts"
-    for path in (target / AGENTS_NAME, scripts, target / rel.GATE_PATH):
+    for path in (target / AGENTS_NAME, scripts, target / rel.GATE_PATH, target / rel.VERIFY_PATH):
         if os.path.islink(path):
             raise UpdateRefused([f"{path.relative_to(target).as_posix()} is a symlink; refusing to write through it"])
     if os.path.lexists(scripts) and not scripts.is_dir():
@@ -464,7 +474,7 @@ def git_env() -> dict[str, str]:
 
 
 def check_clean(target: Path) -> None:
-    """Refuse when git reports changes to AGENTS.md or the gate; read-only git only."""
+    """Refuse when git reports changes to AGENTS.md, the gate or the journey tool; read-only git only."""
     try:
         inside = subprocess.run(
             ["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
@@ -478,14 +488,16 @@ def check_clean(target: Path) -> None:
     if inside.stdout.strip() != "true":
         return
     status = subprocess.run(
-        ["git", "-C", str(target), "status", "--porcelain", "--", AGENTS_NAME, rel.GATE_PATH.as_posix()],
+        ["git", "-C", str(target), "status", "--porcelain", "--", AGENTS_NAME, rel.GATE_PATH.as_posix(),
+         rel.VERIFY_PATH.as_posix()],
         capture_output=True, text=True, check=False, env=git_env())
     if status.returncode != 0:
         raise UpdateRefused([f"git status failed ({status.stderr.strip()}); use --allow-dirty to skip the check"])
     dirty = [line.strip() for line in status.stdout.splitlines() if line.strip()]
     if dirty:
         raise UpdateRefused([
-            f"uncommitted changes in {AGENTS_NAME} or {rel.GATE_PATH.as_posix()} ({'; '.join(dirty)}); "
+            f"uncommitted changes in {AGENTS_NAME}, {rel.GATE_PATH.as_posix()} or {rel.VERIFY_PATH.as_posix()} "
+            f"({'; '.join(dirty)}); "
             "commit or stash them first, or pass --allow-dirty"])
 
 
@@ -725,9 +737,38 @@ def plan_contract(target: Path, template: Template, args: argparse.Namespace) ->
     return plan
 
 
+def plan_verify(target: Path, template: Template, replace_edited: bool) -> GatePlan:
+    """The journey-recording tool the managed contract names: installed beside the gate, replaced like the gate."""
+    path = target / rel.VERIFY_PATH
+    plan = GatePlan(sha_after=template.verify_sha, mode=template.verify_mode)
+    if not os.path.lexists(path):
+        plan.action, plan.data = "install", template.verify_bytes
+        return plan
+    local = read_target_file(path)
+    plan.sha_before = rel.sha256_bytes(local)
+    plan.mode = stat.S_IMODE(path.stat().st_mode)
+    if plan.sha_before == template.verify_sha:
+        plan.from_release = template.release
+        return plan
+    matches = rel.releases_matching(template.index, "verify_sha256", plan.sha_before)
+    if matches:
+        plan.action, plan.data = "replace", template.verify_bytes
+        plan.releases, plan.from_release = matches, matches[-1]
+        return plan
+    plan.action, plan.data = "replace_edited", template.verify_bytes
+    plan.diff = unified(
+        local.decode("utf-8", errors="replace"), template.verify_bytes.decode("utf-8"),
+        f"instance {rel.VERIFY_PATH.as_posix()}", f"template {rel.VERIFY_PATH.as_posix()} ({template.release})")
+    if not replace_edited:
+        plan.refusals.append(
+            f"{rel.VERIFY_PATH.as_posix()} is not a released copy (sha256 {plan.sha_before[:12]}): it was edited "
+            "locally or copied before 6.5.0; review the diff, then pass --replace-edited-gate to replace it")
+    return plan
+
+
 def build_plan(target: Path, template: Template, args: argparse.Namespace) -> Plan:
     return Plan(target, template, plan_gate(target, template, args.replace_edited_gate),
-                plan_contract(target, template, args))
+                plan_contract(target, template, args), plan_verify(target, template, args.replace_edited_gate))
 
 
 # --- Applying ------------------------------------------------------------------------------
@@ -752,16 +793,48 @@ def write_atomic(path: Path, data: bytes, mode: int) -> None:
 
 
 def apply_plan(plan: Plan) -> None:
-    """Gate first, then contract; each part is independent, so a rerun finishes an interrupted apply."""
+    """Gate, journey tool, then contract; each part is independent, so a rerun finishes an interrupted apply.
+
+    The contract goes last because it names the journey tool: an interrupted apply never leaves a block that
+    points at a file that is not there."""
     if plan.gate.data is not None:
         gate_path = plan.target / rel.GATE_PATH
         gate_path.parent.mkdir(exist_ok=True)
         write_atomic(gate_path, plan.gate.data, plan.gate.mode)
+    if plan.verify.data is not None:
+        verify_path = plan.target / rel.VERIFY_PATH
+        verify_path.parent.mkdir(exist_ok=True)
+        write_atomic(verify_path, plan.verify.data, plan.verify.mode)
     if plan.contract.text is not None:
+        # Checked at write time, not only at plan time: the tool may have been removed or changed in between.
+        verify_path = plan.target / rel.VERIFY_PATH
+        if os.path.islink(verify_path):
+            raise UpdateRefused([f"{rel.VERIFY_PATH.as_posix()} became a symlink during the update; the contract "
+                                 "block was not written; rerun the update"])
+        if not os.path.lexists(verify_path):
+            verify_path.parent.mkdir(exist_ok=True)
+            write_atomic(verify_path, plan.template.verify_bytes, plan.template.verify_mode)
+        elif rel.sha256_bytes(verify_path.read_bytes()) != plan.template.verify_sha:
+            raise UpdateRefused([f"{rel.VERIFY_PATH.as_posix()} changed during the update; the contract block was "
+                                 "not written; rerun the update"])
         write_atomic(plan.target / AGENTS_NAME, plan.contract.text.encode("utf-8"), plan.contract.mode)
 
 
 # --- Reporting -----------------------------------------------------------------------------
+
+
+def written_so_far(plan: Plan) -> list[str]:
+    """After an interrupted apply: which planned files already hold this release's bytes."""
+    done: list[str] = []
+    checks = [(plan.gate.data, rel.GATE_PATH, plan.gate.data), (plan.verify.data, rel.VERIFY_PATH, plan.verify.data)]
+    for planned, relative, data in checks:
+        with suppress(OSError):
+            if planned is not None and (plan.target / relative).read_bytes() == data:
+                done.append(relative.as_posix())
+    with suppress(OSError):
+        if plan.contract.text is not None and (plan.target / AGENTS_NAME).read_bytes() == plan.contract.text.encode("utf-8"):
+            done.append(AGENTS_NAME)
+    return done
 
 
 def plan_payload(plan: Plan, applied: bool) -> dict[str, Any]:
@@ -774,6 +847,12 @@ def plan_payload(plan: Plan, applied: bool) -> dict[str, Any]:
             "from_release": plan.gate.from_release,
             "sha_before": plan.gate.sha_before,
             "sha_after": plan.gate.sha_after,
+        },
+        "verify": {
+            "action": plan.verify.action,
+            "from_release": plan.verify.from_release,
+            "sha_before": plan.verify.sha_before,
+            "sha_after": plan.verify.sha_after,
         },
         "contract": {
             "action": contract.action,
@@ -859,9 +938,29 @@ def contract_lines(plan: Plan, show_removed_text: bool) -> list[str]:
     return lines
 
 
+def verify_lines(plan: Plan) -> list[str]:
+    tool = plan.verify
+    name = rel.VERIFY_PATH.as_posix()
+    lines = [f"Journey tool {name}: {tool.action}"]
+    if tool.action == "none":
+        lines[0] += f" (already release {plan.template.release})"
+    elif tool.action == "install":
+        lines.append(f"  not present; install release {plan.template.release} ({short(tool.sha_after)})")
+    elif tool.action == "replace":
+        lines.append(f"  released copy of {', '.join(tool.releases)} ({short(tool.sha_before)}) -> "
+                     f"{plan.template.release} ({short(tool.sha_after)})")
+    else:
+        lines.append(f"  not a released copy ({short(tool.sha_before)}) -> {plan.template.release} ({short(tool.sha_after)})")
+    if tool.diff:
+        lines.append("  diff (instance -> template, first lines):")
+        lines.extend(f"    {line}" for line in tool.diff)
+    return lines
+
+
 def render_report(plan: Plan, args: argparse.Namespace, applied: bool) -> str:
     lines = [f"ProjectState update of {plan.target} to release {plan.template.release} (template {plan.template.root})"]
     lines.extend(gate_lines(plan))
+    lines.extend(verify_lines(plan))
     lines.extend(contract_lines(plan, args.accept_modified_sections))
     if plan.refusals:
         lines.append("Refused, nothing written:")
@@ -1001,7 +1100,7 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--check", action="store_true", help="Write nothing; exit 1 when a change is needed")
     parser.add_argument("--json", action="store_true", help="Emit the plan as JSON")
     parser.add_argument("--replace-edited-gate", action="store_true",
-                        help="Replace a locally edited scripts/projectstate_gate.py")
+                        help="Replace a locally edited scripts/projectstate_gate.py or scripts/projectstate_verify.py")
     parser.add_argument("--replace-edited-contract", action="store_true",
                         help="Replace a locally edited managed block")
     parser.add_argument("--accept-modified-sections", action="store_true",
@@ -1044,9 +1143,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.apply and plan.changed:
         try:
             apply_plan(plan)
-        except OSError as exc:
-            reason = f"write failed: {exc}; rerun --apply to finish"
-            emit(args, refusal_payload(args.target, template, [reason]), f"refused: {reason}", error=True)
+        except (OSError, UpdateRefused) as exc:
+            # Each file is replaced atomically, but the three are not one transaction: say what is already in place.
+            done = written_so_far(plan)
+            state = (f"already written: {', '.join(done)}" if done else "nothing was written")
+            reason = f"update interrupted ({exc}); {state}; rerun --apply to finish"
+            emit(args, refusal_payload(args.target, template, [reason]), f"interrupted: {reason}", error=True)
             return 2
         applied = True
     emit(args, plan_payload(plan, applied), render_report(plan, args, applied))

@@ -29,3 +29,4 @@ Use `0000-adr-template.md` as the starting point. Number ADRs sequentially.
 - [0004](0004-release-channel-and-legacy-split.md): release channel, and removing v5 from main.
 - [0005](0005-host-hooks-keep-the-owners-words.md): the host keeps the owner's words (accepted).
 - [0006](0006-journey-receipts-outside-the-repository.md): a journey receipt lives outside the repository (accepted).
+- [0007](0007-proof-by-run-moves-on.md): a slice proven by a run moves on, one proven by word waits (accepted).

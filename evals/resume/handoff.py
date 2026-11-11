@@ -309,7 +309,8 @@ def build_repo(parent: Path, condition: str) -> Path:
             project = project.replace(placeholder, value)
         core = {
             "AGENTS.md": agents,
-            "scripts/projectstate_gate.py": generated["scripts/projectstate_gate.py"],
+            # every tool a generated project carries: the gate and, from 6.5.0, the journey tool the contract names
+            **{name: text for name, text in generated.items() if name.startswith("scripts/")},
             "PROJECT.md": project,
             "STATE.yaml": state_yaml(),
             f"evidence/{SLICE}/summary.md": summary_md(),

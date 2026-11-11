@@ -2,6 +2,35 @@
 
 Current template version: `projectstate-template-v6`
 
+## Release 6.5.0: proof by run
+
+Release 6.5.0 is `semantic` in `releases/index.json`. Update an instance with the
+steps under "Update an instance" below, using the branch name
+`projectstate/release-6.5.0`. The update writes three things: the gate, the
+managed block, and a new vendored file, `scripts/projectstate_verify.py`. It
+does not touch `STATE.yaml`, and the gate's exit code for your repository does
+not change.
+
+What changes for the people and agents working in the instance:
+
+- Agents record the journey with `python3 scripts/projectstate_verify.py --run`
+  instead of typing the result. The tool marks a passing slice `validated` and
+  prints the gate's verdict. A journey that cannot be a command is still
+  recorded by hand, with the reason under `## Limitations`.
+- A validated slice whose journey a run recorded no longer waits for the owner:
+  the next slice may start, and the open decision stays listed by the fleet
+  doctor. A slice whose journey was typed by hand waits as before. Slices
+  recorded before the update were typed by hand, so they wait until decided or
+  until `projectstate_verify.py --run` has run their journey.
+- To close an open decision on a slice that is no longer current:
+  `python3 /path/to/ProjectState_Template/scripts/projectstate_decide.py /path/to/your-project accept|reject|waive "<your words>" --slice <slice-id>`.
+
+If an instance already holds a `scripts/projectstate_verify.py` that was copied
+by hand, the update shows the difference and refuses until
+`--replace-edited-gate` is passed. The host hooks stay opt-in; an instance that
+has them installed is reported as `behind` and updated with the install command
+the fleet doctor prints.
+
 ## Release 6.4.0: opt-in host hooks
 
 Release 6.4.0 is `mechanical` in `releases/index.json`: the vendored gate carries

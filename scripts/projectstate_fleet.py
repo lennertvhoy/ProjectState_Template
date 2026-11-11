@@ -80,6 +80,12 @@ RAN_IN_CHARS = 40
 AWAITING_STATUSES = {"validated", "ready_for_human"}
 KINDS = ("v6", "v6-invalid", "v5", "other")
 GATE_STATES = ("current", "draft", "behind", "unknown", "missing", "symlink", "unreadable")
+# The journey-recording tool the managed contract names from 6.5.0 on; same states as the gate.
+VERIFY_TOOL = "scripts/projectstate_verify.py"
+VERIFY_BROKEN_STATES = ("unknown", "missing", "symlink", "unreadable")
+# The line that tool writes under ## Primary journey when it ran the command itself.
+RUN_VALUE = re.compile(r"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z) by scripts/projectstate_verify\.py\b")
+EVIDENCE_LIMIT = 500  # evidence folders read per repository when looking for open decisions
 CONTRACT_STATES = ("current", "draft", "behind", "edited", "unmanaged", "malformed", "missing", "unreadable")
 VERDICTS = ("validated", "not validated", "invalid")
 # The opt-in host hooks: a v6 instance without them is fine (absent), drift on them is reported.
@@ -371,14 +377,66 @@ def slice_fields(payload: dict[str, Any] | None) -> tuple[str | None, str | None
     return text_value(current.get("id")), text_value(current.get("status")), text_value(human)
 
 
-def has_owner_decision(repo: Path, slice_id: str) -> bool:
-    """Whether evidence/<id>/summary.md (working tree, else HEAD) has an '## Owner decision' heading."""
+def summary_text(repo: Path, slice_id: str) -> str | None:
+    """evidence/<id>/summary.md from the working tree, else from HEAD; None when the id or the file is unusable."""
     if not SLICE_ID.fullmatch(slice_id):
-        return False
+        return None
     relative = f"evidence/{slice_id}/summary.md"
     doc = load_doc(repo, relative)
-    text = doc.text if doc.data is not None else git_blob(repo, f"HEAD:{relative}")
+    return doc.text if doc.data is not None else git_blob(repo, f"HEAD:{relative}")
+
+
+def has_owner_decision(repo: Path, slice_id: str) -> bool:
+    """Whether evidence/<id>/summary.md (working tree, else HEAD) has an '## Owner decision' heading."""
+    text = summary_text(repo, slice_id)
     return text is not None and any(OWNER_DECISION.match(line) for line in outside_fences(text))
+
+
+def run_in_summary(text: str | None) -> str | None:
+    """UTC time of the passed journey run recorded in a slice summary, by the gate's own rule, else None.
+
+    The same reading as the gate's ``journey_run``: the line the journey tool writes, inside ``## Primary journey``,
+    beside ``Result: passed`` and ``Exit code: 0``. A line under another heading is not the journey's record. A
+    record only, like everything the gate reads: a typed line in the tool's format reads as a run."""
+    if text is None:
+        return None
+    primary = gate_mod._markdown_sections(text, "evidence summary", []).get("primary journey", "")
+    if (gate_mod._summary_value(primary, "Result") or "").lower() != "passed":
+        return None
+    if gate_mod._summary_value(primary, "Exit code") != "0":
+        return None
+    match = RUN_VALUE.match(gate_mod._summary_value(primary, "Verified") or "")
+    return match.group(1) if match else None
+
+
+def run_recorded(repo: Path, slice_id: str | None) -> str | None:
+    """``run_in_summary`` for evidence/<id>/summary.md (working tree, else HEAD)."""
+    return run_in_summary(summary_text(repo, slice_id)) if slice_id else None
+
+
+def open_earlier_slices(repo: Path, current_id: str | None) -> list[dict[str, Any]]:
+    """Slices other than the current one whose journey a run recorded as passed and that carry no owner decision.
+
+    Read from the evidence folders in the working tree, not from git history: a slice that was validated and
+    followed by the next one within a single commit, or in a directory without git, is found all the same."""
+    evidence = repo / "evidence"
+    try:
+        if evidence.is_symlink() or not evidence.is_dir():
+            return []
+        names = sorted(entry.name for entry in evidence.iterdir())[:EVIDENCE_LIMIT]
+    except OSError:
+        return []
+    found: list[dict[str, Any]] = []
+    for name in names:
+        if name == current_id or not SLICE_ID.fullmatch(name):
+            continue
+        doc = load_doc(repo, f"evidence/{name}/summary.md")
+        if doc.data is None:
+            continue
+        run = run_in_summary(doc.text)
+        if run and not any(OWNER_DECISION.match(line) for line in outside_fences(doc.text)):
+            found.append({"slice": name, "run": run})
+    return found
 
 
 def silent_replacement(
@@ -396,7 +454,8 @@ def silent_replacement(
         cache[old_id] = has_owner_decision(repo, old_id)
     if cache[old_id]:
         return None
-    return {"from": old_id, "to": new_id, "date": when, "commit": commit, "uncommitted": commit is None}
+    return {"from": old_id, "to": new_id, "date": when, "commit": commit, "uncommitted": commit is None,
+            "run": run_recorded(repo, old_id)}
 
 
 def silent_replacements(repo: Path, working: dict[str, Any] | None) -> list[dict[str, Any]]:
@@ -499,9 +558,21 @@ def gate_status(path: Path, ctx: Context) -> dict[str, Any]:
     return {"status": state, "sha256": sha, "release": name, "problem": None}
 
 
+def verify_status(path: Path, ctx: Context) -> dict[str, Any]:
+    """The vendored journey-recording tool, compared with the released hashes like the gate."""
+    doc = load_doc(path, VERIFY_TOOL)
+    if doc.data is None:
+        state = doc.problem if doc.problem in {"missing", "symlink"} else "unreadable"
+        return {"status": state, "sha256": None, "release": None, "problem": doc.problem}
+    sha = release_mod.sha256_bytes(doc.data)
+    state, name = hash_status(sha, "verify_sha256", ctx, "behind", "unknown")
+    return {"status": state, "sha256": sha, "release": name, "problem": None}
+
+
 def contract_status(agents: Doc, ctx: Context) -> tuple[dict[str, Any], bool]:
     """Status of the managed AGENTS.md block, and whether a well-formed block exists."""
-    result: dict[str, Any] = {"status": "missing", "sha256": None, "release": None, "declared": None}
+    result: dict[str, Any] = {"status": "missing", "sha256": None, "release": None, "declared": None,
+                              "names_verify": False}
     if agents.data is None:
         if agents.problem != "missing":
             result["status"] = "unreadable"
@@ -516,6 +587,9 @@ def contract_status(agents: Doc, ctx: Context) -> tuple[dict[str, Any], bool]:
     sha = release_mod.contract_sha256(block.content)
     result["status"], result["release"] = hash_status(sha, "contract_sha256", ctx, "behind", "edited")
     result["sha256"], result["declared"] = sha, block.release
+    # From 6.5.0 the block tells agents to record journeys with the vendored tool, and lets a slice whose
+    # journey a run recorded be followed by the next one while the owner's decision is open.
+    result["names_verify"] = VERIFY_TOOL in block.content
     return result, True
 
 
@@ -882,6 +956,7 @@ def scan_repository(path: Path, payload: dict[str, Any] | None, kind: str, probl
     agents, project, state = (load_doc(path, name) for name in ("AGENTS.md", "PROJECT.md", "STATE.yaml"))
     contract, managed = contract_status(agents, ctx)
     repo["gate"] = gate_status(path, ctx)
+    repo["verify"] = verify_status(path, ctx)
     repo["contract"] = contract
     repo["hooks"] = hooks_status(path, ctx)
     repo["opencode"] = opencode_status(path, ctx)
@@ -891,6 +966,8 @@ def scan_repository(path: Path, payload: dict[str, Any] | None, kind: str, probl
     repo["verdict"] = verdict_report(path)
     repo["slice"] = slice_report(payload, ctx.today)
     repo["proof"] = proof_report(path, payload, repo["slice"]["id"], repo["git"], ctx) if repo["slice"]["id"] else None
+    repo["slice"]["run"] = run_recorded(path, repo["slice"]["id"]) if repo["slice"]["journey"] == "passed" else None
+    repo["open_earlier"] = open_earlier_slices(path, repo["slice"]["id"])
     repo["history"] = {"first_commit": None, "age_days": None, "state_commits": None, "all_commits": None}
     repo["silent_replacements"] = []
     repo["rule_since"] = None
@@ -941,9 +1018,10 @@ def discover(root: Path) -> list[Path]:
 # --- inbox and summary -----------------------------------------------------------------------
 
 
-def decision_command(template: Path, repo: Path) -> str:
+def decision_command(template: Path, repo: Path, slice_id: str | None = None) -> str:
     script = shlex.quote(str(template / "scripts" / "projectstate_decide.py"))
-    return f'python3 {script} {shlex.quote(str(repo))} accept|reject|waive "<your words>"'
+    earlier = f" --slice {shlex.quote(slice_id)}" if slice_id else ""
+    return f'python3 {script} {shlex.quote(str(repo))} accept|reject|waive "<your words>"{earlier}'
 
 
 def verify_command(template: Path, repo: Path) -> str:
@@ -977,19 +1055,43 @@ def due_text(risk: dict[str, Any]) -> str:
 
 def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dict[str, Any]]]:
     inbox: dict[str, list[dict[str, Any]]] = {
-        "decisions": [], "blocked": [], "needs_review": [], "ready_to_merge": [],
+        "decisions": [], "open_decisions": [], "blocked": [], "needs_review": [], "ready_to_merge": [],
     }
     for repo in repos:
         if repo["kind"] != "v6":
             continue
         name, path, current, proof = repo["name"], Path(repo["path"]), repo["slice"], repo["proof"]
         slice_id = current["id"] or "(no slice id)"
+        # From 6.5.0 a slice whose journey a run recorded does not wait: the next slice may start, and the
+        # decision stays open. One typed by hand, or under an older contract, waits for the owner.
+        moves_on = repo["contract"]["names_verify"]
         if current["status"] in AWAITING_STATUSES and current["human_acceptance"] == "pending":
             command = decision_command(ctx.template, path)
-            inbox["decisions"].append(inbox_item(
-                repo, "decision",
-                f"{name}: {slice_id} is validated and waits for your decision{proof_note(proof)}. Run: {command}",
-                slice=slice_id, command=command, proof=proof["status"] if proof else None))
+            detail = {"slice": slice_id, "command": command, "proof": proof["status"] if proof else None}
+            if moves_on and current["run"]:
+                inbox["open_decisions"].append(inbox_item(
+                    repo, "open-decision",
+                    f"{name}: {slice_id} is validated by a run on {current['run'][:10]}; work may go on without "
+                    f"your decision{proof_note(proof)}. To record one: {command}", run=current["run"], **detail))
+            else:
+                inbox["decisions"].append(inbox_item(
+                    repo, "decision",
+                    f"{name}: {slice_id} is validated and waits for your decision{proof_note(proof)}. Run: {command}",
+                    **detail))
+        followed = {found["from"]: found for found in repo["silent_replacements"]}
+        for earlier in repo["open_earlier"] if moves_on else []:
+            command = decision_command(ctx.template, path, earlier["slice"])
+            successor = followed.get(earlier["slice"])
+            after = ""
+            if successor:
+                when = f"on {successor['date']}" if successor["date"] else "uncommitted"
+                after = f" and followed by {successor['to']} ({when})"
+            inbox["open_decisions"].append(inbox_item(
+                repo, "open-decision",
+                f"{name}: {earlier['slice']} was validated by a run on {earlier['run'][:10]}{after}; its decision "
+                f"is still open. To record one: {command}", slice=earlier["slice"], run=earlier["run"],
+                command=command, to=successor["to"] if successor else None,
+                date=successor["date"] if successor else None))
         reasons = [label for label, active in (("slice status", current["status"] == "blocked"),
                                                ("primary journey", current["journey"] == "blocked")) if active]
         if reasons:
@@ -1019,6 +1121,11 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
             if repo["contract"]["status"] == "malformed":
                 review.append(inbox_item(repo, "contract-malformed",
                                          f"{name}: AGENTS.md has malformed managed block markers"))
+            if repo["contract"]["names_verify"] and repo["verify"]["status"] in VERIFY_BROKEN_STATES:
+                review.append(inbox_item(
+                    repo, "journey-tool-" + repo["verify"]["status"],
+                    f"{name}: the contract tells agents to record journeys with {VERIFY_TOOL}, but that file is "
+                    f"{repo['verify']['status']}; rerun projectstate_update.py on this repository"))
             hooks = repo["hooks"]["status"]
             if hooks in HOOKS_REVIEW_STATES:
                 command = hooks_install_command(ctx.template, path, repo["opencode"]["status"] != "absent")
@@ -1031,6 +1138,8 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
             if not counts_against_rule(found, repo.get("rule_since")):
                 continue  # replaced before this repository adopted the owner-decision rule: history only
             when = f"on {found['date']}" if found["date"] else "uncommitted"
+            if moves_on and any(earlier["slice"] == found["from"] for earlier in repo["open_earlier"]):
+                continue  # proven by a run: already listed above as an open decision, and not a violation
             review.append(inbox_item(
                 repo, "silent-replacement",
                 f"{name}: slice {found['from']} was replaced by {found['to']} ({when}) while awaiting the owner, "
@@ -1075,6 +1184,7 @@ def summarize(repos: list[dict[str, Any]], inbox: dict[str, list[dict[str, Any]]
         "with_git": len(with_git),
         "dirty": len(dirty),
         "gates": {state: sum(repo["gate"]["status"] == state for repo in instances) for state in GATE_STATES},
+        "verify": {state: sum(repo["verify"]["status"] == state for repo in instances) for state in GATE_STATES},
         "contracts": {state: sum(repo["contract"]["status"] == state for repo in instances)
                       for state in CONTRACT_STATES},
         "hooks": {state: sum(repo["hooks"]["status"] == state for repo in instances) for state in HOOK_STATES},
@@ -1186,8 +1296,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "Read-only: no repository was modified.",
     ]
-    for key, title in (("decisions", "Your decisions"), ("blocked", "Blocked"),
-                       ("needs_review", "Needs review"), ("ready_to_merge", "Ready to merge")):
+    for key, title in (("decisions", "Your decisions"), ("open_decisions", "Open decisions that block nothing"),
+                       ("blocked", "Blocked"), ("needs_review", "Needs review"), ("ready_to_merge", "Ready to merge")):
         items = report["inbox"][key]
         lines += ["", f"## {title} ({len(items)})", ""]
         lines += [f"- {item['message']}" for item in items] or ["None."]
@@ -1226,6 +1336,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Repositories: {summary['repositories']} ({kinds}); {summary['with_git']} with git, {summary['dirty']} dirty.",
         "- v6 gates (template excluded): " + ", ".join(f"{state} {summary['gates'][state]}" for state in GATE_STATES)
         + ".",
+        "- v6 journey tools (template excluded): "
+        + ", ".join(f"{state} {summary['verify'][state]}" for state in GATE_STATES) + ".",
         "- v6 contracts (template excluded): "
         + ", ".join(f"{state} {summary['contracts'][state]}" for state in CONTRACT_STATES) + ".",
         "- v6 host hooks (template excluded): "
@@ -1236,8 +1348,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "- v6 journey proof: independent run passed {receipt-passed}, failed {receipt-failed}, stale "
         "{receipt-stale}, invalid {receipt-invalid}, record only {record-only}.".format(**summary["proof"]),
         "- Inbox: " + ", ".join(f"{len(report['inbox'][key])} {label}" for key, label in (
-            ("decisions", "decisions"), ("blocked", "blocked"), ("needs_review", "to review"),
-            ("ready_to_merge", "ready to merge"))) + ".",
+            ("decisions", "decisions"), ("open_decisions", "open without blocking"), ("blocked", "blocked"),
+            ("needs_review", "to review"), ("ready_to_merge", "ready to merge"))) + ".",
         f"- Refresh notices in v6 repositories: {summary['notices']}.",
     ]
     flagged = [(repo["name"], flag) for repo in v6 for flag in repo["sizes"]["flags"]]
@@ -1263,7 +1375,8 @@ def summary_line(report: dict[str, Any]) -> str:
     kinds = ", ".join(f"{kind} {summary['kinds'][kind]}" for kind in KINDS)
     inbox = summary["inbox"]
     return (f"fleet: {summary['repositories']} repositories ({kinds}); inbox: {inbox['decisions']} decisions, "
-            f"{inbox['blocked']} blocked, {inbox['needs_review']} to review, {inbox['ready_to_merge']} ready to merge")
+            f"{inbox['open_decisions']} open without blocking, {inbox['blocked']} blocked, "
+            f"{inbox['needs_review']} to review, {inbox['ready_to_merge']} ready to merge")
 
 
 # --- command line ----------------------------------------------------------------------------

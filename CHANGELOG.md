@@ -11,11 +11,49 @@ All notable ProjectState template changes are tracked here.
 > `PROJECTSTATE_ASSETS.json` left main with the legacy split (see 6.4.0) and
 > are at tag `v5-final`.
 
-## Unreleased
+## 6.5.0 - 2026-11-11
 
-Instance action: none. These changes are in the template's own tools and their tests. The gate, the managed
-contract block and the release index are unchanged, so no release hash moves and
-`python3 scripts/projectstate_release.py check` still matches; an instance needs no action.
+Instance action: semantic. The managed block changes what agents do, the gate's output changes, and an instance
+gains a second vendored file, `scripts/projectstate_verify.py`. `projectstate_update.py` brings an instance to
+6.5.0 (a dry run by default) and writes those three things. The `STATE.yaml` schema is unchanged, and the gate's
+exit code for a given repository is the same as with 6.4.0 (compared on 23 repositories). ADR-0007 has the
+reasoning.
+
+- **A slice proven by a run moves on; one proven by word waits** (managed block, ADR-0007). The contract now
+  tells agents to record the journey with `python3 scripts/projectstate_verify.py --run` and never to type a
+  journey status, result or exit code, except for a journey that cannot be a command. While the owner has not
+  decided, a slice whose journey a run recorded as passed may be followed by the next slice; one whose journey was
+  typed by hand waits as before. With a host briefing in context, `PROJECT.md` and `STATE.yaml` are read for
+  detail or before a change, not at every start.
+- **The journey tool is vendored and does more of the bookkeeping** (`scripts/projectstate_verify.py`). A passed
+  journey sets a `planned`, `implementing` or `implemented` slice to `validated`; when the gate still lists a
+  blocker the status stays and the tool prints the blocker. The last thing it prints is the gate's verdict. The
+  release index records `verify_sha256` (required from 6.5.0); `init_template.py` copies the tool into a new
+  project; the update command installs it, replaces a released copy, and refuses a copy that matches no release
+  until `--replace-edited-gate` is passed. The contract block is written last, so an interrupted update never
+  leaves a block that names a file that is not there.
+- **The gate says how the journey was recorded.** `RECORDED OUTCOME VALIDATED` is followed by `recorded as passed
+  by a run (scripts/projectstate_verify.py, <time>)` or `recorded as passed, typed by hand`, and the line about a
+  pending owner decision says whether the next slice may start or the slice waits. No error or blocker was added
+  or removed. `projectstate_gate.journey_run(root)` returns the recorded time for other tools.
+- **Decisions: delegated, and on an earlier slice** (`scripts/projectstate_decide.py`). `--delegated` records a
+  choice the owner handed to an agent: the owner's delegating words, plus `- Decided by: delegate`; a delegated
+  accept is refused unless a run recorded the journey. `--slice ID` with the id of an earlier slice records the
+  decision on that slice and writes only its summary; before, `--slice` could only confirm the current slice.
+- **The fleet doctor follows the new rule.** A validated slice proven by a run is listed under "Open decisions
+  that block nothing" (`inbox.open_decisions` in `fleet.json`) instead of "Your decisions", and stays listed after
+  the next slice follows it, with the command that records a decision on it. A slice typed by hand still waits
+  under "Your decisions", and replacing it without a decision is still `silent-replacement`. Each repository gains
+  a `verify` object and `contract.names_verify`; a contract that names the journey tool while the file is missing
+  or matches no release is listed for review. The one-line summary and the Markdown report gain the new section.
+- **Host hooks: a host notification is not the owner's words** (`scripts/projectstate_hooks.py`). On 2026-11-11
+  the first live session with the hooks logged a finished background task as an owner prompt and replayed it as
+  the owner's most recent request. Blocks the host itself puts into the prompt stream (`task-notification`,
+  `system-reminder`, the output of local commands) are now dropped before anything is logged; typed words around
+  them are kept. A durable constraint wrapped over several lines in `PROJECT.md` is briefed whole, where the
+  brief used to cut it at the first line. The brief's line about a pending decision follows the new rule.
+
+Also in this release, written between 6.4.0 and 6.5.0:
 
 - **Independent journey runs** (`scripts/projectstate_verify.py --receipt`, ADR-0006). A reviewer, the
   owner or a fleet check can run the recorded journey without being the repository's writer. The run writes
@@ -43,7 +81,7 @@ contract block and the release index are unchanged, so no release hash moves and
   a heading that never mentions ProjectState stays as project text, with a warning. Notices bounded by
   `projectstate-NAME:start` and `projectstate-NAME:end` are still removed without a flag, because their extent is
   exact.
-- **Records.** ADR-0005 (host hooks) and ADR-0006 (journey receipts) are accepted. The v2.2 hooks measurement is
+- **Records.** ADR-0005 (host hooks), ADR-0006 (journey receipts) and ADR-0007 (proof by run) are accepted. The v2.2 hooks measurement is
   complete for the core contract: six of six usable chains (three haiku, three sonnet) pass all eight checks; the
   lean contract has no v2.2 result. The template's own slice `handoff-eval-001` is accepted, by a choice the owner
   delegated; the record says so.

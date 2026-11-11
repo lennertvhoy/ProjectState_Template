@@ -1,0 +1,26 @@
+# scripts/projectstate_verify.py
+# command: python3 -B scripts/test_proof_by_run.py
+# finished: 2026-11-11T15:26:37Z
+# exit code 0 after 1.1s
+
+ok   a new project carries the gate and the journey tool
+ok   its contract block is this release and names the journey tool
+ok   the project's own tool records the passing journey and marks the slice validated
+ok   the tool prints the gate's verdict, which names the run
+ok   the project's gate exits 0 and says the next slice may start
+ok   the fleet doctor lists the slice as an open decision, not as one that waits
+ok   after the next slice follows, the earlier one stays listed and is not a violation
+ok   a delegate may accept the earlier slice, and the record says who decided
+ok   the decided slice is no longer listed
+ok   the project's gate now reports the new slice honestly (journey not run)
+ok   the gate names a hand-typed record and says the slice waits
+ok   the fleet doctor lists the hand-typed slice under your decisions
+ok   a delegate cannot accept the hand-typed slice, and nothing is written
+ok   replacing the hand-typed slice without a decision is reported for review
+ok   the update command sees that the 6.4.0 instance is behind
+ok   the update installs this release's gate, journey tool and contract block
+ok   the update wrote those three files and nothing else
+ok   the gate's exit code is unchanged by the update
+ok   a second check finds the instance up to date
+
+PASSED: 0 failed check(s)

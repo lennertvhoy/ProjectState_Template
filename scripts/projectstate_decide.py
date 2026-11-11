@@ -2,7 +2,7 @@
 """Record the owner's decision on the current slice with one command.
 
     python3 scripts/projectstate_decide.py TARGET {accept,reject,waive} "OWNER WORDS"
-        [--date YYYY-MM-DD] [--slice ID] [--dry-run] [--allow-dirty]
+        [--date YYYY-MM-DD] [--slice ID] [--delegated] [--dry-run] [--allow-dirty]
 
 The fleet doctor prints this command for every validated slice that waits for the owner, so
 recording a decision no longer means hand-editing STATE.yaml. The command appends an
@@ -22,6 +22,16 @@ the summary have no uncommitted changes (``--allow-dirty`` skips only that last 
 Both files are written atomically, then the template gate validates the result in-process. Any gate
 error restores both files byte for byte and exits 2. The gate checks records only: this command
 cannot tell who typed the owner's words, and it runs no instance code (only read-only ``git``).
+
+``--slice ID`` with the id of an earlier slice records the decision on that slice instead. From 6.5.0
+a slice whose journey a run recorded may be followed by the next one while its decision is open, and the
+fleet doctor keeps listing it; this closes it. Only ``evidence/ID/summary.md`` is written, STATE.yaml is
+left alone, and an accept needs that summary to record the journey as passed.
+
+``--delegated`` is for a choice the owner handed to an agent: OWNER WORDS are then the owner's
+delegating words, and the record gains ``- Decided by: delegate``. A delegate accepts only what a run of
+``scripts/projectstate_verify.py`` recorded as passed, so a delegated accept of a journey typed by hand
+is refused; waive, reject, or leave it to the owner.
 """
 
 from __future__ import annotations
@@ -104,6 +114,7 @@ class Plan(NamedTuple):
     summary_mode: int
     section: str
     warnings: list[str]
+    earlier: bool = False
 
 
 # --- Preconditions -------------------------------------------------------------------------
@@ -330,16 +341,71 @@ def line_ending(text: str) -> str:
     return "\r\n" if "\r\n" in text and "\n" not in text.replace("\r\n", "") else "\n"
 
 
-def owner_section(decision: str, date: str, words: str, newline: str) -> str:
+def owner_section(decision: str, date: str, words: str, newline: str, delegated: bool = False) -> str:
     lines = [
         "## Owner decision",
         "",
         f"- Decision: {decision}",
         f"- Date: {date}",
         f'- Owner words: "{words}"',
+        *(["- Decided by: delegate (the owner handed the choice to an agent and did not review this slice)"]
+          if delegated else []),
         f"- Recorded by: {RECORDED_BY}",
     ]
     return "".join(line + newline for line in lines)
+
+
+DELEGATE_NEEDS_RUN = ("a delegate accepts only what a run of scripts/projectstate_verify.py recorded as passed, and "
+                      "this journey was typed by hand; record it with --run first, or waive, reject, or leave the "
+                      "decision to the owner")
+
+
+def primary_journey_record(summary_text: str) -> str:
+    """The body of the summary's ``## Primary journey`` section ('' when there is none)."""
+    return gatelib._markdown_sections(summary_text, "evidence summary", []).get("primary journey", "")
+
+
+def build_earlier_plan(args: argparse.Namespace, target: Path, state_path: Path, state_old: bytes,
+                       decision: str) -> Plan:
+    """A decision on a slice that is no longer current: only its summary is written."""
+    slice_id = args.slice_id
+    if not SLICE_ID.fullmatch(slice_id):
+        raise Refused(["--slice must be lowercase letters, digits, and hyphens"])
+    words = owner_words(args.words)
+    date = decision_date(args.date)
+    summary_rel = PurePosixPath("evidence") / slice_id / "summary.md"
+    try:
+        summary_path = local_file(target, summary_rel)
+    except Refused as exc:
+        raise Refused([f"--slice {slice_id!r} is neither the current slice nor an earlier one with a summary",
+                       *exc.reasons]) from exc
+    summary_old, summary_text = read_file(summary_path, summary_rel.as_posix())
+    if has_owner_decision(summary_text):
+        raise Refused([f"{summary_rel} already has an ## Owner decision section; it is never overwritten"])
+    journey = primary_journey_record(summary_text)
+    # The gate's own rule for a passed journey, applied to a slice the gate no longer reads.
+    if decision == "accepted" and ((gatelib._summary_value(journey, "Result") or "").lower() != "passed"
+                                   or gatelib._summary_value(journey, "Exit code") != "0"):
+        raise Refused([f"accept needs {summary_rel} to record the primary journey as 'Result: passed' with "
+                       "'Exit code: 0'"])
+    if decision == "accepted" and args.delegated and not gatelib.RUN_RECORD.match(
+            gatelib._summary_value(journey, "Verified") or ""):
+        raise Refused([DELEGATE_NEEDS_RUN])
+    if not args.allow_dirty:
+        check_clean(target, [summary_rel.as_posix()])
+    errors, _ = gate_report(target)
+    if errors:
+        raise Refused(["the gate already reports errors in this repository, so no decision is recorded on top "
+                       "of them; nothing was changed", *[f"gate error: {error}" for error in errors]])
+    newline = line_ending(summary_text)
+    section = owner_section(decision, date, words, newline, args.delegated)
+    summary_new = append_section(summary_text, section, newline).encode("utf-8")
+    return Plan(
+        target, decision, slice_id, date,
+        state_path, state_old, state_old, stat.S_IMODE(state_path.stat().st_mode), [],
+        summary_rel.as_posix(), summary_path, summary_old, summary_new, stat.S_IMODE(summary_path.stat().st_mode),
+        section, [], True,
+    )
 
 
 def append_section(text: str, section: str, newline: str) -> str:
@@ -374,7 +440,7 @@ def build_plan(args: argparse.Namespace) -> Plan:
     if not isinstance(status, str):
         raise Refused(["current_slice.status must be text"])
     if args.slice_id is not None and args.slice_id != slice_id:
-        raise Refused([f"--slice {args.slice_id!r} is not the current slice {slice_id!r}"])
+        return build_earlier_plan(args, target, state_path, state_old, decision)
     if human != "pending":
         raise Refused([f"validation.human_acceptance is {human!r}, not pending; "
                        "a recorded decision is never overwritten"])
@@ -395,6 +461,9 @@ def build_plan(args: argparse.Namespace) -> Plan:
     summary_old, summary_text = read_file(summary_path, summary_rel.as_posix())
     if has_owner_decision(summary_text):
         raise Refused([f"{summary_rel} already has an ## Owner decision section; it is never overwritten"])
+    if decision == "accepted" and args.delegated and not gatelib.RUN_RECORD.match(
+            gatelib._summary_value(primary_journey_record(summary_text), "Verified") or ""):
+        raise Refused([DELEGATE_NEEDS_RUN])
     if not args.allow_dirty:
         check_clean(target, [STATE_NAME, summary_rel.as_posix()])
     errors, _ = gate_report(target)
@@ -404,7 +473,7 @@ def build_plan(args: argparse.Namespace) -> Plan:
 
     state_new_text, edits = edit_state(state_text, payload, decision, status)
     newline = line_ending(summary_text)
-    section = owner_section(decision, date, words, newline)
+    section = owner_section(decision, date, words, newline, args.delegated)
     summary_new = append_section(summary_text, section, newline).encode("utf-8")
     warning = stale_gate_warning(target, decision)
     return Plan(
@@ -469,9 +538,14 @@ def write_decision(plan: Plan) -> list[str]:
             unchanged = False
         if not unchanged:
             raise Refused([f"{path.name} changed while the decision was being prepared; nothing was written"])
+    # Checked again right before writing: a directory swapped for a symlink since the plan was made is refused.
+    # This narrows the window; it cannot close it against something that races the write itself.
+    local_file(plan.target, PurePosixPath(plan.summary_rel))
+    local_file(plan.target, PurePosixPath(STATE_NAME))
     try:
         write_atomic(plan.summary_path, plan.summary_new, plan.summary_mode)
-        write_atomic(plan.state_path, plan.state_new, plan.state_mode)
+        if plan.state_new != plan.state_old:
+            write_atomic(plan.state_path, plan.state_new, plan.state_mode)
         errors, blockers = gate_report(plan.target)
     except BaseException as exc:
         failed = restore(plan)
@@ -489,6 +563,8 @@ def write_decision(plan: Plan) -> list[str]:
 
 def render_plan(plan: Plan) -> list[str]:
     lines = ["dry run: nothing was written"]
+    if plan.earlier:
+        lines.append(f"{STATE_NAME}: unchanged ({plan.slice_id} is an earlier slice, not the current one)")
     for edit in plan.edits:
         lines += [f"{STATE_NAME} line {edit.number}:", f"-{edit.old}", f"+{edit.new}"]
     lines += [f"{plan.summary_rel}: append, after one blank line:", *plan.section.splitlines()]
@@ -498,6 +574,14 @@ def render_plan(plan: Plan) -> list[str]:
 def render_result(plan: Plan, blockers: list[str]) -> list[str]:
     fields = ["validation.human_acceptance"] + (["current_slice.status"] if plan.decision == "accepted" else [])
     outcome = f"outcome not validated: {blockers[0]}" if blockers else "recorded outcome validated"
+    if plan.earlier:
+        return [
+            f"recorded: {plan.decision} for the earlier slice {plan.slice_id} on {plan.date}",
+            f"{STATE_NAME}: unchanged (it describes the current slice)",
+            f"{plan.summary_rel}: ## Owner decision appended",
+            "the fleet doctor will stop listing this slice among the open decisions",
+            "nothing was committed: review with git diff, then commit this file",
+        ]
     return [
         f"recorded: {plan.decision} for slice {plan.slice_id} on {plan.date}",
         f"{STATE_NAME}: {' and '.join(fields)} set to {plan.decision}",
@@ -522,7 +606,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("words", metavar="OWNER_WORDS", help="What the owner said, in the owner's words")
     parser.add_argument("--date", metavar="YYYY-MM-DD",
                         help="Date of the decision (default: today; never in the future)")
-    parser.add_argument("--slice", dest="slice_id", metavar="ID", help="Refuse unless this is the current slice id")
+    parser.add_argument("--slice", dest="slice_id", metavar="ID",
+                        help="The slice to decide: the current one (a guard), or an earlier slice whose decision is "
+                             "still open (then only its summary is written)")
+    parser.add_argument("--delegated", action="store_true",
+                        help="The owner handed this choice to an agent: OWNER_WORDS are the delegating words and the "
+                             "record says so; an accept then needs a journey recorded by a run")
     parser.add_argument("--dry-run", action="store_true", help="Print the planned changes and write nothing")
     parser.add_argument("--allow-dirty", action="store_true",
                         help="Skip the git check for uncommitted changes to STATE.yaml and the slice summary")

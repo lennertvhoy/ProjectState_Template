@@ -39,6 +39,10 @@ GATE_CURRENT = b"# vendored gate, release 1.1.0\n"
 BLOCK_OLD = "# Managed contract\n\nOld rules.\n"
 BLOCK_CURRENT = "# Managed contract\n\nCurrent rules.\n"
 PLAIN_AGENTS = "# Local rules\n\nBe careful.\n"
+# A managed block of 6.5.0 or later names the journey-recording tool; the doctor reads that, not a release number.
+BLOCK_NAMING_TOOL = "# Managed contract\n\nRecord the journey with `python3 scripts/projectstate_verify.py --run`.\n"
+RUN_STAMP = "2026-09-01T10:00:00Z"
+VERIFY_TOOL = b"#!/usr/bin/env python3\n# journey tool, not a released copy in this fixture\n"
 HOOKS_OLD = b"#!/usr/bin/env python3\n# host hooks tool of 1.0.0\n"
 HOOKS_CURRENT = b"#!/usr/bin/env python3\n# host hooks tool of 1.1.0\n"
 PLUGIN_OLD = b"// opencode plugin of 1.0.0\n"
@@ -130,14 +134,16 @@ def state_yaml(
     )
 
 
-def summary_md(slice_id: str, *, passed: bool = False, owner_decision: bool = False) -> str:
+def summary_md(slice_id: str, *, passed: bool = False, owner_decision: bool = False, by_run: bool = False) -> str:
+    """``by_run`` adds the line scripts/projectstate_verify.py writes when it ran the journey itself."""
     text = (
         f"# {slice_id}\n\n"
         "## Primary journey\n\n"
         "- Command: `python3 demo.py`\n"
         "- Environment: local test fixture\n"
         f"- Result: {'passed' if passed else 'not run'}\n"
-        f"- Exit code: {0 if passed else 'not recorded'}\n\n"
+        f"- Exit code: {0 if passed else 'not recorded'}\n"
+        + (f"- Verified: {RUN_STAMP} by scripts/projectstate_verify.py in 0.1s\n" if by_run else "") + "\n"
         "## Secondary checks\n\n- None.\n\n## Artifacts\n\n- None.\n\n## Limitations\n\n- Fixture only.\n"
     )
     if owner_decision:
@@ -655,17 +661,127 @@ class InboxTests(FleetTestCase):
         self.assertIn("expired on 2026-09-30 (6 days ago)", risk_items["late"]["message"])
         self.assertIn("expires on 2026-10-10 (in 4 days)", risk_items["soon"]["message"])
         self.assertEqual(report["summary"]["inbox"],
-                         {"decisions": 2, "blocked": 2, "needs_review": 3, "ready_to_merge": 0})
+                         {"decisions": 2, "open_decisions": 0, "blocked": 2, "needs_review": 3, "ready_to_merge": 0})
 
     def test_inbox_sections_are_ordered_and_empty_sections_say_none(self) -> None:
         self.ws.add_v6("quiet")
         code, out, _ = run_cli(*self.ws.args("--stdout"))
         self.assertEqual(code, 0)
         headings = [line for line in out.splitlines() if line.startswith("## ")]
-        self.assertEqual(headings[:4], ["## Your decisions (0)", "## Blocked (0)", "## Needs review (0)",
-                                        "## Ready to merge (0)"])
+        self.assertEqual(headings[:5], ["## Your decisions (0)", "## Open decisions that block nothing (0)",
+                                        "## Blocked (0)", "## Needs review (0)", "## Ready to merge (0)"])
         inbox = out.split("## ProjectState v6 repositories")[0]
-        self.assertEqual(inbox.count("\nNone.\n"), 4)
+        self.assertEqual(inbox.count("\nNone.\n"), 5)
+
+
+class ProofByRunTests(FleetTestCase):
+    """From 6.5.0: a slice whose journey a run recorded does not wait for the owner; one typed by hand does."""
+
+    def repo(self, name: str, *, by_run: bool, block: str = BLOCK_NAMING_TOOL, tool: bool = True,
+             status: str = "validated") -> Path:
+        extra: dict[str, str | bytes] = {
+            "evidence/alpha-001/summary.md": summary_md("alpha-001", passed=True, by_run=by_run)}
+        if tool:
+            extra["scripts/projectstate_verify.py"] = VERIFY_TOOL
+        return self.ws.add_v6(name, slice_id="alpha-001", status=status, journey="passed",
+                              agents=managed_agents("1.1.0", block), extra=extra)
+
+    def replace_slice(self, repo: Path, new_id: str) -> None:
+        (repo / "STATE.yaml").write_text(state_yaml(new_id), encoding="utf-8")
+        write_files(repo, {f"evidence/{new_id}/summary.md": summary_md(new_id)})
+        commit(repo, f"start {new_id}", DATE_2)
+
+    def test_a_run_recorded_slice_is_an_open_decision_and_a_hand_typed_one_waits(self) -> None:
+        self.repo("ran", by_run=True)
+        self.repo("typed", by_run=False)
+        self.repo("older-contract", by_run=True, block=BLOCK_CURRENT)  # the old rule still applies there
+        report = self.ws.report()
+        self.assertEqual(kinds_of(report, "open_decisions"), [("ran", "open-decision")])
+        self.assertEqual(kinds_of(report, "decisions"), [("older-contract", "decision"), ("typed", "decision")])
+        item = report["inbox"]["open_decisions"][0]
+        self.assertEqual((item["slice"], item["run"]), ("alpha-001", RUN_STAMP))
+        self.assertIn("validated by a run on 2026-09-01; work may go on without your decision", item["message"])
+        self.assertIn("projectstate_decide.py", item["command"])
+        self.assertEqual(repo_of(report, "ran")["slice"]["run"], RUN_STAMP)
+        self.assertIsNone(repo_of(report, "typed")["slice"]["run"])
+        self.assertEqual(report["summary"]["inbox"]["open_decisions"], 1)
+
+    def test_a_run_line_under_another_heading_or_for_an_unpassed_journey_does_not_count(self) -> None:
+        """The doctor reads the record as the gate does: the tool's line in ## Primary journey, beside a pass."""
+        elsewhere = summary_md("alpha-001", passed=True).replace(
+            "## Secondary checks\n\n- None.", f"## Secondary checks\n\n- Verified: {RUN_STAMP} by scripts/projectstate_verify.py in 0.1s")
+        self.assertIn("- Verified: ", elsewhere)
+        self.ws.add_v6("fenced", slice_id="alpha-001", status="validated", journey="passed",
+                       agents=managed_agents("1.1.0", BLOCK_NAMING_TOOL),
+                       extra={"evidence/alpha-001/summary.md": elsewhere, "scripts/projectstate_verify.py": VERIFY_TOOL})
+        self.ws.add_v6("failed", slice_id="alpha-001", status="implementing", journey="failed",
+                       agents=managed_agents("1.1.0", BLOCK_NAMING_TOOL),
+                       extra={"evidence/alpha-001/summary.md": summary_md("alpha-001", by_run=True),
+                              "scripts/projectstate_verify.py": VERIFY_TOOL})
+        report = self.ws.report()
+        self.assertEqual(kinds_of(report, "open_decisions"), [])
+        self.assertEqual(kinds_of(report, "decisions"), [("fenced", "decision")])
+        self.assertIsNone(repo_of(report, "failed")["slice"]["run"])
+
+    def test_a_followed_slice_stays_listed_until_decided_and_names_the_command_for_it(self) -> None:
+        ran = self.repo("ran", by_run=True)
+        typed = self.repo("typed", by_run=False)
+        self.replace_slice(ran, "beta-002")
+        self.replace_slice(typed, "beta-002")
+        report = self.ws.report()
+        self.assertEqual(kinds_of(report, "open_decisions"), [("ran", "open-decision")])
+        item = report["inbox"]["open_decisions"][0]
+        self.assertEqual((item["slice"], item["to"], item["date"]), ("alpha-001", "beta-002", "2026-09-03"))
+        self.assertIn("alpha-001 was validated by a run on 2026-09-01 and followed by beta-002 (on 2026-09-03); "
+                      "its decision is still open", item["message"])
+        self.assertTrue(item["command"].endswith("--slice alpha-001"), item["command"])
+        # typed by hand: replacing it without the owner's decision is still the rule's violation
+        replaced = [pair for pair in kinds_of(report, "needs_review") if pair[1] == "silent-replacement"]
+        self.assertEqual(replaced, [("typed", "silent-replacement")])
+        # the owner's decision on the earlier slice ends the listing
+        summary = ran / "evidence" / "alpha-001" / "summary.md"
+        summary.write_text(summary.read_text(encoding="utf-8") + '\n## Owner decision\n\n- Decision: waived\n'
+                           '- Date: 2026-09-04\n- Owner words: "fine"\n', encoding="utf-8")
+        self.assertEqual(kinds_of(self.ws.report(), "open_decisions"), [])
+
+    def test_an_open_decision_is_found_without_git_history_of_the_validated_state(self) -> None:
+        """A slice validated and followed within one commit, or in a folder without git, never shows a committed
+        'validated, pending' state. Its summary still records the run, so it stays listed."""
+        files = {"evidence/alpha-001/summary.md": summary_md("alpha-001", passed=True, by_run=True),
+                 "scripts/projectstate_verify.py": VERIFY_TOOL}
+        agents = managed_agents("1.1.0", BLOCK_NAMING_TOOL)
+        for name, date in (("one-commit", DATE_1), ("no-git", None)):
+            self.ws.add_v6(name, slice_id="beta-002", agents=agents, extra=files, date=date)
+        self.ws.add_v6("older-contract", slice_id="beta-002", agents=managed_agents("1.1.0", BLOCK_CURRENT), extra=files)
+        typed = {"evidence/alpha-001/summary.md": summary_md("alpha-001", passed=True)}
+        self.ws.add_v6("typed", slice_id="beta-002", agents=agents, extra=typed)
+        decided = {"evidence/alpha-001/summary.md": summary_md("alpha-001", passed=True, by_run=True, owner_decision=True)}
+        self.ws.add_v6("decided", slice_id="beta-002", agents=agents, extra=decided)
+        report = self.ws.report()
+        self.assertEqual(kinds_of(report, "open_decisions"), [("no-git", "open-decision"), ("one-commit", "open-decision")])
+        item = report["inbox"]["open_decisions"][0]
+        self.assertEqual((item["slice"], item["run"], item["to"]), ("alpha-001", RUN_STAMP, None))
+        self.assertIn("alpha-001 was validated by a run on 2026-09-01; its decision is still open", item["message"])
+        self.assertTrue(item["command"].endswith("--slice alpha-001"))
+        self.assertEqual(repo_of(report, "typed")["open_earlier"], [])
+        self.assertEqual(repo_of(report, "decided")["open_earlier"], [])
+        self.assertEqual(len(repo_of(report, "older-contract")["open_earlier"]), 1)  # data; the old rule lists nothing
+
+    def test_a_contract_that_names_the_journey_tool_needs_the_file(self) -> None:
+        self.repo("without", by_run=True, tool=False, status="accepted")
+        self.repo("with", by_run=True, status="accepted")
+        self.ws.add_v6("older", agents=managed_agents("1.1.0", BLOCK_CURRENT))  # names no tool, needs none
+        report = self.ws.report()
+        kinds = [pair for pair in kinds_of(report, "needs_review") if pair[1].startswith("journey-tool")]
+        # "with" carries a copy that matches no release: also reported, like a gate that matches none
+        self.assertEqual(kinds, [("with", "journey-tool-unknown"), ("without", "journey-tool-missing")])
+        self.assertEqual(repo_of(report, "without")["verify"]["status"], "missing")
+        self.assertEqual(repo_of(report, "older")["verify"]["status"], "missing")
+        self.assertFalse(repo_of(report, "older")["contract"]["names_verify"])
+        self.assertEqual(report["summary"]["verify"]["missing"], 2)
+        code, out, _ = run_cli(*self.ws.args("--stdout"))
+        self.assertEqual(code, 0)
+        self.assertIn("- v6 journey tools (template excluded): current 0, draft 0, behind 0, unknown 1, missing 2", out)
 
 
 class SilentReplacementTests(FleetTestCase):
@@ -1033,7 +1149,8 @@ class CommandLineTests(FleetTestCase):
                                    r"\(draft 1\.2\.0 in progress\); root " + re.escape(str(self.ws.root)) + "$")
         self.assertEqual(lines[4], "Read-only: no repository was modified.")
         self.assertEqual([line for line in lines if line.startswith("## ")], [
-            "## Your decisions (1)", "## Blocked (1)", "## Needs review (0)", "## Ready to merge (0)",
+            "## Your decisions (1)", "## Open decisions that block nothing (0)", "## Blocked (1)",
+            "## Needs review (0)", "## Ready to merge (0)",
             "## ProjectState v6 repositories (3)", "## v5 and other repositories (2)", "## Summary"])
         header = ("| repository | gate | contract | hooks | slice | status | journey | proof | owner | age days | "
                   "STATE churn | startup tokens | notices | dirty |")
@@ -1066,7 +1183,8 @@ class CommandLineTests(FleetTestCase):
         self.assertEqual(report["template"]["contract_sha256"], fleet.release_mod.contract_sha256(BLOCK_CURRENT))
         self.assertIsNone(report["template"]["hooks_sha256"])  # the fixture template vendors no hooks tool
         self.assertIsNone(report["template"]["opencode_plugin_sha256"])
-        self.assertEqual(list(report["inbox"]), ["decisions", "blocked", "needs_review", "ready_to_merge"])
+        self.assertEqual(list(report["inbox"]),
+                         ["decisions", "open_decisions", "blocked", "needs_review", "ready_to_merge"])
 
     def test_bad_arguments_and_missing_index_exit_2(self) -> None:
         self.assertEqual(run_cli("--root", str(self.ws.base / "nope"), "--template", str(self.ws.template),
@@ -1164,7 +1282,8 @@ class JourneyProofTests(FleetTestCase):
         item = self.decision(report, "waiting")
         self.assertEqual(item["proof"], "receipt-passed")
         self.assert_decision_shape(item, f"journey re-run passed {RECEIPT_DATE}")
-        self.assertEqual(list(report["inbox"]), ["decisions", "blocked", "needs_review", "ready_to_merge"])
+        self.assertEqual(list(report["inbox"]),
+                         ["decisions", "open_decisions", "blocked", "needs_review", "ready_to_merge"])
         self.assertIn(f"| ship-001 | validated | passed | run passed {RECEIPT_DATE} | pending |", text)
         self.assertEqual(report["inbox"]["needs_review"], [])
 

@@ -20,7 +20,7 @@ from typing import Any
 
 VERSION = "projectstate-template-v6"
 # Template release that shipped this gate; releases/index.json records its sha256.
-RELEASE = "6.4.0"
+RELEASE = "6.5.0"
 TOP_LEVEL_KEYS = {
     "version",
     "profile",
@@ -50,6 +50,8 @@ START_MARKER = re.compile(r"^<!-- projectstate:managed:start release=(\d+\.\d+\.
 END_MARKER = re.compile(r"^<!-- projectstate:managed:end -->$", re.MULTILINE)
 MANAGED_MARKER = "projectstate:managed:"
 ISO_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
+# The line scripts/projectstate_verify.py writes under ## Primary journey when it ran the command itself.
+RUN_RECORD = re.compile(r"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z) by scripts/projectstate_verify\.py\b")
 # Quote characters ignored when deciding whether the owner's recorded words are empty.
 QUOTE_CHARS = (
     "\"'`"
@@ -553,18 +555,29 @@ def _validate_risks(raw_risks: Any, errors: list[str], blockers: list[str], warn
 
 
 def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
-    errors, blockers, warnings, _ = _validate(root)
+    errors, blockers, warnings, _, _ = _validate(root)
     return errors, blockers, warnings
 
 
-def _validate(root: Path) -> tuple[list[str], list[str], list[str], Any]:
-    """Return (errors, blockers, warnings, human_acceptance); the last is None when STATE.yaml is unusable."""
+def journey_run(root: Path) -> str | None:
+    """When the passed journey was recorded by a run of scripts/projectstate_verify.py: its UTC time, else None.
+
+    None also covers a journey that is not recorded as passed, and a record typed by hand. Like every
+    other check here this reads the record only: a typed line that copies the tool's format reads as a run.
+    """
+    return _validate(root)[4]
+
+
+def _validate(root: Path) -> tuple[list[str], list[str], list[str], Any, str | None]:
+    """Return (errors, blockers, warnings, human_acceptance, run): human_acceptance is None when STATE.yaml is
+    unusable; run is the UTC time of the recorded journey run, or None (see journey_run)."""
     errors: list[str] = []
     blockers: list[str] = []
     warnings: list[str] = []
+    run: str | None = None
     state_path = _local_file(root, PurePosixPath("STATE.yaml"), errors)
     if state_path is None:
-        return errors, blockers, warnings, None
+        return errors, blockers, warnings, None, None
     state_bytes = state_path.stat().st_size
     if state_bytes > MAX_STATE_BYTES:
         errors.append(f"STATE.yaml is {state_bytes} bytes (max {MAX_STATE_BYTES}); it is a current-state view, "
@@ -575,7 +588,7 @@ def _validate(root: Path) -> tuple[list[str], list[str], list[str], Any]:
     try:
         payload = parse_state(state_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, StateSyntaxError) as exc:
-        return [f"cannot read STATE.yaml: {exc}"], [], [], None
+        return [f"cannot read STATE.yaml: {exc}"], [], [], None, None
 
     _exact_keys(payload, TOP_LEVEL_KEYS, "STATE.yaml", errors)
     if payload.get("version") != VERSION:
@@ -722,8 +735,10 @@ def _validate(root: Path) -> tuple[list[str], list[str], list[str], Any]:
             recorded_environment = _summary_value(primary_evidence, "Environment")
             if recorded_environment != environment:
                 errors.append("evidence Environment must match STATE.yaml primary journey environment")
+            stamp = RUN_RECORD.match(_summary_value(primary_evidence, "Verified") or "")
+            run = stamp.group(1) if stamp else None
 
-    return errors, blockers, warnings, human
+    return errors, blockers, warnings, human, run
 
 
 def version_line() -> str:
@@ -739,7 +754,7 @@ def main(argv: list[str] | None = None) -> int:
         print(version_line())
         return 0
     root = Path(args.root).resolve()
-    errors, blockers, warnings, human = _validate(root)
+    errors, blockers, warnings, human, run = _validate(root)
     for warning in warnings:
         print(f"WARN: {warning}")
     if errors:
@@ -757,11 +772,18 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- {blocker}")
         return 1
     print("RECORDED OUTCOME VALIDATED")
-    print("- primary journey: recorded as passed")
+    if run:
+        print(f"- primary journey: recorded as passed by a run (scripts/projectstate_verify.py, {run})")
+    else:
+        print("- primary journey: recorded as passed, typed by hand (no run by scripts/projectstate_verify.py is on record)")
     print("- secondary checks: do not override the primary journey")
     print("- this gate does not execute journeys or authenticate human approval")
-    if human == "pending":
-        print("- owner decision: pending; ask the owner to accept, reject, or waive")
+    if human == "pending" and run:
+        print("- owner decision: pending; ask the owner to accept, reject, or waive. "
+              "A run recorded the journey, so the next slice may start meanwhile")
+    elif human == "pending":
+        print("- owner decision: pending; ask the owner to accept, reject, or waive. "
+              "The journey was typed by hand, so this slice waits for the answer")
     return 0
 
 

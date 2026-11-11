@@ -67,7 +67,9 @@ with `## Local rules` (domain rules, commands, safety limits) and
 
 The generated core also contains `scripts/projectstate_gate.py`, a small
 dependency-free checker. It checks recorded contract and evidence consistency,
-with the primary journey dominant. `README.md` remains product documentation, not a
+with the primary journey dominant. Beside it is `scripts/projectstate_verify.py`,
+which runs the recorded journey and writes the result, so that a passed journey
+is something a tool saw and not something an agent typed. `README.md` remains product documentation, not a
 second state surface.
 
 The first gate run is expected to fail. A scaffold cannot honestly know the
@@ -181,8 +183,8 @@ named human approver, rationale, and unexpired date.
 
 ### `core` — default
 
-Use for ordinary product work. It installs the four canonical artifacts and the
-outcome gate. Backlogs, worklogs, ADRs, release ledgers, multi-agent matrices,
+Use for ordinary product work. It installs the four canonical artifacts, the
+outcome gate and the journey-recording tool. Backlogs, worklogs, ADRs, release ledgers, multi-agent matrices,
 and compliance records are optional project choices.
 
 ```bash

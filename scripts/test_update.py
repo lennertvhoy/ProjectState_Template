@@ -235,6 +235,10 @@ unreachable findings do not automatically block product validation.
 """
 
 
+# The journey-recording tool a template ships beside the gate from 6.5.0 on; the update vendors it.
+NEW_VERIFY = "#!/usr/bin/env python3\n# journey tool of the test template\n"
+
+
 class Result(NamedTuple):
     code: int
     out: str
@@ -261,6 +265,7 @@ def make_template(tmp_path: Path, *, gate: str = NEW_GATE, latest: str = "6.3.0"
     gate_path = root / "scripts" / "projectstate_gate.py"
     gate_path.write_text(gate, encoding="utf-8")
     gate_path.chmod(0o755)
+    (root / "scripts" / "projectstate_verify.py").write_text(NEW_VERIFY, encoding="utf-8")
     shutil.copy(ROOT / "core" / "AGENTS.managed.md", root / "core" / "AGENTS.managed.md")
     shutil.copy(ROOT / "releases" / "contract-history.json", root / "releases" / "contract-history.json")
     index = {
@@ -283,7 +288,7 @@ def make_template(tmp_path: Path, *, gate: str = NEW_GATE, latest: str = "6.3.0"
 
 def make_instance(
     tmp_path: Path, agents: str | None, *, gate: str | None = OLD_GATE, state: str | None = STATE,
-    name: str = "instance",
+    name: str = "instance", verify: str | None = None,
 ) -> Path:
     root = tmp_path / name
     root.mkdir()
@@ -298,6 +303,9 @@ def make_instance(
         (root / "scripts").mkdir()
         (root / "scripts" / "projectstate_gate.py").write_text(gate, encoding="utf-8")
         (root / "scripts" / "projectstate_gate.py").chmod(0o755)
+    if verify is not None:
+        (root / "scripts").mkdir(exist_ok=True)
+        (root / "scripts" / "projectstate_verify.py").write_text(verify, encoding="utf-8")
     return root
 
 
@@ -311,8 +319,8 @@ def run(capsys: pytest.CaptureFixture[str], template: Path, target: Path, *flags
 
 
 def untouched(root: Path) -> dict[str, bytes]:
-    """Everything except the two files the command may write."""
-    skip = {"AGENTS.md", "scripts/projectstate_gate.py"}
+    """Everything except the three files the command may write."""
+    skip = {"AGENTS.md", "scripts/projectstate_gate.py", "scripts/projectstate_verify.py"}
     files = {}
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
@@ -392,6 +400,7 @@ def test_pure_620_instance_with_older_gate_is_converted(tmp_path: Path, capsys: 
     block, error = rel.extract_managed_block((target / "AGENTS.md").read_text(encoding="utf-8"))
     assert error is None and block is not None
     assert block.content == TEMPLATE_BLOCK and block.release == "6.3.0"
+    assert (target / "scripts" / "projectstate_verify.py").read_text(encoding="utf-8") == NEW_VERIFY
     assert untouched(target) == others
 
 
@@ -835,16 +844,136 @@ def test_released_gate_is_replaced_and_keeps_its_mode(tmp_path: Path, capsys: py
     assert gate_path.read_text(encoding="utf-8") == NEW_GATE and gate_path.stat().st_mode & 0o777 == 0o700
 
 
+# --- The journey-recording tool ------------------------------------------------------------
+
+
+def test_the_journey_tool_is_installed_beside_the_gate(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """The contract names the tool, so an instance that is current except for the file still needs the update."""
+    template = make_template(tmp_path)
+    target = make_instance(tmp_path, converted(FRONTMATTER, "## Local rules\n\nKeep.\n"), gate=NEW_GATE)
+    tool = target / "scripts" / "projectstate_verify.py"
+    check = run(capsys, template, target, "--check")
+    assert check.code == 1 and check.payload["verify"]["action"] == "install" and not tool.exists()
+    assert check.payload["gate"]["action"] == "none" and check.payload["contract"]["action"] == "none"
+    before = untouched(target)
+    applied = run(capsys, template, target, "--apply")
+    assert applied.code == 0 and tool.read_text(encoding="utf-8") == NEW_VERIFY
+    assert applied.payload["verify"]["sha_after"] == rel.sha256_text(NEW_VERIFY)
+    assert untouched(target) == before
+    assert run(capsys, template, target, "--check").code == 0
+    human = run(capsys, template, target, as_json=False)
+    assert "Journey tool scripts/projectstate_verify.py: none" in human.out
+
+
+def test_a_released_journey_tool_is_replaced_and_keeps_its_mode(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    template = make_template(tmp_path)
+    index_path = template / "releases" / "index.json"
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    older = "#!/usr/bin/env python3\n# journey tool of an older release\n"
+    index["releases"][2]["verify_sha256"] = rel.sha256_text(older)
+    index_path.write_text(json.dumps(index, indent=2), encoding="utf-8")
+    target = make_instance(tmp_path, converted(FRONTMATTER, ""), gate=NEW_GATE, verify=older)
+    tool = target / "scripts" / "projectstate_verify.py"
+    tool.chmod(0o700)
+    result = run(capsys, template, target, "--apply")
+    assert result.code == 0 and result.payload["verify"]["action"] == "replace"
+    assert result.payload["verify"]["from_release"] == "6.2.5"
+    assert tool.read_text(encoding="utf-8") == NEW_VERIFY and tool.stat().st_mode & 0o777 == 0o700
+
+
+def test_a_journey_tool_that_is_no_released_copy_is_refused_without_the_flag(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """A copy made by hand before the tool was released, or edited since, is shown and never replaced silently."""
+    template = make_template(tmp_path)
+    local = NEW_VERIFY + "# a local edit\n"
+    target = make_instance(tmp_path, converted(FRONTMATTER, ""), gate=NEW_GATE, verify=local)
+    tool = target / "scripts" / "projectstate_verify.py"
+    before = {path: path.read_bytes() for path in sorted(target.rglob("*")) if path.is_file()}
+    refused = run(capsys, template, target, "--apply")
+    assert refused.code == 2 and refused.payload["applied"] is False
+    assert any("projectstate_verify.py is not a released copy" in reason for reason in refused.payload["refused"])
+    assert {path: path.read_bytes() for path in sorted(target.rglob("*")) if path.is_file()} == before
+    human = run(capsys, template, target, as_json=False)
+    assert human.code == 2 and "+# journey tool" not in human.out and "-# a local edit" in human.out
+    accepted = run(capsys, template, target, "--apply", "--replace-edited-gate")
+    assert accepted.code == 0 and accepted.payload["verify"]["action"] == "replace_edited"
+    assert tool.read_text(encoding="utf-8") == NEW_VERIFY
+
+
+def test_a_symlinked_or_dirty_journey_tool_is_refused(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    template = make_template(tmp_path)
+    target = make_instance(tmp_path, converted(FRONTMATTER, ""), gate=NEW_GATE)
+    elsewhere = tmp_path / "elsewhere.py"
+    elsewhere.write_text("# not the instance's file\n", encoding="utf-8")
+    (target / "scripts" / "projectstate_verify.py").symlink_to(elsewhere)
+    refused = run(capsys, template, target, "--apply")
+    assert refused.code == 2 and "symlink" in " ".join(refused.payload["refused"])
+    assert elsewhere.read_text(encoding="utf-8") == "# not the instance's file\n"
+
+
+def planned(tmp_path: Path, template_root: Path, target: Path) -> "upd.Plan":
+    args = upd.build_parser().parse_args(["--target", str(target), "--template", str(template_root), "--apply"])
+    template = upd.load_template(template_root)
+    return upd.build_plan(upd.preflight(str(target), template, False), template, args)
+
+
+def test_the_contract_is_never_written_while_the_tool_it_names_is_missing_or_foreign(tmp_path: Path) -> None:
+    """The plan found the journey tool current; before the write it was removed, or changed. Checked at write time."""
+    template = make_template(tmp_path)
+    old_agents = FRONTMATTER + "\n" + PURE_620_BODY
+    removed = make_instance(tmp_path, old_agents, gate=NEW_GATE, verify=NEW_VERIFY, name="removed")
+    plan = planned(tmp_path, template, removed)
+    assert plan.verify.data is None and plan.contract.text is not None
+    (removed / "scripts" / "projectstate_verify.py").unlink()
+    upd.apply_plan(plan)
+    assert (removed / "scripts" / "projectstate_verify.py").read_text(encoding="utf-8") == NEW_VERIFY
+    assert "projectstate:managed:start" in (removed / "AGENTS.md").read_text(encoding="utf-8")
+
+    changed = make_instance(tmp_path, old_agents, gate=NEW_GATE, verify=NEW_VERIFY, name="changed")
+    plan = planned(tmp_path, template, changed)
+    (changed / "scripts" / "projectstate_verify.py").write_text("# swapped while the update ran\n", encoding="utf-8")
+    with pytest.raises(upd.UpdateRefused):
+        upd.apply_plan(plan)
+    assert (changed / "AGENTS.md").read_text(encoding="utf-8") == old_agents  # the block was not written
+
+
+def test_an_interrupted_apply_says_what_is_already_in_place(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    """Three atomic writes are not one transaction: a failure on the second must not read as 'nothing happened'."""
+    template = make_template(tmp_path)
+    target = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY)
+    real, calls = upd.write_atomic, {"n": 0}
+
+    def failing(path: Path, data: bytes, mode: int) -> None:
+        calls["n"] += 1
+        if calls["n"] == 2:
+            raise OSError(28, "No space left on device")
+        real(path, data, mode)
+
+    monkeypatch.setattr(upd, "write_atomic", failing)
+    result = run(capsys, template, target, "--apply")
+    assert result.code == 2
+    reason = " ".join(result.payload["refused"])
+    assert "update interrupted" in reason and "already written: scripts/projectstate_gate.py" in reason
+    assert "rerun --apply to finish" in reason
+    assert (target / "scripts" / "projectstate_gate.py").read_text(encoding="utf-8") == NEW_GATE
+    assert not (target / "scripts" / "projectstate_verify.py").exists()
+    monkeypatch.setattr(upd, "write_atomic", real)
+    assert run(capsys, template, target, "--apply").code == 0  # the rerun finishes it
+    assert (target / "scripts" / "projectstate_verify.py").read_text(encoding="utf-8") == NEW_VERIFY
+
+
 # --- Check, dry run and idempotence -------------------------------------------------------
 
 
 def test_current_instance_is_up_to_date_and_check_passes(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     original = converted(FRONTMATTER, "## Local rules\n\nKeep.\n")
     template = make_template(tmp_path)
-    target = make_instance(tmp_path, original, gate=NEW_GATE)
+    target = make_instance(tmp_path, original, gate=NEW_GATE, verify=NEW_VERIFY)
     result = run(capsys, template, target, "--check")
     assert result.code == 0
     assert result.payload["gate"]["action"] == "none" and result.payload["contract"]["action"] == "none"
+    assert result.payload["verify"]["action"] == "none"
     assert result.payload["applied"] is False and result.payload["refused"] == []
     human = run(capsys, template, target, "--check", as_json=False)
     assert human.code == 0 and "Up to date at release 6.3.0" in human.out
@@ -889,9 +1018,10 @@ def test_second_apply_is_a_no_op(tmp_path: Path, capsys: pytest.CaptureFixture[s
 def test_json_report_shape(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     target = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY)
     payload = run(capsys, make_template(tmp_path), target).payload
-    assert set(payload) == {"target", "release", "gate", "contract", "refused", "applied"}
+    assert set(payload) == {"target", "release", "gate", "verify", "contract", "refused", "applied"}
     assert payload["target"] == str(target.resolve()) and payload["release"] == "6.3.0"
     assert set(payload["gate"]) == {"action", "from_release", "sha_before", "sha_after"}
+    assert set(payload["verify"]) == {"action", "from_release", "sha_before", "sha_after"}
     assert {"action", "removed_sections", "removed_notices", "modified_sections", "local_bytes_preserved"} <= set(
         payload["contract"])
 
@@ -1110,7 +1240,7 @@ def test_command_line_exit_codes(tmp_path: Path) -> None:
     template = make_template(tmp_path)
     behind = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY, name="behind")
     edited = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY, gate=OLD_GATE + "# edit\n", name="edited")
-    current = make_instance(tmp_path, converted(FRONTMATTER, ""), gate=NEW_GATE, name="current")
+    current = make_instance(tmp_path, converted(FRONTMATTER, ""), gate=NEW_GATE, name="current", verify=NEW_VERIFY)
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
 
     def command(target: Path, *flags: str) -> subprocess.CompletedProcess[str]:
