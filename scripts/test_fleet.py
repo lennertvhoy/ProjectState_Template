@@ -24,6 +24,7 @@ from pathlib import Path
 from unittest import mock
 
 import projectstate_fleet as fleet
+import projectstate_update as update
 
 
 SCRIPTS = Path(__file__).resolve().parent
@@ -154,6 +155,11 @@ def slice_files(slice_id: str = "demo-001", *, owner_decision: bool = False, **o
 
 def managed_agents(release: str, block: str, local: str = "# Local rules\n\nBe careful.\n") -> str:
     return local + "\n" + fleet.release_mod.render_managed_block(release, block)
+
+
+def notice_headings(text: str) -> int:
+    """The doctor's refresh-notice heading count for one AGENTS.md text, without building a repository."""
+    return fleet.notice_report(fleet.Doc(text.encode("utf-8"), None))["headings"]
 
 
 def git(repo: Path, *args: str, date: str | None = None) -> str:
@@ -497,7 +503,7 @@ class ContextSizeTests(FleetTestCase):
             "<!-- projectstate-long-run-control-2026-09-06:start -->\n"
             "# Latest required refresh\n\n"
             "### Required first action\n\n"
-            "#### Required first action (level four does not count)\n\n"
+            "#### Detail (nested in the section above, counted with it)\n\n"
             "## Unrelated heading\n\n"
             "```\n<!-- projectstate-in-fence:start -->\n## Required first action\n```\n"
             "<!-- projectstate:managed:start release=1.1.0 -->\n"  # the managed marker is not a notice
@@ -506,9 +512,59 @@ class ContextSizeTests(FleetTestCase):
         self.ws.add_v6("noisy", agents=agents)
         self.ws.add_v6("quiet")
         report = self.ws.report()
-        self.assertEqual(repo_of(report, "noisy")["notices"], {"blocks": 2, "headings": 3, "total": 5})
+        # The refresh headings count as the two sections the update tool would remove; the fenced marker,
+        # the fenced heading and the managed marker stay out of the count.
+        self.assertEqual(repo_of(report, "noisy")["notices"], {"blocks": 2, "headings": 2, "total": 4})
         self.assertEqual(repo_of(report, "quiet")["notices"]["total"], 0)
-        self.assertEqual(report["summary"]["notices"], 5)
+        self.assertEqual(report["summary"]["notices"], 4)
+
+    def test_a_project_checklist_headed_required_first_actions_is_not_a_notice(self) -> None:
+        text = ("## Required First Actions\n\n1. Read PROJECT.md.\n2. Pick one slice.\n\n"
+                "## Local rules\n\nBe careful.\n")
+        self.assertEqual(notice_headings(text), 0)
+
+    def test_a_heading_that_starts_with_the_prefix_and_names_projectstate_is_a_notice(self) -> None:
+        text = "## Required first action \u2014 refresh ProjectState before ordinary work\n\nRun the updater.\n"
+        self.assertEqual(notice_headings(text), 1)
+
+    def test_a_section_whose_body_mentions_projectstate_is_a_notice(self) -> None:
+        text = ("## Latest required refresh\n\nRun `projectstate_update.py --apply` first.\n\n"
+                "## Local rules\n\nBe careful.\n")
+        self.assertEqual(notice_headings(text), 1)
+
+    def test_a_heading_that_merely_mentions_the_prefix_is_not_a_notice(self) -> None:
+        text = "## Notes on the required first action\n\nNothing about the template.\n"
+        self.assertEqual(notice_headings(text), 0)
+
+    def test_headings_inside_a_fenced_block_are_not_notices(self) -> None:
+        text = ("```\n## Required first action \u2014 refresh ProjectState\n```\n\n"
+                "~~~~\n## Latest required refresh\n\nProjectState text.\n~~~~\n")
+        self.assertEqual(notice_headings(text), 0)
+
+    def test_a_level_three_notice_ends_at_the_next_heading_of_equal_or_higher_rank(self) -> None:
+        deeper = ("### Required first action\n\nRead the slice.\n\n"
+                  "#### Detail\n\nRun projectstate_update.py.\n")  # level four does not end the section
+        self.assertEqual(notice_headings(deeper), 1)
+        peer = ("### Required first action\n\nRead the slice.\n\n"
+                "### ProjectState notes\n\nRun projectstate_update.py.\n")  # level three does end it
+        self.assertEqual(notice_headings(peer), 0)
+
+    def test_the_doctor_and_the_update_tool_agree_on_refresh_sections(self) -> None:
+        text = (
+            "# Project rules\n\n"
+            "## Required First Actions\n\n1. Read PROJECT.md.\n\n"
+            "## Latest required refresh\n\nRun `projectstate_update.py` before ordinary work.\n\n"
+            "### Required first action\n\nNothing about the template.\n\n"
+            "#### Detail\n\nStill nothing.\n\n"
+            "## Notes on the required first action\n\n- Conventions only.\n\n"
+            "## Required first action \u2014 refresh ProjectState\n\nBody of the notice.\n\n"
+            "### Checklist\n\n- item\n\n"
+            "```\n## Required first action\n```\n"
+        )
+        sections = update.remove_refresh_sections(update.split_lines(text))[1]
+        refresh = [section for section in sections if section["kind"] == "refresh"]
+        self.assertEqual(len(refresh), 2)  # the two tools agree on more than a lucky zero
+        self.assertEqual(notice_headings(text), len(refresh))
 
     def test_sizes_tokens_and_flags(self) -> None:
         self.ws.add_v6("small")
