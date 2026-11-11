@@ -306,19 +306,31 @@ def remove_notices(lines: list[str]) -> tuple[list[str], list[dict[str, Any]], l
     return kept, removed, warnings
 
 
-def remove_refresh_sections(lines: list[str]) -> tuple[list[str], list[dict[str, Any]]]:
-    """Drop whole sections whose heading starts with a refresh prefix (to the next heading of equal or higher rank)."""
+def remove_refresh_sections(lines: list[str]) -> tuple[list[str], list[dict[str, Any]], list[str]]:
+    """Take out sections headed like a ProjectState refresh notice (to the next heading of equal or higher rank).
+
+    Such a section has no end marker, so where it ends is a guess: project text that someone left between the notice
+    and the next heading is inside it. Every section found is therefore returned with its full text, and the caller
+    removes it only with ``--accept-modified-sections``. A section with such a heading that never mentions
+    ProjectState is the project's own (a start-of-session checklist, for example): it stays, with a warning.
+    """
     headings = find_headings(lines, fence_mask(lines))
     drop = [False] * len(lines)
     removed: list[dict[str, Any]] = []
+    warnings: list[str] = []
     for position, (index, level, title) in enumerate(headings):
         if drop[index] or not title.strip().lower().startswith(REFRESH_PREFIXES):
             continue
         end = next((later for later, depth, _ in headings[position + 1 :] if depth <= level), len(lines))
+        text = "".join(lines[index:end])
+        if "projectstate" not in text.lower():
+            warnings.append(
+                f"section {title!r} is headed like a refresh notice but never mentions ProjectState; kept as project text")
+            continue
         for covered in range(index, end):
             drop[covered] = True
-        removed.append({"heading": title, "level": level, "kind": "refresh", "lines": end - index})
-    return [line for line, dropped in zip(lines, drop) if not dropped], removed
+        removed.append({"heading": title, "level": level, "kind": "refresh", "lines": end - index, "text": text})
+    return [line for line, dropped in zip(lines, drop) if not dropped], removed, warnings
 
 
 class Cleaned(NamedTuple):
@@ -330,8 +342,19 @@ class Cleaned(NamedTuple):
 
 def clean_refresh(text: str) -> Cleaned:
     lines, notices, warnings = remove_notices(split_lines(text))
-    lines, sections = remove_refresh_sections(lines)
-    return Cleaned("".join(lines), notices, sections, warnings)
+    lines, sections, kept = remove_refresh_sections(lines)
+    return Cleaned("".join(lines), notices, sections, [*warnings, *kept])
+
+
+def refuse_refresh_sections(plan: "ContractPlan", accept_modified: bool) -> None:
+    """A refresh section has no end marker: removing it needs a person who has read its text."""
+    refresh = [section for section in plan.removed_sections if section["kind"] == "refresh"]
+    if refresh and not accept_modified:
+        names = ", ".join(f"{section['heading']!r} ({section['lines']} lines)" for section in refresh)
+        plan.refusals.append(
+            f"refresh sections without an end marker: {names}; everything up to the next heading would be removed. "
+            "Read their text in this report, move any project text into a local section, "
+            "then pass --accept-modified-sections to remove them")
 
 
 # --- Known texts ---------------------------------------------------------------------------
@@ -602,6 +625,7 @@ def plan_conversion(
     if any(block.owner == "template" for block in blocks):
         classify_template_blocks(plan, blocks, load_history(template.root))
     plan.local_template_headings = find_local_template_headings(blocks)
+    refuse_refresh_sections(plan, accept_modified)
     if plan.modified_sections and not accept_modified:
         names = ", ".join(repr(section["heading"]) for section in plan.modified_sections)
         plan.refusals.append(
@@ -623,7 +647,7 @@ def plan_conversion(
 
 def plan_existing_block(
     plan: ContractPlan, text: str, block: rel.ManagedBlock, frontmatter: str, template: Template,
-    replace_edited: bool,
+    replace_edited: bool, accept_modified: bool,
 ) -> None:
     """A managed block exists: refresh it if it is known, and still drop refresh notices around it."""
     if block.start < len(frontmatter):
@@ -635,6 +659,7 @@ def plan_existing_block(
     plan.removed_notices = [*head_clean.notices, *tail_clean.notices]
     plan.removed_sections = [*head_clean.sections, *tail_clean.sections]
     plan.warnings = [*head_clean.warnings, *tail_clean.warnings]
+    refuse_refresh_sections(plan, accept_modified)
     plan.from_release = block.release
     if block.content == template.block:
         stale_marker = block.release != template.release
@@ -693,7 +718,7 @@ def plan_contract(target: Path, template: Template, args: argparse.Namespace) ->
     elif block is None:
         plan_conversion(plan, text, frontmatter, template, args.accept_modified_sections)
     else:
-        plan_existing_block(plan, text, block, frontmatter, template, args.replace_edited_contract)
+        plan_existing_block(plan, text, block, frontmatter, template, args.replace_edited_contract, args.accept_modified_sections)
     return plan
 
 
@@ -802,7 +827,8 @@ def contract_lines(plan: Plan, show_removed_text: bool) -> list[str]:
         lines.append(f"  remove refresh notice projectstate-{notice['name']} ({notice['lines']} lines)")
     known = [item for item in contract.removed_sections if item["kind"] == "template"]
     for section in (item for item in contract.removed_sections if item["kind"] == "refresh"):
-        lines.append(f"  remove refresh section {section['heading']!r} ({section['lines']} lines)")
+        lines.append(f"  remove refresh section {section['heading']!r} ({section['lines']} lines, to the next heading); its text:")
+        lines.extend(f"    | {line}" for line in section["text"].rstrip("\n").split("\n"))
     if known:
         lines.append(f"  replace {len(known)} template sections of known text: "
                      + ", ".join(item["heading"] for item in known))
@@ -972,7 +998,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--replace-edited-contract", action="store_true",
                         help="Replace a locally edited managed block")
     parser.add_argument("--accept-modified-sections", action="store_true",
-                        help="Remove modified template sections (their text is reported) and keep local template-like headings")
+                        help="Remove modified template sections and refresh sections without an end marker "
+                             "(their text is reported) and keep local template-like headings")
     parser.add_argument("--allow-dirty", action="store_true",
                         help="Skip the git check for uncommitted changes to AGENTS.md and the gate")
     parser.add_argument("--build-history", action="store_true",
