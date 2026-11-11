@@ -767,6 +767,37 @@ class ProofByRunTests(FleetTestCase):
         self.assertEqual(repo_of(report, "decided")["open_earlier"], [])
         self.assertEqual(len(repo_of(report, "older-contract")["open_earlier"]), 1)  # data; the old rule lists nothing
 
+    def test_an_ambiguous_summary_proves_nothing_and_a_commented_heading_hides_nothing(self) -> None:
+        agents = managed_agents("1.1.0", BLOCK_NAMING_TOOL)
+        good = summary_md("alpha-001", passed=True, by_run=True)
+        # two ## Primary journey sections: the gate calls that invalid, so the doctor does not read a run from it
+        doubled = good + "\n## Primary journey\n\n- Result: passed\n- Exit code: 0\n"
+        self.ws.add_v6("doubled", slice_id="beta-002", agents=agents,
+                       extra={"evidence/alpha-001/summary.md": doubled, "scripts/projectstate_verify.py": VERIFY_TOOL})
+        # an owner decision that is commented out is no decision: the slice stays listed
+        commented = good + "\n<!--\n## Owner decision\n\n- Decision: accepted\n-->\n"
+        self.ws.add_v6("commented", slice_id="beta-002", agents=agents,
+                       extra={"evidence/alpha-001/summary.md": commented, "scripts/projectstate_verify.py": VERIFY_TOOL})
+        # a record that says failed beside the tool's line is not a passed run
+        failed = good.replace("- Result: passed", "- Result: failed").replace("- Exit code: 0", "- Exit code: 1")
+        self.ws.add_v6("failed", slice_id="beta-002", agents=agents,
+                       extra={"evidence/alpha-001/summary.md": failed, "scripts/projectstate_verify.py": VERIFY_TOOL})
+        report = self.ws.report()
+        self.assertEqual(kinds_of(report, "open_decisions"), [("commented", "open-decision")])
+        self.assertEqual(repo_of(report, "doubled")["open_earlier"], [])
+        self.assertEqual(repo_of(report, "failed")["open_earlier"], [])
+
+    def test_more_evidence_folders_than_the_doctor_reads_is_said_not_hidden(self) -> None:
+        extra: dict[str, str | bytes] = {"scripts/projectstate_verify.py": VERIFY_TOOL}
+        extra.update({f"evidence/old-{n:03d}/summary.md": summary_md(f"old-{n:03d}", passed=True, by_run=True)
+                      for n in range(4)})
+        self.ws.add_v6("many", slice_id="zeta-900", agents=managed_agents("1.1.0", BLOCK_NAMING_TOOL), extra=extra)
+        with mock.patch.object(fleet, "EVIDENCE_LIMIT", 3):
+            report = self.ws.report()
+        unread = [item for item in report["inbox"]["needs_review"] if item["kind"] == "evidence-unread"]
+        self.assertEqual([(item["repository"], item["unread"]) for item in unread], [("many", 2)])
+        self.assertEqual(len(report["inbox"]["open_decisions"]), 3)
+
     def test_a_contract_that_names_the_journey_tool_needs_the_file(self) -> None:
         self.repo("without", by_run=True, tool=False, status="accepted")
         self.repo("with", by_run=True, status="accepted")

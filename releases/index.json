@@ -67,16 +67,16 @@
     },
     {
       "release": "6.5.0",
-      "date": null,
+      "date": "2026-11-11",
       "tag": "v6.5.0",
-      "status": "draft",
-      "gate_sha256": null,
-      "contract_sha256": null,
+      "status": "released",
+      "gate_sha256": "95e8f8663d152a2e3b2a267e79fe11681d04509fa9f82c7b085d4378cb1ee291",
+      "contract_sha256": "c6e4ce895f4450410e89740000fd1f4fe0c2882eb58635a20188f349de0d4bec",
       "instance_action": "semantic",
       "summary": "A journey recorded by a run moves on, one typed by hand waits for the owner; the journey-recording tool is vendored beside the gate.",
-      "hooks_sha256": null,
-      "opencode_plugin_sha256": null,
-      "verify_sha256": null
+      "hooks_sha256": "dcbc0508de522ef9bcbe8f1a7856ec8addf844e66ecbef7886a6d73d31390e38",
+      "opencode_plugin_sha256": "27ea94ab3e1b788afad9f6ca840b3fc54a5bb788b7aa109596176c4b203df10f",
+      "verify_sha256": "03c2d742b8e5900cfb05a772332e9e0911aef2d73793ff8fa386defe7c2d6455"
     }
   ]
 }

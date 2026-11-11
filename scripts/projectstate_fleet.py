@@ -85,7 +85,7 @@ VERIFY_TOOL = "scripts/projectstate_verify.py"
 VERIFY_BROKEN_STATES = ("unknown", "missing", "symlink", "unreadable")
 # The line that tool writes under ## Primary journey when it ran the command itself.
 RUN_VALUE = re.compile(r"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z) by scripts/projectstate_verify\.py\b")
-EVIDENCE_LIMIT = 500  # evidence folders read per repository when looking for open decisions
+EVIDENCE_LIMIT = 5000  # evidence folders read per repository when looking for open decisions
 CONTRACT_STATES = ("current", "draft", "behind", "edited", "unmanaged", "malformed", "missing", "unreadable")
 VERDICTS = ("validated", "not validated", "invalid")
 # The opt-in host hooks: a v6 instance without them is fine (absent), drift on them is reported.
@@ -400,7 +400,10 @@ def run_in_summary(text: str | None) -> str | None:
     record only, like everything the gate reads: a typed line in the tool's format reads as a run."""
     if text is None:
         return None
-    primary = gate_mod._markdown_sections(text, "evidence summary", []).get("primary journey", "")
+    problems: list[str] = []
+    primary = gate_mod._markdown_sections(text, "evidence summary", problems).get("primary journey", "")
+    if problems:  # duplicate sections: the gate calls such a summary invalid, so it proves nothing here either
+        return None
     if (gate_mod._summary_value(primary, "Result") or "").lower() != "passed":
         return None
     if gate_mod._summary_value(primary, "Exit code") != "0":
@@ -423,18 +426,22 @@ def open_earlier_slices(repo: Path, current_id: str | None) -> list[dict[str, An
     try:
         if evidence.is_symlink() or not evidence.is_dir():
             return []
-        names = sorted(entry.name for entry in evidence.iterdir())[:EVIDENCE_LIMIT]
+        names = sorted(entry.name for entry in evidence.iterdir())
     except OSError:
         return []
     found: list[dict[str, Any]] = []
-    for name in names:
+    if len(names) > EVIDENCE_LIMIT:  # said out loud, never cut silently: the caller lists it for review
+        found.append({"slice": None, "run": None, "unread": len(names) - EVIDENCE_LIMIT})
+    for name in names[:EVIDENCE_LIMIT]:
         if name == current_id or not SLICE_ID.fullmatch(name):
             continue
         doc = load_doc(repo, f"evidence/{name}/summary.md")
         if doc.data is None:
             continue
         run = run_in_summary(doc.text)
-        if run and not any(OWNER_DECISION.match(line) for line in outside_fences(doc.text)):
+        # Decided by the same rule the gate and the decide command use (comments removed, headings matched): a
+        # commented-out heading does not hide an open decision, and what decide would refuse is not listed.
+        if run and "owner decision" not in gate_mod._markdown_sections(doc.text, "evidence summary", []):
             found.append({"slice": name, "run": run})
     return found
 
@@ -1080,6 +1087,12 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
                     **detail))
         followed = {found["from"]: found for found in repo["silent_replacements"]}
         for earlier in repo["open_earlier"] if moves_on else []:
+            if earlier["slice"] is None:
+                inbox["needs_review"].append(inbox_item(
+                    repo, "evidence-unread",
+                    f"{name}: evidence/ holds more than {EVIDENCE_LIMIT} folders; {earlier['unread']} were not read "
+                    "for open decisions", unread=earlier["unread"]))
+                continue
             command = decision_command(ctx.template, path, earlier["slice"])
             successor = followed.get(earlier["slice"])
             after = ""
@@ -1138,7 +1151,7 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
             if not counts_against_rule(found, repo.get("rule_since")):
                 continue  # replaced before this repository adopted the owner-decision rule: history only
             when = f"on {found['date']}" if found["date"] else "uncommitted"
-            if moves_on and any(earlier["slice"] == found["from"] for earlier in repo["open_earlier"]):
+            if moves_on and any(earlier["slice"] == found["from"] for earlier in repo["open_earlier"]):  # noqa: E501
                 continue  # proven by a run: already listed above as an open decision, and not a violation
             review.append(inbox_item(
                 repo, "silent-replacement",

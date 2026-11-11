@@ -454,9 +454,15 @@ def pending_moves_on(root: Path, gate) -> bool | None:
     journey_run = getattr(gate, "journey_run", None)
     agents = read_text(root / "AGENTS.md")
     start, end = agents.find("<!-- projectstate:managed:start"), agents.find("<!-- projectstate:managed:end -->")
-    if journey_run is None or start < 0 or end < start or "scripts/projectstate_verify.py" not in agents[start:end]:
+    if journey_run is None or start < 0 or end < start:
+        return None
+    block = re.sub(r"<!--.*?-->", "", agents[start:end] + "<!-- projectstate:managed:end -->", flags=re.DOTALL)
+    if "scripts/projectstate_verify.py" not in block:  # a mention inside a comment is not the contract's text
         return None
     try:
+        errors, blockers, _warnings = gate.validate(root)
+        if errors or blockers:
+            return None  # records the gate does not accept: the brief gives no advice on top of them
         return journey_run(root) is not None
     except Exception:
         return None

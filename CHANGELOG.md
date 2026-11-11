@@ -30,8 +30,9 @@ reasoning.
   blocker the status stays and the tool prints the blocker. The last thing it prints is the gate's verdict. The
   release index records `verify_sha256` (required from 6.5.0); `init_template.py` copies the tool into a new
   project; the update command installs it, replaces a released copy, and refuses a copy that matches no release
-  until `--replace-edited-gate` is passed. The contract block is written last, so an interrupted update never
-  leaves a block that names a file that is not there.
+  until `--replace-edited-gate` is passed. The contract block is written last, after checking again that the tool
+  is in place, so an update interrupted between its writes does not leave a block that names a missing file; an
+  interrupted update says which files it had already replaced.
 - **The gate says how the journey was recorded.** `RECORDED OUTCOME VALIDATED` is followed by `recorded as passed
   by a run (scripts/projectstate_verify.py, <time>)` or `recorded as passed, typed by hand`, and the line about a
   pending owner decision says whether the next slice may start or the slice waits. No error or blocker was added

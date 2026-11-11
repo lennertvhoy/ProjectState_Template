@@ -937,6 +937,19 @@ def test_the_contract_is_never_written_while_the_tool_it_names_is_missing_or_for
     assert (changed / "AGENTS.md").read_text(encoding="utf-8") == old_agents  # the block was not written
 
 
+def test_a_journey_tool_that_appears_after_planning_is_not_overwritten(tmp_path: Path) -> None:
+    template = make_template(tmp_path)
+    target = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY, gate=NEW_GATE)
+    plan = planned(tmp_path, template, target)
+    assert plan.verify.action == "install"
+    (target / "scripts" / "projectstate_verify.py").write_text("# someone's own file\n", encoding="utf-8")
+    with pytest.raises(upd.UpdateRefused):
+        upd.apply_plan(plan)
+    assert (target / "scripts" / "projectstate_verify.py").read_text(encoding="utf-8") == "# someone's own file\n"
+    assert "projectstate:managed:start" not in (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert plan.written == []
+
+
 def test_an_interrupted_apply_says_what_is_already_in_place(
         tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
     """Three atomic writes are not one transaction: a failure on the second must not read as 'nothing happened'."""

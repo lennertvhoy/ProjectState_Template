@@ -61,8 +61,9 @@ project-owned part. The template's contract is one managed block between
 `<!-- projectstate:managed:start release=X.Y.Z -->` and
 `<!-- projectstate:managed:end -->`; everything after the end marker belongs to
 the project. `scripts/projectstate_update.py` brings an instance to the
-template's current release by replacing exactly two things: the vendored
-`scripts/projectstate_gate.py` and that block.
+template's current release by replacing exactly three things: the vendored
+`scripts/projectstate_gate.py`, the vendored `scripts/projectstate_verify.py`
+(from 6.5.0) and that block.
 
 `releases/index.json` records what each release asks of an instance
 (`instance_action`): `none`, `mechanical` (this command does it), or `semantic`
@@ -100,7 +101,7 @@ down, and the template repository itself is refused.
 6. Merge the branch (`git merge --ff-only projectstate/release-6.3.0`). The fleet
    doctor lists a local `projectstate/release-<release>` branch that HEAD does not
    contain under "Ready to merge", with this command. Undoing the update means
-   dropping the branch, because only two files changed.
+   dropping the branch, because only three files changed.
 
 ### Read the report
 

@@ -1185,6 +1185,12 @@ class EarlierSliceTests(DecideCase):
             decide.write_decision(plan)
         self.assertEqual((outside / "summary.md").read_bytes(), before)
 
+    def test_an_earlier_summary_with_a_duplicated_section_is_refused(self) -> None:
+        self.earlier()
+        self.append(self.OLD, "\n## Primary journey\n\n- Result: passed\n- Exit code: 0\n")
+        for decision in ("accept", "waive"):
+            self.assertRefused(decision, "Fine.", "--slice", "old-001", reason="the slice summary is ambiguous")
+
     def test_an_earlier_slice_reached_through_a_symlink_or_with_a_bad_id_is_refused(self) -> None:
         self.earlier()
         elsewhere = self.tmp / "elsewhere"

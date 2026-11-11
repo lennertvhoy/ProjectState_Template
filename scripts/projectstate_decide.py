@@ -361,8 +361,14 @@ DELEGATE_NEEDS_RUN = ("a delegate accepts only what a run of scripts/projectstat
 
 
 def primary_journey_record(summary_text: str) -> str:
-    """The body of the summary's ``## Primary journey`` section ('' when there is none)."""
-    return gatelib._markdown_sections(summary_text, "evidence summary", []).get("primary journey", "")
+    """The body of the summary's ``## Primary journey`` section ('' when there is none).
+
+    A summary with a duplicated section is refused: which of the two records counts would be a guess."""
+    problems: list[str] = []
+    sections = gatelib._markdown_sections(summary_text, "evidence summary", problems)
+    if problems:
+        raise Refused([f"the slice summary is ambiguous ({problems[0]}); fix it before recording a decision"])
+    return sections.get("primary journey", "")
 
 
 def build_earlier_plan(args: argparse.Namespace, target: Path, state_path: Path, state_old: bytes,

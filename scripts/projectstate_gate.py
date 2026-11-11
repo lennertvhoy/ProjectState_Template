@@ -562,8 +562,10 @@ def validate(root: Path) -> tuple[list[str], list[str], list[str]]:
 def journey_run(root: Path) -> str | None:
     """When the passed journey was recorded by a run of scripts/projectstate_verify.py: its UTC time, else None.
 
-    None also covers a journey that is not recorded as passed, and a record typed by hand. Like every
-    other check here this reads the record only: a typed line that copies the tool's format reads as a run.
+    None also covers a journey that is not recorded as passed, a summary whose result or exit code
+    contradicts that, and a record typed by hand. Like every other check here this reads the record only:
+    a typed line that copies the tool's format reads as a run. It says nothing about other errors or
+    blockers; ask validate() for those.
     """
     return _validate(root)[4]
 
@@ -735,7 +737,10 @@ def _validate(root: Path) -> tuple[list[str], list[str], list[str], Any, str | N
             recorded_environment = _summary_value(primary_evidence, "Environment")
             if recorded_environment != environment:
                 errors.append("evidence Environment must match STATE.yaml primary journey environment")
-            stamp = RUN_RECORD.match(_summary_value(primary_evidence, "Verified") or "")
+            # Only beside a consistent record: a summary that says failed, or a non-zero exit code, has no passed run.
+            consistent = ((_summary_value(primary_evidence, "Result") or "").lower() == "passed"
+                          and _summary_value(primary_evidence, "Exit code") == "0")
+            stamp = RUN_RECORD.match(_summary_value(primary_evidence, "Verified") or "") if consistent else None
             run = stamp.group(1) if stamp else None
 
     return errors, blockers, warnings, human, run

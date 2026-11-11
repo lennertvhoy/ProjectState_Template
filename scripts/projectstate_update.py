@@ -170,6 +170,7 @@ class Plan:
     gate: GatePlan
     contract: ContractPlan
     verify: GatePlan
+    written: list[str] = field(default_factory=list)  # filled by apply_plan as each file is replaced
 
     @property
     def refusals(self) -> list[str]:
@@ -801,10 +802,15 @@ def apply_plan(plan: Plan) -> None:
         gate_path = plan.target / rel.GATE_PATH
         gate_path.parent.mkdir(exist_ok=True)
         write_atomic(gate_path, plan.gate.data, plan.gate.mode)
+        plan.written.append(rel.GATE_PATH.as_posix())
     if plan.verify.data is not None:
         verify_path = plan.target / rel.VERIFY_PATH
+        if plan.verify.action == "install" and os.path.lexists(verify_path):
+            raise UpdateRefused([f"{rel.VERIFY_PATH.as_posix()} appeared during the update and was not replaced; "
+                                 "rerun the update to see it"])
         verify_path.parent.mkdir(exist_ok=True)
         write_atomic(verify_path, plan.verify.data, plan.verify.mode)
+        plan.written.append(rel.VERIFY_PATH.as_posix())
     if plan.contract.text is not None:
         # Checked at write time, not only at plan time: the tool may have been removed or changed in between.
         verify_path = plan.target / rel.VERIFY_PATH
@@ -814,27 +820,20 @@ def apply_plan(plan: Plan) -> None:
         if not os.path.lexists(verify_path):
             verify_path.parent.mkdir(exist_ok=True)
             write_atomic(verify_path, plan.template.verify_bytes, plan.template.verify_mode)
+            plan.written.append(rel.VERIFY_PATH.as_posix())
         elif rel.sha256_bytes(verify_path.read_bytes()) != plan.template.verify_sha:
             raise UpdateRefused([f"{rel.VERIFY_PATH.as_posix()} changed during the update; the contract block was "
                                  "not written; rerun the update"])
         write_atomic(plan.target / AGENTS_NAME, plan.contract.text.encode("utf-8"), plan.contract.mode)
+        plan.written.append(AGENTS_NAME)
 
 
 # --- Reporting -----------------------------------------------------------------------------
 
 
 def written_so_far(plan: Plan) -> list[str]:
-    """After an interrupted apply: which planned files already hold this release's bytes."""
-    done: list[str] = []
-    checks = [(plan.gate.data, rel.GATE_PATH, plan.gate.data), (plan.verify.data, rel.VERIFY_PATH, plan.verify.data)]
-    for planned, relative, data in checks:
-        with suppress(OSError):
-            if planned is not None and (plan.target / relative).read_bytes() == data:
-                done.append(relative.as_posix())
-    with suppress(OSError):
-        if plan.contract.text is not None and (plan.target / AGENTS_NAME).read_bytes() == plan.contract.text.encode("utf-8"):
-            done.append(AGENTS_NAME)
-    return done
+    """After an interrupted apply: the files apply_plan had already replaced, in the order it wrote them."""
+    return list(plan.written)
 
 
 def plan_payload(plan: Plan, applied: bool) -> dict[str, Any]:

@@ -333,6 +333,10 @@ def record(root: Path, args: argparse.Namespace) -> int:
         raise Refused([f"evidence/{slice_id}/{ARTIFACT} is a symlink or not a regular file; refusing to replace it"])
     before_errors, _blockers, _warn = gatelib.validate(root)
     outcome = run_journey(command, root, args.timeout)
+    # The journey ran repository code. Check again that what is about to be written is still what was checked.
+    if (regular(root, "STATE.yaml") != state_path or regular(root, f"evidence/{slice_id}/summary.md") != summary_path
+            or artifact_path.is_symlink() or (artifact_path.exists() and not artifact_path.is_file())):
+        raise Refused(["the journey changed the files this tool records into; nothing was recorded"])
     passed = outcome.code == 0
     if not passed and status == "accepted":
         print(f"the journey FAILED (exit {outcome.code}) but the slice is accepted; nothing recorded. Tell the owner.", file=sys.stderr)
@@ -350,13 +354,26 @@ def record(root: Path, args: argparse.Namespace) -> int:
     originals = [(state_path, state_text.encode("utf-8"), state_path.stat().st_mode & 0o777),
                  (summary_path, summary_old, summary_path.stat().st_mode & 0o777)]
 
-    def restore() -> None:
+    def restore() -> list[str]:
+        """Put the three files back; return what could not be restored."""
+        failed: list[str] = []
         for path, original, mode in originals:
-            write_atomic(path, original, mode)
-        if artifact_old is None:
-            artifact_path.unlink(missing_ok=True)
-        else:
-            write_atomic(artifact_path, artifact_old, 0o644)
+            try:
+                write_atomic(path, original, mode)
+            except OSError as error:
+                failed.append(f"{path.name}: {error}")
+        try:
+            if artifact_old is None:
+                artifact_path.unlink(missing_ok=True)
+            else:
+                write_atomic(artifact_path, artifact_old, 0o644)
+        except OSError as error:
+            failed.append(f"{ARTIFACT}: {error}")
+        return failed
+
+    def restored_note() -> str:
+        failed = restore()
+        return "everything was restored" if not failed else "COULD NOT RESTORE " + "; ".join(failed)
 
     try:
         write_atomic(state_path, new_state.encode("utf-8"), originals[0][2])
@@ -374,12 +391,10 @@ def record(root: Path, args: argparse.Namespace) -> int:
             added = [error for error in after_errors if error not in before_errors]
         if added:
             raise Refused([f"the gate reports new errors after recording: {'; '.join(added)}"])
-    except Refused:
-        restore()
-        raise
+    except Refused as error:
+        raise Refused([*error.reasons, restored_note()]) from error
     except OSError as error:
-        restore()
-        raise Refused([f"write failed ({error}); everything was restored"]) from error
+        raise Refused([f"write failed ({error}); {restored_note()}"]) from error
     verdict = "PASSED" if passed else ("TIMED OUT" if outcome.timed_out else f"FAILED (exit {outcome.code})")
     print(f"journey {verdict} in {outcome.seconds:.1f}s; recorded in STATE.yaml and evidence/{slice_id}/summary.md")
     if slice_status == "validated":

@@ -22,7 +22,7 @@ done by Codex.
 - Command: `python3 -B scripts/test_proof_by_run.py`
 - Result: passed
 - Exit code: 0
-- Verified: 2026-11-11T15:26:37Z by scripts/projectstate_verify.py in 1.1s
+- Verified: 2026-11-11T18:41:43Z by scripts/projectstate_verify.py in 1.3s
 
 The journey drives the real command lines in projects made by `init_template.py new`.
 Its 19 checks cover: a new project carries the gate, the journey tool and a contract
@@ -39,25 +39,28 @@ was.
 
 `python3 -B evals/resume/durability.py --model MODEL --repeats 3 --conditions core-host`
 for haiku and sonnet: the 6.5.0 contract, gate and journey tool with the host hooks, two
-sessions per chain with the fixed week of 30 owner prompts between them. Output:
-`~/.local/state/projectstate/evals/durability-650b-core-host-20261111T151247Z-haiku` and `~/.local/state/projectstate/evals/durability-650b-core-host-20261111T151247Z-sonnet`.
+sessions per chain with the fixed week of 30 owner prompts between them. Two runs count.
+The second ran on the code that was released; the first ran before the fixes that
+followed the two reviews. Output: `~/.local/state/projectstate/evals/durability-650b-core-host-20261111T151247Z-MODEL`
+and `~/.local/state/projectstate/evals/durability-650c-core-host-20261111T182702Z-MODEL`.
 
-| model | chains | mean checks of 8 | memory-only constraints kept | honest | done but wrong | cost per chain |
-|---|---|---|---|---|---|---|
-| haiku | 3 | 8.0 | 3/3 | 3/3 | 0/3 | $0.05 |
-| sonnet | 3 | 8.0 | 3/3 | 3/3 | 0/3 | $0.33 |
+| run (UTC) | code | model | chains | mean checks of 8 | memory-only constraints kept | honest | done but wrong | cost per chain |
+|---|---|---|---|---|---|---|---|---|
+| 15:12 | before the review fixes | haiku | 3 | 8.0 | 3/3 | 3/3 | 0/3 | $0.05 |
+| 15:12 | before the review fixes | sonnet | 3 | 8.0 | 3/3 | 3/3 | 0/3 | $0.33 |
+| 18:27 | as released | haiku | 3 | 8.0 | 3/3 | 3/3 | 0/3 | $0.05 |
+| 18:27 | as released | sonnet | 3 | 8.0 | 3/3 | 3/3 | 0/3 | $0.37 |
 
-- Every chain passed all eight checks. That is the same result as 6.4.0 with the hooks
-  (six of six usable v2.2 chains, `evidence/handoff-eval-001/summary.md`).
-- Session 1 recorded its journey with the vendored tool in 3 of 3 haiku chains and
-  3 of 3 sonnet chains (counted from the run line in the summary after session 1);
-  session 2 recorded a run in 3 and 3 chains (counted from the final diff).
-- Cost per sonnet chain was $0.33, against $0.41 for the two 6.4.0 chains of the same
-  morning and $0.49 for v2.0. Three chains against two, on one task: an indication, not a
-  measured saving. Haiku cost about the same ($0.05 against $0.047).
-- Total spend of this run: $1.15.
+- All twelve chains passed all eight checks. That is the same result as 6.4.0 with the
+  hooks (six of six usable v2.2 chains, `evidence/handoff-eval-001/summary.md`).
+- In every chain, both sessions recorded the journey with the vendored tool (counted from
+  the run line in the summary after session 1 and from the final diff).
+- A sonnet chain cost $0.33 and $0.37 in the two runs, against $0.41 for the two 6.4.0
+  chains of the same morning and $0.49 for v2.0. Six chains against two, on one task: an
+  indication, not a measured saving. Haiku cost the same as before ($0.05 against $0.047).
+- Spend: $1.15 and $1.25 for the two runs, and about $0.10 for the run described next.
 
-A first run of the same command (`~/.local/state/projectstate/evals/durability-650-core-host-20261111T145422Z-haiku`)
+A first run (`~/.local/state/projectstate/evals/durability-650-core-host-20261111T145422Z-haiku`)
 was stopped and is not counted: the eval's repository did not yet carry the journey
 tool. It left one finding worth keeping. In its second chain the haiku sessions found
 that the contract named a tool that was missing, did not type the result by hand, said
@@ -67,23 +70,29 @@ mismatch.
 
 ## Secondary checks
 
-- Suite on Python 3.14, `python3 -B -m pytest scripts/ evals/ -q -o addopts="" -p no:cacheprovider`:
-  619 passed, 1 failed, 1 skipped. The failure was an assertion in `evals/resume/test_handoff.py`
-  that a plain core repository has no journey tool; it was corrected and that file then
-  passed (24 tests). The suite was not run again as a whole after that one-line change,
-  and not yet on Python 3.13.
-- Gate exit codes: for each of the 23 v6 repositories under `~/Projects` with a vendored
-  gate, the 6.5.0 gate returned the same exit code as the repository's own gate.
-- Independent review by Codex, read only (`~/.local/state/projectstate/program-20261110/logs/review-650-REPORT.md`):
-  2 of 9 claims passed as written and 7 failed. Fixed after it, each with a test: the
-  journey tool followed a slice id such as `../../outside` out of the repository, and a
-  rollback deleted a dangling artifact symlink; the fleet doctor lost an open decision
-  when a slice was validated and followed within one commit or without git, and read a
-  run line under any heading; the hooks filter dropped typed words after an unclosed or
-  self-closing host tag and was quadratic on long input; the briefing read the record
-  differently from the gate; the update reported "refused" after a partial write and
-  could write the contract while the tool was missing; an earlier slice could be accepted
-  with a failing exit code on record.
+- Suite on the released code, `python3 -B -m pytest scripts/ evals/ -q -o addopts="" -p no:cacheprovider`:
+  626 passed, 1 skipped on Python 3.14.8 and on Python 3.13.15.
+- Gate exit codes: for each of the 22 other v6 repositories under `~/Projects` with a
+  vendored gate, the 6.5.0 gate returned the same exit code as the repository's own gate.
+- Two independent reviews by Codex, read only (`~/.local/state/projectstate/program-20261110/logs/review-650-REPORT.md`
+  and `review2-650-REPORT.md`). The first passed 2 of 9 claims. Fixed after it, each with
+  a test: the journey tool followed a slice id such as `../../outside` out of the
+  repository, and a rollback deleted a dangling artifact symlink; the fleet doctor lost an
+  open decision when a slice was validated and followed within one commit or without git,
+  and read a run line under any heading; the hooks filter dropped typed words after an
+  unclosed or self-closing host tag and was quadratic on long input; the briefing read the
+  record differently from the gate; the update reported "refused" after a partial write
+  and could write the contract while the tool was missing; an earlier slice could be
+  accepted with a failing exit code on record.
+- The second review read those fixes and failed all six items on remaining edge cases.
+  Fixed after it, each with a test: a run line beside a failed result counted as a run;
+  the briefing advised moving on over records the gate rejects, or under a block that
+  names the tool only in a comment; the journey tool did not check its targets again
+  after the journey had run, and hid a failed restore; the update could overwrite a tool
+  that appeared after planning and misreport what an interrupted run had written; the
+  fleet doctor read a run from a summary with duplicated sections, let a commented-out
+  decision heading hide an open decision, and stopped silently after 500 evidence
+  folders; the decide command accepted an earlier summary with duplicated sections.
 
 ## Artifacts
 
@@ -91,17 +100,20 @@ mismatch.
 
 ## Limitations
 
-- The measurement is three chains per model on one task. It shows no regression; it
-  does not show that the new rule improves anything.
-- The fixes made after the review have not had a second independent read.
-- Not fixed: a journey command that ends in a backtick cannot be recorded, because the
-  gate strips backticks when it reads a summary value. This behaviour is older than this
-  slice, and changing it would change gate verdicts.
-- The decide tool checks its paths again right before writing. That narrows the window
-  for a directory swapped for a symlink; it does not close it.
+- The measurement is twelve chains on one task. It shows no regression; it does not show
+  that the new rule improves anything.
+- The fixes made after the second review are covered by tests and have not been read
+  independently.
+- Not fixed, and older than this slice: a journey command that ends in a backtick cannot
+  be recorded, because the gate strips backticks when it reads a summary value; the
+  decide command stores the owner's words with double quotes turned into single quotes;
+  a slice typed by hand and replaced without a decision is found only through git
+  history.
+- The decide and update commands check their paths again right before writing. That
+  narrows the window for a file or folder swapped in between; it does not close it.
 - A run line in a summary is a record. A typed line in the tool's format reads as a run.
   The independent check remains the receipt of ADR-0006.
 - The hooks recognise host-generated text by its tags, because the host passes no
-  provenance. Only closed blocks are dropped.
+  provenance. A closed block with such a tag is dropped even if the owner typed it.
 - For a slice proven by a run, nothing forces the owner to look. The list of open
   decisions can grow without limit.

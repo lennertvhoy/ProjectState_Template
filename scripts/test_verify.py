@@ -486,3 +486,25 @@ def test_a_symlinked_artifact_is_refused_and_left_exactly_as_it_was(tmp_path: Pa
         assert link.is_symlink() and os.readlink(link) == str(target)  # a rollback used to delete a dangling link
         assert digest(root) == before and not (root / "ran.marker").exists()
     assert elsewhere.read_text() == "not the repository's file"
+
+
+# --- second review, 2026-11-11 ------------------------------------------------------------------------------------
+
+
+def test_a_run_line_beside_a_failed_record_is_not_a_passed_run(tmp_path: Path) -> None:
+    """STATE.yaml says passed, the summary says failed and carries the tool's line: invalid, and not a run."""
+    text = summary_text("echo ok", "failed", "1", extra="- Verified: 2026-11-11T10:00:00Z by scripts/projectstate_verify.py in 1.0s\n")
+    root = make(tmp_path, command="echo ok", status="validated", journey="passed", summary=text)
+    assert gate.validate(root)[0] != []
+    assert gate.journey_run(root) is None
+
+
+def test_a_journey_that_swaps_the_evidence_folder_for_a_symlink_records_nothing(tmp_path: Path) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    root = make(tmp_path / "repo", command="mv evidence/demo-001 ../outside/moved && ln -s ../../outside/moved evidence/demo-001")
+    state_before = (root / "STATE.yaml").read_bytes()
+    assert run(root, "--run") == 2
+    assert (root / "STATE.yaml").read_bytes() == state_before  # nothing recorded
+    moved = outside / "moved"
+    assert "- Result: not run" in (moved / "summary.md").read_text() and not (moved / verify.ARTIFACT).exists()

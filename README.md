@@ -318,8 +318,9 @@ realistic owner prompts between the constraints and the session that needed them
 the v2.0 hooks kept the owner's two chat-only constraints in every chain on haiku
 and sonnet, with or without the core, and the first session filed them in the
 project's files (the shipped v2.2 changes the briefing's framing; it repeated that
-result in three haiku chains and one sonnet chain, "Follow-up 3"); the core alone, no core, and v1 did not (v1 only when an agent
-happened to open the raw log file).
+result in three haiku and three sonnet chains, "Follow-up 3" and the section after
+it); the core alone, no core, and v1 did not (v1 only when an agent happened to open
+the raw log file).
 
 ## What the evidence shows
 
@@ -337,13 +338,21 @@ The measurements are in [`evidence/handoff-eval-001/summary.md`](evidence/handof
   one defective lean wording-1 cell) against 0/3 without hooks (finding 1). The
   stop hook filed all three owner constraints 3/3 in both models; without it, 0/3
   (finding 2). Those are the v2.0 hooks. v2.1 regressed on sonnet (1 of 3 chains
-  claimed done while a hidden check failed, finding 6). The v2.2 hooks in this
-  release answer that; measured afterwards ("Follow-up 3"), three haiku chains and
-  one sonnet chain passed all eight checks, and two sonnet chains were lost to a
-  usage limit, so the sonnet regression is not yet ruled out.
+  claimed done while a hidden check failed, finding 6). The v2.2 hooks answer
+  that; measured afterwards ("Follow-up 3" and the section after it), three haiku
+  and three sonnet chains passed all eight checks. Three clean sonnet chains make
+  the regression unlikely, not excluded.
+- **6.5.0: the journey is recorded by a tool, and the result held.** Measured in
+  [`evidence/proof-by-run-001/summary.md`](evidence/proof-by-run-001/summary.md):
+  with the 6.5.0 contract, gate, journey tool and hooks, six haiku and six sonnet
+  chains in two runs passed all eight checks and kept both constraints, and every
+  session recorded its journey with the tool instead of typing it. A sonnet chain
+  cost $0.33 and $0.37 in the two runs against $0.41 for 6.4.0 on the same day:
+  six chains against two, an indication only. This shows no regression. It does
+  not show that the new rule improves anything.
 - **Limits.** One task; n=3 per cell (2 for lean wording 2, with two more chains
   lost to 429 errors); haiku and sonnet only; Claude Code headless only; the v2.1
-  haiku run incomplete. v2.2 has three haiku chains and one sonnet chain (Follow-up 3).
+  haiku run incomplete. v2.2 has three haiku and three sonnet chains, 6.5.0 six of each.
 
 ## Optional material
 

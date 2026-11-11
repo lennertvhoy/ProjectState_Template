@@ -1,7 +1,7 @@
 # scripts/projectstate_verify.py
 # command: python3 -B scripts/test_proof_by_run.py
-# finished: 2026-11-11T15:26:37Z
-# exit code 0 after 1.1s
+# finished: 2026-11-11T18:41:43Z
+# exit code 0 after 1.3s
 
 ok   a new project carries the gate and the journey tool
 ok   its contract block is this release and names the journey tool

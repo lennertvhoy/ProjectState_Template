@@ -30,4 +30,4 @@ delivery_boundary:
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Cut and publish release 6.5.0 from branch next/6.5.0: suite on Python 3.13, projectstate_release.py cut --date, tag v6.5.0, merge into main, push; then update the instances."
+next_action: "Owner: accept, reject or waive proof-by-run-001. A run recorded its journey, so the next slice may start meanwhile."

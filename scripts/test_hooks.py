@@ -488,9 +488,42 @@ RUN_RECORD = ("# Evidence: demo-001\n\n## Primary journey\n\n- Environment: work
               "## Secondary checks\n\n- None.\n\n## Artifacts\n\n- None.\n\n## Limitations\n\n- None.\n")
 
 
+# A repository the gate accepts in full: the brief gives its advice only on top of valid records.
+VALID_STATE = """version: "projectstate-template-v6"
+profile: core
+project:
+  outcome_ref: "PROJECT.md#outcome"
+current_slice:
+  id: demo-001
+  objective: "Prove the smallest real journey."
+  status: validated
+  acceptance:
+    - "The CLI check passes."
+  primary_journey:
+    description: "Run the CLI once."
+    command: "python3 -m demo --check"
+    environment: "workstation"
+    status: passed
+    evidence: "evidence/demo-001/summary.md"
+validation:
+  primary_journey: passed
+  automated_tests: passed
+  human_acceptance: pending
+delivery_boundary:
+  name: demo
+  failed_attempts: []
+  simplification_review: null
+blockers: []
+risks: []
+next_action: "Owner: decide on the slice."
+"""
+VALID_PROJECT = ("# Demo\n\n## User\n\nA person.\n\n## Outcome\n\nThe CLI works.\n\n## Scope\n\n- The CLI.\n\n"
+                 "## Non-goals\n\n- Anything else.\n\n## Durable constraints\n\n- None.\n")
+
+
 def pending_repo(tmp_path: Path, summary: str, agents: str = CONTRACT_650) -> Path:
     tmp_path.mkdir(parents=True, exist_ok=True)
-    make_repo(tmp_path, state=STATE)
+    make_repo(tmp_path, state=VALID_STATE, project=VALID_PROJECT)
     (tmp_path / "AGENTS.md").write_text(agents)
     (tmp_path / "evidence" / "demo-001").mkdir(parents=True)
     (tmp_path / "evidence" / "demo-001" / "summary.md").write_text(summary)
@@ -514,6 +547,15 @@ def test_brief_says_a_hand_typed_slice_waits_and_reads_the_record_as_the_gate_do
     brief = hooks.brief_text(pending_repo(tmp_path / "elsewhere", elsewhere))
     assert "waits for the owner" in brief and "may start meanwhile" not in brief
     assert "typed by hand" in brief.split("- primary journey:", 1)[1].splitlines()[0]
+    # records the gate does not accept get no advice: here the summary says failed beside the tool's line
+    broken = RUN_RECORD.replace("- Result: passed", "- Result: failed").replace("- Exit code: 0", "- Exit code: 1")
+    brief = hooks.brief_text(pending_repo(tmp_path / "broken", broken))
+    assert "may start meanwhile" not in brief and "waits for the owner" not in brief
+    # a managed block that mentions the tool only inside a comment is not a contract that names it
+    hidden = ("<!-- projectstate:managed:start release=6.4.0 -->\nOld rules.\n"
+              "<!-- later: scripts/projectstate_verify.py -->\n<!-- projectstate:managed:end -->\n")
+    brief = hooks.brief_text(pending_repo(tmp_path / "hidden", RUN_RECORD, agents=hidden))
+    assert "may start meanwhile" not in brief and "waits for the owner" not in brief
     # under a contract that does not name the journey tool, a run line changes nothing about who waits
     brief = hooks.brief_text(pending_repo(tmp_path / "older", RUN_RECORD, agents="# Rules\n"))
     assert "may start meanwhile" not in brief and "waits for the owner" not in brief
