@@ -1340,5 +1340,20 @@ class JourneyProofTests(FleetTestCase):
         self.assertEqual(report["format"], "projectstate-fleet/1")
 
 
+
+class JourneysLocationTests(unittest.TestCase):
+    def test_journeys_inside_the_scanned_root_is_refused(self) -> None:
+        """A receipt under the scanned root could be a repository's own file, so the doctor reads none from there."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "root"
+            (root / "repo" / "journeys").mkdir(parents=True)
+            for inside in (root, root / "journeys", root / "repo" / "journeys"):
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+                    code = fleet.main(["--root", str(root), "--journeys", str(inside), "--stdout"])
+                self.assertEqual(code, 2, inside)
+                self.assertIn("is inside --root", err.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1319,13 +1319,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"fleet: refusing to write inside the scanned root: --out {out} is inside --root {root}",
               file=sys.stderr)
         return 2
+    journeys = Path(args.journeys or DEFAULT_JOURNEYS).expanduser().resolve()
+    if is_inside(journeys, root):
+        # A receipt vouches for a repository from outside it; one kept under the root could be the repository's own file.
+        print(f"fleet: refusing receipts from inside the scanned root: --journeys {journeys} is inside --root {root}",
+              file=sys.stderr)
+        return 2
     try:
         index = release_mod.load_index(template)
         current = release_mod.current_release(index)
     except (OSError, ValueError, KeyError) as exc:
         print(f"fleet: cannot read the release index of {template}: {exc}", file=sys.stderr)
         return 2
-    journeys = Path(args.journeys or DEFAULT_JOURNEYS).expanduser().resolve()
     ctx = Context(template, index, str(index.get("state_schema") or gate_mod.VERSION),
                   str(current["release"]) if current else None, args.today or dt.date.today(),
                   draft_candidate(template, index), journeys)

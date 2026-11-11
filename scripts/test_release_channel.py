@@ -692,8 +692,9 @@ def update_one(j: Journey, name: str, source: Path, fleet_copy: Path, tpl: Templ
 
 
 def doctor_rows(fleet_copy: Path, *extra: object) -> dict[str, dict[str, Any]] | None:
+    # A copy has other paths than the repositories it was copied from: read no receipts written for those.
     done = run([sys.executable, SCRIPTS / "projectstate_fleet.py", "--root", fleet_copy, "--stdout", "--format", "json",
-                *extra])
+                "--journeys", Path(fleet_copy).parent / "no-journeys", *extra])
     try:
         report = json.loads(done.out)
     except ValueError:

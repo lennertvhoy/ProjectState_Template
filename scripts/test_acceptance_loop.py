@@ -34,7 +34,8 @@ def run(command: list[str], cwd: Path | None = None) -> subprocess.CompletedProc
 
 
 def doctor(root: Path) -> dict[str, Any]:
-    done = run([sys.executable, str(SCRIPTS / "projectstate_fleet.py"), "--root", str(root), "--stdout", "--format", "json"])
+    done = run([sys.executable, str(SCRIPTS / "projectstate_fleet.py"), "--root", str(root), "--stdout", "--format", "json",
+                "--journeys", str(root.parent / "no-journeys")])
     if done.returncode != 0:
         raise SystemExit(f"fleet doctor failed on {root}: {done.stderr.strip()}")
     return json.loads(done.stdout)
