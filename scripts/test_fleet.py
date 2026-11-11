@@ -1266,16 +1266,37 @@ class JourneyProofTests(FleetTestCase):
         self.assertEqual(report["summary"]["proof"]["receipt-invalid"], len(names))
         self.assertEqual(report["inbox"]["needs_review"], [])
 
+    def test_a_result_that_disagrees_with_its_exit_code_is_invalid(self) -> None:
+        """The doctor cannot check that a run happened, but a receipt that contradicts itself proves nothing."""
+        cases = {
+            "passed-exit-3": {"result": "passed", "exit_code": 3},
+            "failed-exit-0": {"result": "failed", "exit_code": 0},
+            "passed-timed-out": {"result": "passed", "exit_code": 0, "timed_out": True},
+            "no-exit-code": {"exit_code": None},
+            "text-exit-code": {"exit_code": "0"},
+            "bool-exit-code": {"exit_code": False},
+        }
+        for name, overrides in cases.items():
+            self.put(name, self.receipt(self.waiting(name), **overrides))
+        timed_out = self.waiting("failed-timed-out")
+        self.put("failed-timed-out", self.receipt(timed_out, result="failed", exit_code=124, timed_out=True))
+        report, _, text = self.outputs()
+        for name in cases:
+            self.assertEqual(repo_of(report, name)["proof"]["status"], "receipt-invalid", name)
+        self.assertEqual(repo_of(report, "failed-timed-out")["proof"]["status"], "receipt-failed")
+        self.assertEqual(report["summary"]["proof"]["receipt-passed"], 0)
+        self.assertNotIn("| run passed", text)
+
     def test_untrusted_strings_are_neutralised_and_bad_types_ignored(self) -> None:
         repo = self.waiting("noisy")
         by = "\x1b[31mred\x07 " + "B" * 500 + "\nnext | line"
         self.put("noisy", self.receipt(repo, by=by, ran_in="clone\x00-of\x1b]0;title\x07-head",
-                                       exit_code="0", uncommitted_paths=True, head=12345, started=20261005))
+                                       uncommitted_paths=True, head=12345, started=20261005))
         report, _, text = self.outputs()
         proof = repo_of(report, "noisy")["proof"]
         self.assertEqual(proof["status"], "receipt-passed")  # bad optional fields never stop the match
         self.assertEqual((proof["exit_code"], proof["uncommitted_paths"], proof["head"], proof["date"],
-                          proof["commits_since"]), (None, None, None, None, None))
+                          proof["commits_since"]), (0, None, None, None, None))
         for value in (proof["by"], proof["ran_in"]):
             self.assertIsNone(fleet.CONTROL_CHARS.search(value), value)
             self.assertNotIn("\n", value)

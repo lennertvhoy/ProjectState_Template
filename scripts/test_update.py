@@ -464,7 +464,7 @@ def test_refresh_notices_and_required_sections_are_removed(tmp_path: Path, capsy
     result = run(capsys, template, target, "--apply", "--accept-modified-sections")
     contract = result.payload["contract"]
     assert result.code == 0
-    assert contract["removed_notices"] == [{"name": "refresh-6.2", "lines": notice.count("\n")}]
+    assert contract["removed_notices"] == [{"name": "refresh-6.2", "lines": notice.count("\n"), "text": notice}]
     refresh = [item for item in contract["removed_sections"] if item["kind"] == "refresh"]
     assert refresh == [{"heading": "Latest required refresh — 2026-09-30", "level": 2, "kind": "refresh",
                         "lines": later.count("\n"), "text": later}]
@@ -756,6 +756,23 @@ def test_edited_managed_block_is_refused_without_its_flag(tmp_path: Path, capsys
     allowed = run(capsys, template, target, "--apply", "--replace-edited-contract")
     assert allowed.code == 0 and allowed.payload["contract"]["action"] == "replace_edited"
     assert (target / "AGENTS.md").read_text(encoding="utf-8") == converted(FRONTMATTER, local)
+
+
+def test_the_whole_edited_block_is_in_the_json_however_long_it_is(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """The printed diff stops after a fixed number of lines; what the flag removes must still be readable in full."""
+    extra = "".join(f"- project line {number}\n" for number in range(1, 201))
+    original = FRONTMATTER + "\n" + current_block(block=TEMPLATE_BLOCK + extra) + "\n## Local rules\n\nKeep exactly.\n"
+    template = make_template(tmp_path)
+    target = make_instance(tmp_path, original, gate=NEW_GATE)
+
+    refused = run(capsys, template, target)
+    assert refused.code == 2 and (target / "AGENTS.md").read_text(encoding="utf-8") == original
+    assert refused.payload["contract"]["edited_block"].count("project line") == 200
+    assert "- project line 200\n" in refused.payload["contract"]["edited_block"]
+    human = run(capsys, template, target, as_json=False)
+    assert "contract.edited_block" in human.out + human.err
+    current = run(capsys, template, make_instance(tmp_path, converted(FRONTMATTER, ""), gate=NEW_GATE, name="current"))
+    assert current.payload["contract"]["edited_block"] is None
 
 
 @pytest.mark.parametrize("markers", [

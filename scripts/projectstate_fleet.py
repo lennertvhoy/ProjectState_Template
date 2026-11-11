@@ -815,6 +815,11 @@ def receipt_problem(document: Any, path: Path, slice_id: str) -> str | None:
         return "the receipt result is neither passed nor failed"
     if not isinstance(document.get("command_sha256"), str) or not SHA256_HEX.fullmatch(document["command_sha256"]):
         return "the receipt has no usable command_sha256"
+    exit_code = untrusted_int(document.get("exit_code"))
+    if exit_code is None:
+        return "the receipt has no exit code"
+    if (document["result"] == "passed") != (exit_code == 0 and document.get("timed_out") is not True):
+        return "the receipt's result and exit code disagree"
     return None
 
 

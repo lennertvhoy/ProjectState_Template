@@ -21,9 +21,11 @@ This is not the gate: the gate stays read-only and never executes anything.
     python3 scripts/projectstate_verify.py --root DIR --receipt [--run] [--in-place] [--receipts DIR] [--by WHO]
 
 ``--receipt`` is the same run for someone who is not the repository's writer: a reviewer, the owner, or a fleet check.
-It writes nothing in the repository. The journey runs in a temporary copy (a clone of the committed HEAD, or a file
-copy when the directory has no git), so uncommitted work is not part of the run and the working tree is not touched;
-``--in-place`` runs it in the working tree instead, for a journey that needs local files that are not committed. The
+The tool itself writes nothing in the repository. The journey runs in a temporary copy (a clone of the committed HEAD,
+or a file copy when the directory has no git), so uncommitted work is not part of the run and what the journey writes
+in its own directory stays in the copy. The copy is not a sandbox: a command that names the repository by its absolute
+path, or follows a symlink that points into it, still reaches it, so read the command before ``--run`` as you would
+before typing it. ``--in-place`` runs it in the working tree instead, for a journey that needs uncommitted files. The
 result goes to a receipt outside the repository, ``<receipts>/<repository>/<slice>.json`` (default
 ``~/.local/state/projectstate/journeys``), with the output tail beside it as ``<slice>.log``. The receipt names the
 command and its sha256, the HEAD it ran against, where it ran, the exit code and the time, so the fleet doctor can tell

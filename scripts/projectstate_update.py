@@ -151,6 +151,8 @@ class ContractPlan:
     local_template_headings: list[dict[str, Any]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     diff: list[str] = field(default_factory=list)
+    # The instance's managed block when it matches no released text: what --replace-edited-contract would remove.
+    edited_block: str | None = None
     refusals: list[str] = field(default_factory=list)
     local_bytes: int = 0
     local_bytes_preserved: bool = True
@@ -298,7 +300,7 @@ def remove_notices(lines: list[str]) -> tuple[list[str], list[dict[str, Any]], l
             kept.append(lines[index])
             index += 1
             continue
-        removed.append({"name": start.group(1), "lines": stop - index + 1})
+        removed.append({"name": start.group(1), "lines": stop - index + 1, "text": "".join(lines[index:stop + 1])})
         index = stop + 1
         if not kept or not kept[-1].strip():
             while index < len(lines) and not lines[index].strip():
@@ -675,6 +677,7 @@ def plan_existing_block(
     plan.local_bytes = len((head_clean.text + tail_clean.text).encode("utf-8"))
     if edited:
         plan.action = "replace_edited"
+        plan.edited_block = block.content
         plan.diff = unified(
             block.content, template.block, f"instance {AGENTS_NAME} managed block",
             f"template {rel.MANAGED_PATH.as_posix()} ({template.release})")
@@ -778,6 +781,7 @@ def plan_payload(plan: Plan, applied: bool) -> dict[str, Any]:
             "removed_sections": contract.removed_sections,
             "removed_notices": contract.removed_notices,
             "modified_sections": contract.modified_sections,
+            "edited_block": contract.edited_block,
             "local_template_headings": contract.local_template_headings,
             "warnings": contract.warnings,
             "local_bytes_preserved": contract.local_bytes_preserved,
@@ -846,6 +850,9 @@ def contract_lines(plan: Plan, show_removed_text: bool) -> list[str]:
     if contract.diff:
         lines.append("  diff (instance -> template block, first lines):")
         lines.extend(f"    {line}" for line in contract.diff)
+    if contract.edited_block is not None:
+        lines.append(f"  the diff above stops after {DIFF_LINES} lines; --json carries the whole edited block "
+                     "(contract.edited_block) and every removed notice's text")
     if contract.action in ("convert", "replace", "replace_edited", "clean"):
         state = "preserved" if contract.local_bytes_preserved else "NOT verified"
         lines.append(f"  local text: {contract.local_bytes} bytes {state}")

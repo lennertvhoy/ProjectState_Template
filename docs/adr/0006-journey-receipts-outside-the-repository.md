@@ -78,6 +78,12 @@ fault. No release hash moves because of this ADR.
 - Reading a receipt can say which commit was verified and how many commits came
   after it, which is information the record alone does not carry.
 
+- The temporary copy keeps a journey's own writes out of the repository, but it is not a sandbox: a command
+  that names the repository by absolute path, or follows a symlink that points into it, still reaches it.
+- The doctor trusts the receipts directory for the content of a pass. It checks that a receipt belongs to the
+  repository, the slice and the recorded command, and that its result agrees with its exit code; it cannot check
+  that the run happened.
+
 ## Alternatives Considered
 
 - **Requiring a receipt in the gate.** Not chosen: it would make the gate depend on
