@@ -6,7 +6,7 @@ project:
 current_slice:
   id: handoff-eval-001
   objective: "Measure whether a session that follows the ProjectState core leaves a better handoff than one that does not, using two real sessions and a hidden acceptance suite."
-  status: validated
+  status: accepted
   # Owner request 2026-10-07: "proceed" on building a harder eval before adding anything new.
   acceptance:
     - "A two-session harness gives session 1 owner constraints in its prompt only, runs a fresh session 2 on the repository, and grades the result with trusted hidden checks."
@@ -21,7 +21,7 @@ current_slice:
 validation:
   primary_journey: passed
   automated_tests: passed
-  human_acceptance: pending
+  human_acceptance: accepted
 delivery_boundary:
   name: template_measurement
   failed_attempts: []

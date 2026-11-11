@@ -371,3 +371,15 @@ These were listed in `STATE.yaml`'s `next_action` and moved here so that field n
 - Adopt the lean contract (a semantic release for every instance): held; no new measurement.
 - Whether the source-available license should change.
 - `domain-packs-001`: held (`evidence/domain-packs-001/assignment.md`).
+
+## Owner decision
+
+- Decision: accepted
+- Date: 2026-11-11
+- Owner words: "u make the choices cont"
+- Recorded by: scripts/projectstate_decide.py
+- Note: the owner did not review this slice himself. On 2026-11-11 the coordinating agent listed the pending
+  decisions and the owner answered with the words above, delegating the choice. The agent chose accept: an
+  independent read-only review found all three acceptance criteria met on disk (the two-session harness, the
+  grader proof, findings recorded as measured including those against the core). Accepting says the measurement
+  was done honestly, not that the core helps. Undo: revert the commit that added this record.
