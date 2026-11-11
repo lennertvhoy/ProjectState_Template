@@ -11,6 +11,43 @@ All notable ProjectState template changes are tracked here.
 > `PROJECTSTATE_ASSETS.json` left main with the legacy split (see 6.4.0) and
 > are at tag `v5-final`.
 
+## Unreleased
+
+Instance action: none. These changes are in the template's own tools and their tests. The gate, the managed
+contract block and the release index are unchanged, so no release hash moves and
+`python3 scripts/projectstate_release.py check` still matches; an instance needs no action.
+
+- **Independent journey runs** (`scripts/projectstate_verify.py --receipt`, ADR-0006, proposed). A reviewer, the
+  owner or a fleet check can run the recorded journey without being the repository's writer. The run writes
+  nothing in the repository: the command executes in a temporary clone of the committed HEAD (a file copy when
+  the directory is not a git work tree), so uncommitted work is not part of it, and `--in-place` runs it in the
+  working tree instead, for a journey that needs local files that are not committed. The result goes to a receipt
+  outside the repository, `<journeys>/<repository>/<slice>.json` (default
+  `~/.local/state/projectstate/journeys`), holding the command and its sha256, the HEAD it ran against, where it
+  ran, the exit code and the time, with the output tail written beside it. `STATE.yaml` and the slice summary are
+  never edited by this mode; a run that disagrees with the record says so and leaves the change to the
+  repository's writer.
+- **The fleet doctor reads receipts.** Each v6 repository with a current slice gains a `proof` object in
+  `fleet.json` (`record-only`, `receipt-passed`, `receipt-failed`, `receipt-stale` when the recorded command
+  changed after the run, or `receipt-invalid`), a `proof` column in `fleet.md` with the date and the commits made
+  since the run, and a short note in each decision line saying whether someone else re-ran the journey. A journey
+  recorded as passed that a receipt contradicts is listed under needs review as `journey-mismatch`. Receipts are
+  read from `--journeys` (default `~/.local/state/projectstate/journeys`), never followed through a symlink, and
+  nothing is written. `record only` is not a fault: the repository's own record is then the only proof.
+- **Update: a refresh section without an end marker is shown and needs the flag.** A section headed "Required
+  first action" or "Latest required refresh" has no end marker, so the update removed everything from that heading
+  to the next heading. This fixes a data-loss defect present since 6.3.0: on 2026-11-10 two prepared update branches
+  had lost project text this way, one a project's own start-of-session checklist and one a paragraph that sat
+  between an inserted notice and the next heading. Both were caught before any merge. Such a section is now listed
+  with its full text and the update refuses until a person passes `--accept-modified-sections`; a section with such
+  a heading that never mentions ProjectState stays as project text, with a warning. Notices bounded by
+  `projectstate-NAME:start` and `projectstate-NAME:end` are still removed without a flag, because their extent is
+  exact.
+- **Tests.** Fixture repositories never start git background maintenance (`maintenance.auto=false` and
+  `gc.auto=0` on every git call), so a detached `git maintenance run --auto` can no longer leave a transient
+  `.git/objects/maintenance.lock` in one snapshot and not the other. The test that compares `.git` byte for byte
+  before and after a read-only update run had failed about 1 run in 60; the comparison itself is unchanged.
+
 ## 6.4.0 - 2026-10-16
 
 Instance action: mechanical. The gate's release string and the managed block's release marker change, so

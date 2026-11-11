@@ -87,10 +87,17 @@ The report has one line group for the gate and one for `AGENTS.md`:
 Under the contract line:
 
 - `remove refresh notice` and `remove refresh section`: text left by the
-  2026-09-05 and 2026-09-06 refreshes below, namely
-  `<!-- projectstate-NAME:start -->` ... `<!-- projectstate-NAME:end -->` blocks
-  and sections headed "Required first action" or "Latest required refresh". The
-  block makes them unnecessary, so they are removed and listed.
+  2026-09-05 and 2026-09-06 refreshes below. A notice bounded by
+  `<!-- projectstate-NAME:start -->` ... `<!-- projectstate-NAME:end -->` has an
+  exact extent, so it is removed and listed without a flag. A section headed
+  "Required first action" or "Latest required refresh" has no end marker, so the
+  report shows the whole section, from its heading to the next heading of equal
+  or higher rank, with its text, and the update refuses until you pass
+  `--accept-modified-sections`: everything in that range would be removed with
+  it. A section with such a heading whose text never mentions ProjectState is the
+  project's own (a start-of-session checklist, for example); it is kept as
+  project text and listed as a warning. The block makes the refresh texts
+  unnecessary, so they can go once you have read what is inside them.
 - `replace N template sections of known text`: sections whose text matches what
   an earlier release generated (6.0.0 through 6.2.0, kept in
   `releases/contract-history.json`). They are dropped because the block now
@@ -127,7 +134,7 @@ make the change safe.
 | --- | --- | --- | --- |
 | `--replace-edited-gate` | The vendored gate's sha256 matches no released gate: it was edited, or it came from elsewhere. The report shows the diff. | Replaces it with the current release's gate. | The local edits, which then survive only in Git history. A gate that its own project edits weakens the check on that project; propose the change to the template instead. If the edit added statuses such as `publicly_verified`, see "Truth at handoff" below. |
 | `--replace-edited-contract` | The managed block's text matches no released block, so someone edited it. The report shows the diff. | Replaces the block with the current one. | The edit, kept only in Git history. Project rules belong after the end marker. |
-| `--accept-modified-sections` | A template-named section matches no released text, or a local section holds a level-3 heading named like a template section. | Removes the modified sections and keeps the look-alike local headings as local text. | Any project rule still inside a removed section; the flag moves nothing for you. A dry run with the flag prints the full removed text and still writes nothing, and `--json` always carries it. |
+| `--accept-modified-sections` | A template-named section matches no released text, a local section holds a level-3 heading named like a template section, or `AGENTS.md` has a refresh section without an end marker (headed "Required first action" or "Latest required refresh", and mentioning ProjectState). | Removes the modified sections and those refresh sections, and keeps the look-alike local headings as local text. | Any project rule still inside a removed section, and any project text that sat between a refresh heading and the next heading; the flag moves nothing for you. A dry run with the flag prints the full removed text and still writes nothing, and `--json` always carries it. |
 | `--allow-dirty` | `AGENTS.md` or the gate has uncommitted changes and the update would write, or git cannot report its status. | Skips that check. | The update overwrites those working-tree files, so uncommitted edits are lost. |
 
 Other refusals have no flag because the command cannot make them safe: a target
