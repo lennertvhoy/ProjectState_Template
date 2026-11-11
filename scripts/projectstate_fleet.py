@@ -102,9 +102,11 @@ SHA256_HEX = re.compile(r"[0-9a-f]{64}")
 DATE_TEXT = re.compile(r"\d{4}-\d{2}-\d{2}")
 COMMIT_TIME = re.compile(r"(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})")
 FENCE = re.compile(r"^[ \t]{0,3}(```|~~~)")
-ATX_HEADING = re.compile(r"^(#{1,3})[ \t]+(.*)$")
+ATX_HEADING = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*?))?[ \t]*$")
+CLOSING_HASHES = re.compile(r"[ \t]+#+[ \t]*$")
 NOTICE_MARKER = re.compile(r"<!--\s*projectstate-[A-Za-z0-9][A-Za-z0-9._-]*:start\s*-->")
-NOTICE_TITLE = re.compile(r"Required first action|Latest required refresh", re.IGNORECASE)
+NOTICE_PREFIXES = ("required first action", "latest required refresh")
+NOTICE_MENTION = "projectstate"
 DIRECTIVES_HEADING = re.compile(r"^##[ \t]+Owner directives[ \t]*$", re.IGNORECASE)
 DIRECTIVE_LINE = re.compile(r"^-[ \t]+(\d{4}-\d{2}-\d{2})\b(.*)$")
 DIRECTIVE_UNTIL = re.compile(r"\buntil[ \t]+(\d{4}-\d{2}-\d{2})\b", re.IGNORECASE)
@@ -201,18 +203,30 @@ def load_doc(root: Path, relative: str) -> Doc:
         return Doc(None, f"unreadable: {exc.strerror or exc}")
 
 
-def outside_fences(text: str) -> Iterator[str]:
-    """Yield the lines of a Markdown text that are not inside a fenced code block."""
+def fence_mask(text: str) -> list[bool]:
+    """True for every line of a Markdown text that a fence covers, the fence lines themselves included."""
+    mask: list[bool] = []
     fence: str | None = None
     for line in release_mod.normalize_newlines(text).split("\n"):
         match = FENCE.match(line)
         if match is None:
-            if fence is None:
-                yield line
+            mask.append(fence is not None)
         elif fence is None:
             fence = match.group(1)
+            mask.append(True)
         elif match.group(1) == fence:
             fence = None
+            mask.append(True)
+        else:
+            mask.append(True)
+    return mask
+
+
+def outside_fences(text: str) -> Iterator[str]:
+    """Yield the lines of a Markdown text that are not inside a fenced code block."""
+    for line, inside in zip(release_mod.normalize_newlines(text).split("\n"), fence_mask(text)):
+        if not inside:
+            yield line
 
 
 def parse_payload(text: str | None) -> dict[str, Any] | None:
@@ -634,13 +648,40 @@ def size_report(agents: Doc, project: Doc, state: Doc, managed: bool) -> dict[st
     return {**sizes, "startup_tokens": total // 4, "local_lines": local, "flags": flags}
 
 
+def notice_headings(text: str) -> int:
+    """How many sections of a text are headed like a ProjectState refresh notice.
+
+    The rule is the update tool's (``projectstate_update.remove_refresh_sections``): a heading counts
+    when it starts with a refresh prefix and its section (the heading through the line before the next
+    heading of equal or higher rank) mentions ProjectState. A project's own "Required first action"
+    checklist never does, and a heading inside a section that already counts is counted with it, as
+    the one removal the update tool would report.
+    """
+    lines = release_mod.normalize_newlines(text).split("\n")
+    mask = fence_mask(text)
+    found: list[tuple[int, int, str]] = []
+    for index, line in enumerate(lines):
+        match = None if mask[index] else ATX_HEADING.match(line)
+        if match is not None:
+            found.append((index, len(match.group(1)), CLOSING_HASHES.sub("", match.group(2) or "").strip()))
+    dropped = [False] * len(lines)
+    count = 0
+    for position, (index, level, title) in enumerate(found):
+        if dropped[index] or not title.lower().startswith(NOTICE_PREFIXES):
+            continue
+        end = next((later for later, depth, _ in found[position + 1:] if depth <= level), len(lines))
+        if not any(NOTICE_MENTION in line.lower() for line in lines[index:end]):
+            continue
+        for covered in range(index, end):
+            dropped[covered] = True
+        count += 1
+    return count
+
+
 def notice_report(agents: Doc) -> dict[str, int]:
-    """Refresh notices: marker blocks plus 'Required first action' / 'Latest required refresh' headings."""
-    blocks = headings = 0
-    for line in outside_fences(agents.text):
-        blocks += len(NOTICE_MARKER.findall(line))
-        match = ATX_HEADING.match(line)
-        headings += bool(match and NOTICE_TITLE.search(match.group(2)))
+    """Refresh notices: marker blocks plus sections headed like one, as the update tool would remove them."""
+    blocks = sum(len(NOTICE_MARKER.findall(line)) for line in outside_fences(agents.text))
+    headings = notice_headings(agents.text)
     return {"blocks": blocks, "headings": headings, "total": blocks + headings}
 
 
