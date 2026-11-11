@@ -445,7 +445,7 @@ def test_refresh_notices_and_required_sections_are_removed(tmp_path: Path, capsy
     later = (
         "## Latest required refresh — 2026-09-30\n"
         "\n"
-        "Apply the new contract.\n"
+        "Apply the new ProjectState contract.\n"
         "\n"
         "### Sub detail\n"
         "\n"
@@ -455,18 +455,91 @@ def test_refresh_notices_and_required_sections_are_removed(tmp_path: Path, capsy
     local = "## Local rules\n\nKeep this.\n"
     original = FRONTMATTER + "\n" + notice + "\n" + PURE_620_BODY + "\n" + later + local
     target = make_instance(tmp_path, original)
+    template = make_template(tmp_path)
 
-    result = run(capsys, make_template(tmp_path), target, "--apply")
+    refused = run(capsys, template, target, "--apply")
+    assert refused.code == 2 and (target / "AGENTS.md").read_text(encoding="utf-8") == original
+    assert "refresh sections without an end marker: 'Latest required refresh — 2026-09-30'" in refused.payload["refused"][0]
+
+    result = run(capsys, template, target, "--apply", "--accept-modified-sections")
     contract = result.payload["contract"]
     assert result.code == 0
     assert contract["removed_notices"] == [{"name": "refresh-6.2", "lines": notice.count("\n")}]
     refresh = [item for item in contract["removed_sections"] if item["kind"] == "refresh"]
     assert refresh == [{"heading": "Latest required refresh — 2026-09-30", "level": 2, "kind": "refresh",
-                        "lines": later.count("\n")}]
+                        "lines": later.count("\n"), "text": later}]
     new_text = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert new_text == converted(FRONTMATTER, local)
     for gone in ("Required first action", "scripts/refresh.py", "Latest required refresh", "More refresh text"):
         assert gone not in new_text
+
+
+def test_a_marked_notice_alone_is_removed_without_a_flag(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Start and end markers bound the notice exactly, so removing it needs no person."""
+    notice = "<!-- projectstate-refresh:start -->\n## Required first action — refresh ProjectState\n\nDo it.\n<!-- projectstate-refresh:end -->\n"
+    local = "## Local rules\n\nKeep this.\n"
+    target = make_instance(tmp_path, FRONTMATTER + "\n" + notice + "\n" + PURE_620_BODY + "\n" + local)
+    result = run(capsys, make_template(tmp_path), target, "--apply")
+    assert result.code == 0 and result.payload["refused"] == []
+    assert (target / "AGENTS.md").read_text(encoding="utf-8") == converted(FRONTMATTER, local)
+
+
+def test_project_text_after_an_unmarked_refresh_notice_is_never_removed_silently(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A heading-only notice has no end: a project paragraph before the next heading is inside the section.
+
+    Seen in a real instance: the notice was inserted between the title and the project's own opening paragraph, and
+    the update removed both. The section's text must be shown and the write refused until a person has read it.
+    """
+    swallowed = "This site may never become a second release system.\n"
+    section = (
+        "## Required first action — ProjectState v6 core refresh queued\n"
+        "\n"
+        "Refresh this repository's ProjectState core before the next slice.\n"
+        "\n"
+        + swallowed +
+        "\n"
+    )
+    original = FRONTMATTER + "\n" + section + PURE_620_BODY + "\n## Local rules\n\nKeep this.\n"
+    target = make_instance(tmp_path, original)
+    template = make_template(tmp_path)
+
+    for flags in ((), ("--apply",)):
+        result = run(capsys, template, target, *flags)
+        assert result.code == 2, "the dry run exits 2 exactly when --apply would refuse"
+        assert (target / "AGENTS.md").read_text(encoding="utf-8") == original
+        refresh = [item for item in result.payload["contract"]["removed_sections"] if item["kind"] == "refresh"]
+        assert swallowed in refresh[0]["text"], "the JSON plan always carries what would be removed"
+    human = run(capsys, template, target, as_json=False)
+    assert human.code == 2 and f"    | {swallowed.strip()}" in human.out + human.err, "the report shows the section's text"
+
+    moved = original.replace(swallowed + "\n", "") + "\n## Site rules\n\n" + swallowed
+    (target / "AGENTS.md").write_text(moved, encoding="utf-8")
+    assert run(capsys, template, target, "--apply", "--accept-modified-sections").code == 0
+    new_text = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert swallowed in new_text and "refresh queued" not in new_text
+
+
+def test_a_project_section_headed_like_a_notice_is_kept(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """A project's own start-of-session checklist is not a ProjectState notice, whatever its heading."""
+    checklist = (
+        "## Required First Actions\n"
+        "\n"
+        "Before every session:\n"
+        "\n"
+        "1. Pull the latest changes.\n"
+        "2. Run `python3 scripts/check.py`.\n"
+    )
+    local = "## Local rules\n\nKeep this.\n\n" + checklist
+    target = make_instance(tmp_path, FRONTMATTER + "\n" + PURE_620_BODY + "\n" + local)
+    for flags in (("--apply",), ("--apply", "--accept-modified-sections")):
+        result = run(capsys, make_template(tmp_path / flags[-1].strip("-")), target, *flags)
+        assert result.code == 0 and result.payload["refused"] == []
+        assert [item for item in result.payload["contract"]["removed_sections"] if item["kind"] == "refresh"] == []
+        assert (target / "AGENTS.md").read_text(encoding="utf-8") == converted(FRONTMATTER, local)
+    first = run(capsys, make_template(tmp_path / "again"), make_instance(tmp_path / "again", FRONTMATTER + "\n" + PURE_620_BODY + "\n" + local))
+    assert any("'Required First Actions' is headed like a refresh notice" in warning for warning in first.payload["contract"]["warnings"])
 
 
 def test_required_section_is_removed_even_when_a_managed_block_exists(
@@ -474,11 +547,14 @@ def test_required_section_is_removed_even_when_a_managed_block_exists(
 ) -> None:
     notice = "<!-- projectstate-refresh:start -->\nRefresh now.\n<!-- projectstate-refresh:end -->\n"
     original = (FRONTMATTER + "\n" + notice + "\n" + current_block() + "\n"
-                "## Required first action\n\nStale instruction.\n\n## Local rules\n\nKeep.\n")
+                "## Required first action\n\nStale ProjectState instruction.\n\n## Local rules\n\nKeep.\n")
     template = make_template(tmp_path)
     target = make_instance(tmp_path, original, gate=NEW_GATE)
+    refused = run(capsys, template, target, "--apply")
+    assert refused.code == 2 and (target / "AGENTS.md").read_text(encoding="utf-8") == original
+    assert "refresh sections without an end marker: 'Required first action' (4 lines)" in refused.payload["refused"][0]
 
-    result = run(capsys, template, target, "--apply")
+    result = run(capsys, template, target, "--apply", "--accept-modified-sections")
     assert result.code == 0 and result.payload["contract"]["action"] == "clean"
     assert result.payload["gate"]["action"] == "none"
     assert (target / "AGENTS.md").read_text(encoding="utf-8") == (
