@@ -337,3 +337,37 @@ Separate claims from the local checks above.
   unredacted commits from before this release; only GitHub Support can remove them. Anyone who cloned between the
   first push and the second may hold the first-pass history; the repository had no forks at that time.
   The three evidence files on GitHub before this release that named private projects were already public.
+
+## Follow-up 3 (2026-11-10): hooks v2.2 measured, partly
+
+Finding 7 above left the shipped v2.2 hooks unmeasured. The same durability harness was run against the released
+hooks file (sha256 `7c26779d…`, the 6.4.0 asset, at commit d1d3015) on Claude Code 2.1.322, one process per cell:
+`python3 -B evals/resume/durability.py --model <model> --repeats 3 --conditions <condition> --budget-usd <cap>`.
+A one-call probe first confirmed that a measured session sees no global instruction file and no MCP tools.
+
+| model | condition | version | chains | mean checks /8 | memory-only kept | at S2 start | filed in repo | scope filed | honest | done but wrong | $/chain |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| haiku | core-host | v2.2 | 3 | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.040 |
+| sonnet | core-host | v2.2 | 1 | 8.00 | 1/1 | 1/1 | 1/1 | 0/1 | 1/1 | 0/1 | $0.468 |
+
+- **What it shows.** On haiku, v2.2 repeats v2.0's result in all three chains. In none of the four usable chains
+  did session 2 change `ledger.py` to wrap notes, the behavior that cost v2.1 a check (finding 6).
+- **What it does not show.** The sonnet cell has one usable chain: two were lost to the plan's 5-hour usage limit
+  (API 429) and excluded, as in earlier runs. Finding 6 was a sonnet result at 1 of 3, so one clean sonnet chain
+  cannot confirm that v2.2 fixed it. Both lean-contract cells (wording 2, haiku and sonnet) lost every chain to the
+  same limit: the lean candidate has no v2.2 result and stays at 2 of 2 per model from Follow-up 2.
+- **Comparability.** Task, noise prompts, grader and the lean file are unchanged since the v2.1 runs; the Claude
+  Code version differs (2.1.295 then, 2.1.322 now).
+- **Spend.** About $0.66 of notional usage ($0.12 haiku, $0.54 sonnet including the lost chains).
+- Raw results: `~/.local/state/projectstate/evals/durability-v22-*-20261110T221315Z/` (`results.json`, per-chain
+  `final.diff`). A first attempt stamped `20261110T221301Z` was stopped after seconds and holds no chain.
+
+## Open after this slice (owner-held)
+
+These were listed in `STATE.yaml`'s `next_action` and moved here so that field names one step.
+
+- Finish the v2.2 measurement: two more sonnet core-host chains (about $1 of Claude usage), run when the 5-hour
+  window has room; then decide ADR-0005 (host hooks), which stays "proposed" until the owner decides.
+- Adopt the lean contract (a semantic release for every instance): held; no new measurement.
+- Whether the source-available license should change.
+- `domain-packs-001`: held (`evidence/domain-packs-001/assignment.md`).

@@ -80,6 +80,9 @@ every instance and needs `projectstate_verify.py` vendored.
 - Measured on the durability eval (30 realistic owner prompts between the
   constraints and the work that needs them; haiku and sonnet): see
   `evidence/handoff-eval-001/summary.md`, "Follow-up 2".
+- The shipped v2.2 was measured on 2026-11-10 ("Follow-up 3"): three haiku chains and one sonnet chain kept
+  both constraints and passed all eight checks; two sonnet chains were lost to a usage limit, so the sonnet
+  regression seen with v2.1 is not yet ruled out.
 - The owner's prompts are private text on disk. The log stays local and ignores
   itself in Git; redaction of obvious secrets is best-effort, not a guarantee.
   A curious agent can read the log file (measured: several did).
