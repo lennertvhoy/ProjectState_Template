@@ -11,6 +11,15 @@ The doctor never writes inside a repository and never runs instance code. It rea
 following symlinks, runs a small set of read-only ``git`` commands (no network), and uses only this
 checkout's gate module to parse and validate. Its only output files are ``fleet.md`` and ``fleet.json``
 in ``--out``, which must lie outside ``--root``; ``--stdout`` writes nothing at all.
+
+For each current slice it also reads, never writes, a journey receipt from ``--journeys`` (default
+``~/.local/state/projectstate/journeys``): the file ``<repository directory name>/<slice id>.json`` that
+``projectstate_verify.py --receipt`` writes when someone who is not the repository's writer runs the
+recorded journey. The ``proof`` of a slice is ``record-only`` without a receipt (not a fault: the repository's
+own record is then the only proof), ``receipt-passed`` or ``receipt-failed`` for a receipt that matches the
+repository, slice and recorded command, ``receipt-stale`` when the recorded command changed after the run, and
+``receipt-invalid`` for anything else. A receipt is untrusted input: it is never followed through a symlink, and
+it is evidence that a tool observed a run, not protection against someone who forges the file.
 """
 
 from __future__ import annotations
@@ -18,10 +27,12 @@ from __future__ import annotations
 import argparse
 import contextlib
 import datetime as dt
+import hashlib
 import json
 import os
 import re
 import shlex
+import stat
 import subprocess
 import sys
 import tempfile
@@ -50,6 +61,9 @@ gate_mod, release_mod = _load_siblings()
 
 FORMAT = "projectstate-fleet/1"
 DEFAULT_OUT = "~/.local/state/projectstate"
+DEFAULT_JOURNEYS = "~/.local/state/projectstate/journeys"
+RECEIPT_FORMAT = "projectstate-journey-receipt/1"
+RECEIPT_MAX_BYTES = 64 * 1024
 GIT_TIMEOUT_SECONDS = 30
 MAX_READ_BYTES = 16 * 1024 * 1024
 HISTORY_LIMIT = 50
@@ -61,6 +75,8 @@ UNMANAGED_LINES_FLAG = 200
 OBJECTIVE_CHARS = 120
 NEXT_ACTION_CHARS = 160
 DETAIL_CHARS = 160
+BY_CHARS = 80
+RAN_IN_CHARS = 40
 AWAITING_STATUSES = {"validated", "ready_for_human"}
 KINDS = ("v6", "v6-invalid", "v5", "other")
 GATE_STATES = ("current", "draft", "behind", "unknown", "missing", "symlink", "unreadable")
@@ -77,8 +93,12 @@ HOOK_EVENTS = ("SessionStart", "UserPromptSubmit", "Stop")
 HOOK_STATES = ("current", "current (no stop)", "behind", "edited", "draft", "v1", "partial", "absent", "unreadable")
 OPENCODE_STATES = ("current", "behind", "edited", "draft", "absent", "unreadable")
 HOOKS_REVIEW_STATES = ("behind", "edited", "v1", "partial")
+PROOF_STATES = ("receipt-passed", "receipt-failed", "receipt-stale", "receipt-invalid", "record-only")
 
 SLICE_ID = re.compile(r"[a-z0-9][a-z0-9-]*")
+RECEIPT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")  # the names projectstate_verify.py accepts for a receipt
+FULL_HASH = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+SHA256_HEX = re.compile(r"[0-9a-f]{64}")
 DATE_TEXT = re.compile(r"\d{4}-\d{2}-\d{2}")
 COMMIT_TIME = re.compile(r"(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})")
 FENCE = re.compile(r"^[ \t]{0,3}(```|~~~)")
@@ -110,6 +130,8 @@ class Context(NamedTuple):
     # When the index's latest entry is a draft: its release and the hashes of the template's own
     # gate and managed block, so a repository carrying the candidate reads "draft", not "edited".
     draft: dict[str, str] | None = None
+    # Where journey receipts are read from; None reads none.
+    journeys: Path | None = None
 
 
 class Doc(NamedTuple):
@@ -687,6 +709,118 @@ def slice_report(payload: dict[str, Any], today: dt.date) -> dict[str, Any]:
     }
 
 
+def untrusted_text(value: Any, limit: int) -> str | None:
+    """A receipt string made safe to show: control characters replaced, one line, clipped; None if not text."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return clip(CONTROL_CHARS.sub("?", value), limit)
+
+
+def untrusted_int(value: Any) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def read_receipt(journeys: Path, name: str, slice_id: str) -> tuple[bytes | None, str | None]:
+    """Bytes of ``<journeys>/<name>/<slice_id>.json``; problem "missing" when there is none.
+
+    No symlink is followed below ``journeys``: the folder and the file are checked with lstat and the
+    file is opened with O_NOFOLLOW, then read up to the size limit.
+    """
+    folder = journeys / name
+    target = folder / f"{slice_id}.json"
+    try:
+        info = os.lstat(folder)
+        if stat.S_ISLNK(info.st_mode):
+            return None, "the repository folder in the journeys directory is a symlink"
+        if not stat.S_ISDIR(info.st_mode):
+            return None, "the repository entry in the journeys directory is not a folder"
+        info = os.lstat(target)
+    except (FileNotFoundError, NotADirectoryError):
+        return None, "missing"
+    except OSError as exc:
+        return None, f"unreadable: {exc.strerror or exc}"
+    if stat.S_ISLNK(info.st_mode):
+        return None, "the receipt is a symlink"
+    if not stat.S_ISREG(info.st_mode):
+        return None, "the receipt is not a regular file"
+    if info.st_size > RECEIPT_MAX_BYTES:
+        return None, "the receipt is larger than 64 KiB"
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    try:
+        with os.fdopen(os.open(target, flags), "rb") as handle:
+            if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
+                return None, "the receipt is not a regular file"
+            data = handle.read(RECEIPT_MAX_BYTES + 1)
+    except OSError as exc:  # also a symlink swapped in after the lstat (ELOOP)
+        return None, f"unreadable: {exc.strerror or exc}"
+    if len(data) > RECEIPT_MAX_BYTES:
+        return None, "the receipt is larger than 64 KiB"
+    return data, None
+
+
+def receipt_problem(document: Any, path: Path, slice_id: str) -> str | None:
+    """Why a parsed receipt does not belong to this repository and slice; None when it does."""
+    if not isinstance(document, dict):
+        return "the receipt is not a JSON object"
+    if document.get("format") != RECEIPT_FORMAT:
+        return f"the receipt format is not {RECEIPT_FORMAT}"
+    if document.get("repository") != path.name:
+        return "the receipt names another repository"
+    if document.get("path") != str(path.resolve()):
+        return "the receipt names another repository path"
+    if document.get("slice") != slice_id:
+        return "the receipt names another slice"
+    if document.get("result") not in ("passed", "failed"):
+        return "the receipt result is neither passed nor failed"
+    if not isinstance(document.get("command_sha256"), str) or not SHA256_HEX.fullmatch(document["command_sha256"]):
+        return "the receipt has no usable command_sha256"
+    return None
+
+
+def proof_report(path: Path, payload: dict[str, Any], slice_id: str, facts: dict[str, Any] | None,
+                 ctx: Context) -> dict[str, Any]:
+    """Whether the current slice's journey has an independent run behind it (a receipt outside the repository)."""
+    proof: dict[str, Any] = {
+        "status": "record-only", "detail": None, "date": None, "ran_in": None, "head": None,
+        "commits_since": None, "uncommitted_paths": None, "exit_code": None, "by": None,
+    }
+    if ctx.journeys is None or not RECEIPT_NAME.fullmatch(path.name) or not RECEIPT_NAME.fullmatch(slice_id):
+        return proof  # projectstate_verify.py cannot write a receipt under such a name
+    data, problem = read_receipt(ctx.journeys, path.name, slice_id)
+    if problem == "missing":
+        return proof
+    document: Any = None
+    if data is not None:
+        try:
+            document = json.loads(data.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError, RecursionError):
+            problem = "the receipt is not JSON"
+        else:
+            problem = receipt_problem(document, path, slice_id)
+    if problem:
+        proof.update(status="receipt-invalid", detail=clip(problem, DETAIL_CHARS))
+        return proof
+    started = document.get("started")
+    head = document.get("head")
+    head = head if isinstance(head, str) and FULL_HASH.fullmatch(head) else None
+    proof.update(
+        date=started[:10] if isinstance(started, str) and parse_date(started[:10]) else None,
+        ran_in=untrusted_text(document.get("ran_in"), RAN_IN_CHARS),
+        head=head[:7] if head else None,
+        commits_since=git_count(path, "rev-list", "--count", f"{head}..HEAD") if head and git_usable(facts) else None,
+        uncommitted_paths=untrusted_int(document.get("uncommitted_paths")),
+        exit_code=untrusted_int(document.get("exit_code")),
+        by=untrusted_text(document.get("by"), BY_CHARS),
+    )
+    command = mapping(mapping(payload.get("current_slice")).get("primary_journey")).get("command")
+    recorded = hashlib.sha256(str(command).strip().encode("utf-8")).hexdigest() if command is not None else None
+    if document["command_sha256"] != recorded:
+        proof.update(status="receipt-stale", detail="the recorded command changed after this run")
+    else:
+        proof["status"] = f"receipt-{document['result']}"
+    return proof
+
+
 def scan_repository(path: Path, payload: dict[str, Any] | None, kind: str, problem: str | None,
                     ctx: Context, is_template: bool) -> dict[str, Any]:
     repo: dict[str, Any] = {
@@ -710,6 +844,7 @@ def scan_repository(path: Path, payload: dict[str, Any] | None, kind: str, probl
     repo["directives"] = directive_report({"AGENTS.md": agents, "PROJECT.md": project}, ctx.today)
     repo["verdict"] = verdict_report(path)
     repo["slice"] = slice_report(payload, ctx.today)
+    repo["proof"] = proof_report(path, payload, repo["slice"]["id"], repo["git"], ctx) if repo["slice"]["id"] else None
     repo["history"] = {"first_commit": None, "age_days": None, "state_commits": None, "all_commits": None}
     repo["silent_replacements"] = []
     repo["rule_since"] = None
@@ -765,6 +900,24 @@ def decision_command(template: Path, repo: Path) -> str:
     return f'python3 {script} {shlex.quote(str(repo))} accept|reject|waive "<your words>"'
 
 
+def verify_command(template: Path, repo: Path) -> str:
+    script = shlex.quote(str(template / "scripts" / "projectstate_verify.py"))
+    return f"python3 {script} --root {shlex.quote(str(repo))} --receipt --run"
+
+
+def proof_note(proof: dict[str, Any] | None) -> str:
+    """The short parenthesis a decision line carries about its journey's proof."""
+    if proof is None:
+        return ""
+    when = f" {proof['date']}" if proof["date"] else ""
+    return {
+        "receipt-passed": f" (journey re-run passed{when})",
+        "receipt-failed": f" (journey re-run FAILED{when})",
+        "receipt-stale": " (journey receipt stale)",
+        "receipt-invalid": " (journey receipt invalid)",
+    }.get(proof["status"], " (journey: its own record only)")
+
+
 def inbox_item(repo: dict[str, Any], kind: str, message: str, **detail: Any) -> dict[str, Any]:
     return {"repository": repo["name"], "path": repo["path"], "kind": kind, "message": message, **detail}
 
@@ -783,13 +936,14 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
     for repo in repos:
         if repo["kind"] != "v6":
             continue
-        name, path, current = repo["name"], Path(repo["path"]), repo["slice"]
+        name, path, current, proof = repo["name"], Path(repo["path"]), repo["slice"], repo["proof"]
         slice_id = current["id"] or "(no slice id)"
         if current["status"] in AWAITING_STATUSES and current["human_acceptance"] == "pending":
             command = decision_command(ctx.template, path)
             inbox["decisions"].append(inbox_item(
-                repo, "decision", f"{name}: {slice_id} is validated and waits for your decision. Run: {command}",
-                slice=slice_id, command=command))
+                repo, "decision",
+                f"{name}: {slice_id} is validated and waits for your decision{proof_note(proof)}. Run: {command}",
+                slice=slice_id, command=command, proof=proof["status"] if proof else None))
         reasons = [label for label, active in (("slice status", current["status"] == "blocked"),
                                                ("primary journey", current["journey"] == "blocked")) if active]
         if reasons:
@@ -800,6 +954,14 @@ def build_inbox(repos: list[dict[str, Any]], ctx: Context) -> dict[str, list[dic
                 repo, "blocked", f"{name}: {slice_id} is blocked ({' and '.join(reasons)}): {blocker}",
                 slice=slice_id, blocker=blocker))
         review = inbox["needs_review"]
+        if proof and proof["status"] == "receipt-failed" and current["journey"] == "passed":
+            command = verify_command(ctx.template, path)
+            code = "?" if proof["exit_code"] is None else proof["exit_code"]
+            review.append(inbox_item(
+                repo, "journey-mismatch",
+                f"{name}: the journey is recorded as passed, but an independent run failed on "
+                f"{proof['date'] or 'an unknown date'} (exit {code}). Rerun it: {command}",
+                slice=slice_id, command=command))
         if repo["role"] != "template":  # the template maintains the gate and block that instances are compared with
             if repo["gate"]["status"] == "unknown":
                 review.append(inbox_item(
@@ -873,6 +1035,7 @@ def summarize(repos: list[dict[str, Any]], inbox: dict[str, list[dict[str, Any]]
         "opencode": {state: sum(repo["opencode"]["status"] == state for repo in instances)
                      for state in OPENCODE_STATES},
         "verdicts": {state: sum(repo["verdict"]["verdict"] == state for repo in v6) for state in VERDICTS},
+        "proof": {state: sum((repo["proof"] or {}).get("status") == state for repo in v6) for state in PROOF_STATES},
         "size_flagged": sum(bool(repo["sizes"]["flags"]) for repo in v6),
         "notices": sum(repo["notices"]["total"] for repo in v6),
         "silent_replacements_before_rule": sum(
@@ -944,6 +1107,16 @@ def status_label(info: dict[str, Any]) -> str:
     return f"{info['status']} ({info['release']})" if info["status"] == "behind" and info["release"] else info["status"]
 
 
+def proof_label(proof: dict[str, Any] | None) -> str:
+    if proof is None:
+        return ""
+    when = f" {proof['date']}" if proof["date"] else ""
+    label = {"receipt-passed": f"run passed{when}", "receipt-failed": f"run FAILED{when}",
+             "receipt-stale": "receipt stale", "receipt-invalid": "receipt invalid"}.get(proof["status"], "record only")
+    since = proof["commits_since"]
+    return label + (f" (+{since})" if isinstance(since, int) and since > 0 else "")
+
+
 def dirty_label(facts: dict[str, Any] | None) -> str:
     if facts is None:
         return "no git"
@@ -982,17 +1155,20 @@ def render_markdown(report: dict[str, Any]) -> str:
             repo["name"] + (" (template)" if repo["role"] == "template" else ""),
             status_label(repo["gate"]), status_label(repo["contract"]), status_label(repo["hooks"]),
             current["id"], current["status"],
-            current["journey"], current["human_acceptance"],
+            current["journey"], proof_label(repo["proof"]), current["human_acceptance"],
             "?" if history["age_days"] is None else history["age_days"], churn,
             f"{sizes['startup_tokens']}{'!' if sizes['flags'] else ''}", repo["notices"]["total"],
             dirty_label(repo["git"]),
         ])
     lines += ["", f"## ProjectState v6 repositories ({len(v6)})", ""]
-    lines += table(["repository", "gate", "contract", "hooks", "slice", "status", "journey", "owner", "age days",
+    lines += table(["repository", "gate", "contract", "hooks", "slice", "status", "journey", "proof", "owner", "age days",
                     "STATE churn", "startup tokens", "notices", "dirty"], rows) if rows else ["None."]
     lines += ["", "Dirty: +staged ~unstaged ?untracked. STATE churn: STATE.yaml commits / all commits since the slice "
               "began. A trailing ! on startup tokens marks a size flag (see Summary). hooks: the opt-in host "
-              "hooks asset (vendored tool plus Claude Code hook entries; absent is fine)."]
+              "hooks asset (vendored tool plus Claude Code hook entries; absent is fine). proof: whether someone "
+              "other than the writer ran the journey and left a receipt outside the repository (projectstate_verify.py "
+              "--receipt), with its date and (+N) commits since that run; record only means the repository's own "
+              "record is the only proof, which is not a fault."]
     others = [repo for repo in report["repositories"] if repo["kind"] != "v6"]
     lines += ["", f"## v5 and other repositories ({len(others)})", ""]
     lines += table(["repository", "kind", "last commit", "dirty"], [
@@ -1011,6 +1187,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "- v6 opencode plugins (template excluded): "
         + ", ".join(f"{state} {summary['opencode'][state]}" for state in OPENCODE_STATES) + ".",
         "- v6 gate verdicts: " + ", ".join(f"{state} {summary['verdicts'][state]}" for state in VERDICTS) + ".",
+        "- v6 journey proof: independent run passed {receipt-passed}, failed {receipt-failed}, stale "
+        "{receipt-stale}, invalid {receipt-invalid}, record only {record-only}.".format(**summary["proof"]),
         "- Inbox: " + ", ".join(f"{len(report['inbox'][key])} {label}" for key, label in (
             ("decisions", "decisions"), ("blocked", "blocked"), ("needs_review", "to review"),
             ("ready_to_merge", "ready to merge"))) + ".",
@@ -1073,13 +1251,17 @@ def date_argument(value: str) -> dt.date:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Read-only ProjectState fleet doctor: release, drift, size and owner inbox for every repository "
-                    "under a root folder. Never writes inside a repository.")
+                    "under a root folder, and per slice whether its journey has an independent run behind it "
+                    "(a receipt from projectstate_verify.py --receipt). Never writes inside a repository.")
     parser.add_argument("--root", help="Folder whose immediate children are scanned (default: the template's parent)")
     parser.add_argument("--template", help="Template repository holding releases/index.json (default: this one)")
     parser.add_argument("--out", help=f"Directory for fleet.md and fleet.json (default: {DEFAULT_OUT}); "
                                       "must be outside --root")
     parser.add_argument("--stdout", action="store_true", help="Print one report and write nothing")
     parser.add_argument("--format", choices=("md", "json"), default="md", help="Report format for --stdout")
+    parser.add_argument("--journeys", default=None,
+                        help=f"Directory of journey receipts written by projectstate_verify.py --receipt, read only "
+                             f"(default: {DEFAULT_JOURNEYS}); a missing directory means no receipts")
     parser.add_argument("--today", type=date_argument, help="Override today's date (YYYY-MM-DD), for tests")
     return parser
 
@@ -1102,9 +1284,10 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, KeyError) as exc:
         print(f"fleet: cannot read the release index of {template}: {exc}", file=sys.stderr)
         return 2
+    journeys = Path(args.journeys or DEFAULT_JOURNEYS).expanduser().resolve()
     ctx = Context(template, index, str(index.get("state_schema") or gate_mod.VERSION),
                   str(current["release"]) if current else None, args.today or dt.date.today(),
-                  draft_candidate(template, index))
+                  draft_candidate(template, index), journeys)
     report = build_report(root, ctx, dt.datetime.now().astimezone().isoformat(timespec="seconds"))
     if args.stdout:
         sys.stdout.write(render_json(report) if args.format == "json" else render_markdown(report))

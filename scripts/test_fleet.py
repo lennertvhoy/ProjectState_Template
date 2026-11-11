@@ -3,7 +3,8 @@
 
 Every test builds a throwaway fleet in a temporary directory: real ``git init`` repositories, and a
 temporary template root with copies of the real gate and helper modules, a test release index, and a
-test managed block. Nothing outside the temporary directory is touched.
+test managed block. Nothing outside the temporary directory is touched, and journey receipts are read
+only from a folder inside it: never from the real ``~/.local/state/projectstate/journeys``.
 """
 
 from __future__ import annotations
@@ -161,7 +162,9 @@ def git(repo: Path, *args: str, date: str | None = None) -> str:
                GIT_COMMITTER_NAME="Test", GIT_COMMITTER_EMAIL="test@example.com")
     if date:
         env.update(GIT_AUTHOR_DATE=date, GIT_COMMITTER_DATE=date)
-    command = ["git", "-C", str(repo), "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", *args]
+    # No background gc or maintenance: it would change .git while a test compares snapshots of the tree.
+    command = ["git", "-C", str(repo), "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null",
+               "-c", "gc.auto=0", "-c", "maintenance.auto=false", *args]
     return subprocess.run(command, capture_output=True, text=True, env=env, check=True).stdout
 
 
@@ -240,6 +243,7 @@ class Workspace:
         self.base = base
         self.root = base / "fleet"
         self.out = base / "out"
+        self.journeys = base / "journeys"  # absent until a test writes a receipt
         self.root.mkdir()
         self.template = (self.root / "ProjectState_Template") if template_in_root else (base / "template")
         write_template(self.template)
@@ -266,7 +270,8 @@ class Workspace:
         return self.add(name, files, date=date)
 
     def args(self, *extra: str) -> list[str]:
-        return ["--root", str(self.root), "--template", str(self.template), "--today", TODAY, *extra]
+        return ["--root", str(self.root), "--template", str(self.template), "--today", TODAY,
+                "--journeys", str(self.journeys), *extra]
 
     def report(self, *extra: str) -> dict:
         code, out, err = run_cli(*self.args("--stdout", "--format", "json", *extra))
@@ -287,6 +292,10 @@ class FleetTestCase(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self.ws = Workspace(Path(self._tmp.name).resolve())
+        # Any in-process run that names no --journeys reads an absent folder, never the real home's receipts.
+        patcher = mock.patch.object(fleet, "DEFAULT_JOURNEYS", str(Path(self._tmp.name) / "no-journeys"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
 
 class GateAndContractTests(FleetTestCase):
@@ -570,8 +579,10 @@ class InboxTests(FleetTestCase):
         self.assertEqual([item["repository"] for item in decisions], ["review", "waiting"])
         waiting = next(item for item in decisions if item["repository"] == "waiting")
         quoted = f"{self.ws.template}/scripts/projectstate_decide.py {self.ws.root}/waiting"
-        self.assertEqual(waiting["message"], f'waiting: ship-001 is validated and waits for your decision. Run: '
+        self.assertEqual(waiting["message"], f'waiting: ship-001 is validated and waits for your decision '
+                                             f'(journey: its own record only). Run: '
                                              f'python3 {quoted} accept|reject|waive "<your words>"')
+        self.assertEqual(waiting["proof"], "record-only")
         self.assertEqual(waiting["slice"], "ship-001")
         self.assertEqual(repo_of(report, "waiting")["verdict"], {"verdict": "validated", "detail": None})
 
@@ -714,7 +725,8 @@ class HistoryAndGitTests(FleetTestCase):
         plain = repo_of(report, "plain")["git"]
         self.assertEqual((plain["upstream"], plain["staged"], plain["unstaged"], plain["untracked"]), (None, 0, 0, 0))
         table = run_cli(*self.ws.args("--stdout"))[1]
-        self.assertIn("| facts | current | unmanaged | absent | demo-001 | implementing | not_run | pending | 26 | 1/2 | ", table)
+        self.assertIn("| facts | current | unmanaged | absent | demo-001 | implementing | not_run | record only | pending | "
+                      "26 | 1/2 | ", table)
         self.assertIn("+1 ~1 ?2 |", table)
 
     def test_status_counts_cover_staged_unstaged_untracked_conflicts_and_ignored(self) -> None:
@@ -928,7 +940,8 @@ class CommandLineTests(FleetTestCase):
         before = tree_state(ws.root)
         self.assertTrue(any(path.endswith(".git/index") for path in before))
         script = ws.template / "scripts" / "projectstate_fleet.py"
-        done = subprocess.run([sys.executable, str(script), "--out", str(ws.out), "--today", TODAY],
+        done = subprocess.run([sys.executable, str(script), "--out", str(ws.out), "--today", TODAY,
+                               "--journeys", str(ws.journeys)],
                               capture_output=True, text=True, cwd=ws.base, check=False)
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual(tree_state(ws.root), before)  # no file, directory, ref, index or bytecode changed
@@ -966,12 +979,12 @@ class CommandLineTests(FleetTestCase):
         self.assertEqual([line for line in lines if line.startswith("## ")], [
             "## Your decisions (1)", "## Blocked (1)", "## Needs review (0)", "## Ready to merge (0)",
             "## ProjectState v6 repositories (3)", "## v5 and other repositories (2)", "## Summary"])
-        header = ("| repository | gate | contract | hooks | slice | status | journey | owner | age days | "
+        header = ("| repository | gate | contract | hooks | slice | status | journey | proof | owner | age days | "
                   "STATE churn | startup tokens | notices | dirty |")
         self.assertIn(header, lines)
         self.assertIn("| repository | kind | last commit | dirty |", lines)
-        self.assertIn("| beta | behind (1.0.0) | unmanaged | absent | demo-001 | implementing | not_run | pending | "
-                      "35 | 1/1 |", text)
+        self.assertIn("| beta | behind (1.0.0) | unmanaged | absent | demo-001 | implementing | not_run | record only | "
+                      "pending | 35 | 1/1 |", text)
         self.assertIn("| v5 | v5 | 2026-09-01 | clean |", lines)
         self.assertIn("| loose | other | - | no git |", lines)
         self.assertIn("Needs | a pipe", text)  # inbox lines are plain text; table cells escape the pipe
@@ -981,7 +994,7 @@ class CommandLineTests(FleetTestCase):
     def test_overridden_date_is_stated_in_the_header(self) -> None:
         self.ws.add_v6("quiet")
         text = run_cli("--root", str(self.ws.root), "--template", str(self.ws.template), "--stdout",
-                       "--today", "2000-01-01")[1]
+                       "--today", "2000-01-01", "--journeys", str(self.ws.journeys))[1]
         self.assertRegex(text.splitlines()[2], r"^Generated \S+, date set to 2000-01-01; template release 1\.1\.0 ")
 
     def test_json_report_shape(self) -> None:
@@ -1017,6 +1030,258 @@ class CommandLineTests(FleetTestCase):
         text = run_cli(*self.ws.args("--stdout"))[1]
         self.assertIn("template release 1.2.0;", text)
         self.assertNotIn("draft", text.splitlines()[2])
+
+
+RECEIPT_DATE = "2026-10-05"
+SECRET = "SYMLINK-TARGET-TEXT"
+
+
+class JourneyProofTests(FleetTestCase):
+    """Receipts from projectstate_verify.py --receipt, read from --journeys and never trusted."""
+
+    def receipt(self, repo: Path, slice_id: str = "demo-001", **overrides: object) -> dict:
+        head = git(repo, "rev-parse", "HEAD").strip() if (repo / ".git").exists() else None
+        document: dict = {
+            "format": "projectstate-journey-receipt/1", "repository": repo.name, "path": str(repo.resolve()),
+            "slice": slice_id, "slice_status": "validated", "recorded_journey": "passed",
+            "command": "python3 demo.py", "command_sha256": sha256(b"python3 demo.py"),
+            "environment_recorded": "local test fixture", "ran_in": "clone-of-head", "head": head,
+            "uncommitted_paths": 0, "started": f"{RECEIPT_DATE}T09:00:00Z", "seconds": 0.3, "exit_code": 0,
+            "timed_out": False, "result": "passed", "output_tail_sha256": sha256(b""), "by": "reviewer",
+            "tool": "scripts/projectstate_verify.py", "tool_release": "6.4.0",
+        }
+        document.update(overrides)
+        return document
+
+    def put(self, name: str, content: object, slice_id: str = "demo-001") -> Path:
+        target = self.ws.journeys / name / f"{slice_id}.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(content, bytes):
+            target.write_bytes(content)
+        else:
+            target.write_text(content if isinstance(content, str) else json.dumps(content), encoding="utf-8")
+        return target
+
+    def waiting(self, name: str, **options: object) -> Path:
+        options = {"status": "validated", "journey": "passed", **options}
+        return self.ws.add_v6(name, **options)
+
+    def outputs(self) -> tuple[dict, str, str]:
+        code, text, err = run_cli(*self.ws.args("--stdout"))
+        self.assertEqual((code, err), (0, ""))
+        raw = run_cli(*self.ws.args("--stdout", "--format", "json"))[1]
+        return json.loads(raw), raw, text
+
+    def decision(self, report: dict, name: str) -> dict:
+        return next(item for item in report["inbox"]["decisions"] if item["repository"] == name)
+
+    def assert_decision_shape(self, item: dict, note: str) -> None:
+        text, separator, command = item["message"].partition(". Run: ")
+        self.assertEqual(separator, ". Run: ")
+        self.assertTrue(text.endswith(f"is validated and waits for your decision ({note})"), text)
+        self.assertEqual(command, item["command"])  # the consumer cuts at ". Run:"; the command follows intact
+
+    def test_without_a_journeys_directory_every_slice_is_record_only(self) -> None:
+        self.waiting("waiting")
+        self.ws.add_v6("working")
+        self.assertFalse(self.ws.journeys.exists())
+        report, _, text = self.outputs()
+        for name in ("waiting", "working"):
+            self.assertEqual(repo_of(report, name)["proof"], {
+                "status": "record-only", "detail": None, "date": None, "ran_in": None, "head": None,
+                "commits_since": None, "uncommitted_paths": None, "exit_code": None, "by": None})
+        self.assert_decision_shape(self.decision(report, "waiting"), "journey: its own record only")
+        self.assertIn("| validated | passed | record only | pending |", text)
+        self.assertIn("- v6 journey proof: independent run passed 0, failed 0, stale 0, invalid 0, record only 2.",
+                      text)
+        self.assertEqual(report["summary"]["proof"], {"receipt-passed": 0, "receipt-failed": 0, "receipt-stale": 0,
+                                                      "receipt-invalid": 0, "record-only": 2})
+
+    def test_a_matching_passed_receipt(self) -> None:
+        repo = self.waiting("waiting", slice_id="ship-001")
+        self.put("waiting", self.receipt(repo, "ship-001"), "ship-001")
+        report, _, text = self.outputs()
+        head = git(repo, "rev-parse", "HEAD").strip()
+        self.assertEqual(repo_of(report, "waiting")["proof"], {
+            "status": "receipt-passed", "detail": None, "date": RECEIPT_DATE, "ran_in": "clone-of-head",
+            "head": head[:7], "commits_since": 0, "uncommitted_paths": 0, "exit_code": 0, "by": "reviewer"})
+        item = self.decision(report, "waiting")
+        self.assertEqual(item["proof"], "receipt-passed")
+        self.assert_decision_shape(item, f"journey re-run passed {RECEIPT_DATE}")
+        self.assertEqual(list(report["inbox"]), ["decisions", "blocked", "needs_review", "ready_to_merge"])
+        self.assertIn(f"| ship-001 | validated | passed | run passed {RECEIPT_DATE} | pending |", text)
+        self.assertEqual(report["inbox"]["needs_review"], [])
+
+    def test_the_receipt_projectstate_verify_writes_is_read_as_matching(self) -> None:
+        repo = self.waiting("real", extra={"demo.py": "print('ok')\n"})
+        done = subprocess.run([sys.executable, "-B", str(SCRIPTS / "projectstate_verify.py"), "--root", str(repo),
+                               "--receipt", "--run", "--receipts", str(self.ws.journeys), "--by", "test"],
+                              capture_output=True, text=True, check=False)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        proof = repo_of(self.ws.report(), "real")["proof"]
+        self.assertEqual((proof["status"], proof["by"], proof["commits_since"]), ("receipt-passed", "test", 0))
+
+    def test_a_failed_run_against_a_recorded_pass_needs_review(self) -> None:
+        waiting = self.waiting("waiting")
+        self.put("waiting", self.receipt(waiting, result="failed", exit_code=3))
+        working = self.ws.add_v6("working", status="implemented", journey="passed")  # not awaiting a decision
+        self.put("working", self.receipt(working, result="failed", exit_code=1))
+        honest = self.ws.add_v6("honest", status="implementing", journey="failed")  # recorded failed: no mismatch
+        self.put("honest", self.receipt(honest, result="failed", exit_code=1))
+        report, _, text = self.outputs()
+        self.assertEqual(repo_of(report, "waiting")["proof"]["status"], "receipt-failed")
+        self.assertEqual(repo_of(report, "waiting")["proof"]["exit_code"], 3)
+        self.assert_decision_shape(self.decision(report, "waiting"), f"journey re-run FAILED {RECEIPT_DATE}")
+        review = {item["repository"]: item for item in report["inbox"]["needs_review"]}
+        self.assertEqual(sorted(review), ["waiting", "working"])
+        self.assertEqual({item["kind"] for item in review.values()}, {"journey-mismatch"})
+        verify = f"python3 {self.ws.template}/scripts/projectstate_verify.py --root {self.ws.root}/waiting --receipt --run"
+        self.assertEqual(review["waiting"]["message"],
+                         f"waiting: the journey is recorded as passed, but an independent run failed on {RECEIPT_DATE} "
+                         f"(exit 3). Rerun it: {verify}")
+        self.assertEqual(review["waiting"]["command"], verify)
+        self.assertIn(f"| run FAILED {RECEIPT_DATE} |", text)
+        self.assertEqual(report["summary"]["proof"]["receipt-failed"], 3)
+
+    def test_a_changed_command_makes_the_receipt_stale(self) -> None:
+        repo = self.waiting("waiting")
+        self.put("waiting", self.receipt(repo, command="python3 old.py", command_sha256=sha256(b"python3 old.py")))
+        report, _, text = self.outputs()
+        proof = repo_of(report, "waiting")["proof"]
+        self.assertEqual((proof["status"], proof["detail"]),
+                         ("receipt-stale", "the recorded command changed after this run"))
+        self.assert_decision_shape(self.decision(report, "waiting"), "journey receipt stale")
+        self.assertIn("| receipt stale |", text)
+        self.assertEqual(report["inbox"]["needs_review"], [])
+
+    def test_receipts_that_do_not_match_or_are_unsafe_are_invalid_and_never_followed(self) -> None:
+        names = ("wrong-path", "wrong-repo", "wrong-slice", "wrong-format", "bad-result", "no-hash", "not-json",
+                 "a-list", "oversized", "deep", "not-utf8", "a-folder", "entry-file", "linked-file", "linked-folder")
+        repos = {name: self.waiting(name) for name in names}
+        good = {name: self.receipt(repo) for name, repo in repos.items()}
+        self.put("wrong-path", {**good["wrong-path"], "path": str(self.ws.base / "elsewhere" / "wrong-path")})
+        self.put("wrong-repo", {**good["wrong-repo"], "repository": "someone-else"})
+        self.put("wrong-slice", {**good["wrong-slice"], "slice": "other-002"})
+        self.put("wrong-format", {**good["wrong-format"], "format": "projectstate-journey-receipt/2"})
+        self.put("bad-result", {**good["bad-result"], "result": "PASSED"})
+        self.put("no-hash", {**good["no-hash"], "command_sha256": ["not", "a", "hash"]})
+        self.put("not-json", "{this is not json")
+        self.put("a-list", [good["a-list"]])
+        self.put("oversized", json.dumps(good["oversized"]) + " " * (64 * 1024))
+        self.put("deep", "[" * 30000 + "]" * 30000)
+        self.put("not-utf8", b"\xff\xfe" + json.dumps(good["not-utf8"]).encode("utf-16-le"))
+        (self.ws.journeys / "a-folder" / "demo-001.json").mkdir(parents=True)
+        (self.ws.journeys / "entry-file").write_text(json.dumps(good["entry-file"]), encoding="utf-8")
+        outside = self.ws.base / "outside"
+        outside.mkdir()
+        (outside / "demo-001.json").write_text(json.dumps({**good["linked-file"], "by": SECRET}), encoding="utf-8")
+        (self.ws.journeys / "linked-file").mkdir(parents=True)
+        os.symlink(outside / "demo-001.json", self.ws.journeys / "linked-file" / "demo-001.json")
+        linked_target = self.ws.base / "linked-target"
+        linked_target.mkdir()
+        (linked_target / "demo-001.json").write_text(json.dumps({**good["linked-folder"], "by": SECRET}),
+                                                     encoding="utf-8")
+        os.symlink(linked_target, self.ws.journeys / "linked-folder")
+        report, raw, text = self.outputs()
+        details = {}
+        for name in names:
+            proof = repo_of(report, name)["proof"]
+            self.assertEqual(proof["status"], "receipt-invalid", name)
+            self.assertIsNone(proof["by"], name)
+            details[name] = proof["detail"]
+            self.assert_decision_shape(self.decision(report, name), "journey receipt invalid")
+        self.assertEqual(details["wrong-path"], "the receipt names another repository path")
+        self.assertEqual(details["wrong-repo"], "the receipt names another repository")
+        self.assertEqual(details["wrong-slice"], "the receipt names another slice")
+        self.assertIn("format", details["wrong-format"])
+        self.assertIn("neither passed nor failed", details["bad-result"])
+        self.assertIn("command_sha256", details["no-hash"])
+        self.assertEqual({details[name] for name in ("not-json", "not-utf8")}, {"the receipt is not JSON"})
+        # Deep nesting is a RecursionError on older Pythons and a list on newer ones: invalid either way, no crash.
+        self.assertIn(details["deep"], {"the receipt is not JSON", "the receipt is not a JSON object"})
+        self.assertEqual(details["a-list"], "the receipt is not a JSON object")
+        self.assertEqual(details["oversized"], "the receipt is larger than 64 KiB")
+        self.assertEqual(details["a-folder"], "the receipt is not a regular file")
+        self.assertIn("not a folder", details["entry-file"])
+        self.assertEqual(details["linked-file"], "the receipt is a symlink")
+        self.assertIn("symlink", details["linked-folder"])
+        self.assertNotIn(SECRET, raw)
+        self.assertNotIn(SECRET, text)
+        self.assertEqual(report["summary"]["proof"]["receipt-invalid"], len(names))
+        self.assertEqual(report["inbox"]["needs_review"], [])
+
+    def test_untrusted_strings_are_neutralised_and_bad_types_ignored(self) -> None:
+        repo = self.waiting("noisy")
+        by = "\x1b[31mred\x07 " + "B" * 500 + "\nnext | line"
+        self.put("noisy", self.receipt(repo, by=by, ran_in="clone\x00-of\x1b]0;title\x07-head",
+                                       exit_code="0", uncommitted_paths=True, head=12345, started=20261005))
+        report, _, text = self.outputs()
+        proof = repo_of(report, "noisy")["proof"]
+        self.assertEqual(proof["status"], "receipt-passed")  # bad optional fields never stop the match
+        self.assertEqual((proof["exit_code"], proof["uncommitted_paths"], proof["head"], proof["date"],
+                          proof["commits_since"]), (None, None, None, None, None))
+        for value in (proof["by"], proof["ran_in"]):
+            self.assertIsNone(fleet.CONTROL_CHARS.search(value), value)
+            self.assertNotIn("\n", value)
+        self.assertLessEqual(len(proof["by"]), fleet.BY_CHARS)
+        self.assertTrue(proof["by"].endswith("..."))
+        self.assertLessEqual(len(proof["ran_in"]), fleet.RAN_IN_CHARS)
+        self.assertNotIn("\x1b", text)
+        self.assert_decision_shape(self.decision(report, "noisy"), "journey re-run passed")
+
+    def test_commits_since_the_run_are_counted_and_unknown_heads_give_none(self) -> None:
+        later = self.waiting("later")
+        self.put("later", self.receipt(later))
+        for step, date in enumerate((DATE_2, DATE_3), 1):
+            (later / f"work-{step}.txt").write_text(f"{step}\n")
+            commit(later, f"work {step}", date)
+        unknown = self.waiting("unknown")
+        self.put("unknown", self.receipt(unknown, head="0" * 40))
+        named = self.waiting("named")
+        self.put("named", self.receipt(named, head="HEAD~1"))  # not hex: never handed to git
+        loose = self.waiting("loose", date=None)
+        self.put("loose", self.receipt(loose, ran_in="copy", head="a" * 40))
+        report, _, text = self.outputs()
+        self.assertEqual(repo_of(report, "later")["proof"]["commits_since"], 2)
+        self.assertIn(f"| run passed {RECEIPT_DATE} (+2) |", text)
+        self.assertEqual((repo_of(report, "unknown")["proof"]["head"], repo_of(report, "unknown")["proof"]["commits_since"]),
+                         ("0000000", None))
+        self.assertEqual((repo_of(report, "named")["proof"]["head"], repo_of(report, "named")["proof"]["commits_since"]),
+                         (None, None))
+        loose_proof = repo_of(report, "loose")["proof"]
+        self.assertEqual((loose_proof["status"], loose_proof["commits_since"]), ("receipt-passed", None))
+        self.assertIn(f"| loose | current | unmanaged | absent | demo-001 | validated | passed | run passed {RECEIPT_DATE} |",
+                      text)
+
+    def test_the_scan_writes_nothing_in_the_journeys_directory_or_any_repository(self) -> None:
+        repo = self.waiting("waiting")
+        self.put("waiting", self.receipt(repo))
+        (repo / "after.txt").write_text("later work\n")
+        commit(repo, "later work", DATE_2)
+        stale = self.waiting("stale")
+        self.put("stale", self.receipt(stale, command_sha256=sha256(b"other")))
+        os.utime(repo / "STATE.yaml", (1_700_000_000, 1_700_000_000))  # tempt git status to refresh the index
+        before = (tree_state(self.ws.root), tree_state(self.ws.journeys))
+        self.outputs()
+        self.assertEqual((tree_state(self.ws.root), tree_state(self.ws.journeys)), before)
+
+    def test_summary_counts_every_proof_state_over_v6_slices(self) -> None:
+        for name in ("pass-a", "pass-b"):
+            self.put(name, self.receipt(self.waiting(name)))
+        self.put("failed", self.receipt(self.waiting("failed"), result="failed", exit_code=1))
+        self.put("stale", self.receipt(self.waiting("stale"), command_sha256=sha256(b"x")))
+        self.put("invalid", "[]")
+        self.waiting("invalid")
+        self.ws.add_v6("plain")
+        self.ws.add("v5", {"PROJECT_STATE.yaml": "schema: v5\n"})
+        self.put("v5", {"format": "projectstate-journey-receipt/1"})  # not v6: not counted
+        report, _, text = self.outputs()
+        self.assertEqual(report["summary"]["proof"], {"receipt-passed": 2, "receipt-failed": 1, "receipt-stale": 1,
+                                                      "receipt-invalid": 1, "record-only": 1})
+        self.assertNotIn("proof", repo_of(report, "v5"))
+        self.assertIn("- v6 journey proof: independent run passed 2, failed 1, stale 1, invalid 1, record only 1.",
+                      text)
+        self.assertEqual(report["format"], "projectstate-fleet/1")
 
 
 if __name__ == "__main__":

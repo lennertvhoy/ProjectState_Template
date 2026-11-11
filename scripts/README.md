@@ -11,7 +11,8 @@ tooling, including the old automatic upgrader, lives at tag `v5-final`.
 - `init_template.py` - creates a new project (`new`) or adopts the workflow into an existing repository (`adopt`); `core` is the default profile and `hardened` the explicit opt-in
 - `projectstate_gate.py` - the dependency-free outcome gate that every project vendors; it reads recorded state and evidence only, exits 0, 1 or 2, and prints its release with `--version`
 - `projectstate_release.py` - release identity: `check` validates `releases/index.json` against the gate, the managed `AGENTS.md` block and the local tags; `cut --date` records a draft's hashes and marks it released; `hashes` prints the current ones
-- `projectstate_fleet.py` - read-only fleet doctor: release and drift, size and the owner inbox for every repository under a root folder; it writes only `fleet.md` and `fleet.json`, outside that folder
+- `projectstate_fleet.py` - read-only fleet doctor: release and drift, size and the owner inbox for every repository under a root folder; it writes only `fleet.md` and `fleet.json`, outside that folder. Its `proof` column reads journey receipts (`--journeys`, default `~/.local/state/projectstate/journeys`) and shows whether a slice's journey has an independent run behind it; `record only` means there is no receipt, which is not a fault
+- `projectstate_verify.py` - runs the recorded primary journey and records the observed result; with `--receipt` it writes nothing in the repository and leaves a receipt outside it instead (`<journeys>/<repository>/<slice>.json`: command hash, HEAD, exit code, time). A receipt is evidence that a tool observed a run, not protection against someone forging the file
 - `projectstate_update.py` - brings one project to the current release by replacing its vendored gate and its managed `AGENTS.md` block; dry run by default
 - `projectstate_decide.py` - records the owner's accept, reject or waive decision in `STATE.yaml` and the slice summary; never commits
 - `projectstate_improve_check.py` - read-only guard for the opt-in measured improvement rounds; copied into a project by hand, never generated
@@ -23,6 +24,7 @@ python3 scripts/init_template.py --help
 python3 scripts/projectstate_gate.py
 python3 scripts/projectstate_release.py check
 python3 scripts/projectstate_fleet.py --stdout
+python3 scripts/projectstate_verify.py --root ../your-project --receipt   # add --run to execute
 python3 scripts/projectstate_update.py --target ../your-project
 python3 scripts/projectstate_decide.py --help
 python3 scripts/projectstate_improve_check.py --help

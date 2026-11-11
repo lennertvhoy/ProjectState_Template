@@ -249,6 +249,23 @@ The owner inbox at the top of the report lists what needs a person:
 - an unmerged `projectstate/release-<release>` update branch, with the command
   that merges it.
 
+**Journey receipts.** A journey recorded as `passed` is only as good as whoever
+typed it. `python3 scripts/projectstate_verify.py --root ../your-project --receipt
+--run` lets someone who is not the repository's writer run the recorded journey
+(in a temporary clone of HEAD, so the working tree is untouched) and writes a
+receipt outside the repository, at
+`~/.local/state/projectstate/journeys/<repository>/<slice>.json`: the command
+and its sha256, the HEAD it ran against, the exit code and the time. Nothing is
+written in the repository. The fleet doctor reads these receipts (`--journeys`
+changes the folder) and shows a `proof` per slice: `run passed` or `run FAILED`
+with the date and the commits made since, `receipt stale` when the recorded
+command changed after the run, `receipt invalid` for a file that does not match
+the repository or slice, and `record only` when there is no receipt. `record
+only` is not a fault; it means the repository's own record is the only proof.
+Each decision in the inbox says which of these it has, and a journey recorded as
+passed whose receipt failed is listed for review. A receipt is evidence that a
+tool observed a run; it is not protection against someone who forges the file.
+
 **Update.** `python3 scripts/projectstate_update.py --target ../your-project` is
 a dry run, and `--apply` writes. It replaces the project's vendored gate and its
 managed `AGENTS.md` block and nothing else: never `PROJECT.md`, `STATE.yaml`,
