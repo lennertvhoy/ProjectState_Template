@@ -28,4 +28,4 @@ delivery_boundary:
   simplification_review: null
 blockers: []
 risks: []
-next_action: "Owner: read evidence/handoff-eval-001/summary.md and accept, reject or waive this slice: python3 scripts/projectstate_decide.py . accept|reject|waive \"your words\"."
+next_action: "Owner: name the next slice for the template; the held candidates are listed at the end of evidence/handoff-eval-001/summary.md."

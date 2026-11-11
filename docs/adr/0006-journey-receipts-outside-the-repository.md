@@ -1,6 +1,6 @@
 # ADR-0006: A journey receipt lives outside the repository that records the journey
 
-**Status:** proposed (awaits the owner)
+**Status:** accepted (2026-11-11; the owner delegated the choice to the coordinating agent, which also wrote this record)
 **Date:** 2026-11-11
 **Author:** human-directed agent
 

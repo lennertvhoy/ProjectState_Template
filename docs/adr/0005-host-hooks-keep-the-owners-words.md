@@ -1,6 +1,6 @@
 # ADR-0005: The host keeps the owner's words and the slice in front of every session
 
-**Status:** proposed (awaits the owner)
+**Status:** accepted (2026-11-11; the owner delegated the choice to the coordinating agent, which decided on the v2.2 measurement)
 **Date:** 2026-10-09
 **Author:** human-directed agent
 
@@ -81,8 +81,10 @@ every instance and needs `projectstate_verify.py` vendored.
   constraints and the work that needs them; haiku and sonnet): see
   `evidence/handoff-eval-001/summary.md`, "Follow-up 2".
 - The shipped v2.2 was measured on 2026-11-10 ("Follow-up 3"): three haiku chains and one sonnet chain kept
-  both constraints and passed all eight checks; two sonnet chains were lost to a usage limit, so the sonnet
-  regression seen with v2.1 is not yet ruled out.
+  both constraints and passed all eight checks; two sonnet chains were lost to a usage limit. Two more sonnet
+  chains on 2026-11-11 did the same, so all six usable v2.2 chains are clean. The v2.1 regression was one sonnet
+  chain in three; three clean chains make it unlikely, not excluded (a one-in-three failure would still show
+  three clean chains about 30 % of the time).
 - The owner's prompts are private text on disk. The log stays local and ignores
   itself in Git; redaction of obvious secrets is best-effort, not a guarantee.
   A curious agent can read the log file (measured: several did).

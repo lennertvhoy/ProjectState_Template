@@ -27,5 +27,5 @@ Use `0000-adr-template.md` as the starting point. Number ADRs sequentially.
 - [0002](0002-agent-owned-delivery-closure.md): delivery policy once, post-merge identities external (superseded by 0004).
 - [0003](0003-outcome-first-core.md): outcome-first core with an opt-in hardened overlay.
 - [0004](0004-release-channel-and-legacy-split.md): release channel, and removing v5 from main.
-- [0005](0005-host-hooks-keep-the-owners-words.md): the host keeps the owner's words (proposed).
-- [0006](0006-journey-receipts-outside-the-repository.md): a journey receipt lives outside the repository (proposed).
+- [0005](0005-host-hooks-keep-the-owners-words.md): the host keeps the owner's words (accepted).
+- [0006](0006-journey-receipts-outside-the-repository.md): a journey receipt lives outside the repository (accepted).

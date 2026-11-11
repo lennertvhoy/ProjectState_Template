@@ -17,7 +17,7 @@ Instance action: none. These changes are in the template's own tools and their t
 contract block and the release index are unchanged, so no release hash moves and
 `python3 scripts/projectstate_release.py check` still matches; an instance needs no action.
 
-- **Independent journey runs** (`scripts/projectstate_verify.py --receipt`, ADR-0006, proposed). A reviewer, the
+- **Independent journey runs** (`scripts/projectstate_verify.py --receipt`, ADR-0006). A reviewer, the
   owner or a fleet check can run the recorded journey without being the repository's writer. The run writes
   nothing in the repository: the command executes in a temporary clone of the committed HEAD (a file copy when
   the directory is not a git work tree), so uncommitted work is not part of it, and `--in-place` runs it in the
@@ -43,6 +43,10 @@ contract block and the release index are unchanged, so no release hash moves and
   a heading that never mentions ProjectState stays as project text, with a warning. Notices bounded by
   `projectstate-NAME:start` and `projectstate-NAME:end` are still removed without a flag, because their extent is
   exact.
+- **Records.** ADR-0005 (host hooks) and ADR-0006 (journey receipts) are accepted. The v2.2 hooks measurement is
+  complete for the core contract: six of six usable chains (three haiku, three sonnet) pass all eight checks; the
+  lean contract has no v2.2 result. The template's own slice `handoff-eval-001` is accepted, by a choice the owner
+  delegated; the record says so.
 - **Tests.** Fixture repositories never start git background maintenance (`maintenance.auto=false` and
   `gc.auto=0` on every git call), so a detached `git maintenance run --auto` can no longer leave a transient
   `.git/objects/maintenance.lock` in one snapshot and not the other. The test that compares `.git` byte for byte

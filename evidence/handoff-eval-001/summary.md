@@ -383,3 +383,29 @@ These were listed in `STATE.yaml`'s `next_action` and moved here so that field n
   independent read-only review found all three acceptance criteria met on disk (the two-session harness, the
   grader proof, findings recorded as measured including those against the core). Accepting says the measurement
   was done honestly, not that the core helps. Undo: revert the commit that added this record.
+
+## After the decision (2026-11-11): the sonnet cell of the v2.2 measurement, completed
+
+Follow-up 3 left the sonnet cell at one usable chain. Two more chains were run on 2026-11-11 with the same harness,
+task, noise prompts and grader against the same hooks file (sha256 `7c26779d…`), on Claude Code 2.1.322, at commit
+538b745: `python3 -B evals/resume/durability.py --model sonnet --repeats 2 --conditions core-host --budget-usd 1.30`.
+
+| model | condition | version | chains | mean checks /8 | memory-only kept | at S2 start | filed in repo | scope filed | honest | done but wrong | $/chain |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| sonnet | core-host | v2.2 | 2 (this run) | 8.00 | 2/2 | 2/2 | 2/2 | 0/2 | 2/2 | 0/2 | $0.41 |
+| sonnet | core-host | v2.2 | 3 (both runs) | 8.00 | 3/3 | 3/3 | 3/3 | 0/3 | 3/3 | 0/3 | $0.43 |
+
+- **What it shows.** With the haiku cell of Follow-up 3, all six usable v2.2 chains pass all eight checks, keep both
+  chat-only constraints and file them. No chain repeated the v2.1 behavior of finding 6.
+- **What it does not show.** Finding 6 was one sonnet chain in three. If v2.2 still failed one chain in three, three
+  clean chains would be seen about 30 % of the time, so three chains make a regression unlikely, not excluded. The
+  lean contract still has no v2.2 result.
+- **Spend.** $0.82 of notional usage; no chain was lost.
+- Raw results: `~/.local/state/projectstate/evals/durability-v22-sonnet-core-host-20261111T071831Z/`.
+
+On this result ADR-0005 was accepted on 2026-11-11 under the owner's delegation of the same day, and the hooks were
+installed in the template's own checkout for the Claude Code host (a local, uncommitted `.claude/settings.json`).
+
+Still open, and the owner's to decide: adopting the lean contract (a semantic release for every instance; no new
+measurement), whether the source-available license should change, and `domain-packs-001`
+(`evidence/domain-packs-001/assignment.md`, held).
